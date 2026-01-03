@@ -1,11 +1,11 @@
 "use client";
 import Image from "next/image";
+import Link from "next/link";
 import DottedBox from "@/public/images/dotted_box.svg";
 import Advert from "@/components/ui/Advert";
 import { motion, AnimatePresence } from "framer-motion";
 import { useState, useEffect, useCallback, useRef, memo } from "react";
-import { useRouter } from "next/navigation";
-import clsx from "clsx";
+
 
 const CAROUSEL_IMAGES = [
   "/images/Hero/4.svg",
@@ -87,36 +87,6 @@ const HeroCarousel = memo(function HeroCarousel() {
 });
 
 export const HeroSection = () => {
-  const [email, setEmail] = useState("");
-  const [promotionalEmails, setPromotionalEmails] = useState(false);
-  const [emailError, setEmailError] = useState("");
-  const router = useRouter();
-
-  const handleEmailChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    setEmail(e.target.value);
-    setEmailError("");
-  }, []);
-
-  const handleCheckboxChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    setPromotionalEmails(e.target.checked);
-  }, []);
-
-  const handleSubmit = useCallback((e: React.FormEvent) => {
-    e.preventDefault();
-    const trimmedEmail = email.trim();
-    if (!trimmedEmail) {
-      setEmailError("Email is required");
-      return;
-    }
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmedEmail)) {
-      setEmailError("Please enter a valid email address");
-      return;
-    }
-    const params = new URLSearchParams({ email: trimmedEmail });
-    if (promotionalEmails) params.set("promotional_emails", "true");
-    router.push(`/signup?${params.toString()}`);
-  }, [email, promotionalEmails, router]);
-
   return (
     <header className="px-[5%] py-4 pb-0 bg-white relative overflow-hidden mobile:px-[5%] mobile:py-1.5 mobile:pb-4 mobile:min-h-auto ">
       <Advert />
@@ -131,40 +101,12 @@ export const HeroSection = () => {
             From careers to causes, we connect you to purposeful opportunities quickly, easily, and on your terms
           </p>
 
-          <div className="mobile:w-full mobile:max-w-[520px] mobile:mx-auto mobile:gap-4">
-            <form className="flex flex-col gap-2 w-full mt-2 items-start" onSubmit={handleSubmit}>
-              <label htmlFor="newsletter-email" className="font-open-sans font-semibold text-text-muted mb-0.5 text-sm">
-                Email
-              </label>
-              <input
-                id="newsletter-email"
-                type="email"
-                className={clsx(
-                  "w-full py-4 px-5 border-2 border-gray-200 rounded-2xl font-open-sans text-base outline-none mb-0.5 transition-colors bg-white box-border focus:border-primary",
-                  emailError && "border-red-500 focus:border-red-500 focus:shadow-[0_0_0_3px_rgba(220,53,69,0.1)]"
-                )}
-                value={email}
-                onChange={handleEmailChange}
-                required
-              />
-              {emailError && <span className="text-red-500 text-sm mt-1 block">{emailError}</span>}
-              <div className="flex items-start gap-2 mt-2 mb-3">
-                <input
-                  id="newsletter-checkbox"
-                  type="checkbox"
-                  className="cursor-pointer w-5 h-5 rounded border-2 border-primary accent-primary shrink-0 mt-0.5"
-                  checked={promotionalEmails}
-                  onChange={handleCheckboxChange}
-                />
-                <label htmlFor="newsletter-checkbox" className="font-open-sans text-text-muted cursor-pointer leading-snug text-left text-sm">
-                  I would like to receive promotional emails from VetriConn Inc
-                </label>
-              </div>
-              <button type="submit" className="bg-primary text-white font-open-sans font-semibold border-none rounded-[18px] py-4 px-0 cursor-pointer transition-colors w-full shadow-none hover:bg-primary-hover mobile:w-full mobile:py-3.5 mobile:px-4">
-                Sign Up
-              </button>
-            </form>
-          </div>
+          <Link 
+            href="/signup"
+            className="inline-block bg-primary text-white font-open-sans font-semibold border-none rounded-md py-4 px-12 cursor-pointer transition-colors shadow-none hover:bg-primary-hover mobile:w-full mobile:py-3.5 mobile:px-4 mt-4 text-center"
+          >
+            Sign Up
+          </Link>
         </div>
 
         <div className="relative flex-[0_0_auto] flex w-[650px] max-w-[650px] justify-center items-center h-[455px] mobile:flex-none mobile:w-full mobile:max-w-full mobile:h-[250px] before:content-[''] before:absolute before:w-full before:max-w-[650px] before:h-[455px] before:top-5 before:-right-5 before:rounded-[10px] before:bg-primary before:bg-[url('/favicon-white.svg')] before:bg-no-repeat before:bg-center before:bg-[length:200px_200px] before:opacity-100 before:z-[1] before:[transform:rotateX(15deg)] mobile:before:hidden">

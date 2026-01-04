@@ -53,14 +53,14 @@ export type SignUpFormData = {
 
 // Step 1: Account Type Selection
 export const step1Schema = z.object({
-  role: z.enum(['jobseeker', 'employer'], {
+  role: z.enum(['job_seeker', 'employer'], {
     message: 'Please select how you want to use Vetriconn',
   }),
 });
 
 // Step 2: Create Account
 export const step2Schema = z.object({
-  fullName: z.string().min(1, 'Full name is required').min(2, 'Name must be at least 2 characters'),
+  full_name: z.string().min(1, 'Full name is required').min(2, 'Name must be at least 2 characters'),
   email: z.string().email('Please enter a valid email address'),
   password: z.string()
     .min(8, 'Password must be at least 8 characters')
@@ -75,16 +75,16 @@ export const step2Schema = z.object({
 
 // Step 3: Contact Information (now optional)
 export const step3Schema = z.object({
-  phoneNumber: z.string().optional(),
+  phone_number: z.string().optional(),
   city: z.string().optional(),
   country: z.string().optional(),
 });
 
 // Step 4: Work Background (all optional)
 export const step4Schema = z.object({
-  jobTitle: z.string().optional(),
-  skillArea: z.string().optional(),
-  yearsOfExperience: z.string().optional(),
+  job_title: z.string().optional(),
+  industry: z.string().optional(),
+  years_of_experience: z.string().optional(),
 });
 
 // Step 5: Resume Upload
@@ -94,9 +94,10 @@ export const step5Schema = z.object({
 
 // Experience levels for dropdown
 export const EXPERIENCE_LEVELS = [
-  { value: '0-1', label: '0-1 years' },
-  { value: '1-3', label: '1-3 years' },
+  { value: 'less-than-1', label: 'Less than 1 year' },
+  { value: '1-2', label: '1-2 years' },
   { value: '3-5', label: '3-5 years' },
-  { value: '5-10', label: '5-10 years' },
-  { value: '10+', label: '10+ years' },
+  { value: '6-10', label: '6-10 years' },
+  { value: '11-20', label: '11-20 years' },
+  { value: 'more-than-20', label: 'More than 20 years' },
 ];

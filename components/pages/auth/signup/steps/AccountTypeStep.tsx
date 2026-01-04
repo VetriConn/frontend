@@ -16,7 +16,7 @@ export const AccountTypeStep = ({
 }: StepProps) => {
   const isRoleSelected = formData.role !== null;
 
-  const handleRoleSelect = (role: "jobseeker" | "employer") => {
+  const handleRoleSelect = (role: "job_seeker" | "employer") => {
     onFieldChange("role", role);
   };
 
@@ -38,8 +38,8 @@ export const AccountTypeStep = ({
           icon={<BriefcaseIcon className="w-6 h-6" />}
           title="Find a Job"
           description="I'm looking for flexible or part-time work opportunities."
-          selected={formData.role === "jobseeker"}
-          onSelect={() => handleRoleSelect("jobseeker")}
+          selected={formData.role === "job_seeker"}
+          onSelect={() => handleRoleSelect("job_seeker")}
         />
         <RoleCard
           icon={<HiOfficeBuilding className="w-6 h-6" />}

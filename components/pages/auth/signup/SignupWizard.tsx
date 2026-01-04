@@ -25,6 +25,8 @@ import {
   step2Schema,
   step3Schema,
 } from "@/lib/validation";
+import { registerUser, uploadResume, resendVerificationEmail } from "@/lib/api/auth";
+import { useToaster } from "@/components/ui/Toaster";
 
 // Session storage key for persisting wizard state
 const STORAGE_KEY = "vetriconn_signup_wizard_state";
@@ -189,8 +191,9 @@ function clearStateFromStorage(): void {
  * Main container for the multi-step signup flow
  * Requirements: 1.5, 1.6, 9.1, 9.2, 9.3, 9.5
  */
-export const SignupWizard = () => {
+export function SignupWizard() {
   const [state, dispatch] = useReducer(signupReducer, initialState);
+  const { showToast } = useToaster();
   const { currentStep, formData, errors } = state;
 
   // Restore state from session storage on mount
@@ -240,7 +243,7 @@ export const SignupWizard = () => {
       case 2:
         schema = step2Schema;
         dataToValidate = {
-          fullName: formData.fullName,
+          full_name: formData.full_name,
           email: formData.email,
           password: formData.password,
           confirmPassword: formData.confirmPassword,
@@ -249,7 +252,7 @@ export const SignupWizard = () => {
       case 3:
         schema = step3Schema;
         dataToValidate = {
-          phoneNumber: formData.phoneNumber,
+          phone_number: formData.phone_number,
           city: formData.city,
           country: formData.country,
         };
@@ -284,15 +287,106 @@ export const SignupWizard = () => {
   );
 
   /**
+   * Submit form to backend
+   */
+  const handleSubmit = useCallback(async () => {
+    try {
+      dispatch({ type: "SET_SUBMITTING", payload: true });
+      dispatch({ type: "SET_ERRORS", payload: {} });
+
+      // Register user
+      const response = await registerUser(formData);
+
+      if (!response.success) {
+        // Handle validation errors
+        if (response.errors) {
+          const errorMap: Record<string, string> = {};
+          response.errors.forEach((err: any) => {
+            errorMap[err.field] = err.message;
+          });
+          dispatch({ type: "SET_ERRORS", payload: errorMap });
+        }
+        
+        // Show toast notification for error
+        showToast({
+          type: "error",
+          title: "Registration Failed",
+          description: response.message || 'Please check your information and try again.',
+        });
+        
+        console.error('Registration failed:', response.message);
+        dispatch({ type: "SET_SUBMITTING", payload: false });
+        return false;
+      }
+
+      // Store token in localStorage
+      if (response.data?.token) {
+        localStorage.setItem('authToken', response.data.token);
+      }
+
+      // Upload resume if provided
+      if (formData.resumeFile && response.data?.token) {
+        const uploadResponse = await uploadResume(
+          formData.resumeFile,
+          response.data.token
+        );
+        
+        if (!uploadResponse.success) {
+          console.warn('Resume upload failed:', uploadResponse.message);
+          // Don't fail the entire registration if resume upload fails
+        }
+      }
+
+      // Clear session storage on successful registration
+      sessionStorage.removeItem(STORAGE_KEY);
+      
+      dispatch({ type: "SET_SUBMITTING", payload: false });
+      return true;
+    } catch (error) {
+      console.error('Submission error:', error);
+      alert('An unexpected error occurred. Please try again.');
+      dispatch({ type: "SET_SUBMITTING", payload: false });
+      return false;
+    }
+  }, [formData]);
+
+  /**
    * Navigate to next step
    */
-  const handleNext = useCallback(() => {
-    if (validateCurrentStep() && currentStep < TOTAL_STEPS) {
+  const handleNext = useCallback(async () => {
+    if (!validateCurrentStep()) {
+      return;
+    }
+
+    // If moving from step 5 to step 6, submit the form
+    if (currentStep === 5) {
+      const success = await handleSubmit();
+      if (!success) {
+        return; // Don't proceed if submission failed
+      }
+    }
+
+    if (currentStep < TOTAL_STEPS) {
       // Update highest completed step when moving forward
       dispatch({ type: "SET_HIGHEST_COMPLETED_STEP", payload: currentStep });
       dispatch({ type: "SET_STEP", payload: currentStep + 1 });
     }
-  }, [currentStep, validateCurrentStep]);
+  }, [currentStep, validateCurrentStep, handleSubmit]);
+
+  /**
+   * Handle resend verification email
+   */
+  const handleResendEmail = useCallback(async () => {
+    if (!formData.email) {
+      throw new Error("Email not found");
+    }
+    
+    const response = await resendVerificationEmail(formData.email);
+    
+    if (!response.success) {
+      throw new Error(response.message);
+    }
+  }, [formData.email]);
 
   /**
    * Navigate to previous step
@@ -337,16 +431,15 @@ export const SignupWizard = () => {
       case 5:
         return <ResumeUploadStep {...stepProps} />;
       case 6:
-        // Clear storage when reaching completion
-        clearStateFromStorage();
-        return <CompletionStep {...stepProps} />;
+        // Don't clear storage yet - wait until after email verification
+        return <CompletionStep formData={formData} onResendEmail={handleResendEmail} />;
       default:
         return null;
     }
   };
 
   return (
-    <div className="min-h-screen bg-[#F5F5F5] flex flex-col">
+    <div className="min-h-screen bg-[#FBFAF9] flex flex-col">
       {/* Header */}
       <SignupHeader />
 

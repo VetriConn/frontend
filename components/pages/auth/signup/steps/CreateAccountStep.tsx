@@ -21,13 +21,13 @@ export const CreateAccountStep = ({
   // Validate form to determine if Continue button should be enabled
   const isFormValid = useMemo(() => {
     const result = step2Schema.safeParse({
-      fullName: formData.fullName,
+      full_name: formData.full_name,
       email: formData.email,
       password: formData.password,
       confirmPassword: formData.confirmPassword,
     });
     return result.success;
-  }, [formData.fullName, formData.email, formData.password, formData.confirmPassword]);
+  }, [formData.full_name, formData.email, formData.password, formData.confirmPassword]);
 
   return (
     <div className="w-full max-w-lg mx-auto">
@@ -48,9 +48,9 @@ export const CreateAccountStep = ({
           name="fullName"
           type="text"
           placeholder="Enter your full name"
-          value={formData.fullName}
-          onChange={(value) => onFieldChange("fullName", value)}
-          error={errors.fullName}
+          value={formData.full_name}
+          onChange={(value) => onFieldChange("full_name", value)}
+          error={errors.full_name}
           required
         />
 

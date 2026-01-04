@@ -5,7 +5,7 @@ import Link from "next/link";
 
 export const SignupHeader = () => {
   return (
-    <header className="flex justify-between items-center w-full py-4 px-6 mobile:px-4">
+    <header className="flex justify-between items-center w-full px-6 mobile:px-4 bg-white border-b border-[#E2E4E9]">
       <Link href="/" aria-label="Go to homepage">
         <Logo className="w-[160px] h-auto block overflow-visible mobile:w-[120px]" />
       </Link>

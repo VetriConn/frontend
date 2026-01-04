@@ -6,7 +6,7 @@ export const SignupFooter = () => {
   const currentYear = new Date().getFullYear();
 
   return (
-    <footer className="flex justify-between items-center w-full py-4 px-6 mobile:px-4 mobile:flex-col mobile:gap-2">
+    <footer className="flex justify-between items-center w-full py-4 px-6 mobile:px-4 mobile:flex-col mobile:gap-2 bg-white border-t border-[#E2E4E9]">
       <p className="font-open-sans text-sm text-gray-500">
         © {currentYear} Vetriconn. All rights reserved.
       </p>

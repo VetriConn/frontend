@@ -35,13 +35,13 @@ export const ContactInfoStep = ({
       <div className="space-y-1">
         <FormField
           label="Phone Number"
-          name="phoneNumber"
+          name="phone_number"
           type="tel"
           placeholder="(123) 456-789"
           helperText="Employers may use this to contact you about opportunities."
-          value={formData.phoneNumber}
-          onChange={(value) => onFieldChange("phoneNumber", value)}
-          error={errors.phoneNumber}
+          value={formData.phone_number}
+          onChange={(value) => onFieldChange("phone_number", value)}
+          error={errors.phone_number}
           optional
         />
 

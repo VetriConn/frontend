@@ -5,23 +5,23 @@
  */
 export interface SignupFormData {
   // Step 1 - Account Type
-  role: 'jobseeker' | 'employer' | null;
+  role: 'job_seeker' | 'employer' | null;
 
   // Step 2 - Create Account
-  fullName: string;
+  full_name: string;
   email: string;
   password: string;
   confirmPassword: string;
 
   // Step 3 - Contact Info
-  phoneNumber: string;
+  phone_number: string;
   city: string;
   country: string;
 
   // Step 4 - Work Background (optional)
-  jobTitle: string;
-  skillArea: string;
-  yearsOfExperience: string;
+  job_title: string;
+  industry: string;
+  years_of_experience: string;
 
   // Step 5 - Resume Upload (optional)
   resumeFile: File | null;
@@ -87,19 +87,19 @@ export const STEP_CONFIGS: SignupStepConfig[] = [
     id: 2,
     name: 'Create Account',
     isOptional: false,
-    fields: ['fullName', 'email', 'password', 'confirmPassword'],
+    fields: ['full_name', 'email', 'password', 'confirmPassword'],
   },
   {
     id: 3,
     name: 'Contact Info',
     isOptional: false,
-    fields: ['city', 'country'],
+    fields: ['phone_number', 'city', 'country'],
   },
   {
     id: 4,
     name: 'Work Background',
     isOptional: true,
-    fields: ['jobTitle', 'skillArea', 'yearsOfExperience'],
+    fields: ['job_title', 'industry', 'years_of_experience'],
   },
   {
     id: 5,
@@ -125,15 +125,15 @@ export const TOTAL_STEPS = STEP_CONFIGS.length;
  */
 export const INITIAL_FORM_DATA: SignupFormData = {
   role: null,
-  fullName: '',
+  full_name: '',
   email: '',
   password: '',
   confirmPassword: '',
-  phoneNumber: '',
+  phone_number: '',
   city: '',
   country: '',
-  jobTitle: '',
-  skillArea: '',
-  yearsOfExperience: '',
+  job_title: '',
+  industry: '',
+  years_of_experience: '',
   resumeFile: null,
 };

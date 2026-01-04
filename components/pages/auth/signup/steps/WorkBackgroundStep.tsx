@@ -2,6 +2,7 @@
 
 import { StepProps } from "@/types/signup";
 import { FormField } from "../FormField";
+import { CustomDropdown } from "../CustomDropdown";
 import { EXPERIENCE_LEVELS } from "@/lib/validation";
 
 /**
@@ -33,34 +34,33 @@ export const WorkBackgroundStep = ({
       <div className="space-y-1">
         <FormField
           label="Most Recent Job Title"
-          name="jobTitle"
+          name="job_title"
           type="text"
           placeholder="E.g., Registered Nurse, Retail manager"
-          value={formData.jobTitle}
-          onChange={(value) => onFieldChange("jobTitle", value)}
-          error={errors.jobTitle}
+          value={formData.job_title}
+          onChange={(value) => onFieldChange("job_title", value)}
+          error={errors.job_title}
         />
 
         <FormField
           label="Skill Area or Industry"
-          name="skillArea"
+          name="industry"
           type="text"
           placeholder="E.g., Healthcare, customer service, Admin."
           helperText="What area do you have the most experience in?"
-          value={formData.skillArea}
-          onChange={(value) => onFieldChange("skillArea", value)}
-          error={errors.skillArea}
+          value={formData.industry}
+          onChange={(value) => onFieldChange("industry", value)}
+          error={errors.industry}
         />
 
-        <FormField
+        <CustomDropdown
           label="Years of Experience"
-          name="yearsOfExperience"
-          type="select"
+          name="years_of_experience"
           placeholder="Select your experience level"
-          value={formData.yearsOfExperience}
-          onChange={(value) => onFieldChange("yearsOfExperience", value)}
-          error={errors.yearsOfExperience}
+          value={formData.years_of_experience}
+          onChange={(value) => onFieldChange("years_of_experience", value)}
           options={EXPERIENCE_LEVELS}
+          error={errors.years_of_experience}
         />
       </div>
 

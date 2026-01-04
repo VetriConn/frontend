@@ -1,5 +1,6 @@
-const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_URL || process.env.NEXT_PUBLIC_API_URL_DEV;
+import { API_CONFIG } from './api-config';
+
+const API_BASE_URL = API_CONFIG.BASE_URL;
 
 // API Response types
 export interface LoginResponse {
@@ -102,7 +103,7 @@ export async function loginUser(
   }
 
   try {
-    const response = await fetch(`${API_BASE_URL}/auth/login`, {
+    const response = await fetch(`${API_BASE_URL}/api/v1/auth/login`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -178,7 +179,7 @@ export async function signupUser(userData: {
       requestBody.promotional_emails = userData.promotionalEmails;
     }
 
-    const response = await fetch(`${API_BASE_URL}/auth/register`, {
+    const response = await fetch(`${API_BASE_URL}/api/v1/auth/register`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -239,7 +240,7 @@ export async function logoutUser(): Promise<{
   }
 
   try {
-    const response = await fetch(`${API_BASE_URL}/auth/logout`, {
+    const response = await fetch(`${API_BASE_URL}/api/v1/auth/logout`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -319,7 +320,7 @@ export async function getUserProfile(): Promise<UserProfileResponse> {
   }
 
   try {
-    const response = await fetch(`${API_BASE_URL}/auth/profile`, {
+    const response = await fetch(`${API_BASE_URL}/api/v1/auth/profile`, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
@@ -359,12 +360,12 @@ export async function updateUserProfile(
 
   console.log(
     "Making profile update request to:",
-    `${API_BASE_URL}/auth/profile`
+    `${API_BASE_URL}/api/v1/auth/profile`
   );
   console.log("Profile data:", profileData);
 
   try {
-    const response = await fetch(`${API_BASE_URL}/auth/profile`, {
+    const response = await fetch(`${API_BASE_URL}/api/v1/auth/profile`, {
       method: "PATCH",
       headers: {
         "Content-Type": "application/json",
@@ -455,10 +456,10 @@ export async function getJobs(options?: {
     queryParams.append("search", search);
   }
 
-  console.log("Making jobs request to:", `${API_BASE_URL}/jobs?${queryParams}`);
+  console.log("Making jobs request to:", `${API_BASE_URL}/api/v1/jobs?${queryParams}`);
 
   try {
-    const response = await fetch(`${API_BASE_URL}/jobs?${queryParams}`, {
+    const response = await fetch(`${API_BASE_URL}/api/v1/jobs?${queryParams}`, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
@@ -502,10 +503,10 @@ export async function getJobs(options?: {
 
 // Fetch single job by ID
 export async function getJobById(jobId: string): Promise<JobsResponse> {
-  console.log("Making single job request to:", `${API_BASE_URL}/jobs/${jobId}`);
+  console.log("Making single job request to:", `${API_BASE_URL}/api/v1/jobs/${jobId}`);
 
   try {
-    const response = await fetch(`${API_BASE_URL}/jobs/${jobId}`, {
+    const response = await fetch(`${API_BASE_URL}/api/v1/jobs/${jobId}`, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
@@ -647,7 +648,7 @@ export async function uploadSingleAttachment(file: File): Promise<{
 
   console.log(
     "Making single attachment upload request to:",
-    `${API_BASE_URL}/attachments/upload`
+    `${API_BASE_URL}/api/v1/attachments/upload`
   );
   console.log("Uploading file:", {
     name: file.name,
@@ -656,7 +657,7 @@ export async function uploadSingleAttachment(file: File): Promise<{
   });
 
   try {
-    const response = await fetch(`${API_BASE_URL}/attachments/upload`, {
+    const response = await fetch(`${API_BASE_URL}/api/v1/attachments/upload`, {
       method: "POST",
       headers: {
         Authorization: `Bearer ${token}`,
@@ -765,10 +766,10 @@ export async function getUserAttachments(): Promise<AttachmentsListResponse> {
     throw new Error("No authentication token found");
   }
 
-  console.log("Making attachments request to:", `${API_BASE_URL}/attachments`);
+  console.log("Making attachments request to:", `${API_BASE_URL}/api/v1/attachments`);
 
   try {
-    const response = await fetch(`${API_BASE_URL}/attachments`, {
+    const response = await fetch(`${API_BASE_URL}/api/v1/attachments`, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
@@ -834,13 +835,13 @@ export async function updateAttachment(
 
   console.log(
     "Making attachment update request to:",
-    `${API_BASE_URL}/attachments/${attachmentId}`
+    `${API_BASE_URL}/api/v1/attachments/${attachmentId}`
   );
   console.log("Update data:", updateData);
 
   try {
     const response = await fetch(
-      `${API_BASE_URL}/attachments/${attachmentId}`,
+      `${API_BASE_URL}/api/v1/attachments/${attachmentId}`,
       {
         method: "PUT",
         headers: {
@@ -894,12 +895,12 @@ export async function deleteAttachment(
 
   console.log(
     "Making attachment delete request to:",
-    `${API_BASE_URL}/attachments/${attachmentId}`
+    `${API_BASE_URL}/api/v1/attachments/${attachmentId}`
   );
 
   try {
     const response = await fetch(
-      `${API_BASE_URL}/attachments/${attachmentId}`,
+      `${API_BASE_URL}/api/v1/attachments/${attachmentId}`,
       {
         method: "DELETE",
         headers: {

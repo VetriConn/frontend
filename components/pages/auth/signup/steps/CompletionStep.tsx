@@ -1,116 +1,143 @@
-"use client";
+import { SignupFormData } from "@/types/signup";
+import { HiCheckCircle } from "react-icons/hi";
+import { CiMail } from "react-icons/ci";
+import { useState, useEffect } from "react";
+import { useToaster } from "@/components/ui/Toaster";
 
-import { useMemo } from "react";
-import { useRouter } from "next/navigation";
-import { StepProps } from "@/types/signup";
-import { ProfileCompletion } from "../ProfileCompletion";
+interface CompletionStepProps {
+  formData: SignupFormData;
+  onResendEmail?: () => Promise<void>;
+}
 
-/**
- * Step 6: Completion Screen
- * Shows success message and profile completion status
- * Requirements: 7.1, 7.2, 7.3, 7.8, 7.9
- */
-export const CompletionStep = ({ formData }: StepProps) => {
-  const router = useRouter();
+export function CompletionStep({ formData, onResendEmail }: CompletionStepProps) {
+  const { showToast } = useToaster();
+  const [isResending, setIsResending] = useState(false);
+  const [timeRemaining, setTimeRemaining] = useState(0);
 
-  // Calculate profile completion percentage
-  const completionPercentage = useMemo(() => {
-    const fields = [
-      { value: formData.role, weight: 10 },
-      { value: formData.fullName, weight: 15 },
-      { value: formData.email, weight: 15 },
-      { value: formData.password, weight: 10 },
-      { value: formData.city, weight: 10 },
-      { value: formData.country, weight: 10 },
-      { value: formData.phoneNumber, weight: 5 },
-      { value: formData.jobTitle, weight: 8 },
-      { value: formData.skillArea, weight: 7 },
-      { value: formData.yearsOfExperience, weight: 5 },
-      { value: formData.resumeFile, weight: 5 },
-    ];
+  // Start 2-minute timer on mount
+  useEffect(() => {
+    setTimeRemaining(120); // 2 minutes in seconds
+  }, []);
 
-    const totalWeight = fields.reduce((sum, field) => sum + field.weight, 0);
-    const completedWeight = fields.reduce((sum, field) => {
-      const hasValue = field.value !== null && field.value !== "" && field.value !== undefined;
-      return sum + (hasValue ? field.weight : 0);
-    }, 0);
+  // Countdown timer
+  useEffect(() => {
+    if (timeRemaining <= 0) return;
 
-    return Math.round((completedWeight / totalWeight) * 100);
-  }, [formData]);
+    const timer = setInterval(() => {
+      setTimeRemaining((prev) => {
+        if (prev <= 1) {
+          clearInterval(timer);
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
 
-  const handleGoToDashboard = () => {
-    router.push("/dashboard");
+    return () => clearInterval(timer);
+  }, [timeRemaining]);
+
+  const handleResendEmail = async () => {
+    if (!onResendEmail || timeRemaining > 0) return;
+    
+    setIsResending(true);
+    try {
+      await onResendEmail();
+      showToast({
+        type: "success",
+        title: "Email Sent!",
+        description: "Verification email has been resent. Please check your inbox.",
+      });
+      // Restart the 2-minute timer
+      setTimeRemaining(120);
+    } catch (error) {
+      showToast({
+        type: "error",
+        title: "Failed to Resend",
+        description: "Please try again in a few moments.",
+      });
+    } finally {
+      setIsResending(false);
+    }
+  };
+
+  const formatTime = (seconds: number) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins}:${secs.toString().padStart(2, '0')}`;
   };
 
   return (
-    <div className="w-full max-w-lg mx-auto text-center">
-      {/* Green Checkmark Icon */}
-      <div className="flex justify-center mb-6">
+    <div className="space-y-6">
+      {/* Email Icon */}
+      <div className="flex justify-center">
         <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center">
-          <CheckCircleIcon className="w-12 h-12 text-green-500" />
+          <CiMail className="w-12 h-12 text-green-600" />
         </div>
       </div>
 
       {/* Heading */}
-      <h1 className="text-2xl md:text-3xl font-semibold text-gray-900 mb-2">
-        You&apos;re all set to get started!
-      </h1>
-      
-      {/* Subtext */}
-      <p className="text-gray-600 mb-8">
-        Your account is ready. Start exploring flexible job opportunities that match your experience.
-      </p>
-
-      {/* Profile Completion */}
-      <div className="mb-8">
-        <ProfileCompletion percentage={completionPercentage} />
+      <div className="text-center space-y-2">
+        <h2 className="text-2xl font-bold text-gray-900">
+          Account creation successful
+        </h2>
+        <p className="text-gray-600">
+          We've sent a verification link to your email
+        </p>
       </div>
 
-      {/* Go to Dashboard Button */}
-      <button
-        type="button"
-        onClick={handleGoToDashboard}
-        className="w-full py-3 px-6 bg-primary text-white font-medium rounded-[10px] transition-all hover:bg-primary/90 flex items-center justify-center gap-2"
-      >
-        Go to my dashboard
-        <ArrowRightIcon className="w-5 h-5" />
-      </button>
+      {/* Instructions */}
+      <div className="bg-red-50 border border-red-200 rounded-lg p-4 space-y-3">
+        <div className="flex items-start gap-3">
+          <HiCheckCircle className="w-5 h-5 text-primary mt-0.5 flex-shrink-0" />
+          <p className="text-sm text-gray-700">
+            Click the verification link in your email to activate your account
+          </p>
+        </div>
+        <div className="flex items-start gap-3">
+          <HiCheckCircle className="w-5 h-5 text-primary mt-0.5 flex-shrink-0" />
+          <p className="text-sm text-gray-700">
+            Check your spam folder if you don't see it in your inbox
+          </p>
+        </div>
+        <div className="flex items-start gap-3">
+          <HiCheckCircle className="w-5 h-5 text-primary mt-0.5 flex-shrink-0" />
+          <p className="text-sm text-gray-700">
+            The link will no longer be valid after 24hrs
+          </p>
+        </div>
+      </div>
+
+      {/* Resend Email Section */}
+      <div className="text-center space-y-3">
+        <p className="text-sm text-gray-600">
+          Didn't receive the email?
+        </p>
+        
+        {timeRemaining > 0 ? (
+          <div className="text-sm text-gray-500">
+            Resend available in <span className="font-semibold text-primary">{formatTime(timeRemaining)}</span>
+          </div>
+        ) : (
+          <button
+            type="button"
+            onClick={handleResendEmail}
+            disabled={isResending}
+            className="text-primary hover:text-primary/80 font-medium text-sm underline disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {isResending ? "Sending..." : "Resend Verification Email"}
+          </button>
+        )}
+      </div>
+
+      {/* Help Text */}
+      <div className="text-center pt-4 border-t border-gray-200">
+        <p className="text-xs text-gray-500">
+          Need help? Contact our{" "}
+          <a href="/support" className="text-primary hover:underline">
+            support team
+          </a>
+        </p>
+      </div>
     </div>
   );
-};
-
-// Check circle icon
-const CheckCircleIcon = ({ className }: { className?: string }) => (
-  <svg
-    className={className}
-    fill="none"
-    stroke="currentColor"
-    viewBox="0 0 24 24"
-    xmlns="http://www.w3.org/2000/svg"
-  >
-    <path
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      strokeWidth={2}
-      d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
-    />
-  </svg>
-);
-
-// Arrow right icon
-const ArrowRightIcon = ({ className }: { className?: string }) => (
-  <svg
-    className={className}
-    fill="none"
-    stroke="currentColor"
-    viewBox="0 0 24 24"
-    xmlns="http://www.w3.org/2000/svg"
-  >
-    <path
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      strokeWidth={2}
-      d="M14 5l7 7m0 0l-7 7m7-7H3"
-    />
-  </svg>
-);
+}

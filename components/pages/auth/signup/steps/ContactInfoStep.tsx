@@ -2,7 +2,7 @@
 
 import { useMemo } from "react";
 import { StepProps } from "@/types/signup";
-import { FormField } from "../FormField";
+import { FormField } from "@/components/ui/FormField";
 
 /**
  * Step 3: Contact Information

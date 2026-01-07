@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
-import { SignupHeader } from "@/components/pages/auth/signup/SignupHeader";
+import { AuthHeader } from "@/components/ui/AuthHeader";
 import { getApiUrl } from "@/lib/api-config";
 import Link from "next/link";
 
@@ -58,7 +58,7 @@ export default function EmailVerification() {
 
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-br from-gray-50 to-gray-100">
-      <SignupHeader />
+      <AuthHeader />
       
       <div className="flex-1 flex items-center justify-center px-6">
         <div className="max-w-md w-full bg-white rounded-lg shadow-lg p-8 text-center">

@@ -3,7 +3,7 @@
 import Logo from "@/public/images/logo_1.svg";
 import Link from "next/link";
 
-export const SignupHeader = () => {
+export const AuthHeader = () => {
   return (
     <header className="flex justify-between items-center w-full px-6 mobile:px-4 bg-white border-b border-[#E2E4E9]">
       <Link href="/" aria-label="Go to homepage">

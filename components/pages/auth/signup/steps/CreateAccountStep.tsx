@@ -2,8 +2,8 @@
 
 import { useMemo } from "react";
 import { StepProps } from "@/types/signup";
-import { FormField } from "../FormField";
-import { PasswordField } from "../PasswordField";
+import { FormField } from "@/components/ui/FormField";
+import { PasswordField } from "@/components/ui/PasswordField";
 import { step2Schema } from "@/lib/validation";
 
 /**

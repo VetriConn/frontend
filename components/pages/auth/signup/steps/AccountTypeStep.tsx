@@ -1,7 +1,7 @@
 "use client";
 
 import { StepProps } from "@/types/signup";
-import { RoleCard } from "../RoleCard";
+import { RoleCard } from "@/components/ui/RoleCard";
 import { HiOfficeBuilding } from "react-icons/hi";
 
 /**

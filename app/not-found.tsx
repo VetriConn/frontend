@@ -1,13 +1,13 @@
 "use client";
 
 import Link from "next/link";
-import { SignupHeader } from "@/components/pages/auth/signup/SignupHeader";
+import { AuthHeader } from "@/components/ui/AuthHeader";
 
 export default function NotFound() {
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-br from-gray-50 to-gray-100">
       {/* Signup Header */}
-      <SignupHeader />
+      <AuthHeader />
       
       {/* 404 Content */}
       <div className="flex-1 flex items-center justify-center">

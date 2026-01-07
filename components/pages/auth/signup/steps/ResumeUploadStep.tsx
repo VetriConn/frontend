@@ -1,7 +1,7 @@
 "use client";
 
 import { StepProps } from "@/types/signup";
-import { FileUploadZone } from "../FileUploadZone";
+import { FileUploadZone } from "@/components/ui/FileUploadZone";
 
 /**
  * Step 5: Resume Upload (Optional)

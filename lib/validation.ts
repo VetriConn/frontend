@@ -15,9 +15,6 @@ const signInPasswordSchema = z.string().min(1, "Password is required");
 export const signInSchema = z.object({
   email: z.string().email("Please enter a valid email address"),
   password: signInPasswordSchema,
-  terms: z.boolean().refine((val) => val === true, {
-    message: "You must agree to the terms and conditions",
-  }),
 });
 
 // Sign up validation schema

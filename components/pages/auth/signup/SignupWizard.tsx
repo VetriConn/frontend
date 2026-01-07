@@ -9,8 +9,8 @@ import {
   TOTAL_STEPS,
   INITIAL_FORM_DATA,
 } from "@/types/signup";
-import { SignupHeader } from "./SignupHeader";
-import { SignupFooter } from "./SignupFooter";
+import { AuthHeader } from "@/components/ui/AuthHeader";
+import { AuthFooter } from "@/components/ui/AuthFooter";
 import { StepIndicator } from "./StepIndicator";
 import {
   AccountTypeStep,
@@ -441,7 +441,7 @@ export function SignupWizard() {
   return (
     <div className="min-h-screen bg-[#FBFAF9] flex flex-col">
       {/* Header */}
-      <SignupHeader />
+      <AuthHeader />
 
       {/* Main Content */}
       <main className="flex-1 flex items-center justify-center px-4 py-8">
@@ -466,7 +466,7 @@ export function SignupWizard() {
       </main>
 
       {/* Footer */}
-      <SignupFooter />
+      <AuthFooter />
     </div>
   );
 };

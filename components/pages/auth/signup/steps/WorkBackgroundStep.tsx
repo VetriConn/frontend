@@ -1,8 +1,8 @@
 "use client";
 
 import { StepProps } from "@/types/signup";
-import { FormField } from "../FormField";
-import { CustomDropdown } from "../CustomDropdown";
+import { FormField } from "@/components/ui/FormField";
+import { CustomDropdown } from "@/components/ui/CustomDropdown";
 import { EXPERIENCE_LEVELS } from "@/lib/validation";
 
 /**

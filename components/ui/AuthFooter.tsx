@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 
-export const SignupFooter = () => {
+export const AuthFooter = () => {
   const currentYear = new Date().getFullYear();
 
   return (

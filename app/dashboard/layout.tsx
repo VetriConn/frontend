@@ -1,6 +1,7 @@
+import { AuthFooter } from "@/components/ui/AuthFooter";
 import DashboardNavbar from "@/components/ui/DashboardNavbar";
 
-import React from "react";
+
 
 import { ReactNode } from "react";
 
@@ -16,6 +17,7 @@ const layout = ({ children }: LayoutProps) => {
         {/* This is where the main content will be rendered */}
         {children}
       </div>
+      <AuthFooter />
     </div>
   );
 };

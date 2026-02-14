@@ -7,7 +7,10 @@ import { ContactSection } from "@/components/pages/home/ContactSection";
 import { HowItWorksStepsSection } from "@/components/pages/home/HowItWorksStepsSection";
 import { FaqSection } from "@/components/pages/home/FaqSection";
 import { Header } from "@/components/ui/Header";
-import { generateMetadata as generateSeoMetadata, METADATA_TEMPLATES } from "@/lib/seo";
+import {
+  generateMetadata as generateSeoMetadata,
+  METADATA_TEMPLATES,
+} from "@/lib/seo";
 
 export const metadata: Metadata = generateSeoMetadata({
   title: METADATA_TEMPLATES.homepage.title,
@@ -19,9 +22,9 @@ export const metadata: Metadata = generateSeoMetadata({
 export default function Home() {
   return (
     <main className="max-w-[1920px] min-w-[320px] mx-auto">
-      <div className="sticky bg-white top-0 left-0 z-20">
-      <Header />
-      </div> 
+      <div className="sticky bg-white top-0 left-0 z-50">
+        <Header />
+      </div>
       <div>
         <HeroSection />
         <BenefitsSection />

@@ -1,8 +1,17 @@
 "use client";
 
 import { ReactNode } from "react";
+import Image from "next/image";
 
-// SVG Icons as components for better control
+interface Benefit {
+  icon: ReactNode;
+  title: string;
+  description: string;
+  image: string;
+  imageAlt: string;
+}
+
+// SVG Icons as components
 const ConvenienceIcon = () => (
   <svg
     width="48"
@@ -112,44 +121,32 @@ const CommunityIcon = () => (
   </svg>
 );
 
-interface Benefit {
-  icon: ReactNode;
-  title: string;
-  description: string;
-}
-
 const benefits: Benefit[] = [
   {
     icon: <ConvenienceIcon />,
     title: "More Convenient",
     description:
-      "VetriConn's intuitive, user-friendly platform makes it simple to create a profile and apply for jobs, saving time and reducing stress. Whether you're looking for part-time work, volunteer opportunities, or ways to stay engaged, we help you connect with meaningful roles quickly and effortlessly.",
+      "Vetriconn's intuitive, user-friendly platform makes it simple to create a profile and apply for jobs, saving time and reducing stress. Whether you're looking for part-time work, volunteer opportunities, or ways to stay engaged, we help you connect with meaningful roles quickly and effortlessly.",
+    image: "/images/jobs_hero3.jpg",
+    imageAlt: "Easy and convenient job searching",
   },
   {
     icon: <ConnectedIcon />,
     title: "More Connected",
     description:
-      "With personalized job alerts and tailored opportunity notifications, users receive updates that align with their skills, preferences, and interests. VetriConn goes beyond generic listings—our platform curates opportunities specifically suited to your experience and lifestyle.",
+      "With personalized job alerts and tailored opportunity notifications, users receive updates that align with their skills, preferences, and interests. Vetriconn goes beyond generic listings—our platform curates opportunities specifically suited to your experience and lifestyle.",
+    image: "/images/Hero/8.svg",
+    imageAlt: "Connected professionals collaborating",
   },
   {
     icon: <CommunityIcon />,
     title: "Stronger Communities",
     description:
       "By connecting retirees and veterans with purposeful work and volunteer opportunities, we help strengthen communities. Organizations gain valuable experienced support, while our users find purpose, income, and connection—creating a true win-win for everyone.",
+    image: "/images/Hero/2.svg",
+    imageAlt: "Building stronger communities together",
   },
 ];
-
-interface BenefitCardProps {
-  benefit: Benefit;
-}
-
-const BenefitCard = ({ benefit }: BenefitCardProps) => (
-  <article className="bg-white rounded-2xl p-8 shadow-[0_4px_20px_rgba(0,0,0,0.06)] transition-shadow hover:shadow-[0_8px_30px_rgba(0,0,0,0.1)] mobile:p-6">
-    <div className="mb-5 mobile:mb-4">{benefit.icon}</div>
-    <h3 className="heading-3 mb-3 mobile:mb-2">{benefit.title}</h3>
-    <p className="body-text m-0">{benefit.description}</p>
-  </article>
-);
 
 interface BenefitsSectionProps {
   id?: string;
@@ -158,27 +155,81 @@ interface BenefitsSectionProps {
 export const BenefitsSection = ({ id }: BenefitsSectionProps) => (
   <section
     id={id}
-    className="py-20 bg-gray-bg mobile:py-12"
+    className="py-20 bg-gray-bg mobile:py-12 relative overflow-hidden"
     aria-labelledby="benefits-heading"
   >
-    <div className="container-main">
-      {/* Headline with mixed typography */}
-      <div className="text-center max-w-3xl mx-auto mb-14 mobile:mb-10">
+    {/* Decorative dots */}
+    <div
+      className="absolute top-10 left-[5%] w-3 h-3 rounded-full bg-primary opacity-40"
+      aria-hidden="true"
+    />
+    <div
+      className="absolute top-20 right-[6%] w-2.5 h-2.5 rounded-full bg-amber-400 opacity-50"
+      aria-hidden="true"
+    />
+    <div
+      className="absolute bottom-14 left-[8%] w-2 h-2 rounded-full bg-amber-400 opacity-40"
+      aria-hidden="true"
+    />
+    <div
+      className="absolute bottom-20 right-[4%] w-3 h-3 rounded-full bg-primary opacity-30"
+      aria-hidden="true"
+    />
+    <div
+      className="absolute top-[50%] left-[2%] w-2 h-2 rounded-full bg-pink-400 opacity-30"
+      aria-hidden="true"
+    />
+
+    <div className="container-main relative z-10">
+      {/* Headline */}
+      <div className="text-center max-w-3xl mx-auto mb-16 mobile:mb-10">
         <h2 id="benefits-heading" className="heading-1 mb-5 mobile:mb-4">
-          Why Choose{" "}
-          <span className="text-primary">VetriConn</span>?
+          Why Choose <span className="text-primary">Vetriconn</span>?
         </h2>
         <p className="body-text text-lg mobile:text-base">
-          Discover how our platform makes finding meaningful opportunities easier,
-          more personalized, and more impactful for retirees and veterans across Canada.
+          Discover how our platform makes finding meaningful opportunities
+          easier, more personalized, and more impactful for retirees and
+          veterans across Canada.
         </p>
       </div>
 
-      {/* 3-column grid of benefit cards */}
-      <div className="grid grid-cols-3 gap-8 mobile:grid-cols-1 mobile:gap-6">
-        {benefits.map((benefit, idx) => (
-          <BenefitCard key={idx} benefit={benefit} />
-        ))}
+      {/* Benefit rows — alternating image + text */}
+      <div className="flex flex-col gap-20 max-w-[1100px] mx-auto mobile:gap-14">
+        {benefits.map((benefit, idx) => {
+          const isReversed = idx % 2 !== 0;
+          return (
+            <article
+              key={idx}
+              className={`grid grid-cols-2 gap-12 items-center mobile:grid-cols-1 mobile:gap-8 ${isReversed ? "direction-rtl" : ""}`}
+            >
+              {/* Image */}
+              <div
+                className={`relative w-full aspect-[3/2] rounded-2xl overflow-hidden shadow-lg ${isReversed ? "mobile:order-1 order-2" : "order-1"}`}
+              >
+                <Image
+                  src={benefit.image}
+                  alt={benefit.imageAlt}
+                  fill
+                  className="object-cover"
+                  sizes="(max-width: 768px) 100vw, 50vw"
+                />
+              </div>
+
+              {/* Text */}
+              <div
+                className={`${isReversed ? "mobile:order-2 order-1" : "order-2"}`}
+              >
+                <div className="mb-4">{benefit.icon}</div>
+                <h3 className="font-lato text-[26px] font-bold text-text mb-3 leading-tight mobile:text-xl">
+                  {benefit.title}
+                </h3>
+                <p className="font-open-sans text-base text-text-muted leading-relaxed m-0">
+                  {benefit.description}
+                </p>
+              </div>
+            </article>
+          );
+        })}
       </div>
     </div>
   </section>

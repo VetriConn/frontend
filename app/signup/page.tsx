@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { SignUp } from "@/components/pages/auth/SignUp";
+import { SignupWizard } from "@/components/pages/auth/signup/SignupWizard";
 import { Suspense } from "react";
 import { generateMetadata as generateSeoMetadata, METADATA_TEMPLATES } from "@/lib/seo";
 
@@ -12,10 +12,8 @@ export const metadata: Metadata = generateSeoMetadata({
 
 export default function SignUpPage() {
   return (
-    <main className="max-w-[1920px] min-w-[320px] mx-auto overflow-x-hidden">
-      <Suspense fallback={<div className="min-h-screen flex items-center justify-center">Loading...</div>}>
-        <SignUp />
-      </Suspense>
-    </main>
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center">Loading...</div>}>
+      <SignupWizard />
+    </Suspense>
   );
 }

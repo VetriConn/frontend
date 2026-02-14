@@ -1,108 +1,34 @@
-const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_URL || process.env.NEXT_PUBLIC_API_URL_DEV;
+import { API_CONFIG } from "./api-config";
+import type {
+  LoginResponse,
+  SignupResponse,
+  UserProfile,
+  UserProfileResponse,
+  JobsResponse,
+  Attachment,
+  AttachmentUploadResponse,
+  AttachmentsListResponse,
+  BackendAttachment,
+  ContactMessage,
+  MessageResponse,
+} from "@/types/api";
 
-// API Response types
-export interface LoginResponse {
-  success: boolean;
-  message: string;
-  data?: {
-    user: {
-      id: string;
-      email: string;
-      first_name?: string;
-      last_name?: string;
-      role?: string;
-    };
-    token: string;
-  };
-  error?: string;
-}
-
-export interface SignupResponse {
-  success: boolean;
-  message: string;
-  data?: {
-    user: {
-      id: string;
-      email: string;
-      first_name: string;
-      last_name: string;
-      role: string;
-    };
-    token: string;
-  };
-  error?: string;
-}
-
-// Complete User Profile Interface (Backend)
-export interface UserProfile {
-  first_name: string;
-  last_name: string;
-  role: string;
-  picture?: string;
-  email: string;
-  password: string;
-  profession?: string;
-  bio?: string;
-  current_job?: string;
-  experience?: string;
-  location?: string;
-  looking_for?: string[];
-  socials?: {
-    linkedin?: string;
-    twitter?: string;
-    github?: string;
-  };
-  professional_summary?: string;
-  work_experience?: Array<{
-    company: string;
-    position: string;
-    start_date?: string;
-    end_date?: string;
-    description?: string;
-  }>;
-  education?: Array<{
-    institution: string;
-    degree: string;
-    field_of_study: string;
-    start_year?: string;
-    end_year?: string;
-    description?: string;
-    location?: string;
-  }>;
-  certifications?: Array<{
-    name: string;
-    issuing_organization: string;
-    issue_date: string;
-    expiration_date?: string;
-    credential_id?: string;
-    credential_url?: string;
-  }>;
-  saved_jobs?: string[];
-  attachments?: Array<{
-    name: string;
-    url: string;
-    file_type?: string;
-    file_size?: number;
-    upload_date?: Date | string;
-    description?: string;
-  }>;
-}
+const API_BASE_URL = API_CONFIG.BASE_URL;
 
 // Login API call
 export async function loginUser(
   email: string,
-  password: string
+  password: string,
 ): Promise<LoginResponse> {
   // Additional check for undefined API_BASE_URL
   if (!API_BASE_URL) {
     throw new Error(
-      "API_BASE_URL is not defined. Please check your environment variables."
+      "API_BASE_URL is not defined. Please check your environment variables.",
     );
   }
 
   try {
-    const response = await fetch(`${API_BASE_URL}/auth/login`, {
+    const response = await fetch(`${API_BASE_URL}/api/v1/auth/login`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -118,7 +44,7 @@ export async function loginUser(
     if (!contentType || !contentType.includes("application/json")) {
       const textResponse = await response.text();
       throw new Error(
-        `Server returned non-JSON response: ${response.status} ${response.statusText}. Response: ${textResponse}`
+        `Server returned non-JSON response: ${response.status} ${response.statusText}. Response: ${textResponse}`,
       );
     }
 
@@ -128,7 +54,7 @@ export async function loginUser(
       throw new Error(
         data.message ||
           data.error ||
-          `HTTP ${response.status}: ${response.statusText}`
+          `HTTP ${response.status}: ${response.statusText}`,
       );
     }
 
@@ -139,7 +65,7 @@ export async function loginUser(
     // Handle network errors specifically
     if (error instanceof TypeError && error.message.includes("fetch")) {
       throw new Error(
-        `Network error: Unable to connect to ${API_BASE_URL}. Please ensure the backend server is running.`
+        `Network error: Unable to connect to ${API_BASE_URL}. Please ensure the backend server is running.`,
       );
     }
 
@@ -178,7 +104,7 @@ export async function signupUser(userData: {
       requestBody.promotional_emails = userData.promotionalEmails;
     }
 
-    const response = await fetch(`${API_BASE_URL}/auth/register`, {
+    const response = await fetch(`${API_BASE_URL}/api/v1/auth/register`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -200,16 +126,24 @@ export async function signupUser(userData: {
 }
 
 // Store authentication token
-export function storeAuthToken(token: string) {
+export function storeAuthToken(token: string, rememberMe: boolean = true) {
   if (typeof window !== "undefined") {
-    localStorage.setItem("authToken", token);
+    if (rememberMe) {
+      localStorage.setItem("authToken", token);
+      sessionStorage.removeItem("authToken"); // Clean up other storage
+    } else {
+      sessionStorage.setItem("authToken", token);
+      localStorage.removeItem("authToken"); // Clean up other storage
+    }
   }
 }
 
 // Get authentication token
 export function getAuthToken(): string | null {
   if (typeof window !== "undefined") {
-    return localStorage.getItem("authToken");
+    return (
+      localStorage.getItem("authToken") || sessionStorage.getItem("authToken")
+    );
   }
   return null;
 }
@@ -218,6 +152,7 @@ export function getAuthToken(): string | null {
 export function removeAuthToken() {
   if (typeof window !== "undefined") {
     localStorage.removeItem("authToken");
+    sessionStorage.removeItem("authToken");
   }
 }
 
@@ -239,7 +174,7 @@ export async function logoutUser(): Promise<{
   }
 
   try {
-    const response = await fetch(`${API_BASE_URL}/auth/logout`, {
+    const response = await fetch(`${API_BASE_URL}/api/v1/auth/logout`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -276,40 +211,6 @@ export async function logoutUser(): Promise<{
   }
 }
 
-interface UserProfileResponse {
-  success: boolean;
-  message: string;
-  data?: {
-    user: {
-      id: string;
-      email: string;
-      first_name?: string;
-      last_name?: string;
-      profession?: string;
-      location?: string;
-      experience?: string;
-      current_job?: string;
-      looking_for?: string[];
-      bio?: string;
-      picture?: string;
-      socials?: {
-        linkedin?: string;
-        twitter?: string;
-        github?: string;
-      };
-      professional_summary?: string;
-      attachments?: Array<{
-        name: string;
-        url: string;
-        file_type?: string;
-        file_size?: number;
-        upload_date?: string;
-        description?: string;
-      }>;
-    };
-  };
-}
-
 // Get user profile
 export async function getUserProfile(): Promise<UserProfileResponse> {
   const token = getAuthToken();
@@ -319,7 +220,7 @@ export async function getUserProfile(): Promise<UserProfileResponse> {
   }
 
   try {
-    const response = await fetch(`${API_BASE_URL}/auth/profile`, {
+    const response = await fetch(`${API_BASE_URL}/api/v1/auth/profile`, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
@@ -336,7 +237,7 @@ export async function getUserProfile(): Promise<UserProfileResponse> {
     // Normalize attachments if they exist in the profile
     if (data.data && data.data.user && data.data.user.attachments) {
       data.data.user.attachments = normalizeAttachments(
-        data.data.user.attachments
+        data.data.user.attachments,
       );
     }
 
@@ -349,7 +250,7 @@ export async function getUserProfile(): Promise<UserProfileResponse> {
 
 // Update user profile
 export async function updateUserProfile(
-  profileData: Record<string, unknown>
+  profileData: Record<string, unknown>,
 ): Promise<Record<string, unknown>> {
   const token = getAuthToken();
 
@@ -359,12 +260,12 @@ export async function updateUserProfile(
 
   console.log(
     "Making profile update request to:",
-    `${API_BASE_URL}/auth/profile`
+    `${API_BASE_URL}/api/v1/auth/profile`,
   );
   console.log("Profile data:", profileData);
 
   try {
-    const response = await fetch(`${API_BASE_URL}/auth/profile`, {
+    const response = await fetch(`${API_BASE_URL}/api/v1/auth/profile`, {
       method: "PATCH",
       headers: {
         "Content-Type": "application/json",
@@ -389,7 +290,7 @@ export async function updateUserProfile(
     // Handle network errors specifically
     if (error instanceof TypeError && error.message.includes("fetch")) {
       throw new Error(
-        `Network error: Unable to connect to server. Please ensure the backend server is running.`
+        `Network error: Unable to connect to server. Please ensure the backend server is running.`,
       );
     }
 
@@ -397,39 +298,45 @@ export async function updateUserProfile(
   }
 }
 
-// Jobs API Response types - Direct array response from backend
-export interface JobsResponse {
-  _id: string;
-  id: string;
-  role: string;
-  company_name: string;
-  company_logo?: string;
-  location?: string;
-  salary: {
-    symbol: string;
-    number: number;
-    currency: string;
-  };
-  salary_range?: {
-    start_salary: {
-      symbol: string;
-      number?: number;
-      currency: string;
-    };
-    end_salary: {
-      symbol: string;
-      number?: number;
-      currency: string;
-    };
-  };
-  tags?: string[];
-  full_description?: string;
-  responsibilities?: string[];
-  qualifications?: string[];
-  applicationLink?: string;
-  description?: string;
-  createdAt: string;
-  updatedAt: string;
+// PATCH user profile (partial update for profile page)
+export async function patchUserProfile(
+  profileData: Partial<UserProfile>,
+): Promise<UserProfileResponse> {
+  const token = getAuthToken();
+
+  if (!token) {
+    throw new Error("No authentication token found");
+  }
+
+  try {
+    const response = await fetch(`${API_BASE_URL}/api/v1/auth/profile`, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify(profileData),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.message || data.error || "Failed to update profile");
+    }
+
+    return data;
+  } catch (error) {
+    console.error("Profile patch error:", error);
+
+    // Handle network errors specifically
+    if (error instanceof TypeError && error.message.includes("fetch")) {
+      throw new Error(
+        `Network error: Unable to connect to server. Please ensure the backend server is running.`,
+      );
+    }
+
+    throw error;
+  }
 }
 
 // Fetch jobs from database
@@ -455,10 +362,13 @@ export async function getJobs(options?: {
     queryParams.append("search", search);
   }
 
-  console.log("Making jobs request to:", `${API_BASE_URL}/jobs?${queryParams}`);
+  console.log(
+    "Making jobs request to:",
+    `${API_BASE_URL}/api/v1/jobs?${queryParams}`,
+  );
 
   try {
-    const response = await fetch(`${API_BASE_URL}/jobs?${queryParams}`, {
+    const response = await fetch(`${API_BASE_URL}/api/v1/jobs?${queryParams}`, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
@@ -473,7 +383,7 @@ export async function getJobs(options?: {
       const textResponse = await response.text();
       console.log("Non-JSON response:", textResponse);
       throw new Error(
-        `Server returned non-JSON response: ${response.status} ${response.statusText}`
+        `Server returned non-JSON response: ${response.status} ${response.statusText}`,
       );
     }
 
@@ -484,15 +394,17 @@ export async function getJobs(options?: {
       throw new Error(`HTTP ${response.status}: ${response.statusText}`);
     }
 
-    // Backend returns array directly, not wrapped in success/data structure
-    return data;
+    // Backend wraps jobs in { success, data, pagination } — extract the array
+    if (Array.isArray(data)) return data;
+    if (data?.data && Array.isArray(data.data)) return data.data;
+    return [];
   } catch (error) {
     console.error("Jobs fetch error:", error);
 
     // Handle network errors specifically
     if (error instanceof TypeError && error.message.includes("fetch")) {
       throw new Error(
-        `Network error: Unable to connect to ${API_BASE_URL}. Please ensure the backend server is running.`
+        `Network error: Unable to connect to ${API_BASE_URL}. Please ensure the backend server is running.`,
       );
     }
 
@@ -502,10 +414,13 @@ export async function getJobs(options?: {
 
 // Fetch single job by ID
 export async function getJobById(jobId: string): Promise<JobsResponse> {
-  console.log("Making single job request to:", `${API_BASE_URL}/jobs/${jobId}`);
+  console.log(
+    "Making single job request to:",
+    `${API_BASE_URL}/api/v1/jobs/${jobId}`,
+  );
 
   try {
-    const response = await fetch(`${API_BASE_URL}/jobs/${jobId}`, {
+    const response = await fetch(`${API_BASE_URL}/api/v1/jobs/${jobId}`, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
@@ -520,7 +435,7 @@ export async function getJobById(jobId: string): Promise<JobsResponse> {
       const textResponse = await response.text();
       console.log("Non-JSON response:", textResponse);
       throw new Error(
-        `Server returned non-JSON response: ${response.status} ${response.statusText}`
+        `Server returned non-JSON response: ${response.status} ${response.statusText}`,
       );
     }
 
@@ -539,7 +454,7 @@ export async function getJobById(jobId: string): Promise<JobsResponse> {
     // Handle network errors specifically
     if (error instanceof TypeError && error.message.includes("fetch")) {
       throw new Error(
-        `Network error: Unable to connect to ${API_BASE_URL}. Please ensure the backend server is running.`
+        `Network error: Unable to connect to ${API_BASE_URL}. Please ensure the backend server is running.`,
       );
     }
 
@@ -547,60 +462,9 @@ export async function getJobById(jobId: string): Promise<JobsResponse> {
   }
 }
 
-// Attachment types (matching backend schema)
-export interface Attachment {
-  _id?: string; // MongoDB ID when fetched from backend
-  name: string;
-  url: string;
-  file_type?: string; // "pdf", "doc", "docx"
-  file_size?: number; // in bytes
-  upload_date?: string; // ISO date string
-  description?: string;
-  // For compatibility with existing frontend code
-  id?: string; // Will map from _id
-  type?: string; // Will map from file_type
-  size?: number; // Will map from file_size
-  uploadedAt?: string; // Will map from upload_date
-  preview?: string; // Optional preview URL
-}
-
-export interface AttachmentUploadResponse {
-  success: boolean;
-  message: string;
-  data?: {
-    attachments: Attachment[];
-  };
-  error?: string;
-}
-
-export interface AttachmentsListResponse {
-  success: boolean;
-  message: string;
-  data?: {
-    attachments: Attachment[];
-  };
-  error?: string;
-}
-
-// Backend attachment type
-interface BackendAttachment {
-  _id?: string;
-  id?: string;
-  name: string;
-  url: string;
-  file_type?: string;
-  file_size?: number;
-  upload_date?: string;
-  description?: string;
-  type?: string;
-  size?: number;
-  uploadedAt?: string;
-  preview?: string;
-}
-
 // Helper function to normalize attachment data from backend to frontend format
 export function normalizeAttachment(
-  backendAttachment: BackendAttachment
+  backendAttachment: BackendAttachment,
 ): Attachment {
   return {
     // Backend fields
@@ -623,7 +487,7 @@ export function normalizeAttachment(
 
 // Helper function to normalize attachment array
 export function normalizeAttachments(
-  attachments: BackendAttachment[]
+  attachments: BackendAttachment[],
 ): Attachment[] {
   if (!Array.isArray(attachments)) return [];
   return attachments.map(normalizeAttachment);
@@ -647,7 +511,7 @@ export async function uploadSingleAttachment(file: File): Promise<{
 
   console.log(
     "Making single attachment upload request to:",
-    `${API_BASE_URL}/attachments/upload`
+    `${API_BASE_URL}/api/v1/attachments/upload`,
   );
   console.log("Uploading file:", {
     name: file.name,
@@ -656,7 +520,7 @@ export async function uploadSingleAttachment(file: File): Promise<{
   });
 
   try {
-    const response = await fetch(`${API_BASE_URL}/attachments/upload`, {
+    const response = await fetch(`${API_BASE_URL}/api/v1/attachments/upload`, {
       method: "POST",
       headers: {
         Authorization: `Bearer ${token}`,
@@ -673,7 +537,7 @@ export async function uploadSingleAttachment(file: File): Promise<{
       const textResponse = await response.text();
       console.log("Non-JSON response:", textResponse);
       throw new Error(
-        `Server returned non-JSON response: ${response.status} ${response.statusText}. Response: ${textResponse}`
+        `Server returned non-JSON response: ${response.status} ${response.statusText}. Response: ${textResponse}`,
       );
     }
 
@@ -682,7 +546,7 @@ export async function uploadSingleAttachment(file: File): Promise<{
 
     if (!response.ok) {
       throw new Error(
-        data.message || data.error || "Failed to upload attachment"
+        data.message || data.error || "Failed to upload attachment",
       );
     }
 
@@ -698,7 +562,7 @@ export async function uploadSingleAttachment(file: File): Promise<{
     // Handle network errors specifically
     if (error instanceof TypeError && error.message.includes("fetch")) {
       throw new Error(
-        `Network error: Unable to connect to ${API_BASE_URL}. Please ensure the backend server is running.`
+        `Network error: Unable to connect to ${API_BASE_URL}. Please ensure the backend server is running.`,
       );
     }
 
@@ -708,7 +572,7 @@ export async function uploadSingleAttachment(file: File): Promise<{
 
 // Upload multiple attachments (uploads one by one)
 export async function uploadAttachments(
-  files: File[]
+  files: File[],
 ): Promise<AttachmentUploadResponse> {
   if (!files || files.length === 0) {
     throw new Error("No files provided for upload");
@@ -765,10 +629,13 @@ export async function getUserAttachments(): Promise<AttachmentsListResponse> {
     throw new Error("No authentication token found");
   }
 
-  console.log("Making attachments request to:", `${API_BASE_URL}/attachments`);
+  console.log(
+    "Making attachments request to:",
+    `${API_BASE_URL}/api/v1/attachments`,
+  );
 
   try {
-    const response = await fetch(`${API_BASE_URL}/attachments`, {
+    const response = await fetch(`${API_BASE_URL}/api/v1/attachments`, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
@@ -784,7 +651,7 @@ export async function getUserAttachments(): Promise<AttachmentsListResponse> {
       const textResponse = await response.text();
       console.log("Non-JSON response:", textResponse);
       throw new Error(
-        `Server returned non-JSON response: ${response.status} ${response.statusText}`
+        `Server returned non-JSON response: ${response.status} ${response.statusText}`,
       );
     }
 
@@ -793,7 +660,7 @@ export async function getUserAttachments(): Promise<AttachmentsListResponse> {
 
     if (!response.ok) {
       throw new Error(
-        data.message || data.error || "Failed to fetch attachments"
+        data.message || data.error || "Failed to fetch attachments",
       );
     }
 
@@ -809,7 +676,7 @@ export async function getUserAttachments(): Promise<AttachmentsListResponse> {
     // Handle network errors specifically
     if (error instanceof TypeError && error.message.includes("fetch")) {
       throw new Error(
-        `Network error: Unable to connect to ${API_BASE_URL}. Please ensure the backend server is running.`
+        `Network error: Unable to connect to ${API_BASE_URL}. Please ensure the backend server is running.`,
       );
     }
 
@@ -820,7 +687,7 @@ export async function getUserAttachments(): Promise<AttachmentsListResponse> {
 // Update attachment metadata
 export async function updateAttachment(
   attachmentId: string,
-  updateData: { name?: string; [key: string]: unknown }
+  updateData: { name?: string; [key: string]: unknown },
 ): Promise<{
   success: boolean;
   message: string;
@@ -834,13 +701,13 @@ export async function updateAttachment(
 
   console.log(
     "Making attachment update request to:",
-    `${API_BASE_URL}/attachments/${attachmentId}`
+    `${API_BASE_URL}/api/v1/attachments/${attachmentId}`,
   );
   console.log("Update data:", updateData);
 
   try {
     const response = await fetch(
-      `${API_BASE_URL}/attachments/${attachmentId}`,
+      `${API_BASE_URL}/api/v1/attachments/${attachmentId}`,
       {
         method: "PUT",
         headers: {
@@ -848,7 +715,7 @@ export async function updateAttachment(
           Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify(updateData),
-      }
+      },
     );
 
     console.log("Attachment update response status:", response.status);
@@ -858,7 +725,7 @@ export async function updateAttachment(
 
     if (!response.ok) {
       throw new Error(
-        data.message || data.error || "Failed to update attachment"
+        data.message || data.error || "Failed to update attachment",
       );
     }
 
@@ -874,7 +741,7 @@ export async function updateAttachment(
     // Handle network errors specifically
     if (error instanceof TypeError && error.message.includes("fetch")) {
       throw new Error(
-        `Network error: Unable to connect to ${API_BASE_URL}. Please ensure the backend server is running.`
+        `Network error: Unable to connect to ${API_BASE_URL}. Please ensure the backend server is running.`,
       );
     }
 
@@ -884,7 +751,7 @@ export async function updateAttachment(
 
 // Delete attachment
 export async function deleteAttachment(
-  attachmentId: string
+  attachmentId: string,
 ): Promise<{ success: boolean; message: string }> {
   const token = getAuthToken();
 
@@ -894,19 +761,19 @@ export async function deleteAttachment(
 
   console.log(
     "Making attachment delete request to:",
-    `${API_BASE_URL}/attachments/${attachmentId}`
+    `${API_BASE_URL}/api/v1/attachments/${attachmentId}`,
   );
 
   try {
     const response = await fetch(
-      `${API_BASE_URL}/attachments/${attachmentId}`,
+      `${API_BASE_URL}/api/v1/attachments/${attachmentId}`,
       {
         method: "DELETE",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-      }
+      },
     );
 
     console.log("Attachment delete response status:", response.status);
@@ -916,7 +783,7 @@ export async function deleteAttachment(
 
     if (!response.ok) {
       throw new Error(
-        data.message || data.error || "Failed to delete attachment"
+        data.message || data.error || "Failed to delete attachment",
       );
     }
 
@@ -927,7 +794,7 @@ export async function deleteAttachment(
     // Handle network errors specifically
     if (error instanceof TypeError && error.message.includes("fetch")) {
       throw new Error(
-        `Network error: Unable to connect to ${API_BASE_URL}. Please ensure the backend server is running.`
+        `Network error: Unable to connect to ${API_BASE_URL}. Please ensure the backend server is running.`,
       );
     }
 
@@ -935,29 +802,9 @@ export async function deleteAttachment(
   }
 }
 
-// Message/Contact form types
-export interface ContactMessage {
-  full_name: string;
-  email: string;
-  description: string;
-}
-
-export interface MessageResponse {
-  success: boolean;
-  description: string;
-  data?: {
-    id: string;
-    full_name: string;
-    email: string;
-    description: string;
-    createdAt: string;
-  };
-  error?: string;
-}
-
 // Send contact message
 export async function sendContactMessage(
-  messageData: ContactMessage
+  messageData: ContactMessage,
 ): Promise<MessageResponse> {
   console.log("Making message request to:", `${API_BASE_URL}/messages`);
   console.log("Message data:", messageData);
@@ -979,7 +826,7 @@ export async function sendContactMessage(
       const textResponse = await response.text();
       console.log("Non-JSON response:", textResponse);
       throw new Error(
-        `Server returned non-JSON response: ${response.status} ${response.statusText}. Response: ${textResponse}`
+        `Server returned non-JSON response: ${response.status} ${response.statusText}. Response: ${textResponse}`,
       );
     }
 
@@ -997,7 +844,7 @@ export async function sendContactMessage(
     // Handle network errors specifically
     if (error instanceof TypeError && error.message.includes("fetch")) {
       throw new Error(
-        `Network error: Unable to connect to ${API_BASE_URL}. Please ensure the backend server is running.`
+        `Network error: Unable to connect to ${API_BASE_URL}. Please ensure the backend server is running.`,
       );
     }
 

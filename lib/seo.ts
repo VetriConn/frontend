@@ -36,7 +36,7 @@ export interface PageSeoInput {
  * Site configuration constant
  */
 export const SITE_CONFIG: SiteConfig = {
-  name: "VetriConn",
+  name: "Vetriconn",
   description:
     "Find meaningful jobs for retirees and veterans in Canada. Part-time, full-time, and volunteer opportunities for seniors and experienced professionals.",
   url: "https://vetriconn.ca",
@@ -63,7 +63,7 @@ export const SITE_CONFIG: SiteConfig = {
     "jobs for 60+",
     "jobs for 65+",
     "older adult employment",
-    
+
     // Veteran-focused
     "veteran jobs Canada",
     "jobs for veterans",
@@ -79,7 +79,7 @@ export const SITE_CONFIG: SiteConfig = {
     "Canadian Armed Forces jobs",
     "veteran job board",
     "hire a veteran Canada",
-    
+
     // General older worker terms
     "jobs for older workers",
     "mature worker jobs",
@@ -91,7 +91,7 @@ export const SITE_CONFIG: SiteConfig = {
     "jobs for experienced professionals",
     "mature talent",
     "seasoned professionals jobs",
-    
+
     // Canadian-specific
     "Canadian job board",
     "Canada job site for seniors",
@@ -104,7 +104,7 @@ export const SITE_CONFIG: SiteConfig = {
     "Alberta senior jobs",
     "Toronto jobs for retirees",
     "Vancouver jobs for seniors",
-    
+
     // Work type keywords
     "flexible work for retirees",
     "part-time work Canada",
@@ -116,7 +116,7 @@ export const SITE_CONFIG: SiteConfig = {
     "temporary jobs retirees",
     "seasonal jobs seniors",
     "gig work for retirees",
-    
+
     // Purpose & fulfillment
     "purposeful work retirement",
     "meaningful employment seniors",
@@ -124,7 +124,7 @@ export const SITE_CONFIG: SiteConfig = {
     "give back jobs",
     "community jobs seniors",
     "nonprofit jobs retirees",
-    
+
     // Industry-specific
     "consulting jobs retirees",
     "mentoring jobs seniors",
@@ -133,7 +133,7 @@ export const SITE_CONFIG: SiteConfig = {
     "retail jobs for seniors",
     "healthcare jobs for retirees",
     "administrative jobs seniors",
-    
+
     // Skill-based
     "experienced accountant jobs",
     "senior engineer jobs",
@@ -148,24 +148,34 @@ export const SITE_CONFIG: SiteConfig = {
  */
 export const METADATA_TEMPLATES = {
   homepage: {
-    title: "VetriConn | Jobs for Retirees & Veterans in Canada",
+    title: "Vetriconn | Jobs for Retirees & Veterans in Canada",
     description:
       "Find meaningful jobs for retirees and veterans in Canada. Part-time, full-time, and volunteer opportunities for seniors.",
   },
   jobs: {
-    title: "Browse Jobs for Retirees & Veterans | VetriConn Canada",
+    title: "Browse Jobs for Retirees & Veterans | Vetriconn Canada",
     description:
       "Search flexible job opportunities for retirees, veterans, and seniors across Canada. Part-time roles and remote work available.",
   },
   signup: {
-    title: "Join VetriConn | Register for Senior & Veteran Jobs in Canada",
+    title: "Join Vetriconn | Register for Senior & Veteran Jobs in Canada",
     description:
       "Create your free account to access jobs for retirees and veterans in Canada. Connect with employers seeking experienced professionals.",
   },
   signin: {
-    title: "Sign In | VetriConn - Jobs for Retirees & Veterans",
+    title: "Sign In | Vetriconn - Jobs for Retirees & Veterans",
     description:
-      "Sign in to your VetriConn account to browse and apply for jobs designed for retirees and veterans in Canada.",
+      "Sign in to your Vetriconn account to browse and apply for jobs designed for retirees and veterans in Canada.",
+  },
+  about: {
+    title: "About Us | Vetriconn - Reconnecting Experience with Opportunity",
+    description:
+      "Learn about Vetriconn's mission to strengthen the Canadian workforce by reconnecting retirees and veterans with meaningful employment and volunteer opportunities.",
+  },
+  faq: {
+    title: "FAQ | Vetriconn - Frequently Asked Questions",
+    description:
+      "Find answers to common questions about Vetriconn, our platform for connecting Canadian retirees and veterans with jobs, volunteer roles, and community opportunities.",
   },
 } as const;
 
@@ -226,7 +236,7 @@ export function generateMetadata(input: PageSeoInput): Metadata {
  * Generates metadata for a specific job listing page
  */
 export function generateJobMetadata(job: Job): Metadata {
-  const title = `${job.role} at ${job.company_name} | VetriConn`;
+  const title = `${job.role} at ${job.company_name} | Vetriconn`;
 
   // Create a description from job data, truncated to fit meta description limits
   const rawDescription = job.full_description || "";
@@ -237,7 +247,7 @@ export function generateJobMetadata(job: Job): Metadata {
 
   const description =
     truncatedDescription ||
-    `Apply for ${job.role} at ${job.company_name}. Find jobs for retirees and veterans in Canada on VetriConn.`;
+    `Apply for ${job.role} at ${job.company_name}. Find jobs for retirees and veterans in Canada on Vetriconn.`;
 
   return generateMetadata({
     title,
@@ -341,7 +351,10 @@ export function generateJobPostingSchema(job: Job): JobPosting {
       value: job.salary.number,
       unitText: "YEAR",
     };
-  } else if (job.salary_range?.start_salary?.number || job.salary_range?.end_salary?.number) {
+  } else if (
+    job.salary_range?.start_salary?.number ||
+    job.salary_range?.end_salary?.number
+  ) {
     schema.baseSalary = {
       "@type": "MonetaryAmount",
       currency: job.salary_range.start_salary?.currency || "CAD",
@@ -355,14 +368,16 @@ export function generateJobPostingSchema(job: Job): JobPosting {
   const employmentTypeTags = job.tags
     ?.filter((tag) =>
       ["full-time", "part-time", "contract", "temporary", "volunteer"].includes(
-        tag.name.toLowerCase()
-      )
+        tag.name.toLowerCase(),
+      ),
     )
     .map((tag) => tag.name.toUpperCase().replace("-", "_"));
 
   if (employmentTypeTags && employmentTypeTags.length > 0) {
     schema.employmentType =
-      employmentTypeTags.length === 1 ? employmentTypeTags[0] : employmentTypeTags;
+      employmentTypeTags.length === 1
+        ? employmentTypeTags[0]
+        : employmentTypeTags;
   }
 
   return schema;

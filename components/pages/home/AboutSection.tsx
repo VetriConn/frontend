@@ -10,21 +10,65 @@ const aboutContent = {
     highlight: "Reconnecting Experience with Opportunity",
   },
   description:
-    "At VetriConn, our mission is to strengthen the Canadian workforce and economy by reconnecting Canadian retirees and veterans with flexible work, volunteer, and remote opportunities. We believe in offering renewed purpose, engagement, and community for those transitioning from full-time service into retirement.",
-  features: ["Part-time positions", "Full-time roles", "Volunteer opportunities"],
+    "At Vetriconn, our mission is to strengthen the Canadian workforce and economy by reconnecting Canadian retirees and veterans with flexible work, volunteer, and remote opportunities. We believe in offering renewed purpose, engagement, and community for those transitioning from full-time service into retirement.",
+  features: [
+    "Part-time positions",
+    "Full-time roles",
+    "Volunteer opportunities",
+  ],
   cta: {
     text: "Explore Opportunities",
     href: "/jobs",
   },
 };
 
-// Decorative images positioned closer to content with rotation
 const decorativeImages = [
-  { src: "/images/Hero/1.svg", alt: "Professional working at desk", rotation: "rotate-[32deg]" },
-  { src: "/images/Hero/2.svg", alt: "Team collaboration", rotation: "-rotate-[38deg]" },
-  { src: "/images/Hero/3.svg", alt: "Career growth", rotation: "-rotate-[35deg]" },
-  { src: "/images/Hero/4.svg", alt: "Community connection", rotation: "rotate-[42deg]" },
+  {
+    src: "/images/Hero/1.svg",
+    alt: "Professional working at desk",
+    className:
+      "absolute -top-4 -left-6 w-40 h-40 rotate-[15deg] rounded-2xl overflow-hidden shadow-lg xl:w-44 xl:h-44",
+  },
+  {
+    src: "/images/Hero/2.svg",
+    alt: "Team collaboration",
+    className:
+      "absolute -top-2 -right-4 w-36 h-36 -rotate-[12deg] rounded-2xl overflow-hidden shadow-lg xl:w-40 xl:h-40",
+  },
+  {
+    src: "/images/Hero/3.svg",
+    alt: "Career growth",
+    className:
+      "absolute -bottom-6 -left-4 w-36 h-36 -rotate-[18deg] rounded-2xl overflow-hidden shadow-lg xl:w-40 xl:h-40",
+  },
+  {
+    src: "/images/Hero/4.svg",
+    alt: "Community connection",
+    className:
+      "absolute -bottom-4 -right-6 w-40 h-40 rotate-[20deg] rounded-2xl overflow-hidden shadow-lg xl:w-44 xl:h-44",
+  },
 ];
+
+const CheckIcon = () => (
+  <svg
+    width="22"
+    height="22"
+    viewBox="0 0 22 22"
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+    aria-hidden="true"
+    className="flex-shrink-0"
+  >
+    <circle cx="11" cy="11" r="11" fill="#FEE2E2" />
+    <path
+      d="M7 11L10 14L15 8"
+      stroke="#E53E3E"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+  </svg>
+);
 
 interface AboutSectionProps {
   id?: string;
@@ -33,97 +77,51 @@ interface AboutSectionProps {
 export const AboutSection = ({ id }: AboutSectionProps) => (
   <section
     id={id}
-    className="py-20 bg-gray-light relative overflow-hidden mobile:py-12"
+    className="py-24 bg-gray-light relative overflow-hidden mobile:py-14"
     aria-labelledby="about-heading"
   >
-    {/* Decorative images - hidden on screens smaller than 1200px to prevent overlap */}
-    <div className="absolute inset-0 pointer-events-none hidden xl:block">
-      {/* Top left image */}
-      <div className={`absolute top-12 left-[5%] w-36 h-36 rounded-xl overflow-hidden shadow-lg ${decorativeImages[0].rotation}`}>
-        <Image
-          src={decorativeImages[0].src}
-          alt={decorativeImages[0].alt}
-          fill
-          className="object-cover"
-        />
+    <div className="max-w-[1340px] mx-auto px-[5%] relative">
+      {/* Decorative corner images — hidden below xl */}
+      <div
+        className="absolute inset-0 pointer-events-none hidden xl:block"
+        aria-hidden="true"
+      >
+        {decorativeImages.map((img, idx) => (
+          <div key={idx} className={img.className}>
+            <Image src={img.src} alt={img.alt} fill className="object-cover" />
+          </div>
+        ))}
       </div>
-      {/* Top right image */}
-      <div className={`absolute top-8 right-[5%] w-32 h-32 rounded-xl overflow-hidden shadow-lg ${decorativeImages[1].rotation}`}>
-        <Image
-          src={decorativeImages[1].src}
-          alt={decorativeImages[1].alt}
-          fill
-          className="object-cover"
-        />
-      </div>
-      {/* Bottom left image */}
-      <div className={`absolute bottom-12 left-[3%] w-32 h-32 rounded-xl overflow-hidden shadow-lg ${decorativeImages[2].rotation}`}>
-        <Image
-          src={decorativeImages[2].src}
-          alt={decorativeImages[2].alt}
-          fill
-          className="object-cover"
-        />
-      </div>
-      {/* Bottom right image */}
-      <div className={`absolute bottom-8 right-[3%] w-36 h-36 rounded-xl overflow-hidden shadow-lg ${decorativeImages[3].rotation}`}>
-        <Image
-          src={decorativeImages[3].src}
-          alt={decorativeImages[3].alt}
-          fill
-          className="object-cover"
-        />
-      </div>
-    </div>
 
-    <div className="container-main relative z-10">
-      {/* Centered content area */}
-      <div className="text-center max-w-3xl mx-auto">
-        {/* Headline with mixed typography */}
+      {/* Centered content */}
+      <div className="text-center max-w-2xl mx-auto relative z-10">
         <h2 id="about-heading" className="heading-1 mb-6 mobile:mb-4">
           {aboutContent.headline.prefix}{" "}
-          <span className="text-primary">{aboutContent.headline.highlight}</span>
+          <span className="text-primary italic font-[var(--font-outfit)]">
+            {aboutContent.headline.highlight}
+          </span>
         </h2>
 
-        {/* Supporting description */}
-        <p className="body-text text-lg mb-8 mobile:text-base mobile:mb-6">
+        <p className="body-text text-lg leading-relaxed mb-8 mobile:text-base mobile:mb-6">
           {aboutContent.description}
         </p>
 
-        {/* Feature list */}
-        <div className="flex justify-center gap-6 mb-10 flex-wrap mobile:flex-col mobile:gap-3 mobile:mb-8">
+        {/* Feature pills */}
+        <div className="flex justify-center gap-8 mb-10 flex-wrap mobile:flex-col mobile:items-center mobile:gap-3 mobile:mb-8">
           {aboutContent.features.map((feature, idx) => (
             <div
               key={idx}
-              className="flex items-center gap-2 text-text font-semibold"
+              className="flex items-center gap-2.5 font-open-sans font-semibold text-text"
             >
-              <svg
-                width="20"
-                height="20"
-                viewBox="0 0 20 20"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-                aria-hidden="true"
-                className="text-primary flex-shrink-0"
-              >
-                <circle cx="10" cy="10" r="10" fill="currentColor" fillOpacity="0.1" />
-                <path
-                  d="M6 10L9 13L14 7"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
+              <CheckIcon />
               <span>{feature}</span>
             </div>
           ))}
         </div>
 
-        {/* CTA Button */}
         <Link
           href={aboutContent.cta.href}
-          className="btn-primary inline-block focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
+          className="inline-flex items-center gap-2.5 bg-primary hover:bg-red-700 text-white font-semibold py-3.5 px-10 rounded-full transition-colors shadow-sm"
         >
           {aboutContent.cta.text}
         </Link>

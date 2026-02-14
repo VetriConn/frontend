@@ -1,4 +1,4 @@
-// Attachment types for VetriConn platform
+// Attachment types for Vetriconn platform
 
 export interface Attachment {
   id: string;

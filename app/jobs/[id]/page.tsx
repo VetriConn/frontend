@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
-import { notFound } from "next/navigation";
-import { getJobById, JobsResponse } from "@/lib/api";
+import { getJobById } from "@/lib/api";
+import { JobsResponse } from "@/types/api";
 import { generateJobMetadata, generateJobPostingSchema } from "@/lib/seo";
 import { JsonLd } from "@/components/seo/JsonLd";
 import { Job } from "@/types/job";
@@ -31,7 +31,14 @@ function transformJob(data: JobsResponse): Job {
             "android",
             "react",
             "web",
-          ][index % 7] as "flutter" | "dart" | "mobile" | "ios" | "android" | "react" | "web",
+          ][index % 7] as
+            | "flutter"
+            | "dart"
+            | "mobile"
+            | "ios"
+            | "android"
+            | "react"
+            | "web",
         }))
       : [],
     full_description: data.full_description || data.description || "",
@@ -59,8 +66,9 @@ export async function generateMetadata({
 
   if (!job) {
     return {
-      title: "Job Not Found | VetriConn",
-      description: "The job you're looking for doesn't exist or has been removed.",
+      title: "Job Not Found | Vetriconn",
+      description:
+        "The job you're looking for doesn't exist or has been removed.",
     };
   }
 
@@ -71,16 +79,17 @@ export default async function JobDetailPage({ params }: JobDetailPageProps) {
   const { id } = await params;
   const job = await getJob(id);
 
-  if (!job) {
-    notFound();
+  // If server fetch succeeded, render with SEO schema + pre-fetched data
+  // If it failed, still render the client component — it will fetch client-side
+  if (job) {
+    const jobPostingSchema = generateJobPostingSchema(job);
+    return (
+      <>
+        <JsonLd data={jobPostingSchema} />
+        <JobDetailClient jobId={id} initialJob={job} />
+      </>
+    );
   }
 
-  const jobPostingSchema = generateJobPostingSchema(job);
-
-  return (
-    <>
-      <JsonLd data={jobPostingSchema} />
-      <JobDetailClient jobId={id} initialJob={job} />
-    </>
-  );
+  return <JobDetailClient jobId={id} initialJob={null} />;
 }

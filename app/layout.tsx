@@ -41,8 +41,8 @@ const outfit = Outfit({
 
 export const metadata: Metadata = {
   title: {
-    default: "VetriConn | Jobs for Retirees & Veterans in Canada",
-    template: "%s | VetriConn",
+    default: "Vetriconn | Jobs for Retirees & Veterans in Canada",
+    template: "%s | Vetriconn",
   },
   description: SITE_CONFIG.description,
   keywords: SITE_CONFIG.keywords,
@@ -58,20 +58,20 @@ export const metadata: Metadata = {
     locale: SITE_CONFIG.locale,
     url: SITE_CONFIG.url,
     siteName: SITE_CONFIG.name,
-    title: "VetriConn | Jobs for Retirees & Veterans in Canada",
+    title: "Vetriconn | Jobs for Retirees & Veterans in Canada",
     description: SITE_CONFIG.description,
     images: [
       {
         url: SITE_CONFIG.ogImage,
         width: 1200,
         height: 630,
-        alt: "VetriConn - Jobs for Retirees & Veterans in Canada",
+        alt: "Vetriconn - Jobs for Retirees & Veterans in Canada",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "VetriConn | Jobs for Retirees & Veterans in Canada",
+    title: "Vetriconn | Jobs for Retirees & Veterans in Canada",
     description: SITE_CONFIG.description,
     site: SITE_CONFIG.twitterHandle,
     creator: SITE_CONFIG.twitterHandle,

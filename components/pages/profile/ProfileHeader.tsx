@@ -1,139 +1,132 @@
 "use client";
-import React, { useState } from "react";
-import clsx from "clsx";
-import { FaEdit, FaLinkedin, FaTwitter, FaGithub, FaUserCircle } from "react-icons/fa";
-import Image from "next/image";
 
-interface ProfileHeaderProps {
-  userProfile: {
-    name: string;
-    title: string;
-    avatar: string;
-    bio: string | null;
-    socials?: { linkedin?: string; twitter?: string; github?: string };
-  };
-  isEditing: boolean;
-  isSaving?: boolean;
-  onEditToggle: () => void;
-  onSave: () => void;
-  onCancel?: () => void;
-  onInputChange: (field: string, value: string | string[]) => void;
+import React, { useState } from "react";
+import Image from "next/image";
+import { HiOutlineLocationMarker } from "react-icons/hi";
+import { CheckCircleIcon } from "@/components/ui/CheckCircleIcon";
+
+export interface ProfileHeaderProps {
+  name: string;
+  avatar?: string;
+  location?: string;
+  bio?: string;
+  completionPercentage: number;
+  onEditPhoto: () => void;
 }
 
 export const ProfileHeader: React.FC<ProfileHeaderProps> = ({
-  userProfile,
-  isEditing,
-  onEditToggle,
-  onInputChange,
+  name,
+  avatar,
+  location,
+  bio,
+  completionPercentage,
+  onEditPhoto,
 }) => {
   const [imageError, setImageError] = useState(false);
 
+  // Calculate initials from name (first letter of first and last name)
+  const getInitials = (fullName: string): string => {
+    const parts = fullName.trim().split(/\s+/);
+    if (parts.length === 0) return "U";
+    if (parts.length === 1) return parts[0].charAt(0).toUpperCase();
+    return (
+      parts[0].charAt(0) + parts[parts.length - 1].charAt(0)
+    ).toUpperCase();
+  };
+
+  const initials = getInitials(name);
+  const hasValidAvatar = avatar && avatar.trim() !== "" && !imageError;
+
   return (
-    <div className={clsx("flex items-center justify-between gap-6 p-8 bg-white", isEditing && "flex-col items-stretch text-left")}>
-      <div className={clsx("flex items-center gap-6 flex-1", isEditing && "flex-col items-center gap-8 w-full max-w-none")}>
-        <div className="relative shrink-0">
-          <div className={clsx(
-            "rounded-full bg-gray-100 flex items-center justify-center relative overflow-hidden border-2 border-gray-200",
-            isEditing ? "w-[120px] h-[120px]" : "w-[140px] h-[140px] tablet:w-[110px] tablet:h-[110px] mobile:w-[90px] mobile:h-[90px]"
-          )}>
-            {userProfile.avatar && userProfile.avatar.trim() && !imageError ? (
-              <Image src={userProfile.avatar} alt={userProfile.name} width={140} height={140} className="w-full h-full object-cover rounded-full" onError={() => setImageError(true)} />
-            ) : (
-              <FaUserCircle className="bg-white rounded-full w-[100px] h-[100px] flex items-center justify-center text-gray-200" />
-            )}
-          </div>
-        </div>
-
-        <div className={clsx("flex-1 flex flex-col gap-2", isEditing && "w-full self-stretch")}>
-          {isEditing ? (
-            <div className="flex flex-col w-full gap-5">
-              <div className="flex gap-8 tablet:flex-col tablet:gap-5">
-                <div className="flex flex-col gap-4 h-full flex-1">
-                  <h4 className="text-base font-bold text-gray-700 m-0 mb-4">Personal Details</h4>
-                  <div className="flex gap-4 mobile:flex-col mobile:gap-4">
-                    <input
-                      type="text"
-                      value={userProfile.name}
-                      onChange={(e) => onInputChange("name", e.target.value)}
-                      className="w-full py-3.5 px-4 border-2 border-gray-200 rounded-lg bg-white text-gray-900 text-base mb-0 transition-all font-medium focus:outline-none focus:border-primary focus:shadow-[0_0_0_4px_rgba(220,38,38,0.1)] placeholder:text-gray-400 placeholder:text-[15px] placeholder:font-normal mobile:flex-1"
-                      placeholder="Enter your full name"
-                    />
-                    <input
-                      type="text"
-                      value={userProfile.title}
-                      onChange={(e) => onInputChange("title", e.target.value)}
-                      className="w-full py-3.5 px-4 border-2 border-gray-200 rounded-lg bg-white text-gray-900 text-base mb-0 transition-all font-medium focus:outline-none focus:border-primary focus:shadow-[0_0_0_4px_rgba(220,38,38,0.1)] placeholder:text-gray-400 placeholder:text-[15px] placeholder:font-normal mobile:flex-1"
-                      placeholder="Enter your profession"
-                    />
-                  </div>
-                  <textarea
-                    value={userProfile.bio || ""}
-                    onChange={(e) => onInputChange("bio", e.target.value)}
-                    className="w-full py-3.5 px-4 border-2 border-gray-200 rounded-lg bg-white text-gray-900 text-[15px] mb-0 resize-none min-h-[120px] flex-1 font-inherit leading-relaxed transition-all font-medium focus:outline-none focus:border-primary focus:shadow-[0_0_0_4px_rgba(220,38,38,0.1)] placeholder:text-gray-400 placeholder:text-sm placeholder:font-normal"
-                    placeholder="Tell others about yourself..."
-                  />
-                </div>
-
-                <div className="mt-0 pt-5 border-t-2 border-gray-100 tablet:mt-0 tablet:pt-0 tablet:border-t-0 tablet:border-l-2 tablet:border-gray-100 tablet:pl-8 flex-1">
-                  <h4 className="text-base font-bold text-gray-700 m-0 mb-4">Social Links</h4>
-                  <div className="flex flex-col gap-4">
-                    {[
-                      { key: "linkedin", icon: FaLinkedin, color: "text-[#0077b5]", placeholder: "https://linkedin.com/in/yourprofile" },
-                      { key: "twitter", icon: FaTwitter, color: "text-[#1da1f2]", placeholder: "https://x.com/yourusername" },
-                      { key: "github", icon: FaGithub, color: "text-gray-800", placeholder: "https://github.com/yourusername" },
-                    ].map(({ key, icon: Icon, color, placeholder }) => (
-                      <div key={key} className="flex items-center gap-4 bg-gray-50 p-4 rounded-lg border border-gray-200 tablet:gap-3 tablet:p-3">
-                        <Icon className={clsx("text-xl shrink-0", color)} />
-                        <input
-                          type="url"
-                          value={userProfile.socials?.[key as keyof typeof userProfile.socials] || ""}
-                          onChange={(e) => onInputChange(`socials.${key}`, e.target.value)}
-                          className="flex-1 py-3 px-4 border-2 border-gray-200 rounded-md bg-white text-gray-900 text-[15px] font-normal transition-all focus:outline-none focus:border-primary focus:shadow-[0_0_0_3px_rgba(220,38,38,0.1)] placeholder:text-gray-400"
-                          placeholder={placeholder}
-                        />
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            </div>
-          ) : (
-            <>
-              <h1 className="text-3xl font-bold m-0 text-gray-900 leading-tight tablet:text-2xl mobile:text-[22px]">{userProfile.name}</h1>
-              <p className="text-[17px] text-gray-500 m-0 font-medium tablet:text-[15px] mobile:text-sm">{userProfile.title || "Professional"}</p>
-              {userProfile.bio && <p className="text-[15px] text-gray-600 m-0 leading-relaxed tablet:text-sm mobile:text-[13px]">{userProfile.bio}</p>}
-              <div className="flex gap-3 mt-2">
-                {userProfile.socials?.linkedin && (
-                  <a href={userProfile.socials.linkedin} target="_blank" rel="noopener noreferrer" className="inline-flex items-center justify-center p-2 rounded-lg transition-all no-underline hover:bg-black/5 hover:-translate-y-0.5">
-                    <FaLinkedin className="text-xl text-[#0077b5]" />
-                  </a>
-                )}
-                {userProfile.socials?.twitter && (
-                  <a href={userProfile.socials.twitter} target="_blank" rel="noopener noreferrer" className="inline-flex items-center justify-center p-2 rounded-lg transition-all no-underline hover:bg-black/5 hover:-translate-y-0.5">
-                    <FaTwitter className="text-xl text-[#1da1f2]" />
-                  </a>
-                )}
-                {userProfile.socials?.github && (
-                  <a href={userProfile.socials.github} target="_blank" rel="noopener noreferrer" className="inline-flex items-center justify-center p-2 rounded-lg transition-all no-underline hover:bg-black/5 hover:-translate-y-0.5">
-                    <FaGithub className="text-xl text-gray-800" />
-                  </a>
-                )}
-              </div>
-            </>
-          )}
-        </div>
+    <div className="space-y-6">
+      {/* Page Title Section */}
+      <div>
+        <h1 className="text-2xl font-bold text-gray-900 mb-1">My Profile</h1>
+        <p className="text-gray-500 text-sm">
+          Review and update your professional information
+        </p>
       </div>
 
-      {!isEditing && (
-        <div className="shrink-0 tablet:w-full">
-          <button
-            className="flex items-center gap-2 bg-primary text-white border-none py-3 px-6 rounded-md cursor-pointer text-sm font-medium transition-all hover:bg-red-700 disabled:bg-gray-400 disabled:cursor-not-allowed disabled:opacity-60 tablet:w-full tablet:justify-center tablet:py-4 tablet:px-8"
-            onClick={onEditToggle}
-          >
-            Edit <FaEdit className="text-sm" />
-          </button>
+      {/* Profile Card */}
+      <div className="bg-white rounded-xl border border-gray-200 p-6">
+        <div className="flex flex-col sm:flex-row gap-5">
+          {/* Avatar */}
+          <div className="shrink-0 flex justify-center sm:justify-start">
+            <div className="w-20 h-20 rounded-full overflow-hidden flex items-center justify-center bg-red-50 border-2 border-red-100">
+              {hasValidAvatar ? (
+                <Image
+                  src={avatar!}
+                  alt={name}
+                  width={80}
+                  height={80}
+                  className="w-full h-full object-cover"
+                  onError={() => setImageError(true)}
+                />
+              ) : (
+                <span className="text-2xl font-bold text-red-600">
+                  {initials}
+                </span>
+              )}
+            </div>
+          </div>
+
+          {/* Content */}
+          <div className="flex-1 min-w-0 text-center sm:text-left">
+            {/* Name Row with Completion Badge */}
+            <div className="flex justify-between flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 mb-2">
+              <h2 className="text-xl font-bold text-gray-900 truncate">
+                {name}
+              </h2>
+
+              {/* Completion Badge */}
+              <div className="inline-flex items-center justify-center sm:justify-start gap-1.5 px-3 py-1 bg-red-50 rounded-full">
+                <CheckCircleIcon color="red" size={16} className="shrink-0" />
+                <span className="text-sm text-gray-700">
+                  Profile {completionPercentage}% complete
+                </span>
+              </div>
+            </div>
+
+            {/* Location */}
+            {location && (
+              <div className="flex items-center justify-center sm:justify-start gap-1.5 text-gray-500 text-sm mb-3">
+                <HiOutlineLocationMarker className="w-4 h-4 shrink-0" />
+                <span>{location}</span>
+              </div>
+            )}
+
+            {/* Bio */}
+            {bio && (
+              <p className="text-gray-600 text-sm leading-relaxed mb-4">
+                {bio}
+                Lorem ipsum dolor sit amet consectetur adipisicing elit. Maxime
+                accusantium earum, est culpa veniam fuga neque recusandae
+                placeat corporis. Sapiente dignissimos animi possimus quam
+                placeat. Nesciunt, commodi optio! Veniam velit nihil eum magnam
+                itaque adipisci ipsum iste praesentium nam non ut sint harum
+                cupiditate maiores, enim facilis rem quia? Sed.
+              </p>
+            )}
+            <p className="text-gray-600 text-sm leading-relaxed mb-4">
+              Lorem ipsum dolor sit amet consectetur adipisicing elit. Maxime
+              accusantium earum, est culpa veniam fuga neque recusandae placeat
+              corporis. Sapiente dignissimos animi possimus quam placeat.
+              Nesciunt, commodi optio! Veniam velit nihil eum magnam itaque
+              adipisci ipsum iste praesentium nam non ut sint harum cupiditate
+              maiores, enim facilis rem quia? Sed.
+            </p>
+
+            {/* Edit Profile Photo Button */}
+            <button
+              onClick={onEditPhoto}
+              className="inline-flex items-center justify-center px-4 py-2 bg-white border border-gray-300 rounded-full text-sm font-medium text-gray-700 hover:bg-gray-50 hover:border-gray-400 transition-colors"
+              aria-label="Edit profile photo"
+            >
+              Edit profile photo
+            </button>
+          </div>
         </div>
-      )}
+      </div>
     </div>
   );
 };

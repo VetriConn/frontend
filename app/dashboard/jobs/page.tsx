@@ -1,9 +1,9 @@
 "use client";
 
-import React, { useState, useCallback, useMemo } from "react";
+import React, { Suspense, useState, useCallback, useMemo } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { HiOutlineArrowLeft } from "react-icons/hi2";
+import { HiOutlineArrowLeft, HiOutlineBookmarkSquare } from "react-icons/hi2";
 import { SearchBar } from "@/components/ui/SearchBar";
 import { FilterPanel } from "@/components/ui/FilterPanel";
 import { JobResultsList } from "@/components/ui/JobResultsList";
@@ -11,6 +11,8 @@ import { LoadMoreButton } from "@/components/ui/LoadMoreButton";
 import { useJobs } from "@/hooks/useJobs";
 import { Job } from "@/types/job";
 import { DUMMY_JOBS } from "@/lib/dummy-jobs";
+import { useSavedSearches } from "@/hooks/useSavedSearches";
+import { useToaster } from "@/components/ui/Toaster";
 
 // Filter state interface
 interface FilterState {
@@ -73,6 +75,8 @@ const matchesExperienceLevel = (job: Job, experienceLevel: string): boolean => {
 const SearchResultsPage = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const { showToast } = useToaster();
+  const { addSearch, hasSearch } = useSavedSearches();
 
   // Parse initial state from URL parameters
   const getInitialFiltersFromUrl = useCallback((): FilterState => {
@@ -233,20 +237,38 @@ const SearchResultsPage = () => {
     [router],
   );
 
+  // Handle save search
+  const currentSearchFilters = useMemo(
+    () => ({
+      keyword: appliedSearchQuery || undefined,
+      location: appliedFilters.location || undefined,
+      jobType: appliedFilters.jobType || undefined,
+      experienceLevel: appliedFilters.experienceLevel || undefined,
+    }),
+    [appliedSearchQuery, appliedFilters],
+  );
+
+  const isCurrentSearchSaved = hasSearch(currentSearchFilters);
+  const hasActiveFilters =
+    !!appliedSearchQuery ||
+    !!appliedFilters.location ||
+    !!appliedFilters.jobType ||
+    !!appliedFilters.experienceLevel;
+
+  const handleSaveSearch = useCallback(() => {
+    addSearch(currentSearchFilters);
+    showToast({
+      type: "success",
+      title: "Search saved",
+      description: "You can access it from Saved Searches in the menu.",
+    });
+  }, [currentSearchFilters, addSearch, showToast]);
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Main Content */}
       <main id="main-content" className="flex-1" tabIndex={-1}>
         <div className="max-w-[1200px] mx-auto px-4 sm:px-6 py-6 sm:py-8">
-          {/* Back to Dashboard Link */}
-          <Link
-            href="/dashboard"
-            className="inline-flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors mb-4 sm:mb-6 min-h-[44px]"
-          >
-            <HiOutlineArrowLeft className="w-5 h-5" aria-hidden="true" />
-            <span className="text-sm font-medium">Back to Dashboard</span>
-          </Link>
-
           {/* Page Header */}
           <header className="mb-6 sm:mb-8">
             <h1 className="text-xl sm:text-2xl font-bold text-gray-900 mb-2">
@@ -265,6 +287,32 @@ const SearchResultsPage = () => {
               onChange={setSearchQuery}
               onSearch={handleSearch}
             />
+
+            {/* Save Search Button */}
+            {hasActiveFilters && (
+              <div className="flex items-center gap-3 mt-3">
+                {isCurrentSearchSaved ? (
+                  <span className="inline-flex items-center gap-1.5 text-sm text-emerald-600 font-medium">
+                    <HiOutlineBookmarkSquare className="w-4 h-4" />
+                    Search saved
+                  </span>
+                ) : (
+                  <button
+                    onClick={handleSaveSearch}
+                    className="inline-flex items-center gap-1.5 text-sm text-primary hover:text-primary-hover font-medium cursor-pointer transition-colors"
+                  >
+                    <HiOutlineBookmarkSquare className="w-4 h-4" />
+                    Save this search
+                  </button>
+                )}
+                <Link
+                  href="/dashboard/saved-searches"
+                  className="text-sm text-gray-400 hover:text-gray-600 transition-colors no-underline"
+                >
+                  View saved searches
+                </Link>
+              </div>
+            )}
           </div>
 
           {/* Main Content Grid */}
@@ -310,4 +358,19 @@ const SearchResultsPage = () => {
   );
 };
 
-export default SearchResultsPage;
+// Suspense boundary at the page level because SearchResultsPage calls
+// useSearchParams() directly — Next.js requires a Suspense ancestor for
+// this hook during static rendering. Keep this wrapper if refactoring.
+export default function SearchResultsPageWrapper() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+          <div className="w-10 h-10 border-4 border-primary border-t-transparent rounded-full animate-spin" />
+        </div>
+      }
+    >
+      <SearchResultsPage />
+    </Suspense>
+  );
+}

@@ -339,6 +339,78 @@ export async function patchUserProfile(
   }
 }
 
+// Upload profile picture
+export async function uploadProfilePicture(
+  file: File,
+): Promise<{ picture_url: string }> {
+  const token = getAuthToken();
+
+  if (!token) {
+    throw new Error("No authentication token found");
+  }
+
+  const formData = new FormData();
+  formData.append("picture", file);
+
+  try {
+    const response = await fetch(
+      `${API_BASE_URL}/api/v1/auth/profile-picture`,
+      {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+        body: formData,
+      },
+    );
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(
+        data.message || data.error || "Failed to upload profile picture",
+      );
+    }
+
+    return data.data;
+  } catch (error) {
+    console.error("Profile picture upload error:", error);
+    throw error;
+  }
+}
+
+// Delete profile picture
+export async function deleteProfilePicture(): Promise<void> {
+  const token = getAuthToken();
+
+  if (!token) {
+    throw new Error("No authentication token found");
+  }
+
+  try {
+    const response = await fetch(
+      `${API_BASE_URL}/api/v1/auth/profile-picture`,
+      {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      },
+    );
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(
+        data.message || data.error || "Failed to delete profile picture",
+      );
+    }
+  } catch (error) {
+    console.error("Profile picture delete error:", error);
+    throw error;
+  }
+}
+
 // Fetch jobs from database
 export async function getJobs(options?: {
   page?: number;
@@ -806,11 +878,11 @@ export async function deleteAttachment(
 export async function sendContactMessage(
   messageData: ContactMessage,
 ): Promise<MessageResponse> {
-  console.log("Making message request to:", `${API_BASE_URL}/messages`);
+  console.log("Making message request to:", `${API_BASE_URL}/api/v1/contact`);
   console.log("Message data:", messageData);
 
   try {
-    const response = await fetch(`${API_BASE_URL}/messages`, {
+    const response = await fetch(`${API_BASE_URL}/api/v1/contact`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -848,6 +920,198 @@ export async function sendContactMessage(
       );
     }
 
+    throw error;
+  }
+}
+
+// ============================================================================
+// Password & Account Management
+// ============================================================================
+
+export async function changePassword(
+  currentPassword: string,
+  newPassword: string,
+): Promise<{ message: string }> {
+  try {
+    const response = await fetch(
+      `${API_BASE_URL}/api/v1/auth/change-password`,
+      {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ currentPassword, newPassword }),
+      },
+    );
+
+    const data = await response.json();
+    if (!response.ok) {
+      throw new Error(
+        data.message || data.error || "Failed to change password",
+      );
+    }
+    return data;
+  } catch (error) {
+    if (error instanceof TypeError && error.message.includes("fetch")) {
+      throw new Error(
+        `Network error: Unable to connect to ${API_BASE_URL}. Please ensure the backend server is running.`,
+      );
+    }
+    throw error;
+  }
+}
+
+export async function requestDataExport(): Promise<Blob> {
+  try {
+    const response = await fetch(`${API_BASE_URL}/api/v1/auth/data-export`, {
+      method: "GET",
+      credentials: "include",
+    });
+
+    if (!response.ok) {
+      const data = await response.json().catch(() => ({}));
+      throw new Error(
+        (data as { message?: string }).message || "Failed to export data",
+      );
+    }
+    return await response.blob();
+  } catch (error) {
+    if (error instanceof TypeError && error.message.includes("fetch")) {
+      throw new Error(
+        `Network error: Unable to connect to ${API_BASE_URL}. Please ensure the backend server is running.`,
+      );
+    }
+    throw error;
+  }
+}
+
+export async function deactivateAccount(
+  password: string,
+): Promise<{ message: string }> {
+  try {
+    const response = await fetch(`${API_BASE_URL}/api/v1/auth/account`, {
+      method: "DELETE",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify({ password }),
+    });
+
+    const data = await response.json();
+    if (!response.ok) {
+      throw new Error(
+        data.message || data.error || "Failed to deactivate account",
+      );
+    }
+    return data;
+  } catch (error) {
+    if (error instanceof TypeError && error.message.includes("fetch")) {
+      throw new Error(
+        `Network error: Unable to connect to ${API_BASE_URL}. Please ensure the backend server is running.`,
+      );
+    }
+    throw error;
+  }
+}
+
+export async function updateUserSettings(
+  settings: Record<string, unknown>,
+): Promise<{ message: string }> {
+  try {
+    const response = await fetch(`${API_BASE_URL}/api/v1/auth/settings`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify(settings),
+    });
+
+    const data = await response.json();
+    if (!response.ok) {
+      throw new Error(
+        data.message || data.error || "Failed to update settings",
+      );
+    }
+    return data;
+  } catch (error) {
+    if (error instanceof TypeError && error.message.includes("fetch")) {
+      throw new Error(
+        `Network error: Unable to connect to ${API_BASE_URL}. Please ensure the backend server is running.`,
+      );
+    }
+    throw error;
+  }
+}
+
+// ============================================================================
+// Job Applications & Saved Jobs
+// ============================================================================
+
+export async function submitJobApplication(
+  jobId: string,
+  formData: FormData,
+): Promise<{ message: string }> {
+  try {
+    const response = await fetch(`${API_BASE_URL}/api/v1/jobs/${jobId}/apply`, {
+      method: "POST",
+      credentials: "include",
+      body: formData,
+    });
+
+    const data = await response.json();
+    if (!response.ok) {
+      throw new Error(
+        data.message || data.error || "Failed to submit application",
+      );
+    }
+    return data;
+  } catch (error) {
+    if (error instanceof TypeError && error.message.includes("fetch")) {
+      throw new Error(
+        `Network error: Unable to connect to ${API_BASE_URL}. Please ensure the backend server is running.`,
+      );
+    }
+    throw error;
+  }
+}
+
+export async function saveJob(jobId: string): Promise<{ message: string }> {
+  try {
+    const response = await fetch(`${API_BASE_URL}/api/v1/jobs/${jobId}/save`, {
+      method: "POST",
+      credentials: "include",
+    });
+
+    const data = await response.json();
+    if (!response.ok) {
+      throw new Error(data.message || data.error || "Failed to save job");
+    }
+    return data;
+  } catch (error) {
+    if (error instanceof TypeError && error.message.includes("fetch")) {
+      throw new Error(
+        `Network error: Unable to connect to ${API_BASE_URL}. Please ensure the backend server is running.`,
+      );
+    }
+    throw error;
+  }
+}
+
+export async function unsaveJob(jobId: string): Promise<{ message: string }> {
+  try {
+    const response = await fetch(`${API_BASE_URL}/api/v1/jobs/${jobId}/save`, {
+      method: "DELETE",
+      credentials: "include",
+    });
+
+    const data = await response.json();
+    if (!response.ok) {
+      throw new Error(data.message || data.error || "Failed to unsave job");
+    }
+    return data;
+  } catch (error) {
+    if (error instanceof TypeError && error.message.includes("fetch")) {
+      throw new Error(
+        `Network error: Unable to connect to ${API_BASE_URL}. Please ensure the backend server is running.`,
+      );
+    }
     throw error;
   }
 }

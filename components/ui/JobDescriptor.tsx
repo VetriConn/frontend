@@ -1,5 +1,5 @@
 "use client";
-import React from "react";
+import React, { useState } from "react";
 import Link from "next/link";
 import clsx from "clsx";
 import {
@@ -15,7 +15,9 @@ import {
   HiOutlineHeart,
   HiOutlineShieldCheck,
 } from "react-icons/hi2";
+import { HiBookmark } from "react-icons/hi2";
 import { Job } from "@/types/job";
+import { saveJob, unsaveJob } from "@/lib/api";
 
 type JobDescriptorProps = Job;
 
@@ -74,6 +76,27 @@ const JobDescriptor: React.FC<JobDescriptorProps> = ({
   qualifications,
   applicationLink,
 }) => {
+  const [isSaved, setIsSaved] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+
+  const handleToggleSave = async () => {
+    if (isSaving) return;
+    setIsSaving(true);
+    try {
+      if (isSaved) {
+        await unsaveJob(id);
+        setIsSaved(false);
+      } else {
+        await saveJob(id);
+        setIsSaved(true);
+      }
+    } catch {
+      // Silently fail — button state stays as-is
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
   const formatSalary = (salaryObj: {
     symbol: string;
     number?: number;
@@ -144,15 +167,6 @@ const JobDescriptor: React.FC<JobDescriptorProps> = ({
             {role}
           </span>
         </nav>
-
-        {/* Back link */}
-        <Link
-          href="/dashboard/jobs"
-          className="inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-700 transition-colors mb-8 no-underline"
-        >
-          <HiOutlineArrowLeft className="text-base" />
-          Back to all jobs
-        </Link>
 
         {/* Two-column layout */}
         <div className="flex gap-8 items-start tablet:flex-col">
@@ -379,9 +393,23 @@ const JobDescriptor: React.FC<JobDescriptorProps> = ({
                 )}
 
                 {/* Save Button */}
-                <button className="flex items-center justify-center gap-2 w-full bg-white border border-gray-200 text-gray-700 font-semibold text-sm py-3 px-4 rounded-lg hover:bg-gray-50 transition-colors cursor-pointer mb-6">
-                  <HiOutlineBookmark className="text-base" />
-                  Save Job
+                <button
+                  onClick={handleToggleSave}
+                  disabled={isSaving}
+                  className={clsx(
+                    "flex items-center justify-center gap-2 w-full font-semibold text-sm py-3 px-4 rounded-lg transition-colors cursor-pointer mb-6",
+                    isSaved
+                      ? "bg-primary/10 border border-primary text-primary hover:bg-primary/20"
+                      : "bg-white border border-gray-200 text-gray-700 hover:bg-gray-50",
+                    isSaving && "opacity-60 cursor-not-allowed",
+                  )}
+                >
+                  {isSaved ? (
+                    <HiBookmark className="text-base" />
+                  ) : (
+                    <HiOutlineBookmark className="text-base" />
+                  )}
+                  {isSaving ? "Saving..." : isSaved ? "Job Saved" : "Save Job"}
                 </button>
 
                 {/* Info notices */}

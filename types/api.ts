@@ -112,18 +112,18 @@ export interface UserProfile {
   email: string;
   picture?: string;
   password?: string;
-  
+
   // Contact Information
   phone_number?: string;
   city?: string;
   country?: string;
   location?: string;
-  
+
   // Work Background
   job_title?: string;
   industry?: string;
   years_of_experience?: string;
-  
+
   // Profile fields
   profession?: string;
   bio?: string;
@@ -139,7 +139,15 @@ export interface UserProfile {
   education?: Education[];
   certifications?: Certification[];
   saved_jobs?: string[];
-  
+  skills?: string[];
+
+  // Job-seeking status
+  job_seeking_status?:
+    | "none"
+    | "actively_looking"
+    | "open_to_offers"
+    | "not_looking";
+
   // Email verification fields
   emailVerified?: boolean;
 }
@@ -173,12 +181,17 @@ export interface UserProfileResponse {
       education?: Education[];
       certifications?: Certification[];
       saved_jobs?: string[];
+      skills?: string[];
+      job_seeking_status?:
+        | "none"
+        | "actively_looking"
+        | "open_to_offers"
+        | "not_looking";
       attachments?: UserAttachment[];
       documents?: UserDocument[];
     };
   };
 }
-
 
 // Jobs API Response types - Direct array response from backend
 export interface JobsResponse {
@@ -285,4 +298,3 @@ export interface MessageResponse {
   };
   error?: string;
 }
-

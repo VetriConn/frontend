@@ -190,3 +190,145 @@
     color: #9ca3af;
   }
 }
+
+/* ─── High Contrast Mode ───────────────────────────────────────────────────── */
+
+html.high-contrast {
+  --color-text: #000000;
+  --color-text-muted: #111111;
+  --color-text-label: #222222;
+  color: #000000;
+}
+
+html.high-contrast body {
+  color: #000000;
+}
+
+html.high-contrast p,
+html.high-contrast span,
+html.high-contrast label,
+html.high-contrast h1,
+html.high-contrast h2,
+html.high-contrast h3,
+html.high-contrast h4,
+html.high-contrast h5,
+html.high-contrast h6,
+html.high-contrast a,
+html.high-contrast li,
+html.high-contrast td,
+html.high-contrast th {
+  color: inherit;
+}
+
+/* Boost text contrast for common muted-gray classes */
+html.high-contrast .text-gray-400 {
+  color: #333333 !important;
+}
+
+html.high-contrast .text-gray-500 {
+  color: #222222 !important;
+}
+
+html.high-contrast .text-gray-600 {
+  color: #111111 !important;
+}
+
+html.high-contrast .text-gray-700,
+html.high-contrast .text-gray-800,
+html.high-contrast .text-gray-900 {
+  color: #000000 !important;
+}
+
+/* Stronger borders */
+html.high-contrast .border-gray-100,
+html.high-contrast .border-gray-200 {
+  border-color: #999999 !important;
+}
+
+/* Ensure inputs are readable */
+html.high-contrast input,
+html.high-contrast select,
+html.high-contrast textarea {
+  border-color: #555555 !important;
+  color: #000000 !important;
+}
+
+html.high-contrast input::placeholder,
+html.high-contrast textarea::placeholder {
+  color: #555555 !important;
+}
+
+/* ─── Themed Date Picker (react-day-picker) ──────────────────────────────── */
+
+.rdp-root {
+  --rdp-accent-color: var(--color-primary);
+  --rdp-accent-background-color: #fef2f2;
+  --rdp-day_button-border-radius: 0.5rem;
+  --rdp-selected-border: 0px;
+  --rdp-outside-opacity: 0.4;
+  --rdp-today-color: var(--color-primary);
+  font-family: var(--font-open-sans);
+}
+
+.rdp-month_caption {
+  font-weight: 700;
+  font-size: 0.9rem;
+  color: #1f2937;
+}
+
+.rdp-button_previous,
+.rdp-button_next {
+  color: #6b7280;
+  border-radius: 0.5rem;
+}
+
+.rdp-button_previous:hover,
+.rdp-button_next:hover {
+  background-color: #fef2f2;
+  color: var(--color-primary);
+}
+
+.rdp-weekday {
+  font-weight: 600;
+  font-size: 0.75rem;
+  color: #9ca3af;
+  text-transform: uppercase;
+}
+
+.rdp-day_button {
+  font-size: 0.875rem;
+  color: #374151;
+  transition:
+    background-color 0.15s,
+    color 0.15s;
+}
+
+.rdp-day_button:hover {
+  background-color: #fef2f2;
+  color: var(--color-primary);
+}
+
+.rdp-selected .rdp-day_button {
+  background-color: var(--color-primary);
+  color: white;
+  font-weight: 600;
+}
+
+.rdp-selected .rdp-day_button:hover {
+  background-color: var(--color-primary-hover);
+  color: white;
+}
+
+.rdp-today:not(.rdp-selected) .rdp-day_button {
+  font-weight: 700;
+  color: var(--color-primary);
+}
+
+/* Preserve brand colors in high-contrast mode */
+html.high-contrast .text-primary {
+  color: var(--color-primary) !important;
+}
+
+html.high-contrast .bg-primary {
+  background-color: var(--color-primary) !important;
+}

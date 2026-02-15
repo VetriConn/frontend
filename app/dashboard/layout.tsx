@@ -1,7 +1,6 @@
 import { AuthFooter } from "@/components/ui/AuthFooter";
 import DashboardNavbar from "@/components/ui/DashboardNavbar";
-
-
+import { Breadcrumbs } from "@/components/ui/Breadcrumbs";
 
 import { ReactNode } from "react";
 
@@ -13,6 +12,7 @@ const layout = ({ children }: LayoutProps) => {
   return (
     <div>
       <DashboardNavbar />
+      <Breadcrumbs />
       <div>
         {/* This is where the main content will be rendered */}
         {children}

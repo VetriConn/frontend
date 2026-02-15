@@ -1,7 +1,7 @@
 import React from "react";
 
 interface CheckCircleIconProps {
-  color?: "red" | "green";
+  color?: "red" | "green" | "orange";
   className?: string;
   size?: number;
 }
@@ -15,7 +15,8 @@ export const CheckCircleIcon: React.FC<CheckCircleIconProps> = ({
   className = "",
   size = 22,
 }) => {
-  const stroke = color === "red" ? "#E2283A" : "#20B16D";
+  const colorMap = { red: "#E2283A", green: "#20B16D", orange: "#F59E0B" };
+  const stroke = colorMap[color];
 
   return (
     <svg

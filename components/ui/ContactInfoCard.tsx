@@ -1,8 +1,11 @@
 "use client";
 import React from "react";
-import { FaEdit } from "react-icons/fa";
 import { LuPhone } from "react-icons/lu";
-import { HiOutlineEnvelope, HiOutlineMapPin } from "react-icons/hi2";
+import {
+  HiOutlineEnvelope,
+  HiOutlineMapPin,
+  HiOutlinePencilSquare,
+} from "react-icons/hi2";
 
 interface ContactInfoCardProps {
   phoneNumber?: string;
@@ -23,13 +26,18 @@ export const ContactInfoCard: React.FC<ContactInfoCardProps> = ({
       className="bg-white rounded-xl border border-gray-200 p-6"
     >
       <div className="flex items-start justify-between mb-4">
-        <h2 className="text-xl font-bold text-gray-900">Contact Information</h2>
+        <div className="flex items-center gap-2">
+          <HiOutlineEnvelope className="w-5 h-5 text-red-500" />
+          <h2 className="text-xl font-bold text-gray-900">
+            Contact Information
+          </h2>
+        </div>
         <button
           onClick={onEdit}
-          className="flex items-center gap-2 px-4 py-2 bg-red-50 text-red-700 border border-red-200 rounded-lg hover:bg-red-100 transition-colors font-medium text-sm"
+          className="flex items-center gap-1.5 px-4 py-2 bg-red-50 text-red-700 border border-red-200 rounded-lg hover:bg-red-100 transition-colors font-medium text-sm"
           aria-label="Edit contact information"
         >
-          <FaEdit className="text-sm" />
+          <HiOutlinePencilSquare className="text-base" />
           Edit
         </button>
       </div>

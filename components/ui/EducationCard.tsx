@@ -50,7 +50,10 @@ export const EducationCard: React.FC<EducationCardProps> = ({
       className="bg-white rounded-xl border border-gray-200 p-6"
     >
       <div className="flex items-center justify-between mb-6">
-        <h2 className="text-xl font-bold text-gray-900">Education</h2>
+        <div className="flex items-center gap-2">
+          <HiOutlineAcademicCap className="w-5 h-5 text-red-500" />
+          <h2 className="text-xl font-bold text-gray-900">Education</h2>
+        </div>
         <button
           onClick={onAdd}
           className="flex items-center gap-1.5 px-4 py-2 bg-red-50 text-red-700 border border-red-200 rounded-lg hover:bg-red-100 transition-colors font-medium text-sm"
@@ -114,6 +117,7 @@ export const EducationCard: React.FC<EducationCardProps> = ({
         </div>
       ) : (
         <div className="text-center py-8">
+          <HiOutlineAcademicCap className="w-8 h-8 text-gray-300 mx-auto mb-2" />
           <p className="text-gray-500 text-sm mb-1">No education added yet</p>
           <p className="text-gray-400 text-xs">
             Click &quot;+ Add education&quot; to add your education history

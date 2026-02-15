@@ -47,7 +47,7 @@ export const CompleteProfileCard: React.FC<CompleteProfileCardProps> = ({
           </div>
 
           <Link
-            href="/profile"
+            href="/dashboard/profile"
             className="inline-flex items-center bg-primary text-white px-5 py-2.5 rounded-lg font-medium hover:bg-primary-hover transition-colors text-sm"
           >
             Complete my profile

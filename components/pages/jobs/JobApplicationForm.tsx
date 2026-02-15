@@ -1,5 +1,11 @@
 "use client";
-import React, { useState, useCallback, useRef, useMemo } from "react";
+import React, {
+  useState,
+  useCallback,
+  useRef,
+  useMemo,
+  useEffect,
+} from "react";
 import Link from "next/link";
 import {
   HiOutlineArrowLeft,
@@ -15,7 +21,11 @@ import {
   HiOutlineCheckCircle,
 } from "react-icons/hi2";
 import { HiOutlinePaperAirplane } from "react-icons/hi2";
+import { DayPicker } from "react-day-picker";
+import "react-day-picker/style.css";
+import { format, parse } from "date-fns";
 import { Job } from "@/types/job";
+import { submitJobApplication } from "@/lib/api";
 
 // Mapped profile shape from useUserProfile hook
 interface MappedUserProfile {
@@ -101,6 +111,29 @@ export default function JobApplicationForm({
     resume: null,
     additionalInfo: "",
   });
+
+  // Restore draft from localStorage on mount
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem(`vetriconn-draft-${job.id}`);
+      if (saved) {
+        const draft = JSON.parse(saved);
+        setFormData((prev) => ({
+          ...prev,
+          relevantExperience:
+            draft.relevantExperience || prev.relevantExperience,
+          selectedSkills: draft.selectedSkills || prev.selectedSkills,
+          earliestStartDate: draft.earliestStartDate || prev.earliestStartDate,
+          preferredSchedule: draft.preferredSchedule || prev.preferredSchedule,
+          workLocationPreference:
+            draft.workLocationPreference || prev.workLocationPreference,
+          additionalInfo: draft.additionalInfo || prev.additionalInfo,
+        }));
+      }
+    } catch {
+      // Ignore corrupted drafts
+    }
+  }, [job.id]);
 
   // Track which fields were pre-filled
   const preFilled = useMemo(
@@ -207,14 +240,44 @@ export default function JobApplicationForm({
 
   const handleSubmit = async () => {
     setIsSubmitting(true);
-    // Simulate submission delay
-    await new Promise((r) => setTimeout(r, 1500));
-    setIsSubmitting(false);
-    setSubmitted(true);
+    try {
+      const apiFormData = new FormData();
+      apiFormData.append("fullName", formData.fullName);
+      apiFormData.append("email", formData.email);
+      apiFormData.append("phone", formData.phone);
+      apiFormData.append("relevantExperience", formData.relevantExperience);
+      apiFormData.append(
+        "selectedSkills",
+        JSON.stringify(formData.selectedSkills),
+      );
+      apiFormData.append("earliestStartDate", formData.earliestStartDate);
+      apiFormData.append("preferredSchedule", formData.preferredSchedule);
+      apiFormData.append(
+        "workLocationPreference",
+        formData.workLocationPreference,
+      );
+      apiFormData.append("additionalInfo", formData.additionalInfo);
+      if (formData.resume) {
+        apiFormData.append("resume", formData.resume);
+      }
+      await submitJobApplication(job.id, apiFormData);
+      // Clear draft on successful submission
+      localStorage.removeItem(`vetriconn-draft-${job.id}`);
+      setIsSubmitting(false);
+      setSubmitted(true);
+    } catch {
+      setIsSubmitting(false);
+      // Could show error toast here
+    }
   };
 
   const handleSaveDraft = () => {
-    // In real app, would save to localStorage or backend
+    const draft = {
+      ...formData,
+      resume: null, // Files can't be stored in localStorage
+      savedAt: new Date().toISOString(),
+    };
+    localStorage.setItem(`vetriconn-draft-${job.id}`, JSON.stringify(draft));
     alert("Application draft saved! You can finish it later.");
   };
 
@@ -222,32 +285,54 @@ export default function JobApplicationForm({
 
   if (submitted) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-6">
-        <div className="bg-white rounded-xl border border-gray-200 p-10 text-center max-w-md w-full">
-          <div className="w-16 h-16 bg-emerald-50 rounded-full flex items-center justify-center mx-auto mb-5">
-            <HiOutlineCheckCircle className="text-3xl text-emerald-500" />
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-6 mobile:p-4">
+        <div className="w-full max-w-lg">
+          {/* Success Card */}
+          <div className="bg-white rounded-xl border border-gray-200 p-10 mobile:p-6 text-center mb-4">
+            <div className="w-14 h-14 mobile:w-12 mobile:h-12 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-5">
+              <HiOutlineCheckCircle className="text-3xl mobile:text-2xl text-emerald-500" />
+            </div>
+            <h2 className="text-2xl mobile:text-lg font-bold text-gray-900 mb-2">
+              Application Submitted Successfully
+            </h2>
+            <p className="text-sm mobile:text-xs text-gray-500 mb-1">
+              Your application for
+            </p>
+            <p className="text-base mobile:text-sm font-bold text-gray-900 mb-0.5">
+              {job.role}
+            </p>
+            <p className="text-sm mobile:text-xs text-gray-500 mb-5">
+              at {job.company_name}
+            </p>
+            <p className="text-sm mobile:text-xs text-gray-500 leading-relaxed mb-7 max-w-[380px] mx-auto">
+              We&apos;ve sent it to the employer. They will review it and
+              contact you if you&apos;re a good match. This usually takes 3–5
+              business days.
+            </p>
+            <div className="flex items-center justify-center gap-3">
+              <Link
+                href="/dashboard/jobs"
+                className="inline-flex items-center gap-1.5 px-5 py-2.5 mobile:px-4 mobile:py-2 bg-primary hover:bg-primary-hover text-white font-semibold text-sm mobile:text-xs rounded-lg transition-colors no-underline"
+              >
+                Browse More Jobs
+              </Link>
+              <Link
+                href="/dashboard/applied-jobs"
+                className="inline-flex items-center gap-1.5 px-5 py-2.5 mobile:px-4 mobile:py-2 bg-white border border-gray-200 text-gray-700 font-semibold text-sm mobile:text-xs rounded-lg hover:bg-gray-50 transition-colors no-underline"
+              >
+                <HiOutlineBriefcase className="text-sm mobile:text-xs" />
+                View Applied Jobs
+              </Link>
+            </div>
           </div>
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">
-            Application Submitted!
-          </h2>
-          <p className="text-sm text-gray-500 mb-6 leading-relaxed">
-            Your application for <strong>{job.role}</strong> at{" "}
-            <strong>{job.company_name}</strong> has been submitted successfully.
-            We&apos;ll be in touch!
-          </p>
-          <div className="flex flex-col gap-3">
-            <Link
-              href={`/jobs/${job.id}`}
-              className="block w-full py-3 px-4 bg-primary hover:bg-primary-hover text-white font-semibold text-sm rounded-lg transition-colors text-center no-underline"
-            >
-              Back to Job Details
-            </Link>
-            <Link
-              href="/dashboard/jobs"
-              className="block w-full py-3 px-4 bg-white border border-gray-200 text-gray-700 font-semibold text-sm rounded-lg hover:bg-gray-50 transition-colors text-center no-underline"
-            >
-              Browse More Jobs
-            </Link>
+
+          {/* Tip Card */}
+          <div className="bg-white rounded-xl border border-gray-200 px-6 py-4 mobile:px-4 mobile:py-3 text-center">
+            <p className="text-sm mobile:text-xs text-gray-500">
+              <strong className="text-gray-700">Tip:</strong> Check your email
+              inbox for a confirmation. Don&apos;t forget to check your spam
+              folder too.
+            </p>
           </div>
         </div>
       </div>
@@ -259,15 +344,6 @@ export default function JobApplicationForm({
   return (
     <div className="min-h-screen bg-gray-50 pb-8">
       <div className="max-w-2xl mx-auto px-6 py-8 tablet:px-4 tablet:py-6">
-        {/* Back link */}
-        <Link
-          href={`/jobs/${job.id}`}
-          className="inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-700 transition-colors mb-6 no-underline"
-        >
-          <HiOutlineArrowLeft className="text-base" />
-          Back to all jobs
-        </Link>
-
         {/* Page header */}
         <h1 className="text-2xl font-bold text-gray-900 mb-1.5">
           Submit Your Application
@@ -442,23 +518,12 @@ export default function JobApplicationForm({
           complete={sectionComplete[2]}
         >
           <div className="space-y-5">
-            <div>
-              <label className="block text-sm font-semibold text-gray-900 mb-2">
-                Earliest Start Date
-              </label>
-              <input
-                type="date"
-                value={formData.earliestStartDate}
-                onChange={(e) =>
-                  updateField("earliestStartDate", e.target.value)
-                }
-                className="form-input"
-              />
-              <p className="text-xs text-gray-400 flex items-center gap-1.5 mt-2">
-                <InfoCircle />
-                When would you be available to begin work?
-              </p>
-            </div>
+            <DatePickerField
+              label="Earliest Start Date"
+              value={formData.earliestStartDate}
+              onChange={(val) => updateField("earliestStartDate", val)}
+              hint="When would you be available to begin work?"
+            />
 
             <div>
               <label className="block text-sm font-semibold text-gray-900 mb-2">
@@ -710,6 +775,74 @@ function FormField({
         )}
       </div>
       {children}
+    </div>
+  );
+}
+
+function DatePickerField({
+  label,
+  value,
+  onChange,
+  hint,
+}: {
+  label: string;
+  value: string;
+  onChange: (val: string) => void;
+  hint: string;
+}) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  // Close on outside click
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) {
+        setOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, []);
+
+  const selected = value ? parse(value, "yyyy-MM-dd", new Date()) : undefined;
+
+  return (
+    <div ref={ref} className="relative">
+      <label className="block text-sm font-semibold text-gray-900 mb-2">
+        {label}
+      </label>
+      <button
+        type="button"
+        onClick={() => setOpen((o) => !o)}
+        className="form-input w-full text-left flex items-center justify-between cursor-pointer"
+      >
+        <span className={value ? "text-gray-900" : "text-gray-400"}>
+          {value
+            ? format(parse(value, "yyyy-MM-dd", new Date()), "MMM d, yyyy")
+            : "Select a date..."}
+        </span>
+        <HiOutlineCalendarDays className="text-gray-400 text-base" />
+      </button>
+      {open && (
+        <div className="absolute z-50 mt-1 bg-white border border-gray-200 rounded-xl shadow-lg p-3 animate-fadeIn">
+          <DayPicker
+            mode="single"
+            selected={selected}
+            onSelect={(day) => {
+              if (day) {
+                onChange(format(day, "yyyy-MM-dd"));
+              }
+              setOpen(false);
+            }}
+            disabled={{ before: new Date() }}
+            defaultMonth={selected || new Date()}
+          />
+        </div>
+      )}
+      <p className="text-xs text-gray-400 flex items-center gap-1.5 mt-2">
+        <InfoCircle />
+        {hint}
+      </p>
     </div>
   );
 }

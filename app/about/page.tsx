@@ -172,9 +172,9 @@ const CheckIcon = () => (
 // ── Decorative Images ────────────────────────────────────────────────
 
 const heroImages = [
-  { src: "/images/Hero/4.svg", alt: "Veteran finding new career" },
-  { src: "/images/Hero/5.svg", alt: "Retiree at work" },
-  { src: "/images/Hero/6.svg", alt: "Professional collaboration" },
+  { src: "/images/Hero/2.svg", alt: "Veteran finding new career" },
+  { src: "/images/Hero/3.svg", alt: "Retiree at work" },
+  { src: "/images/Hero/8.svg", alt: "Professional collaboration" },
 ];
 
 // ── Page ─────────────────────────────────────────────────────────────

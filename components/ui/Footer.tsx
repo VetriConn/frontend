@@ -32,7 +32,8 @@ const Footer = () => {
               Terms & Conditions
             </a>
             <a
-              href="#"
+              target="_blank"
+              href="https://vetriconntandc.notion.site/VETRICONN-INC-TERMS-AND-CONDITIONS-22ac6380202c807fa63ef48c7ca69815"
               className="font-open-sans text-[15px] text-text opacity-80 no-underline transition-colors duration-200 hover:text-primary mobile:text-[14px]"
             >
               Privacy Guide

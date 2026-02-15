@@ -110,5 +110,5 @@ export default function JobDetailClient({
     );
   }
 
-  return <JobDescriptor {...displayJob} />;
+  return displayJob ? <JobDescriptor {...displayJob} /> : null;
 }

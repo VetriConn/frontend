@@ -57,7 +57,10 @@ export const DocumentsCard: React.FC<DocumentsCardProps> = ({
       className="bg-white rounded-xl border border-gray-200 p-6"
     >
       <div className="flex items-center justify-between mb-6">
-        <h2 className="text-xl font-bold text-gray-900">Documents</h2>
+        <div className="flex items-center gap-2">
+          <HiOutlineDocumentText className="w-5 h-5 text-red-500" />
+          <h2 className="text-xl font-bold text-gray-900">Documents</h2>
+        </div>
         <button
           onClick={onUpload}
           className="flex items-center gap-1.5 px-4 py-2 bg-red-50 text-red-700 border border-red-200 rounded-lg hover:bg-red-100 transition-colors font-medium text-sm"
@@ -115,6 +118,7 @@ export const DocumentsCard: React.FC<DocumentsCardProps> = ({
         </div>
       ) : (
         <div className="text-center py-8">
+          <HiOutlineDocumentText className="w-8 h-8 text-gray-300 mx-auto mb-2" />
           <p className="text-gray-500 text-sm mb-1">No documents added yet</p>
           <p className="text-gray-400 text-xs">
             Click &quot;Upload&quot; to add your documents

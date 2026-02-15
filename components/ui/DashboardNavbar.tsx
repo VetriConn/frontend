@@ -4,20 +4,19 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import clsx from "clsx";
 import {
-  FaChevronDown,
-  FaBars,
-  FaTimes,
-  FaSignOutAlt,
-  FaBookmark,
-  FaCog,
-  FaBriefcase,
-} from "react-icons/fa";
-import {
   HiOutlineBriefcase,
   HiOutlineUsers,
   HiOutlineInbox,
   HiOutlineBell,
-} from "react-icons/hi";
+  HiOutlineChevronDown,
+  HiOutlineBars3,
+  HiOutlineXMark,
+  HiOutlineArrowRightOnRectangle,
+  HiOutlineBookmark,
+  HiOutlineCog6Tooth,
+  HiOutlineUser,
+  HiOutlineMagnifyingGlass,
+} from "react-icons/hi2";
 import Image from "next/image";
 import { logoutUser } from "@/lib/api";
 import { useToaster } from "@/components/ui/Toaster";
@@ -111,7 +110,7 @@ const DashboardNavbar = () => {
     }
     setIsProfileDropdownOpen(false);
   };
-  console.log(userProfile);
+
   const userName = userProfile?.name || "User";
   const userRole = userProfile?.role === "employer" ? "Employer" : "Job Seeker";
 
@@ -149,7 +148,7 @@ const DashboardNavbar = () => {
                 >
                   {item.icon}
                   <span>{item.name}</span>
-                  <FaChevronDown
+                  <HiOutlineChevronDown
                     className={clsx(
                       "text-xs transition-transform",
                       isJobsDropdownOpen && "rotate-180",
@@ -188,6 +187,20 @@ const DashboardNavbar = () => {
                     Saved Jobs
                   </Link>
                   <Link
+                    href="/dashboard/saved-searches"
+                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                    onClick={() => setIsJobsDropdownOpen(false)}
+                  >
+                    Saved Searches
+                  </Link>
+                  <Link
+                    href="/dashboard/applied-jobs"
+                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                    onClick={() => setIsJobsDropdownOpen(false)}
+                  >
+                    Applied Jobs
+                  </Link>
+                  <Link
                     href="/dashboard/jobs"
                     className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
                     onClick={() => setIsJobsDropdownOpen(false)}
@@ -203,10 +216,21 @@ const DashboardNavbar = () => {
         {/* Right Side - Notifications & Profile */}
         <div className="hidden md:flex items-center gap-3">
           {/* Notifications */}
-          <button className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-50 transition-colors">
-            <HiOutlineBell className="text-lg text-primary" />
+          <Link
+            href="/dashboard/notifications"
+            className={clsx(
+              "flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors relative",
+              pathname === "/dashboard/notifications"
+                ? "text-primary bg-red-50"
+                : "text-gray-600 hover:text-gray-900 hover:bg-gray-50",
+            )}
+          >
+            <div className="relative">
+              <HiOutlineBell className="text-lg" />
+              <span className="absolute -top-1 -right-1 w-2 h-2 bg-primary rounded-full" />
+            </div>
             <span>Notifications</span>
-          </button>
+          </Link>
 
           {/* Profile Dropdown */}
           <div className="relative" ref={profileDropdownRef}>
@@ -237,7 +261,7 @@ const DashboardNavbar = () => {
                   {userRole}
                 </p>
               </div>
-              <FaChevronDown
+              <HiOutlineChevronDown
                 className={clsx(
                   "text-xs text-gray-400 transition-transform ml-1",
                   isProfileDropdownOpen && "rotate-180",
@@ -252,9 +276,7 @@ const DashboardNavbar = () => {
                   className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50"
                   onClick={() => setIsProfileDropdownOpen(false)}
                 >
-                  <div className="w-5 h-5 rounded-full bg-gray-200 flex items-center justify-center text-xs text-gray-500">
-                    {userName.charAt(0).toUpperCase()}
-                  </div>
+                  <HiOutlineUser className="text-gray-400" />
                   View Profile
                 </Link>
                 <Link
@@ -262,7 +284,7 @@ const DashboardNavbar = () => {
                   className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50"
                   onClick={() => setIsProfileDropdownOpen(false)}
                 >
-                  <FaBriefcase className="text-gray-400" />
+                  <HiOutlineBriefcase className="text-gray-400" />
                   Applied Jobs
                 </Link>
                 <Link
@@ -270,15 +292,23 @@ const DashboardNavbar = () => {
                   className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50"
                   onClick={() => setIsProfileDropdownOpen(false)}
                 >
-                  <FaBookmark className="text-gray-400" />
+                  <HiOutlineBookmark className="text-gray-400" />
                   Saved Jobs
+                </Link>
+                <Link
+                  href="/dashboard/saved-searches"
+                  className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50"
+                  onClick={() => setIsProfileDropdownOpen(false)}
+                >
+                  <HiOutlineMagnifyingGlass className="text-gray-400" />
+                  Saved Searches
                 </Link>
                 <Link
                   href="/dashboard/settings"
                   className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50"
                   onClick={() => setIsProfileDropdownOpen(false)}
                 >
-                  <FaCog className="text-gray-400" />
+                  <HiOutlineCog6Tooth className="text-gray-400" />
                   Account Settings
                 </Link>
                 <hr className="my-1 border-gray-100" />
@@ -286,7 +316,7 @@ const DashboardNavbar = () => {
                   onClick={handleLogout}
                   className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 w-full text-left"
                 >
-                  <FaSignOutAlt className="text-gray-400" />
+                  <HiOutlineArrowRightOnRectangle className="text-gray-400" />
                   Logout
                 </button>
               </div>
@@ -301,9 +331,9 @@ const DashboardNavbar = () => {
             className="p-2 rounded-lg text-gray-600 hover:bg-gray-100 transition-colors"
           >
             {isMobileMenuOpen ? (
-              <FaTimes className="text-xl" />
+              <HiOutlineXMark className="text-xl" />
             ) : (
-              <FaBars className="text-xl" />
+              <HiOutlineBars3 className="text-xl" />
             )}
           </button>
 
@@ -327,11 +357,19 @@ const DashboardNavbar = () => {
               ))}
               <hr className="my-2 border-gray-100" />
               <Link
-                href="/dashboard/profile"
-                className="flex items-center gap-3 px-4 py-3 text-sm text-gray-700 hover:bg-gray-50"
+                href="/dashboard/notifications"
+                className={clsx(
+                  "flex items-center gap-3 px-4 py-3 text-sm font-medium transition-colors",
+                  pathname === "/dashboard/notifications"
+                    ? "text-primary bg-red-50"
+                    : "text-gray-700 hover:bg-gray-50",
+                )}
                 onClick={() => setIsMobileMenuOpen(false)}
               >
-                <HiOutlineBell className="text-lg" />
+                <div className="relative">
+                  <HiOutlineBell className="text-lg" />
+                  <span className="absolute -top-1 -right-1 w-2 h-2 bg-primary rounded-full" />
+                </div>
                 Notifications
               </Link>
               <Link
@@ -339,6 +377,7 @@ const DashboardNavbar = () => {
                 className="flex items-center gap-3 px-4 py-3 text-sm text-gray-700 hover:bg-gray-50"
                 onClick={() => setIsMobileMenuOpen(false)}
               >
+                <HiOutlineUser className="text-gray-400" />
                 View Profile
               </Link>
               <Link
@@ -346,7 +385,7 @@ const DashboardNavbar = () => {
                 className="flex items-center gap-3 px-4 py-3 text-sm text-gray-700 hover:bg-gray-50"
                 onClick={() => setIsMobileMenuOpen(false)}
               >
-                <FaBriefcase className="text-gray-400" />
+                <HiOutlineBriefcase className="text-gray-400" />
                 Applied Jobs
               </Link>
               <Link
@@ -354,15 +393,23 @@ const DashboardNavbar = () => {
                 className="flex items-center gap-3 px-4 py-3 text-sm text-gray-700 hover:bg-gray-50"
                 onClick={() => setIsMobileMenuOpen(false)}
               >
-                <FaBookmark className="text-gray-400" />
+                <HiOutlineBookmark className="text-gray-400" />
                 Saved Jobs
+              </Link>
+              <Link
+                href="/dashboard/saved-searches"
+                className="flex items-center gap-3 px-4 py-3 text-sm text-gray-700 hover:bg-gray-50"
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                <HiOutlineMagnifyingGlass className="text-gray-400" />
+                Saved Searches
               </Link>
               <Link
                 href="/dashboard/settings"
                 className="flex items-center gap-3 px-4 py-3 text-sm text-gray-700 hover:bg-gray-50"
                 onClick={() => setIsMobileMenuOpen(false)}
               >
-                <FaCog className="text-gray-400" />
+                <HiOutlineCog6Tooth className="text-gray-400" />
                 Account Settings
               </Link>
               <hr className="my-2 border-gray-100" />
@@ -370,7 +417,7 @@ const DashboardNavbar = () => {
                 onClick={handleLogout}
                 className="flex items-center gap-3 px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 w-full text-left"
               >
-                <FaSignOutAlt className="text-gray-400" />
+                <HiOutlineArrowRightOnRectangle className="text-gray-400" />
                 Logout
               </button>
             </div>

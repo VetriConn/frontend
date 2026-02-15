@@ -1,20 +1,10 @@
 import useSWR from "swr";
 import { getUserProfile } from "@/lib/api";
-
-// Profile completion step groups (matching signup wizard structure)
-const PROFILE_STEP_GROUPS = [
-  { name: "Account Type", fields: ["role"] },
-  { name: "Personal Info", fields: ["full_name"] },
-  { name: "Contact Info", fields: ["phone_number", "city", "country"] },
-  {
-    name: "Work Background",
-    fields: ["job_title", "industry", "years_of_experience"],
-  },
-  { name: "Resume Upload", fields: ["documents"] },
-] as const;
-
-// Get all fields for percentage calculation
-const ALL_PROFILE_FIELDS = PROFILE_STEP_GROUPS.flatMap((step) => step.fields);
+import {
+  calculateProfileCompletion,
+  PROFILE_COMPLETION_FIELDS,
+} from "@/lib/profile-utils";
+import type { UserProfile } from "@/types/api";
 
 export function useUserProfile() {
   const { data, error, mutate, isLoading } = useSWR(
@@ -24,41 +14,44 @@ export function useUserProfile() {
 
   const rawUser = data?.data?.user;
 
-  // Calculate profile completion based on step groups
-  const profileCompletion = (() => {
-    if (!rawUser)
-      return { percentage: 0, completed: 0, total: PROFILE_STEP_GROUPS.length };
-
-    // Check if a field has data
-    const isFieldFilled = (field: string): boolean => {
-      const value = rawUser[field as keyof typeof rawUser];
-      if (field === "documents") {
-        return Array.isArray(value) && value.length > 0;
+  // Build an API-shaped UserProfile for the unified completion calculator
+  const apiProfile: UserProfile | null = rawUser
+    ? {
+        full_name: rawUser.full_name || "",
+        role: rawUser.role || "job_seeker",
+        email: rawUser.email || "",
+        phone_number: rawUser.phone_number || "",
+        city: rawUser.city || "",
+        country: rawUser.country || "",
+        location: rawUser.location || "",
+        job_title: rawUser.job_title || "",
+        industry: rawUser.industry || "",
+        years_of_experience: rawUser.years_of_experience || "",
+        bio: rawUser.bio || "",
+        profession: rawUser.profession || "",
+        picture: rawUser.picture || "",
+        work_experience: rawUser.work_experience || [],
+        education: rawUser.education || [],
+        documents: rawUser.documents || [],
+        socials: rawUser.socials || {},
+        professional_summary: rawUser.professional_summary || "",
+        saved_jobs: rawUser.saved_jobs || [],
+        skills: rawUser.skills || [],
+        job_seeking_status: rawUser.job_seeking_status || "none",
       }
-      return (
-        value !== undefined && value !== null && String(value).trim() !== ""
-      );
-    };
+    : null;
 
-    // Count completed steps (all fields in group must be filled)
-    const completedSteps = PROFILE_STEP_GROUPS.filter((step) =>
-      step.fields.every((field) => isFieldFilled(field)),
-    ).length;
-
-    // Calculate percentage based on individual fields filled
-    const filledFields = ALL_PROFILE_FIELDS.filter((field) =>
-      isFieldFilled(field),
-    ).length;
-    const percentage = Math.round(
-      (filledFields / ALL_PROFILE_FIELDS.length) * 100,
-    );
-
-    return {
-      percentage,
-      completed: completedSteps,
-      total: PROFILE_STEP_GROUPS.length,
-    };
-  })();
+  // Single source of truth for profile completion
+  const profileCompletion = apiProfile
+    ? calculateProfileCompletion(apiProfile)
+    : {
+        percentage: 0,
+        completed: 0,
+        total: PROFILE_COMPLETION_FIELDS.length,
+        completedSections: [],
+        incompleteSections: [],
+        items: [],
+      };
 
   // Map backend user data to frontend format with proper fallbacks
   const userProfile = rawUser
@@ -72,9 +65,7 @@ export function useUserProfile() {
         lookingFor: rawUser.looking_for || [],
         bio: rawUser.bio || null,
         avatar:
-          rawUser.picture &&
-          rawUser.picture.trim() &&
-          rawUser.picture.trim() !== "/images/richmond.svg"
+          rawUser.picture && rawUser.picture.trim()
             ? rawUser.picture.trim()
             : "",
         socials: {
@@ -95,6 +86,8 @@ export function useUserProfile() {
         education: rawUser.education || [],
         documents: rawUser.documents || [],
         saved_jobs: rawUser.saved_jobs || [],
+        skills: rawUser.skills || [],
+        job_seeking_status: rawUser.job_seeking_status || "none",
         email: rawUser.email || "",
       }
     : null;
@@ -102,6 +95,7 @@ export function useUserProfile() {
   return {
     userProfile,
     rawUser,
+    apiProfile,
     profileCompletion,
     isLoading,
     isError: !!error,

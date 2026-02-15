@@ -143,7 +143,7 @@ const benefits: Benefit[] = [
     title: "Stronger Communities",
     description:
       "By connecting retirees and veterans with purposeful work and volunteer opportunities, we help strengthen communities. Organizations gain valuable experienced support, while our users find purpose, income, and connection—creating a true win-win for everyone.",
-    image: "/images/Hero/2.svg",
+    image: "/images/jobs_hero2.jpg",
     imageAlt: "Building stronger communities together",
   },
 ];

@@ -1,56 +1,27 @@
 "use client";
 import React from "react";
-import { UserProfile } from "@/types/api";
-import { calculateProfileCompletion } from "@/lib/profile-utils";
 import { FaCircle } from "react-icons/fa";
 import { CheckCircleIcon } from "@/components/ui/CheckCircleIcon";
+import type { CompletionStatus } from "@/lib/profile-utils";
 
 interface ProfileCompletionCardProps {
-  userProfile: UserProfile;
+  completion: CompletionStatus;
   onSectionClick?: (section: string) => void;
 }
 
-// Map field names to user-friendly section names
-const sectionDisplayNames: Record<string, string> = {
-  full_name: "Full Name",
-  phone_number: "Phone Number",
-  location: "Location",
-  job_title: "Job Title",
-  bio: "Bio",
-  work_experience: "Work Experience",
-  education: "Education",
-};
-
-// Map field names to card element IDs for scrolling
-const sectionElementIds: Record<string, string> = {
-  full_name: "profile-header",
-  phone_number: "contact-info-card",
-  location: "contact-info-card",
-  job_title: "profile-header",
-  bio: "profile-header",
-  work_experience: "work-experience-card",
-  education: "education-card",
-};
-
 export const ProfileCompletionCard: React.FC<ProfileCompletionCardProps> = ({
-  userProfile,
+  completion,
   onSectionClick,
 }) => {
-  const { percentage, completedSections, incompleteSections } =
-    calculateProfileCompletion(userProfile);
+  const { percentage, items, incompleteSections } = completion;
 
-  const handleSectionClick = (section: string) => {
-    const elementId = sectionElementIds[section];
-    if (elementId) {
-      const element = document.getElementById(elementId);
-      if (element) {
-        element.scrollIntoView({ behavior: "smooth", block: "center" });
-      }
+  const handleSectionClick = (field: string, scrollTo: string) => {
+    const element = document.getElementById(scrollTo);
+    if (element) {
+      element.scrollIntoView({ behavior: "smooth", block: "center" });
     }
-
-    // Call optional callback
     if (onSectionClick) {
-      onSectionClick(section);
+      onSectionClick(field);
     }
   };
 
@@ -58,8 +29,8 @@ export const ProfileCompletionCard: React.FC<ProfileCompletionCardProps> = ({
 
   return (
     <div className="bg-white rounded-xl border border-gray-200 p-6 lg:mt-20">
-      <div className="flex-1 ">
-        <h3 className="text-lg  font-bold text-gray-900 mb-2">
+      <div className="flex-1">
+        <h3 className="text-lg font-bold text-gray-900 mb-2">
           Profile Completion
         </h3>
 
@@ -75,7 +46,13 @@ export const ProfileCompletionCard: React.FC<ProfileCompletionCardProps> = ({
           </div>
           <div className="w-full h-2 bg-gray-100 rounded-full overflow-hidden">
             <div
-              className="h-full bg-red-600 transition-all duration-300"
+              className={`h-full transition-all duration-300 ${
+                isComplete
+                  ? "bg-emerald-500"
+                  : percentage >= 60
+                    ? "bg-amber-500"
+                    : "bg-red-600"
+              }`}
               style={{ width: `${percentage}%` }}
               role="progressbar"
               aria-valuenow={percentage}
@@ -88,37 +65,31 @@ export const ProfileCompletionCard: React.FC<ProfileCompletionCardProps> = ({
 
         {/* Section list */}
         <div className="space-y-2 mb-4">
-          {Object.keys(sectionDisplayNames).map((field) => {
-            const isCompleted = completedSections.includes(field);
-            const displayName = sectionDisplayNames[field];
-
-            return (
-              <button
-                key={field}
-                onClick={() => !isCompleted && handleSectionClick(field)}
-                className={`flex items-center gap-2 text-sm w-full text-left ${
-                  isCompleted
-                    ? "text-gray-500 cursor-default"
-                    : "text-gray-700 hover:text-red-600 cursor-pointer"
-                }`}
-                disabled={isCompleted}
-                aria-label={`${displayName} - ${isCompleted ? "completed" : "incomplete, click to navigate"}`}
-              >
-                {isCompleted ? (
-                  <CheckCircleIcon
-                    color="green"
-                    size={18}
-                    className="shrink-0"
-                  />
-                ) : (
-                  <FaCircle className="text-gray-300 shrink-0 text-xs" />
-                )}
-                <span className={isCompleted ? "line-through" : ""}>
-                  {displayName}
-                </span>
-              </button>
-            );
-          })}
+          {items.map((item) => (
+            <button
+              key={item.field}
+              onClick={() =>
+                !item.isComplete &&
+                handleSectionClick(item.field, item.scrollTo)
+              }
+              className={`flex items-center gap-2 text-sm w-full text-left ${
+                item.isComplete
+                  ? "text-gray-500 cursor-default"
+                  : "text-gray-700 hover:text-red-600 cursor-pointer"
+              }`}
+              disabled={item.isComplete}
+              aria-label={`${item.label} - ${item.isComplete ? "completed" : "incomplete, click to navigate"}`}
+            >
+              {item.isComplete ? (
+                <CheckCircleIcon color="green" size={18} className="shrink-0" />
+              ) : (
+                <FaCircle className="text-gray-300 shrink-0 text-xs" />
+              )}
+              <span className={item.isComplete ? "line-through" : ""}>
+                {item.label}
+              </span>
+            </button>
+          ))}
         </div>
 
         {/* Action button or success message */}
@@ -132,12 +103,12 @@ export const ProfileCompletionCard: React.FC<ProfileCompletionCardProps> = ({
         ) : (
           <button
             onClick={() => {
-              // Scroll to first incomplete section
               if (incompleteSections.length > 0) {
-                handleSectionClick(incompleteSections[0]);
+                const first = items.find((i) => !i.isComplete);
+                if (first) handleSectionClick(first.field, first.scrollTo);
               }
             }}
-            className="w-full px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors font-medium text-sm"
+            className="w-full px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors font-medium text-sm cursor-pointer"
             aria-label="Complete your profile"
           >
             Complete profile

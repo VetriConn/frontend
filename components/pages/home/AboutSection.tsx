@@ -42,7 +42,7 @@ const decorativeImages = [
       "absolute -bottom-6 -left-4 w-36 h-36 -rotate-[18deg] rounded-2xl overflow-hidden shadow-lg xl:w-40 xl:h-40",
   },
   {
-    src: "/images/Hero/4.svg",
+    src: "/images/Hero/7.svg",
     alt: "Community connection",
     className:
       "absolute -bottom-4 -right-6 w-40 h-40 rotate-[20deg] rounded-2xl overflow-hidden shadow-lg xl:w-44 xl:h-44",

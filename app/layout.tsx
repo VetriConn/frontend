@@ -3,6 +3,7 @@ import { Geist, Geist_Mono, Lato, Open_Sans, Outfit } from "next/font/google";
 import "./globals.css";
 import { ToasterProvider } from "@/components/ui/Toaster";
 import { JsonLd } from "@/components/seo/JsonLd";
+import { AccessibilityProvider } from "@/hooks/useAccessibility";
 import {
   SITE_CONFIG,
   generateOrganizationSchema,
@@ -96,17 +97,25 @@ export default function RootLayout({
       <head>
         <meta charSet="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <meta name="theme-color" content="#000000" />
+        <meta name="theme-color" content="#e53e3e" />
         <link rel="icon" href="/logo.svg" />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" />
         <JsonLd data={organizationSchema} />
         <JsonLd data={webSiteSchema} />
+        {/* Blocking script to prevent FOUC for accessibility settings */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `(function(){try{var s=JSON.parse(localStorage.getItem('vetriconn-accessibility')||'{}');if(s.highContrast)document.documentElement.classList.add('high-contrast');if(s.textSize){var m={'normal':'100%','large':'112%','extra-large':'125%'};if(m[s.textSize])document.documentElement.style.fontSize=m[s.textSize]}}catch(e){}})();`,
+          }}
+        />
       </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} ${lato.variable} ${openSans.variable} ${outfit.variable}`}
       >
-        <ToasterProvider>{children}</ToasterProvider>
+        <ToasterProvider>
+          <AccessibilityProvider>{children}</AccessibilityProvider>
+        </ToasterProvider>
       </body>
     </html>
   );

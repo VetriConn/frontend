@@ -258,13 +258,6 @@ export function generateJobMetadata(job: Job): Metadata {
 }
 
 /**
- * Gets the site configuration
- */
-export function getSiteConfig(): SiteConfig {
-  return SITE_CONFIG;
-}
-
-/**
  * Generates Organization schema markup for structured data
  * Requirements: 2.1
  */

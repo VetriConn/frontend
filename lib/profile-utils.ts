@@ -23,7 +23,7 @@ export interface CompletionStatus {
 }
 
 /**
- * The canonical list of fields a user should complete.
+ * The list of fields a user should complete.
  * Every field here helps us tailor job recommendations to the user.
  */
 export const PROFILE_COMPLETION_FIELDS: CompletionItem[] = [

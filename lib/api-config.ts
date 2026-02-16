@@ -39,9 +39,3 @@ export const API_CONFIG = {
 export const getApiUrl = (endpoint: string): string => {
   return `${API_CONFIG.BASE_URL}${endpoint}`;
 };
-
-/**
- * Current environment
- */
-export const IS_DEVELOPMENT = isDevelopment;
-export const IS_PRODUCTION = !isDevelopment;

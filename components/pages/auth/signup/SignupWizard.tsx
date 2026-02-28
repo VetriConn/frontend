@@ -300,10 +300,16 @@ export function SignupWizard() {
       dispatch({ type: "SET_SUBMITTING", payload: true });
       dispatch({ type: "SET_ERRORS", payload: {} });
 
+      console.log("handleSubmit: Starting registration...");
+
       // Register user
       const response = await registerUser(formData);
 
+      console.log("handleSubmit: Registration response:", response);
+
       if (!response.success) {
+        console.log("handleSubmit: Registration failed, success is false");
+
         // Handle validation errors
         if (response.errors) {
           const errorMap: Record<string, string> = {};
@@ -325,6 +331,8 @@ export function SignupWizard() {
         dispatch({ type: "SET_SUBMITTING", payload: false });
         return false;
       }
+
+      console.log("handleSubmit: Registration successful");
 
       // Store token in localStorage
       if (response.data?.token) {
@@ -351,11 +359,40 @@ export function SignupWizard() {
       return true;
     } catch (error) {
       console.error("Submission error:", error);
-      alert("An unexpected error occurred. Please try again.");
+      showToast({
+        type: "error",
+        title: "Error",
+        description: "An unexpected error occurred. Please try again.",
+      });
       dispatch({ type: "SET_SUBMITTING", payload: false });
       return false;
     }
-  }, [formData]);
+  }, [formData, showToast]);
+
+  /**
+   * Handle step 5 (resume upload) submission and progression
+   * This is used by both Continue and Upload Later buttons
+   */
+  const handleStep5Submission = useCallback(async (): Promise<boolean> => {
+    console.log("handleStep5Submission: Submitting registration...");
+    const success = await handleSubmit();
+    console.log("handleStep5Submission: handleSubmit returned:", success);
+
+    if (!success) {
+      console.log("handleStep5Submission: Registration failed, NOT proceeding");
+      return false;
+    }
+
+    console.log(
+      "handleStep5Submission: Registration succeeded, proceeding to next step",
+    );
+
+    // Update highest completed step and move to next step
+    dispatch({ type: "SET_HIGHEST_COMPLETED_STEP", payload: currentStep });
+    dispatch({ type: "SET_STEP", payload: currentStep + 1 });
+
+    return true;
+  }, [currentStep, handleSubmit]);
 
   /**
    * Navigate to next step
@@ -365,12 +402,12 @@ export function SignupWizard() {
       return;
     }
 
+    console.log("handleNext: Called for step", currentStep);
+
     // If moving from step 5 to step 6, submit the form
     if (currentStep === 5) {
-      const success = await handleSubmit();
-      if (!success) {
-        return; // Don't proceed if submission failed
-      }
+      await handleStep5Submission();
+      return;
     }
 
     if (currentStep < TOTAL_STEPS) {
@@ -378,7 +415,7 @@ export function SignupWizard() {
       dispatch({ type: "SET_HIGHEST_COMPLETED_STEP", payload: currentStep });
       dispatch({ type: "SET_STEP", payload: currentStep + 1 });
     }
-  }, [currentStep, validateCurrentStep, handleSubmit]);
+  }, [currentStep, validateCurrentStep, handleStep5Submission]);
 
   /**
    * Handle resend verification email
@@ -408,20 +445,20 @@ export function SignupWizard() {
    * Skip current step (for optional steps)
    */
   const handleSkip = useCallback(async () => {
-    // If skipping from step 5 (resume upload), submit the form like handleNext does
+    console.log("handleSkip: Called for step", currentStep);
+
+    // For step 5 (resume upload), use the same submission logic as Continue button
     if (currentStep === 5) {
-      const success = await handleSubmit();
-      if (!success) {
-        return; // Don't proceed if submission failed
-      }
+      await handleStep5Submission();
+      return;
     }
 
+    // For other steps, just skip without validation
     if (currentStep < TOTAL_STEPS) {
-      // Update highest completed step when moving forward
       dispatch({ type: "SET_HIGHEST_COMPLETED_STEP", payload: currentStep });
       dispatch({ type: "SET_STEP", payload: currentStep + 1 });
     }
-  }, [currentStep, handleSubmit]);
+  }, [currentStep, handleStep5Submission]);
 
   /**
    * Render the current step component

@@ -20,12 +20,12 @@ import {
   ResumeUploadStep,
   CompletionStep,
 } from "./steps";
+import { step1Schema, step2Schema, step3Schema } from "@/lib/validation";
 import {
-  step1Schema,
-  step2Schema,
-  step3Schema,
-} from "@/lib/validation";
-import { registerUser, uploadResume, resendVerificationEmail } from "@/lib/api/auth";
+  registerUser,
+  uploadResume,
+  resendVerificationEmail,
+} from "@/lib/api/auth";
 import { useToaster } from "@/components/ui/Toaster";
 
 // Session storage key for persisting wizard state
@@ -47,7 +47,7 @@ const initialState: SignupWizardState = {
  */
 function signupReducer(
   state: SignupWizardState,
-  action: SignupAction
+  action: SignupAction,
 ): SignupWizardState {
   switch (action.type) {
     case "SET_STEP":
@@ -90,7 +90,10 @@ function signupReducer(
     case "SET_HIGHEST_COMPLETED_STEP":
       return {
         ...state,
-        highestCompletedStep: Math.max(state.highestCompletedStep, action.payload),
+        highestCompletedStep: Math.max(
+          state.highestCompletedStep,
+          action.payload,
+        ),
       };
     case "RESET":
       return initialState;
@@ -212,7 +215,10 @@ export function SignupWizard() {
         });
       }
       if (savedState.highestCompletedStep !== undefined) {
-        dispatch({ type: "SET_HIGHEST_COMPLETED_STEP", payload: savedState.highestCompletedStep });
+        dispatch({
+          type: "SET_HIGHEST_COMPLETED_STEP",
+          payload: savedState.highestCompletedStep,
+        });
       }
       if (savedState.currentStep) {
         dispatch({ type: "SET_STEP", payload: savedState.currentStep });
@@ -283,7 +289,7 @@ export function SignupWizard() {
     (field: keyof SignupFormData, value: unknown) => {
       dispatch({ type: "UPDATE_FIELD", payload: { field, value } });
     },
-    []
+    [],
   );
 
   /**
@@ -306,45 +312,46 @@ export function SignupWizard() {
           });
           dispatch({ type: "SET_ERRORS", payload: errorMap });
         }
-        
+
         // Show toast notification for error
         showToast({
           type: "error",
           title: "Registration Failed",
-          description: response.message || 'Please check your information and try again.',
+          description:
+            response.message || "Please check your information and try again.",
         });
-        
-        console.error('Registration failed:', response.message);
+
+        console.error("Registration failed:", response.message);
         dispatch({ type: "SET_SUBMITTING", payload: false });
         return false;
       }
 
       // Store token in localStorage
       if (response.data?.token) {
-        localStorage.setItem('authToken', response.data.token);
+        localStorage.setItem("authToken", response.data.token);
       }
 
       // Upload resume if provided
       if (formData.resumeFile && response.data?.token) {
         const uploadResponse = await uploadResume(
           formData.resumeFile,
-          response.data.token
+          response.data.token,
         );
-        
+
         if (!uploadResponse.success) {
-          console.warn('Resume upload failed:', uploadResponse.message);
+          console.warn("Resume upload failed:", uploadResponse.message);
           // Don't fail the entire registration if resume upload fails
         }
       }
 
       // Clear session storage on successful registration
       sessionStorage.removeItem(STORAGE_KEY);
-      
+
       dispatch({ type: "SET_SUBMITTING", payload: false });
       return true;
     } catch (error) {
-      console.error('Submission error:', error);
-      alert('An unexpected error occurred. Please try again.');
+      console.error("Submission error:", error);
+      alert("An unexpected error occurred. Please try again.");
       dispatch({ type: "SET_SUBMITTING", payload: false });
       return false;
     }
@@ -380,9 +387,9 @@ export function SignupWizard() {
     if (!formData.email) {
       throw new Error("Email not found");
     }
-    
+
     const response = await resendVerificationEmail(formData.email);
-    
+
     if (!response.success) {
       throw new Error(response.message);
     }
@@ -400,11 +407,21 @@ export function SignupWizard() {
   /**
    * Skip current step (for optional steps)
    */
-  const handleSkip = useCallback(() => {
+  const handleSkip = useCallback(async () => {
+    // If skipping from step 5 (resume upload), submit the form like handleNext does
+    if (currentStep === 5) {
+      const success = await handleSubmit();
+      if (!success) {
+        return; // Don't proceed if submission failed
+      }
+    }
+
     if (currentStep < TOTAL_STEPS) {
+      // Update highest completed step when moving forward
+      dispatch({ type: "SET_HIGHEST_COMPLETED_STEP", payload: currentStep });
       dispatch({ type: "SET_STEP", payload: currentStep + 1 });
     }
-  }, [currentStep]);
+  }, [currentStep, handleSubmit]);
 
   /**
    * Render the current step component
@@ -432,7 +449,12 @@ export function SignupWizard() {
         return <ResumeUploadStep {...stepProps} />;
       case 6:
         // Don't clear storage yet - wait until after email verification
-        return <CompletionStep formData={formData} onResendEmail={handleResendEmail} />;
+        return (
+          <CompletionStep
+            formData={formData}
+            onResendEmail={handleResendEmail}
+          />
+        );
       default:
         return null;
     }
@@ -469,4 +491,4 @@ export function SignupWizard() {
       <AuthFooter />
     </div>
   );
-};
+}

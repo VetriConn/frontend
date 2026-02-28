@@ -10,11 +10,16 @@ import type { ContactMessage, MessageResponse } from "@/types/api";
 export async function sendContactMessage(
   messageData: ContactMessage,
 ): Promise<MessageResponse> {
-  console.log("Making message request to:", `${API_BASE_URL}/api/v1/contact`);
+  const contactUrl = `${API_BASE_URL}/api/v1/contact`;
+  console.log("=== CONTACT API DEBUG ===");
+  console.log("Environment:", process.env.NEXT_PUBLIC_NODE_ENV);
+  console.log("API_BASE_URL:", API_BASE_URL);
+  console.log("Full contact URL:", contactUrl);
   console.log("Message data:", messageData);
+  console.log("=======================");
 
   try {
-    const response = await fetch(`${API_BASE_URL}/api/v1/contact`, {
+    const response = await fetch(contactUrl, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -22,7 +27,11 @@ export async function sendContactMessage(
       body: JSON.stringify(messageData),
     });
 
-    console.log("Message response status:", response.status);
+    console.log(
+      "Contact response status:",
+      response.status,
+      response.statusText,
+    );
 
     // Check if the response is JSON
     const contentType = response.headers.get("content-type");

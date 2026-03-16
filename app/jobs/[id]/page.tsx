@@ -16,7 +16,7 @@ function transformJob(data: JobsResponse): Job {
     id: data._id || data.id,
     role: data.role,
     company_name: data.company_name,
-    company_logo: data.company_logo || "/images/company-logo.jpg",
+    company_logo: data.company_logo || "",
     location: data.location || "",
     salary: data.salary,
     salary_range: data.salary_range,

@@ -44,8 +44,8 @@ function saveToStorage(searches: SavedSearch[]): void {
   if (typeof window === "undefined") return;
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(searches));
-  } catch (e) {
-    console.error("Failed to save searches to localStorage:", e);
+  } catch {
+    // Ignore localStorage write failures.
   }
 }
 

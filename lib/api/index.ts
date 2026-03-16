@@ -10,11 +10,10 @@ export {
   registerUser,
   uploadResume,
   resendVerificationEmail,
+  requestPasswordReset,
+  resetPasswordWithToken,
 } from "./auth";
 export type { ApiResponse, RegisterResponse } from "./auth";
-
-// Client utilities
-export { storeAuthToken, getAuthToken, removeAuthToken } from "./client";
 
 // Profile
 export {
@@ -29,8 +28,11 @@ export {
   getJobs,
   getJobById,
   submitJobApplication,
+  getMyApplications,
   saveJob,
   unsaveJob,
+  getSavedJobs,
+  getRecommendedJobs,
 } from "./jobs";
 
 // Contact
@@ -43,3 +45,21 @@ export {
   deactivateAccount,
   updateUserSettings,
 } from "./settings";
+
+// Notifications
+export {
+  getNotifications,
+  markNotificationRead,
+  markAllNotificationsRead,
+  deleteNotification,
+  clearNotifications,
+} from "./notifications";
+
+// Employer
+export {
+  getEmployerJobs,
+  getEmployerApplications,
+  getEmployerMessageThreads,
+  getEmployerThreadMessages,
+  sendEmployerMessage,
+} from "./employer";

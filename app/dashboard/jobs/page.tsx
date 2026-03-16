@@ -10,7 +10,6 @@ import { JobResultsList } from "@/components/ui/JobResultsList";
 import { LoadMoreButton } from "@/components/ui/LoadMoreButton";
 import { useJobs } from "@/hooks/useJobs";
 import { Job } from "@/types/job";
-import { DUMMY_JOBS } from "@/lib/dummy-jobs";
 import { useSavedSearches } from "@/hooks/useSavedSearches";
 import { useToaster } from "@/components/ui/Toaster";
 
@@ -150,10 +149,8 @@ const SearchResultsPage = () => {
     location: appliedFilters.location || undefined,
   });
 
-  // Fall back to dummy data when API is unavailable
-  const dummyJobsList = useMemo(() => Object.values(DUMMY_JOBS), []);
-  const effectiveJobs = allJobs.length > 0 ? allJobs : dummyJobsList;
-  const effectiveError = false; // Always show dummy data instead of error state
+  const effectiveJobs = allJobs;
+  const effectiveError = isError;
 
   // Filter jobs based on applied filters (client-side filtering for job type and experience)
   const filteredJobs = useMemo(() => {

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useMemo } from "react";
+import React, { useMemo, useState } from "react";
 import {
   HiOutlineBell,
   HiOutlineCheck,
@@ -11,27 +11,23 @@ import {
   HiOutlineChatBubbleLeftRight,
   HiOutlineUserCircle,
   HiOutlineDocumentCheck,
+  HiOutlineInformationCircle,
 } from "react-icons/hi2";
+import { useNotifications } from "@/hooks/useNotifications";
+import type { NotificationItem } from "@/types/api";
 
 // ─── Types ──────────────────────────────────────────────────────────────────────
 
 type NotificationType =
   | "application_sent"
+  | "application_received"
   | "job_match"
   | "profile_viewed"
   | "new_reply"
   | "employer_message"
   | "profile_reminder"
-  | "application_reviewed";
-
-interface Notification {
-  id: string;
-  type: NotificationType;
-  title: string;
-  description: string;
-  timestamp: string; // relative time string
-  isRead: boolean;
-}
+  | "application_reviewed"
+  | "system";
 
 // ─── Notification Config ────────────────────────────────────────────────────────
 
@@ -74,75 +70,31 @@ const NOTIFICATION_CONFIG: Record<
     dotColor: "bg-emerald-500",
     bgColor: "bg-emerald-50",
   },
+  application_received: {
+    icon: <HiOutlineBriefcase className="w-5 h-5 text-blue-600" />,
+    dotColor: "bg-blue-500",
+    bgColor: "bg-blue-50",
+  },
+  system: {
+    icon: <HiOutlineInformationCircle className="w-5 h-5 text-gray-600" />,
+    dotColor: "bg-gray-500",
+    bgColor: "bg-gray-100",
+  },
 };
 
-// ─── Dummy Notifications ────────────────────────────────────────────────────────
+function formatTimestamp(value: string): string {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "Recently";
 
-const DUMMY_NOTIFICATIONS: Notification[] = [
-  {
-    id: "1",
-    type: "application_sent",
-    title: "Application Sent Successfully",
-    description:
-      "Your application for Customer Support Assistant at Rosewell Services was sent successfully.",
-    timestamp: "2 hours ago",
-    isRead: false,
-  },
-  {
-    id: "2",
-    type: "job_match",
-    title: "New Job Match",
-    description:
-      "A new job matching your preferences is available: Part-time Administrative Assistant at Veterans Community Center.",
-    timestamp: "3 hours ago",
-    isRead: false,
-  },
-  {
-    id: "3",
-    type: "profile_viewed",
-    title: "Profile Viewed",
-    description:
-      "An employer at Senior Living Solutions viewed your profile. They may reach out soon.",
-    timestamp: "Yesterday",
-    isRead: false,
-  },
-  {
-    id: "4",
-    type: "new_reply",
-    title: "New Reply to Your Post",
-    description:
-      'Someone replied to your community post: "Tips for returning to work after retirement".',
-    timestamp: "Yesterday",
-    isRead: false,
-  },
-  {
-    id: "5",
-    type: "employer_message",
-    title: "Message from Employer",
-    description:
-      "You received a new message from Golden Years Healthcare regarding your application.",
-    timestamp: "2 days ago",
-    isRead: false,
-  },
-  {
-    id: "6",
-    type: "profile_reminder",
-    title: "Profile Reminder",
-    description:
-      "Complete your profile to improve your chances of being noticed by employers. Add your skills and experience.",
-    timestamp: "4 days ago",
-    isRead: false,
-  },
-  {
-    id: "7",
-    type: "application_reviewed",
-    title: "Application Reviewed",
-    description:
-      "Good news! Your application for Library Assistant has been reviewed by the hiring team.",
-    timestamp: "4 days ago",
-    isRead: false,
-  },
-];
+  const diffMs = Date.now() - date.getTime();
+  const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+  if (diffHours < 1) return "Just now";
+  if (diffHours < 24)
+    return `${diffHours} hour${diffHours === 1 ? "" : "s"} ago`;
+  const diffDays = Math.floor(diffHours / 24);
+  if (diffDays < 7) return `${diffDays} day${diffDays === 1 ? "" : "s"} ago`;
+  return date.toLocaleDateString();
+}
 
 // ─── Empty State Component ──────────────────────────────────────────────────────
 
@@ -178,23 +130,23 @@ function NotificationItem({
   onMarkAsRead,
   onDelete,
 }: {
-  notification: Notification;
+  notification: NotificationItem;
   onMarkAsRead: (id: string) => void;
   onDelete: (id: string) => void;
 }) {
-  const config = NOTIFICATION_CONFIG[notification.type];
+  const config = NOTIFICATION_CONFIG[notification.type as NotificationType];
 
   return (
     <div
       className={`group flex items-start gap-4 px-6 py-5 border-b border-gray-100 last:border-b-0 transition-colors ${
-        notification.isRead ? "bg-white" : "bg-gray-50/60"
+        notification.is_read ? "bg-white" : "bg-gray-50/60"
       } hover:bg-gray-50`}
     >
       {/* Colored dot indicator */}
       <div className="pt-2 shrink-0">
         <div
           className={`w-2.5 h-2.5 rounded-full ${
-            notification.isRead ? "bg-transparent" : config.dotColor
+            notification.is_read ? "bg-transparent" : config.dotColor
           }`}
         />
       </div>
@@ -210,7 +162,7 @@ function NotificationItem({
       <div className="flex-1 min-w-0">
         <h4
           className={`text-sm leading-snug mb-1 ${
-            notification.isRead
+            notification.is_read
               ? "font-medium text-gray-700"
               : "font-semibold text-gray-900"
           }`}
@@ -221,15 +173,15 @@ function NotificationItem({
           {notification.description}
         </p>
         <span className="text-xs text-gray-400 mt-2 block">
-          {notification.timestamp}
+          {formatTimestamp(notification.createdAt)}
         </span>
       </div>
 
       {/* Actions — visible on hover */}
       <div className="flex items-center gap-1 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity pt-1">
-        {!notification.isRead && (
+        {!notification.is_read && (
           <button
-            onClick={() => onMarkAsRead(notification.id)}
+            onClick={() => onMarkAsRead(notification._id)}
             className="p-1.5 rounded-md text-gray-400 hover:text-emerald-600 hover:bg-emerald-50 transition-colors"
             title="Mark as read"
           >
@@ -237,7 +189,7 @@ function NotificationItem({
           </button>
         )}
         <button
-          onClick={() => onDelete(notification.id)}
+          onClick={() => onDelete(notification._id)}
           className="p-1.5 rounded-md text-gray-400 hover:text-red-600 hover:bg-red-50 transition-colors"
           title="Delete"
         >
@@ -251,36 +203,36 @@ function NotificationItem({
 // ─── Page Component ─────────────────────────────────────────────────────────────
 
 export default function NotificationsPage() {
-  const [notifications, setNotifications] =
-    useState<Notification[]>(DUMMY_NOTIFICATIONS);
+  const {
+    notifications,
+    unreadCount,
+    isLoading,
+    markRead,
+    markAllRead,
+    removeNotification,
+    clearAll,
+  } = useNotifications();
   const [showClearModal, setShowClearModal] = useState(false);
 
   // Derived counts
-  const unreadCount = useMemo(
-    () => notifications.filter((n) => !n.isRead).length,
-    [notifications],
-  );
-
   const totalCount = notifications.length;
 
   // ─── Handlers ───────────────────────────────────────────────────────────────
 
-  const handleMarkAsRead = (id: string) => {
-    setNotifications((prev) =>
-      prev.map((n) => (n.id === id ? { ...n, isRead: true } : n)),
-    );
+  const handleMarkAsRead = async (id: string) => {
+    await markRead(id);
   };
 
-  const handleMarkAllAsRead = () => {
-    setNotifications((prev) => prev.map((n) => ({ ...n, isRead: true })));
+  const handleMarkAllAsRead = async () => {
+    await markAllRead();
   };
 
-  const handleDelete = (id: string) => {
-    setNotifications((prev) => prev.filter((n) => n.id !== id));
+  const handleDelete = async (id: string) => {
+    await removeNotification(id);
   };
 
-  const handleClearAll = () => {
-    setNotifications([]);
+  const handleClearAll = async () => {
+    await clearAll();
     setShowClearModal(false);
   };
 
@@ -288,7 +240,7 @@ export default function NotificationsPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <div className="max-w-[800px] mx-auto px-6 py-10 mobile:px-4 mobile:py-6">
+      <div className="max-w-200 mx-auto px-6 py-10 mobile:px-4 mobile:py-6">
         {/* Page Header */}
         <div className="mb-8">
           <h1 className="font-lato text-[28px] font-bold text-gray-900 mb-1">
@@ -298,6 +250,12 @@ export default function NotificationsPage() {
             Updates about your applications, jobs, and community activity.
           </p>
         </div>
+
+        {isLoading && (
+          <div className="bg-white rounded-xl border border-gray-200 p-8 text-sm text-gray-500">
+            Loading notifications...
+          </div>
+        )}
 
         {/* Empty or Active State */}
         {totalCount === 0 ? (
@@ -323,7 +281,7 @@ export default function NotificationsPage() {
               <div className="flex items-center gap-4">
                 {unreadCount > 0 && (
                   <button
-                    onClick={handleMarkAllAsRead}
+                    onClick={() => void handleMarkAllAsRead()}
                     className="flex items-center gap-1.5 text-sm text-gray-600 hover:text-gray-900 transition-colors"
                   >
                     <HiOutlineCheck className="w-4 h-4" />
@@ -344,7 +302,7 @@ export default function NotificationsPage() {
             <div>
               {notifications.map((notification) => (
                 <NotificationItem
-                  key={notification.id}
+                  key={notification._id}
                   notification={notification}
                   onMarkAsRead={handleMarkAsRead}
                   onDelete={handleDelete}
@@ -365,7 +323,7 @@ export default function NotificationsPage() {
 
       {/* ─── Clear All Confirmation Modal ─── */}
       {showClearModal && (
-        <div className="fixed inset-0 z-[200] flex items-center justify-center">
+        <div className="fixed inset-0 z-200 flex items-center justify-center">
           {/* Backdrop */}
           <div
             className="absolute inset-0 bg-black/40 backdrop-blur-[2px]"
@@ -373,7 +331,7 @@ export default function NotificationsPage() {
           />
 
           {/* Modal */}
-          <div className="relative bg-white rounded-2xl shadow-xl max-w-[420px] w-full mx-4 p-8 animate-in fade-in zoom-in-95 duration-200">
+          <div className="relative bg-white rounded-2xl shadow-xl max-w-105 w-full mx-4 p-8 animate-in fade-in zoom-in-95 duration-200">
             <h3 className="text-xl font-bold text-gray-900 mb-3">
               Clear all notifications?
             </h3>
@@ -390,7 +348,7 @@ export default function NotificationsPage() {
                 Keep Notifications
               </button>
               <button
-                onClick={handleClearAll}
+                onClick={() => void handleClearAll()}
                 className="px-5 py-2.5 bg-primary hover:bg-primary-hover text-white font-semibold text-sm rounded-lg transition-colors cursor-pointer"
               >
                 Yes, Clear all

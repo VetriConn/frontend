@@ -110,10 +110,10 @@ export function CompletionStep({
       {/* Heading */}
       <div className="text-center space-y-2">
         <h2 className="text-2xl font-bold text-gray-900">
-          Account creation successful
+          Verify your email to finish signing up
         </h2>
         <p className="text-gray-600">
-          We've sent a verification link to your email
+          We&apos;ve sent a verification link to your email address
         </p>
       </div>
 
@@ -122,7 +122,8 @@ export function CompletionStep({
         <div className="flex items-start gap-3">
           <HiCheckCircle className="w-5 h-5 text-primary mt-0.5 flex-shrink-0" />
           <p className="text-sm text-gray-700">
-            Click the verification link in your email to activate your account
+            Click the verification link in your email to create and activate
+            your account
           </p>
         </div>
         <div className="flex items-start gap-3">
@@ -134,10 +135,17 @@ export function CompletionStep({
         <div className="flex items-start gap-3">
           <HiCheckCircle className="w-5 h-5 text-primary mt-0.5 flex-shrink-0" />
           <p className="text-sm text-gray-700">
-            The link will no longer be valid after 24hrs
+            The link expires after 24 hours
           </p>
         </div>
       </div>
+
+      {formData.resumeFile && (
+        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 text-sm text-blue-800">
+          Your resume will need to be uploaded after you verify your email and
+          sign in.
+        </div>
+      )}
 
       {/* Resend Email Section */}
       <div className="text-center space-y-3">

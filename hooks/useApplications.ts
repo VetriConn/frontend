@@ -116,8 +116,8 @@ function saveToStorage(applications: ApplicationEntry[]): void {
   if (typeof window === "undefined") return;
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(applications));
-  } catch (e) {
-    console.error("Failed to save applications to localStorage:", e);
+  } catch {
+    // Ignore localStorage write failures.
   }
 }
 

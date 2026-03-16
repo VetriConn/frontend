@@ -15,6 +15,7 @@ export const ResumeUploadStep = ({
   onNext,
   onBack,
   onSkip,
+  isBusy = false,
 }: StepProps) => {
   const handleFileSelect = (file: File | null) => {
     onFieldChange("resumeFile", file);
@@ -26,10 +27,11 @@ export const ResumeUploadStep = ({
       <h1 className="text-2xl md:text-3xl font-semibold text-gray-900 mb-2 text-center">
         Upload your resume
       </h1>
-      
+
       {/* Subtext */}
       <p className="text-gray-600 mb-8 text-center">
-        Adding a resume helps employers understand your experience. You can always add one later.
+        Adding a resume helps employers understand your experience. You can
+        always add one later.
       </p>
 
       {/* File Upload Zone */}
@@ -55,9 +57,10 @@ export const ResumeUploadStep = ({
         <button
           type="button"
           onClick={onNext}
-          className="flex-1 py-3 px-6 bg-primary text-white font-medium rounded-[10px] transition-all hover:bg-primary/90"
+          disabled={isBusy}
+          className="flex-1 py-3 px-6 bg-primary text-white font-medium rounded-[10px] transition-all hover:bg-primary/90 disabled:opacity-60 disabled:cursor-not-allowed"
         >
-          Continue
+          {isBusy ? "Please wait..." : "Continue"}
         </button>
       </div>
 
@@ -66,9 +69,10 @@ export const ResumeUploadStep = ({
         <button
           type="button"
           onClick={onSkip}
-          className="text-gray-500 hover:text-gray-700 text-sm underline transition-colors"
+          disabled={isBusy}
+          className="text-gray-500 hover:text-gray-700 text-sm underline transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
         >
-          upload later
+          {isBusy ? "Please wait..." : "upload later"}
         </button>
       </div>
     </div>

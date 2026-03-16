@@ -1,8 +1,8 @@
 /**
  * Unit Tests for Profile Completion Utilities
- * Tests the calculateProfileCompletion function against the 12-field model:
+ * Tests the calculateProfileCompletion function against the 11-field model:
  *   full_name, picture, phone_number, location, bio, job_title,
- *   industry, years_of_experience, work_experience, education, documents, skills
+ *   industry, years_of_experience, work_experience, education, skills
  */
 
 import {
@@ -103,7 +103,6 @@ describe("calculateProfileCompletion", () => {
     ["bio", { bio: "" }],
     ["work_experience", { work_experience: [] }],
     ["education", { education: [] }],
-    ["documents", { documents: [] }],
     ["skills", { skills: [] }],
   ])("should mark %s as incomplete when empty", (field, overrides) => {
     const result = calculateProfileCompletion(createMockProfile(overrides));

@@ -1,6 +1,7 @@
 "use client";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import clsx from "clsx";
 import DottedBox7 from "@/public/images/dotted_box_7.svg";
 import DottedBox9 from "@/public/images/dotted_box_9.svg";
@@ -9,7 +10,7 @@ import DottedBox3 from "@/public/images/dotted_box_3.svg";
 import { signInSchema } from "@/lib/validation";
 import { useToaster } from "@/components/ui/Toaster";
 import { ZodError } from "zod";
-import { loginUser, storeAuthToken } from "@/lib/api";
+import { loginUser } from "@/lib/api";
 import { FormField } from "@/components/ui/FormField";
 import { PasswordField } from "@/components/ui/PasswordField";
 
@@ -31,7 +32,6 @@ export const SignIn = () => {
       signInSchema.parse({ email, password });
       const response = await loginUser(email, password);
       if (response.success && response.data) {
-        storeAuthToken(response.data.token, terms);
         showToast({
           type: "success",
           title: "Login successful",
@@ -125,6 +125,14 @@ export const SignIn = () => {
                 {errors.password}
               </span>
             )}
+            <div className="flex justify-end -mt-1 mb-4">
+              <Link
+                href="/forgot-password"
+                className="text-sm text-primary hover:text-primary-hover hover:underline"
+              >
+                Forgot password?
+              </Link>
+            </div>
             <div className="flex items-start gap-2 text-sm mb-6">
               <input
                 type="checkbox"

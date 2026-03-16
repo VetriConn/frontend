@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React from "react";
 import Link from "next/link";
 import {
   HiOutlineMapPin,
@@ -13,6 +13,7 @@ import {
   HiOutlineBookmark,
   HiOutlineMagnifyingGlass,
 } from "react-icons/hi2";
+import { useSavedJobs } from "@/hooks/useSavedJobs";
 
 // ─── Types ──────────────────────────────────────────────────────────────────────
 
@@ -26,47 +27,6 @@ interface SavedJob {
   savedDate: string;
 }
 
-// ─── Dummy Data ─────────────────────────────────────────────────────────────────
-
-const DUMMY_SAVED_JOBS: SavedJob[] = [
-  {
-    id: "sj-1",
-    role: "Customer Service Representative",
-    company: "Veterans Health Administration",
-    location: "Denver, CO",
-    jobType: "Remote",
-    salary: "$45,000 – $55,000/year",
-    savedDate: "December 20, 2024",
-  },
-  {
-    id: "sj-2",
-    role: "Administrative Assistant",
-    company: "Home Depot Corporate",
-    location: "Atlanta, GA",
-    jobType: "On-site",
-    salary: "$38,000 – $48,000/year",
-    savedDate: "December 18, 2024",
-  },
-  {
-    id: "sj-3",
-    role: "Part-Time Security Officer",
-    company: "Allied Universal Security",
-    location: "Phoenix, AZ",
-    jobType: "Part-time",
-    salary: "$18 – $22/hour",
-    savedDate: "December 15, 2024",
-  },
-  {
-    id: "sj-4",
-    role: "Veteran Outreach Coordinator",
-    company: "American Legion",
-    location: "Indianapolis, IN",
-    jobType: "Hybrid",
-    salary: "$52,000 – $65,000/year",
-    savedDate: "December 12, 2024",
-  },
-];
-
 // ─── Empty State ────────────────────────────────────────────────────────────────
 
 function EmptyState() {
@@ -78,7 +38,7 @@ function EmptyState() {
       <h3 className="text-xl font-bold text-gray-900 mb-3">
         You haven&apos;t saved any jobs yet
       </h3>
-      <p className="text-sm text-gray-500 max-w-[380px] leading-relaxed mb-8">
+      <p className="text-sm text-gray-500 max-w-95 leading-relaxed mb-8">
         Browse jobs and save ones you&apos;d like to apply for later. Your saved
         jobs will appear here for easy access.
       </p>
@@ -100,7 +60,7 @@ function SavedJobCard({
   onRemove,
 }: {
   job: SavedJob;
-  onRemove: (id: string) => void;
+  onRemove: (id: string) => Promise<void>;
 }) {
   return (
     <div className="bg-white rounded-xl border border-gray-200 p-6 transition-shadow hover:shadow-sm">
@@ -160,15 +120,44 @@ function SavedJobCard({
 // ─── Page ───────────────────────────────────────────────────────────────────────
 
 export default function SavedJobsPage() {
-  const [savedJobs, setSavedJobs] = useState<SavedJob[]>(DUMMY_SAVED_JOBS);
+  const { savedJobs: data, isLoading, removeSavedJob } = useSavedJobs();
 
-  const handleRemove = (id: string) => {
-    setSavedJobs((prev) => prev.filter((j) => j.id !== id));
+  const savedJobs: SavedJob[] = (data || []).map((job) => {
+    const salary = job.salary_range?.start_salary?.number
+      ? `${job.salary?.symbol || "$"}${Math.round((job.salary_range.start_salary.number || 0) / 1000)}k - ${job.salary?.symbol || "$"}${Math.round((job.salary_range.end_salary.number || 0) / 1000)}k/year`
+      : job.salary?.number
+        ? `${job.salary.symbol}${Math.round(job.salary.number / 1000)}k/year`
+        : "Competitive";
+
+    return {
+      id: job.id || job._id,
+      role: job.role,
+      company: job.company_name,
+      location: job.location || "Canada",
+      jobType: "Flexible",
+      salary,
+      savedDate: "Recently",
+    };
+  });
+
+  const handleRemove = async (id: string) => {
+    await removeSavedJob(id);
   };
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <div className="max-w-200 mx-auto px-6 py-10 mobile:px-4 mobile:py-6">
+          <div className="h-8 w-48 bg-gray-200 rounded animate-shimmer mb-4" />
+          <div className="h-4 w-72 bg-gray-200 rounded animate-shimmer mb-8" />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <div className="max-w-[800px] mx-auto px-6 py-10 mobile:px-4 mobile:py-6">
+      <div className="max-w-200 mx-auto px-6 py-10 mobile:px-4 mobile:py-6">
         {/* Page Header */}
         <div className="flex items-start justify-between mb-2">
           <h1 className="font-lato text-[28px] font-bold text-gray-900">

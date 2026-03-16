@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import clsx from "clsx";
 import {
@@ -17,7 +17,9 @@ import {
 } from "react-icons/hi2";
 import { HiBookmark } from "react-icons/hi2";
 import { Job } from "@/types/job";
-import { saveJob, unsaveJob } from "@/lib/api";
+import { getMyApplications } from "@/lib/api";
+import { useSavedJobs } from "@/hooks/useSavedJobs";
+import { getInitials } from "@/lib/initials";
 
 type JobDescriptorProps = Job;
 
@@ -76,24 +78,44 @@ const JobDescriptor: React.FC<JobDescriptorProps> = ({
   qualifications,
   applicationLink,
 }) => {
-  const [isSaved, setIsSaved] = useState(false);
-  const [isSaving, setIsSaving] = useState(false);
+  const [hasApplied, setHasApplied] = useState(false);
+  const { isSaved, isMutating, toggleSaved } = useSavedJobs();
+
+  useEffect(() => {
+    let isMounted = true;
+
+    const loadApplications = async () => {
+      try {
+        const applications = await getMyApplications();
+        if (!isMounted) return;
+
+        const alreadyApplied = applications.some((application) => {
+          const jobRef = application.job_id;
+          if (typeof jobRef === "string") {
+            return jobRef === id;
+          }
+          return jobRef.id === id || jobRef._id === id;
+        });
+
+        setHasApplied(alreadyApplied);
+      } catch {
+        // ignore - unauthenticated users can still view the page
+      }
+    };
+
+    loadApplications();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [id]);
 
   const handleToggleSave = async () => {
-    if (isSaving) return;
-    setIsSaving(true);
+    if (isMutating(id)) return;
     try {
-      if (isSaved) {
-        await unsaveJob(id);
-        setIsSaved(false);
-      } else {
-        await saveJob(id);
-        setIsSaved(true);
-      }
+      await toggleSaved(id);
     } catch {
       // Silently fail — button state stays as-is
-    } finally {
-      setIsSaving(false);
     }
   };
 
@@ -139,6 +161,7 @@ const JobDescriptor: React.FC<JobDescriptorProps> = ({
   const category = tags.length > 0 ? tags[0].name : "General";
 
   const salaryDisplay = getSalaryDisplay();
+  const companyInitials = getInitials(company_name, "CO");
 
   const metaItems = [
     { icon: HiOutlineMapPin, label: location || "Canada" },
@@ -196,15 +219,17 @@ const JobDescriptor: React.FC<JobDescriptorProps> = ({
 
             {/* Company info */}
             <div className="flex items-center gap-3 mb-6">
-              {company_logo && company_logo !== "/images/company-logo.jpg" ? (
+              {company_logo ? (
                 <img
                   src={company_logo}
                   alt={company_name}
                   className="w-10 h-10 rounded-lg object-cover border border-gray-200"
                 />
               ) : (
-                <div className="w-10 h-10 rounded-lg bg-gray-100 border border-gray-200 flex items-center justify-center">
-                  <HiOutlineBuildingOffice2 className="text-lg text-gray-400" />
+                <div className="w-10 h-10 rounded-lg bg-primary/10 border border-primary/20 flex items-center justify-center">
+                  <span className="text-xs font-semibold text-primary">
+                    {companyInitials || "CO"}
+                  </span>
                 </div>
               )}
               <div>
@@ -382,6 +407,13 @@ const JobDescriptor: React.FC<JobDescriptorProps> = ({
                     Apply Now
                     <HiOutlineArrowLeft className="rotate-180 text-base" />
                   </a>
+                ) : hasApplied ? (
+                  <button
+                    disabled
+                    className="flex items-center justify-center gap-2 w-full bg-gray-200 text-gray-600 font-semibold text-sm py-3 px-4 rounded-lg cursor-not-allowed mb-3"
+                  >
+                    Already Applied
+                  </button>
                 ) : (
                   <Link
                     href={`/jobs/${id}/apply`}
@@ -395,21 +427,25 @@ const JobDescriptor: React.FC<JobDescriptorProps> = ({
                 {/* Save Button */}
                 <button
                   onClick={handleToggleSave}
-                  disabled={isSaving}
+                  disabled={isMutating(id)}
                   className={clsx(
                     "flex items-center justify-center gap-2 w-full font-semibold text-sm py-3 px-4 rounded-lg transition-colors cursor-pointer mb-6",
-                    isSaved
+                    isSaved(id)
                       ? "bg-primary/10 border border-primary text-primary hover:bg-primary/20"
                       : "bg-white border border-gray-200 text-gray-700 hover:bg-gray-50",
-                    isSaving && "opacity-60 cursor-not-allowed",
+                    isMutating(id) && "opacity-60 cursor-not-allowed",
                   )}
                 >
-                  {isSaved ? (
+                  {isSaved(id) ? (
                     <HiBookmark className="text-base" />
                   ) : (
                     <HiOutlineBookmark className="text-base" />
                   )}
-                  {isSaving ? "Saving..." : isSaved ? "Job Saved" : "Save Job"}
+                  {isMutating(id)
+                    ? "Saving..."
+                    : isSaved(id)
+                      ? "Job Saved"
+                      : "Save Job"}
                 </button>
 
                 {/* Info notices */}

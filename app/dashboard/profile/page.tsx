@@ -56,7 +56,6 @@ export default function ProfilePage() {
   const [localEducation, setLocalEducation] = useState<Education[]>([]);
   const [localDocuments, setLocalDocuments] = useState<UserDocument[]>([]);
   const [localSkills, setLocalSkills] = useState<string[]>([]);
-  const [isInitialized, setIsInitialized] = useState(false);
 
   // Editing index (null = adding new, number = editing existing)
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
@@ -89,7 +88,6 @@ export default function ProfilePage() {
   const [publicProfileForm, setPublicProfileForm] = useState({
     full_name: "",
     bio: "",
-    job_title: "",
   });
 
   // ─── Edit Professional Info form data ─────────────────────────────────────
@@ -107,16 +105,25 @@ export default function ProfilePage() {
   // ─── Profile Preview state ────────────────────────────────────────────────
   const [showPreview, setShowPreview] = useState(false);
 
-  // Initialize local state from profile data
+  // Keep persisted profile collections in sync with server data
   useEffect(() => {
-    if (userProfile && !isInitialized) {
+    if (userProfile) {
       setLocalExperiences(userProfile.work_experience || []);
       setLocalEducation(userProfile.education || []);
-      setLocalDocuments(userProfile.documents || []);
       setLocalSkills(userProfile.skills || []);
-      setIsInitialized(true);
     }
-  }, [userProfile, isInitialized]);
+  }, [
+    userProfile?.work_experience,
+    userProfile?.education,
+    userProfile?.skills,
+  ]);
+
+  // Documents remain local-only for now until backend upload wiring is finished.
+  useEffect(() => {
+    if (userProfile) {
+      setLocalDocuments(userProfile.documents || []);
+    }
+  }, [userProfile?.documents]);
 
   // --- Contact handlers ---
   const handleEditContact = useCallback(() => {
@@ -139,8 +146,12 @@ export default function ProfilePage() {
         country: contactFormData.country,
       });
       setEditSection(null);
-    } catch (error) {
-      console.error("Failed to update contact info:", error);
+    } catch {
+      showToast({
+        type: "error",
+        title: "Update failed",
+        description: "Could not update contact info. Please try again.",
+      });
     }
   };
 
@@ -148,9 +159,8 @@ export default function ProfilePage() {
   const handleEditPublicProfile = useCallback(() => {
     if (userProfile) {
       setPublicProfileForm({
-        full_name: userProfile.name || "",
+        full_name: userProfile.full_name || "",
         bio: userProfile.bio || "",
-        job_title: userProfile.job_title || "",
       });
     }
     setEditSection("public-profile");
@@ -163,11 +173,14 @@ export default function ProfilePage() {
       await patchProfile({
         full_name: publicProfileForm.full_name,
         bio: publicProfileForm.bio,
-        job_title: publicProfileForm.job_title,
       });
       setEditSection(null);
-    } catch (error) {
-      console.error("Failed to update public profile:", error);
+    } catch {
+      showToast({
+        type: "error",
+        title: "Update failed",
+        description: "Could not update public profile. Please try again.",
+      });
     }
   };
 
@@ -192,8 +205,13 @@ export default function ProfilePage() {
         years_of_experience: professionalInfoForm.years_of_experience,
       });
       setEditSection(null);
-    } catch (error) {
-      console.error("Failed to update professional info:", error);
+    } catch {
+      showToast({
+        type: "error",
+        title: "Update failed",
+        description:
+          "Could not update professional information. Please try again.",
+      });
     }
   };
 
@@ -222,14 +240,18 @@ export default function ProfilePage() {
   const handleDeleteExperience = useCallback(
     async (index: number) => {
       const updated = localExperiences.filter((_, i) => i !== index);
-      setLocalExperiences(updated);
       try {
         await patchProfile({ work_experience: updated });
-      } catch (error) {
-        console.error("Failed to delete experience:", error);
+        setLocalExperiences(updated);
+      } catch {
+        showToast({
+          type: "error",
+          title: "Delete failed",
+          description: "Could not delete work experience. Please try again.",
+        });
       }
     },
-    [localExperiences, patchProfile],
+    [localExperiences, patchProfile, showToast],
   );
 
   const handleExperienceSubmit = async (e: React.FormEvent) => {
@@ -247,16 +269,18 @@ export default function ProfilePage() {
           )
         : [...localExperiences, experienceFormData];
 
-    setLocalExperiences(updatedList);
-
     try {
       await patchProfile({ work_experience: updatedList });
-    } catch (error) {
-      console.error("Failed to save work experience:", error);
+      setLocalExperiences(updatedList);
+      setEditSection(null);
+      setEditingIndex(null);
+    } catch {
+      showToast({
+        type: "error",
+        title: "Save failed",
+        description: "Could not save work experience. Please try again.",
+      });
     }
-
-    setEditSection(null);
-    setEditingIndex(null);
   };
 
   // --- Education handlers ---
@@ -284,14 +308,18 @@ export default function ProfilePage() {
   const handleDeleteEducation = useCallback(
     async (index: number) => {
       const updated = localEducation.filter((_, i) => i !== index);
-      setLocalEducation(updated);
       try {
         await patchProfile({ education: updated });
-      } catch (error) {
-        console.error("Failed to delete education:", error);
+        setLocalEducation(updated);
+      } catch {
+        showToast({
+          type: "error",
+          title: "Delete failed",
+          description: "Could not delete education. Please try again.",
+        });
       }
     },
-    [localEducation, patchProfile],
+    [localEducation, patchProfile, showToast],
   );
 
   const handleEducationSubmit = async (e: React.FormEvent) => {
@@ -309,16 +337,18 @@ export default function ProfilePage() {
           )
         : [...localEducation, educationFormData];
 
-    setLocalEducation(updatedList);
-
     try {
       await patchProfile({ education: updatedList });
-    } catch (error) {
-      console.error("Failed to save education:", error);
+      setLocalEducation(updatedList);
+      setEditSection(null);
+      setEditingIndex(null);
+    } catch {
+      showToast({
+        type: "error",
+        title: "Save failed",
+        description: "Could not save education. Please try again.",
+      });
     }
-
-    setEditSection(null);
-    setEditingIndex(null);
   };
 
   // --- Document handlers ---
@@ -342,8 +372,7 @@ export default function ProfilePage() {
 
     setLocalDocuments((prev) => [...prev, newDoc]);
 
-    // TODO: Upload to backend (Cloudinary) when API is ready
-    console.log("Document uploaded locally:", newDoc.name);
+    // TODO: Upload to backend (Cloudinary) when API is ready.
 
     setEditSection(null);
     setUploadedFile(null);
@@ -413,8 +442,7 @@ export default function ProfilePage() {
       setPhotoFile(null);
       if (photoPreview) URL.revokeObjectURL(photoPreview);
       setPhotoPreview(null);
-    } catch (error) {
-      console.error("Failed to upload profile picture:", error);
+    } catch {
       showToast({
         type: "error",
         title: "Upload failed",
@@ -432,8 +460,7 @@ export default function ProfilePage() {
       await deleteProfilePicture();
       mutateProfile();
       setEditSection(null);
-    } catch (error) {
-      console.error("Failed to delete profile picture:", error);
+    } catch {
       showToast({
         type: "error",
         title: "Delete failed",
@@ -454,8 +481,12 @@ export default function ProfilePage() {
     try {
       await patchProfile({ skills: localSkills });
       setEditSection(null);
-    } catch (error) {
-      console.error("Failed to update skills:", error);
+    } catch {
+      showToast({
+        type: "error",
+        title: "Update failed",
+        description: "Could not update skills. Please try again.",
+      });
     }
   };
 
@@ -662,7 +693,7 @@ export default function ProfilePage() {
   const displayLocation =
     userProfile.city && userProfile.country
       ? `${userProfile.city}, ${userProfile.country}`
-      : userProfile.location || "";
+      : "";
 
   return (
     <div className="min-h-screen bg-gray-50 py-8 px-4">
@@ -673,8 +704,8 @@ export default function ProfilePage() {
             {/* Profile Header */}
             <div id="profile-header">
               <ProfileHeader
-                name={userProfile.name}
-                avatar={userProfile.avatar}
+                name={userProfile.full_name}
+                avatar={userProfile.picture}
                 location={displayLocation}
                 bio={userProfile.bio || undefined}
                 jobTitle={userProfile.job_title || undefined}
@@ -795,6 +826,7 @@ export default function ProfilePage() {
               onSectionClick={handleSectionClick}
             />
             <QuickActionsCard
+              appliedJobsCount={userProfile.applied_jobs_count ?? 0}
               savedJobsCount={userProfile.saved_jobs?.length ?? 0}
             />
           </div>
@@ -825,23 +857,6 @@ export default function ProfilePage() {
               }
               className="form-input"
               placeholder="Your full name"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-semibold text-gray-900 mb-2">
-              Job Title
-            </label>
-            <input
-              type="text"
-              value={publicProfileForm.job_title}
-              onChange={(e) =>
-                setPublicProfileForm((p) => ({
-                  ...p,
-                  job_title: e.target.value,
-                }))
-              }
-              className="form-input"
-              placeholder="e.g. Operations Manager"
             />
           </div>
           <div>
@@ -1063,15 +1078,15 @@ export default function ProfilePage() {
                   alt="Preview"
                   className="w-full h-full object-cover"
                 />
-              ) : userProfile.avatar ? (
+              ) : userProfile.picture ? (
                 <img
-                  src={userProfile.avatar}
+                  src={userProfile.picture}
                   alt="Current photo"
                   className="w-full h-full object-cover"
                 />
               ) : (
                 <span className="text-4xl font-bold text-gray-400">
-                  {userProfile.name
+                  {userProfile.full_name
                     .split(" ")
                     .map((n: string) => n[0])
                     .join("")
@@ -1115,7 +1130,7 @@ export default function ProfilePage() {
           </div>
 
           {/* Delete current photo */}
-          {userProfile.avatar && !photoFile && (
+          {userProfile.picture && !photoFile && (
             <button
               type="button"
               onClick={handleDeletePhoto}
@@ -1144,8 +1159,8 @@ export default function ProfilePage() {
         isOpen={showPreview}
         onClose={() => setShowPreview(false)}
         profile={{
-          name: userProfile.name,
-          avatar: userProfile.avatar,
+          name: userProfile.full_name,
+          avatar: userProfile.picture,
           bio: userProfile.bio || undefined,
           job_title: userProfile.job_title || undefined,
           location: displayLocation,

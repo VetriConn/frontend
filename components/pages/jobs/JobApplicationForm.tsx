@@ -27,17 +27,17 @@ import { format, parse } from "date-fns";
 import { Job } from "@/types/job";
 import { submitJobApplication } from "@/lib/api";
 
-// Mapped profile shape from useUserProfile hook
-interface MappedUserProfile {
-  name: string;
-  email: string;
-  phone_number: string;
-  [key: string]: unknown;
-}
+
+// Canonical profile shape subset used for pre-filling application form
+import type { UserProfile } from "@/types/api";
+type CanonicalUserProfile = Pick<
+  UserProfile,
+  "full_name" | "email" | "phone_number"
+>;
 
 interface JobApplicationFormProps {
   job: Job;
-  userProfile?: MappedUserProfile | null;
+  userProfile?: CanonicalUserProfile | null;
 }
 
 // Skills pool — in a real app, these would come from the job posting or backend
@@ -100,7 +100,7 @@ export default function JobApplicationForm({
   const [submitted, setSubmitted] = useState(false);
 
   const [formData, setFormData] = useState<FormData>({
-    fullName: userProfile?.name || "",
+    fullName: userProfile?.full_name || "",
     email: userProfile?.email || "",
     phone: userProfile?.phone_number || "",
     relevantExperience: "",
@@ -138,7 +138,7 @@ export default function JobApplicationForm({
   // Track which fields were pre-filled
   const preFilled = useMemo(
     () => ({
-      fullName: !!userProfile?.name,
+      fullName: !!userProfile?.full_name,
       email: !!userProfile?.email,
       phone: !!userProfile?.phone_number,
     }),

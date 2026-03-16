@@ -9,6 +9,7 @@ import {
   HiOutlineEye,
 } from "react-icons/hi2";
 import { CheckCircleIcon } from "@/components/ui/CheckCircleIcon";
+import { getInitials } from "@/lib/initials";
 
 export type JobSeekingStatus =
   | "none"
@@ -68,16 +69,6 @@ export const ProfileHeader: React.FC<ProfileHeaderProps> = ({
   onChangePhoto,
 }) => {
   const [imageError, setImageError] = useState(false);
-
-  // Calculate initials from name (first letter of first and last name)
-  const getInitials = (fullName: string): string => {
-    const parts = fullName.trim().split(/\s+/);
-    if (parts.length === 0) return "U";
-    if (parts.length === 1) return parts[0].charAt(0).toUpperCase();
-    return (
-      parts[0].charAt(0) + parts[parts.length - 1].charAt(0)
-    ).toUpperCase();
-  };
 
   const initials = getInitials(name);
   const hasValidAvatar = avatar && avatar.trim() !== "" && !imageError;

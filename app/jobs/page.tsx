@@ -1,6 +1,4 @@
 "use client";
-
-import { useMemo } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
@@ -16,7 +14,6 @@ import { Header } from "@/components/ui/Header";
 import Footer from "@/components/ui/Footer";
 import DottedBox from "@/public/images/dotted_box.svg";
 import { useJobs } from "@/hooks/useJobs";
-import { DUMMY_JOBS } from "@/lib/dummy-jobs";
 import { Job } from "@/types/job";
 import { Skeleton } from "@/components/ui/Skeleton";
 
@@ -149,9 +146,7 @@ function JobCard({ job }: { job: Job }) {
 
 export default function JobsPage() {
   const { jobs: apiJobs, isLoading } = useJobs({ limit: 20 });
-
-  const dummyJobsList = useMemo(() => Object.values(DUMMY_JOBS), []);
-  const jobs = apiJobs.length > 0 ? apiJobs : dummyJobsList;
+  const jobs = apiJobs;
 
   return (
     <div className="min-h-screen flex flex-col bg-gray-50">

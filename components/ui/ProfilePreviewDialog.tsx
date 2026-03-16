@@ -13,6 +13,7 @@ import {
 import { PiTreeStructureLight } from "react-icons/pi";
 import { type JobSeekingStatus } from "@/components/pages/profile/ProfileHeader";
 import type { WorkExperience, Education } from "@/types/api";
+import { getInitials } from "@/lib/initials";
 
 // ─── Status config (reuse from ProfileHeader) ──────────────────────────────────
 
@@ -70,15 +71,6 @@ export function ProfilePreviewDialog({
   profile,
 }: ProfilePreviewDialogProps) {
   if (!isOpen) return null;
-
-  const getInitials = (fullName: string): string => {
-    const parts = fullName.trim().split(/\s+/);
-    if (parts.length === 0) return "U";
-    if (parts.length === 1) return parts[0].charAt(0).toUpperCase();
-    return (
-      parts[0].charAt(0) + parts[parts.length - 1].charAt(0)
-    ).toUpperCase();
-  };
 
   const statusConfig = profile.job_seeking_status
     ? STATUS_CONFIG[profile.job_seeking_status]
@@ -187,7 +179,7 @@ export function ProfilePreviewDialog({
             {(profile.industry || profile.years_of_experience) && (
               <div>
                 <h4 className="text-sm font-semibold text-gray-900 mb-2 flex items-center gap-1.5">
-                  <HiOutlineBuildingOffice2 className="w-4 h-4 text-red-500" />
+                  <HiOutlineBriefcase className="w-4 h-4 text-red-500" />
                   Professional Information
                 </h4>
                 <div className="flex flex-wrap gap-3">

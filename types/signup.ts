@@ -5,7 +5,7 @@
  */
 export interface SignupFormData {
   // Step 1 - Account Type
-  role: 'job_seeker' | 'employer' | null;
+  role: "job_seeker" | "employer" | null;
 
   // Step 2 - Create Account
   full_name: string;
@@ -25,6 +25,11 @@ export interface SignupFormData {
 
   // Step 5 - Resume Upload (optional)
   resumeFile: File | null;
+
+  // Employer Step 3 - Company Info
+  company_name: string;
+  company_industry: string;
+  company_location: string;
 }
 
 /**
@@ -47,6 +52,7 @@ export interface StepProps {
   onNext: () => void;
   onBack: () => void;
   onSkip?: () => void;
+  isBusy?: boolean;
 }
 
 /**
@@ -64,13 +70,16 @@ export interface SignupWizardState {
  * Actions for the signup wizard reducer
  */
 export type SignupAction =
-  | { type: 'SET_STEP'; payload: number }
-  | { type: 'UPDATE_FIELD'; payload: { field: keyof SignupFormData; value: unknown } }
-  | { type: 'SET_ERRORS'; payload: Record<string, string> }
-  | { type: 'CLEAR_ERROR'; payload: string }
-  | { type: 'SET_SUBMITTING'; payload: boolean }
-  | { type: 'SET_HIGHEST_COMPLETED_STEP'; payload: number }
-  | { type: 'RESET' };
+  | { type: "SET_STEP"; payload: number }
+  | {
+      type: "UPDATE_FIELD";
+      payload: { field: keyof SignupFormData; value: unknown };
+    }
+  | { type: "SET_ERRORS"; payload: Record<string, string> }
+  | { type: "CLEAR_ERROR"; payload: string }
+  | { type: "SET_SUBMITTING"; payload: boolean }
+  | { type: "SET_HIGHEST_COMPLETED_STEP"; payload: number }
+  | { type: "RESET" };
 
 /**
  * Step configuration array with step names and field mappings
@@ -79,61 +88,95 @@ export type SignupAction =
 export const STEP_CONFIGS: SignupStepConfig[] = [
   {
     id: 1,
-    name: 'Account Type',
+    name: "Account Type",
     isOptional: false,
-    fields: ['role'],
+    fields: ["role"],
   },
   {
     id: 2,
-    name: 'Create Account',
+    name: "Create Account",
     isOptional: false,
-    fields: ['full_name', 'email', 'password', 'confirmPassword'],
+    fields: ["full_name", "email", "password", "confirmPassword"],
   },
   {
     id: 3,
-    name: 'Contact Info',
+    name: "Contact Info",
     isOptional: false,
-    fields: ['phone_number', 'city', 'country'],
+    fields: ["phone_number", "city", "country"],
   },
   {
     id: 4,
-    name: 'Work Background',
+    name: "Work Background",
     isOptional: true,
-    fields: ['job_title', 'industry', 'years_of_experience'],
+    fields: ["job_title", "industry", "years_of_experience"],
   },
   {
     id: 5,
-    name: 'Resume Upload',
+    name: "Resume Upload",
     isOptional: true,
-    fields: ['resumeFile'],
+    fields: ["resumeFile"],
   },
   {
     id: 6,
-    name: 'Complete',
+    name: "Complete",
     isOptional: false,
     fields: [],
   },
 ];
 
 /**
- * Total number of steps in the signup wizard
+ * Total number of steps in the signup wizard (job seeker default)
  */
 export const TOTAL_STEPS = STEP_CONFIGS.length;
+
+/**
+ * Step configuration for employer signup flow
+ * Employer flow: Account Type → Create Account → Company Info → Complete
+ */
+export const EMPLOYER_STEP_CONFIGS: SignupStepConfig[] = [
+  {
+    id: 1,
+    name: "Account Type",
+    isOptional: false,
+    fields: ["role"],
+  },
+  {
+    id: 2,
+    name: "Create Account",
+    isOptional: false,
+    fields: ["full_name", "email", "password", "confirmPassword"],
+  },
+  {
+    id: 3,
+    name: "Company Info",
+    isOptional: false,
+    fields: ["company_name", "company_industry", "company_location"],
+  },
+  {
+    id: 4,
+    name: "Complete",
+    isOptional: false,
+    fields: [],
+  },
+];
 
 /**
  * Initial form data state
  */
 export const INITIAL_FORM_DATA: SignupFormData = {
   role: null,
-  full_name: '',
-  email: '',
-  password: '',
-  confirmPassword: '',
-  phone_number: '',
-  city: '',
-  country: '',
-  job_title: '',
-  industry: '',
-  years_of_experience: '',
+  full_name: "",
+  email: "",
+  password: "",
+  confirmPassword: "",
+  phone_number: "",
+  city: "",
+  country: "",
+  job_title: "",
+  industry: "",
+  years_of_experience: "",
   resumeFile: null,
+  company_name: "",
+  company_industry: "",
+  company_location: "",
 };

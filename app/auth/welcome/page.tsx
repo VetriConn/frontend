@@ -10,15 +10,6 @@ export default function WelcomePage() {
   const [userName, setUserName] = useState<string>("");
 
   useEffect(() => {
-    // Get user data from localStorage token
-    const token = localStorage.getItem("authToken");
-    
-    if (!token) {
-      // If no token, redirect to signin
-      router.push("/signin");
-      return;
-    }
-
     // Try to get user name from session storage (from signup)
     const signupData = sessionStorage.getItem("vetriconn_signup_wizard_state");
     if (signupData) {
@@ -29,20 +20,20 @@ export default function WelcomePage() {
         }
         // Clear signup session storage now that verification is complete
         sessionStorage.removeItem("vetriconn_signup_wizard_state");
-      } catch (error) {
-        console.error("Error parsing signup data:", error);
+      } catch {
+        // Ignore malformed session payload.
       }
     }
-  }, [router]);
+  }, []);
 
-  const handleGoToDashboard = () => {
-    router.push("/dashboard");
+  const handleGoToSignIn = () => {
+    router.push("/signin");
   };
 
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-br from-gray-50 to-gray-100">
       <AuthHeader />
-      
+
       <div className="flex-1 flex items-center justify-center px-6">
         <div className="max-w-md w-full bg-white rounded-lg shadow-lg p-8 text-center">
           {/* Success Icon - Green Checkmark with light green background */}
@@ -56,9 +47,10 @@ export default function WelcomePage() {
           <h1 className="text-2xl font-bold text-gray-900 mb-2">
             You're all set to get started!
           </h1>
-          
+
           <p className="text-gray-600 mb-6">
-            Your account is ready. Start exploring flexible job opportunities that match your experience.
+            Your account is ready. Start exploring flexible job opportunities
+            that match your experience.
           </p>
 
           {/* Benefits List - Red Background */}
@@ -116,12 +108,12 @@ export default function WelcomePage() {
             </ul>
           </div>
 
-          {/* Dashboard Button */}
+          {/* Sign in Button */}
           <button
-            onClick={handleGoToDashboard}
+            onClick={handleGoToSignIn}
             className="w-full py-3 px-6 bg-primary text-white font-medium rounded-lg hover:bg-primary/90 transition-colors flex items-center justify-center gap-2"
           >
-            Go to Dashboard
+            Go to Sign In
             <svg
               className="w-5 h-5"
               fill="none"

@@ -6,7 +6,6 @@ import { useUserProfile } from "@/hooks/useUserProfile";
 import { useParams } from "next/navigation";
 import DashboardNavbar from "@/components/ui/DashboardNavbar";
 import JobApplicationForm from "@/components/pages/jobs/JobApplicationForm";
-import { getDummyJob } from "@/lib/dummy-jobs";
 
 export default function ApplyPage() {
   const params = useParams();
@@ -15,8 +14,7 @@ export default function ApplyPage() {
   const { job, isLoading: jobLoading, isError: jobError } = useJob(jobId);
   const { userProfile, isLoading: profileLoading } = useUserProfile();
 
-  // Use API data or fall back to dummy data for UI development
-  const displayJob = job || getDummyJob(jobId);
+  const displayJob = job;
   const isLoading = jobLoading || profileLoading;
 
   // If job has an external application link, redirect them back

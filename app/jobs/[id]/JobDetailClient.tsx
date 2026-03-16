@@ -4,7 +4,6 @@ import Link from "next/link";
 import JobDescriptor from "@/components/ui/JobDescriptor";
 import { useJob } from "@/hooks/useJob";
 import { Job } from "@/types/job";
-import { getDummyJob } from "@/lib/dummy-jobs";
 
 interface JobDetailClientProps {
   jobId: string;
@@ -17,8 +16,7 @@ export default function JobDetailClient({
 }: JobDetailClientProps) {
   const { job, isLoading, isError } = useJob(jobId);
 
-  // Use API data → server pre-fetched data → dummy fallback
-  const displayJob = job || initialJob || getDummyJob(jobId);
+  const displayJob = job || initialJob;
 
   if (isLoading && !displayJob) {
     return (

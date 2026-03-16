@@ -1,11 +1,12 @@
 import useSWR from "swr";
 import { getJobById } from "@/lib/api";
 import { Job } from "@/types/job";
+import { mapTagColor } from "@/lib/job-tag-colors";
 
 export function useJob(jobId: string) {
   const { data, error, mutate, isLoading } = useSWR(
     jobId ? `/jobs/${jobId}` : null,
-    () => getJobById(jobId)
+    () => getJobById(jobId),
   );
 
   // Transform backend job data to frontend format
@@ -14,22 +15,14 @@ export function useJob(jobId: string) {
         id: data._id || data.id,
         role: data.role,
         company_name: data.company_name,
-        company_logo: data.company_logo || "/images/company-logo.jpg", // Use provided logo or default
+        company_logo: data.company_logo || "",
         location: data.location || "",
         salary: data.salary,
         salary_range: data.salary_range,
         tags: data.tags
-          ? data.tags.map((tag, index) => ({
+          ? data.tags.map((tag) => ({
               name: tag,
-              color: [
-                "flutter",
-                "dart",
-                "mobile",
-                "ios",
-                "android",
-                "react",
-                "web",
-              ][index % 7] as any, // Cycle through available colors
+              color: mapTagColor(tag),
             }))
           : [],
         full_description: data.full_description || data.description || "",

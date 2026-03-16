@@ -67,8 +67,7 @@ function EmailVerificationContent() {
             "Verification failed. The link may be expired or invalid.",
         );
       }
-    } catch (error) {
-      console.error("Verification error:", error);
+    } catch {
       setStatus("error");
       setMessage("An error occurred during verification. Please try again.");
     }

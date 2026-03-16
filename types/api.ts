@@ -88,6 +88,7 @@ export interface UserDocument {
   name: string;
   url: string;
   file_type?: string;
+  type?: string;
   file_size?: number;
   upload_date?: Date | string;
   description?: string;
@@ -115,9 +116,9 @@ export interface UserProfile {
 
   // Contact Information
   phone_number?: string;
+  location?: string;
   city?: string;
   country?: string;
-  location?: string;
 
   // Work Background
   job_title?: string;
@@ -125,21 +126,41 @@ export interface UserProfile {
   years_of_experience?: string;
 
   // Profile fields
-  profession?: string;
   bio?: string;
-  current_job?: string;
-  experience?: string;
   promotional_emails?: boolean;
   looking_for?: string[];
   documents?: UserDocument[];
   attachments?: UserAttachment[];
   socials?: UserSocials;
-  professional_summary?: string;
   work_experience?: WorkExperience[];
   education?: Education[];
   certifications?: Certification[];
   saved_jobs?: string[];
+  applied_jobs_count?: number;
   skills?: string[];
+  employer_profile?: {
+    company_name: string;
+    industry: string;
+    city: string;
+    country: string;
+    phone_number?: string;
+    company_email?: string;
+    website?: string;
+    company_size?: string;
+    about_company?: string;
+    logo_url?: string;
+    banner_url?: string;
+    notification_preferences: {
+      email_notifications: boolean;
+      job_approved_rejected: boolean;
+      new_applications: boolean;
+      messages: boolean;
+    };
+    company_preferences: {
+      public_company_profile: boolean;
+      show_contact_information: boolean;
+    };
+  };
 
   // Job-seeking status
   job_seeking_status?:
@@ -165,23 +186,42 @@ export interface UserProfileResponse {
       phone_number?: string;
       city?: string;
       country?: string;
-      location?: string;
       job_title?: string;
       industry?: string;
       years_of_experience?: string;
-      profession?: string;
       bio?: string;
-      current_job?: string;
-      experience?: string;
       looking_for?: string[];
       picture?: string;
       socials?: UserSocials;
-      professional_summary?: string;
       work_experience?: WorkExperience[];
       education?: Education[];
       certifications?: Certification[];
       saved_jobs?: string[];
+      applied_jobs_count?: number;
       skills?: string[];
+      employer_profile?: {
+        company_name: string;
+        industry: string;
+        city: string;
+        country: string;
+        phone_number?: string;
+        company_email?: string;
+        website?: string;
+        company_size?: string;
+        about_company?: string;
+        logo_url?: string;
+        banner_url?: string;
+        notification_preferences: {
+          email_notifications: boolean;
+          job_approved_rejected: boolean;
+          new_applications: boolean;
+          messages: boolean;
+        };
+        company_preferences: {
+          public_company_profile: boolean;
+          show_contact_information: boolean;
+        };
+      };
       job_seeking_status?:
         | "none"
         | "actively_looking"
@@ -224,8 +264,121 @@ export interface JobsResponse {
   qualifications?: string[];
   applicationLink?: string;
   description?: string;
+  application_count?: number;
   createdAt: string;
   updatedAt: string;
+}
+
+export interface ApplicationItem {
+  _id: string;
+  user_id: string;
+  job_id:
+    | string
+    | {
+        _id: string;
+        id: string;
+        role: string;
+        company_name: string;
+        location?: string;
+        company_logo?: string;
+      };
+  status: "pending" | "reviewed" | "accepted" | "rejected";
+  full_name: string;
+  email: string;
+  phone: string;
+  relevant_experience?: string;
+  selected_skills?: string[];
+  earliest_start_date?: string;
+  preferred_schedule?: string;
+  work_location_preference?: string;
+  resume_url?: string;
+  additional_info?: string;
+  applied_at: string;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export type EmployerMessageSender = "employer" | "applicant";
+
+export interface EmployerThreadSummary {
+  application_id: string;
+  applicant: {
+    user_id?: string;
+    full_name: string;
+    email: string;
+    phone: string;
+  };
+  job: {
+    role: string;
+    company_name: string;
+  };
+  selected_skills?: string[];
+  additional_info?: string;
+  applied_at?: string;
+  last_message?: {
+    _id: string;
+    sender: EmployerMessageSender;
+    content: string;
+    createdAt: string;
+  } | null;
+}
+
+export interface EmployerThreadMessage {
+  _id: string;
+  application_id: string;
+  employer_id: string;
+  applicant_id: string;
+  sender: EmployerMessageSender;
+  content: string;
+  read_by_employer: boolean;
+  read_by_applicant: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface EmployerThreadDetail {
+  application_id: string;
+  applicant: {
+    user_id?: string;
+    full_name: string;
+    email: string;
+    phone: string;
+  };
+  job: {
+    role: string;
+    company_name: string;
+  };
+  selected_skills?: string[];
+  additional_info?: string;
+  applied_at?: string;
+}
+
+export interface NotificationItem {
+  _id: string;
+  type:
+    | "application_sent"
+    | "application_received"
+    | "application_reviewed"
+    | "job_match"
+    | "profile_reminder"
+    | "system";
+  title: string;
+  description: string;
+  link?: string;
+  is_read: boolean;
+  createdAt: string;
+  updatedAt?: string;
+}
+
+export interface EmployerJobSummary {
+  _id: string;
+  id: string;
+  role: string;
+  company_name: string;
+  location?: string;
+  application_count?: number;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 // Attachment types (matching backend schema)
@@ -283,18 +436,17 @@ export interface BackendAttachment {
 export interface ContactMessage {
   full_name: string;
   email: string;
-  description: string;
+  message: string;
 }
 
 export interface MessageResponse {
   success: boolean;
-  description: string;
+  message: string;
   data?: {
-    id: string;
-    full_name: string;
-    email: string;
-    description: string;
-    createdAt: string;
+    sent: boolean;
   };
-  error?: string;
+  errors?: {
+    field: string;
+    message: string;
+  }[];
 }

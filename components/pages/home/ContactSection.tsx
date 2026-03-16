@@ -19,7 +19,7 @@ export const ContactSection = ({ id }: ContactSectionProps) => {
   const [formData, setFormData] = useState<ContactMessage>({
     full_name: "",
     email: "",
-    description: "",
+    message: "",
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitStatus, setSubmitStatus] = useState<{
@@ -34,7 +34,7 @@ export const ContactSection = ({ id }: ContactSectionProps) => {
     const { name, value } = e.target;
     if (name === "name") setFormData((prev) => ({ ...prev, full_name: value }));
     else if (name === "message")
-      setFormData((prev) => ({ ...prev, description: value }));
+      setFormData((prev) => ({ ...prev, message: value }));
     else setFormData((prev) => ({ ...prev, [name]: value }));
     if (submitStatus.type) setSubmitStatus({ type: null, message: "" });
   };
@@ -44,7 +44,7 @@ export const ContactSection = ({ id }: ContactSectionProps) => {
     if (
       !formData.full_name.trim() ||
       !formData.email.trim() ||
-      !formData.description.trim()
+      !formData.message.trim()
     ) {
       setSubmitStatus({ type: "error", message: "Please fill in all fields." });
       return;
@@ -68,7 +68,7 @@ export const ContactSection = ({ id }: ContactSectionProps) => {
         title: "Message Sent!",
         description: "Thank you for contacting us. We'll get back to you soon.",
       });
-      setFormData({ full_name: "", email: "", description: "" });
+      setFormData({ full_name: "", email: "", message: "" });
     } catch (error) {
       const errorMessage =
         error instanceof Error
@@ -161,10 +161,10 @@ export const ContactSection = ({ id }: ContactSectionProps) => {
           />
           <textarea
             name="message"
-            placeholder="Description"
+            placeholder="Message"
             className="w-full py-4 px-5 border border-gray-200 rounded-2xl font-open-sans text-base outline-none transition-colors min-h-[120px] resize-y focus:border-primary focus:border-[1.5px] mobile:py-3 mobile:px-4 mobile:text-sm mobile:rounded-xl mobile:min-h-[100px]"
             rows={6}
-            value={formData.description}
+            value={formData.message}
             onChange={handleInputChange}
             disabled={isSubmitting}
             required

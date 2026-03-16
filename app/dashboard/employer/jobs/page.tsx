@@ -183,9 +183,7 @@ export default function ManageJobsPage() {
     {} as Record<PostingStatus, number>,
   );
 
-  const filteredPostings = MOCK_POSTINGS.filter(
-    (p) => p.status === activeTab,
-  );
+  const filteredPostings = MOCK_POSTINGS.filter((p) => p.status === activeTab);
 
   return (
     <div className="min-h-screen bg-gray-50">

@@ -124,9 +124,7 @@ export default function NotificationsPage() {
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-[680px] mx-auto px-6 py-8">
-        <h1 className="text-2xl font-bold text-gray-900 mb-6">
-          Notifications
-        </h1>
+        <h1 className="text-2xl font-bold text-gray-900 mb-6">Notifications</h1>
 
         <div className="space-y-2">
           {MOCK_NOTIFICATIONS.map((notif) => {
@@ -141,7 +139,9 @@ export default function NotificationsPage() {
                 }`}
               >
                 {/* Icon */}
-                <Icon className={`w-5 h-5 mt-0.5 shrink-0 ${config.iconColor}`} />
+                <Icon
+                  className={`w-5 h-5 mt-0.5 shrink-0 ${config.iconColor}`}
+                />
 
                 {/* Content */}
                 <div className="flex-1 min-w-0">

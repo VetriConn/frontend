@@ -63,8 +63,7 @@ const inputClasses =
 
 const labelClasses = "block text-sm font-semibold text-gray-900 mb-1.5";
 
-const sectionClasses =
-  "bg-white rounded-xl border border-gray-200 p-6";
+const sectionClasses = "bg-white rounded-xl border border-gray-200 p-6";
 
 // ─── Page Component ──────────────────────────────────────────────────────────
 

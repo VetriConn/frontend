@@ -504,7 +504,8 @@ function StepReview({ formData }: { formData: JobFormData }) {
     if (formData.salary_min && formData.salary_max) {
       return `$${Number(formData.salary_min).toLocaleString()} – $${Number(formData.salary_max).toLocaleString()}`;
     }
-    if (formData.salary_min) return `From $${Number(formData.salary_min).toLocaleString()}`;
+    if (formData.salary_min)
+      return `From $${Number(formData.salary_min).toLocaleString()}`;
     return `Up to $${Number(formData.salary_max).toLocaleString()}`;
   };
 
@@ -556,7 +557,8 @@ function StepReview({ formData }: { formData: JobFormData }) {
     },
   ];
 
-  const missingRequired = !formData.job_title || !formData.job_category || !formData.description;
+  const missingRequired =
+    !formData.job_title || !formData.job_category || !formData.description;
 
   return (
     <div>
@@ -564,8 +566,8 @@ function StepReview({ formData }: { formData: JobFormData }) {
         Review Your Job Listing
       </h2>
       <p className="text-sm text-gray-500 mb-6">
-        Review all the details before submitting. This is how candidates will see
-        your posting.
+        Review all the details before submitting. This is how candidates will
+        see your posting.
       </p>
 
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-5">
@@ -622,7 +624,9 @@ function StepReview({ formData }: { formData: JobFormData }) {
               Requirements
             </h4>
             <p className="text-sm text-gray-500">
-              <span className="font-medium text-gray-600">Experience Level:</span>{" "}
+              <span className="font-medium text-gray-600">
+                Experience Level:
+              </span>{" "}
               {displayExperience || "Not specified"}
             </p>
           </div>
@@ -816,7 +820,9 @@ const CreateJobPosting = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <div className={`mx-auto px-6 py-8 ${currentStep === 5 ? "max-w-[780px]" : "max-w-[560px]"}`}>
+      <div
+        className={`mx-auto px-6 py-8 ${currentStep === 5 ? "max-w-[780px]" : "max-w-[560px]"}`}
+      >
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
           <div className="flex items-center gap-3">

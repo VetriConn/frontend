@@ -102,9 +102,17 @@ const EmployerDashboard = () => {
 
   const STATS = [
     { label: "Total Jobs", value: totalJobs, icon: HiOutlineDocumentText },
-    { label: "Active Posts", value: activePosts, icon: HiOutlineBuildingOffice2 },
+    {
+      label: "Active Posts",
+      value: activePosts,
+      icon: HiOutlineBuildingOffice2,
+    },
     { label: "Total Views", value: totalViews, icon: HiOutlineEye },
-    { label: "Applications", value: totalApplications, icon: HiOutlineUserGroup },
+    {
+      label: "Applications",
+      value: totalApplications,
+      icon: HiOutlineUserGroup,
+    },
   ];
 
   if (isLoading) {

@@ -1,10 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import {
-  HiOutlinePaperAirplane,
-  HiOutlinePaperClip,
-} from "react-icons/hi2";
+import { HiOutlinePaperAirplane, HiOutlinePaperClip } from "react-icons/hi2";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -124,7 +121,10 @@ export default function MessagesPage() {
       <div className="max-w-[900px] mx-auto px-6 py-8">
         <h1 className="text-2xl font-bold text-gray-900 mb-6">Messages</h1>
 
-        <div className="bg-white rounded-xl border border-gray-200 flex overflow-hidden" style={{ height: "540px" }}>
+        <div
+          className="bg-white rounded-xl border border-gray-200 flex overflow-hidden"
+          style={{ height: "540px" }}
+        >
           {/* ── Left panel — Conversation list ── */}
           <div className="w-72 border-r border-gray-200 flex flex-col shrink-0">
             <div className="overflow-y-auto flex-1">

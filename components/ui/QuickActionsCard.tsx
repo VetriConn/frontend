@@ -6,6 +6,7 @@ import {
   HiOutlineCog6Tooth,
   HiOutlineHeart,
   HiOutlineChevronRight,
+  HiOutlineClipboardDocument,
 } from "react-icons/hi2";
 
 interface QuickAction {
@@ -52,6 +53,12 @@ export const QuickActionsCard: React.FC<QuickActionsCardProps> = ({
       subtitle: savedSubtitle,
       href: "/dashboard/saved-jobs",
       icon: <HiOutlineHeart className="w-5 h-5 text-red-500" />,
+    },
+    {
+      label: "Application drafts",
+      subtitle: "Continue where you left off",
+      href: "/dashboard/application-drafts",
+      icon: <HiOutlineClipboardDocument className="w-5 h-5 text-red-500" />,
     },
   ];
   return (

@@ -1,6 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { changePassword } from "@/lib/api";
+import { usePatchProfile } from "@/hooks/usePatchProfile";
+import { useUserProfile } from "@/hooks/useUserProfile";
+import { useToaster } from "@/components/ui/Toaster";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -68,10 +72,14 @@ const sectionClasses = "bg-white rounded-xl border border-gray-200 p-6";
 // ─── Page Component ──────────────────────────────────────────────────────────
 
 export default function SettingsPage() {
+  const { userProfile } = useUserProfile();
+  const { patchProfile } = usePatchProfile();
+  const { showToast } = useToaster();
+
   const [account, setAccount] = useState<AccountInfo>({
-    fullName: "John Smith",
-    email: "john@apexsolutions.com",
-    role: "Admin",
+    fullName: "",
+    email: "",
+    role: "Employer",
   });
 
   const [passwords, setPasswords] = useState<PasswordFields>({
@@ -94,11 +102,55 @@ export default function SettingsPage() {
 
   const [isSaving, setIsSaving] = useState(false);
 
+  useEffect(() => {
+    if (!userProfile) return;
+    setAccount({
+      fullName: userProfile.full_name || "",
+      email: userProfile.email || "",
+      role: userProfile.role === "employer" ? "Employer" : "Job Seeker",
+    });
+  }, [userProfile]);
+
   const handleSave = async () => {
     setIsSaving(true);
     try {
-      // TODO: Wire up to backend API
-      await new Promise((r) => setTimeout(r, 800));
+      await patchProfile({
+        full_name: account.fullName,
+        email: account.email,
+      });
+
+      if (
+        passwords.currentPassword ||
+        passwords.newPassword ||
+        passwords.confirmPassword
+      ) {
+        if (!passwords.currentPassword || !passwords.newPassword) {
+          throw new Error("Current and new password are required");
+        }
+        if (passwords.newPassword !== passwords.confirmPassword) {
+          throw new Error("New password and confirmation do not match");
+        }
+
+        await changePassword(passwords.currentPassword, passwords.newPassword);
+        setPasswords({
+          currentPassword: "",
+          newPassword: "",
+          confirmPassword: "",
+        });
+      }
+
+      showToast({
+        type: "success",
+        title: "Settings saved",
+        description: "Your changes were saved successfully",
+      });
+    } catch (err) {
+      showToast({
+        type: "error",
+        title: "Save failed",
+        description:
+          err instanceof Error ? err.message : "Could not save settings",
+      });
     } finally {
       setIsSaving(false);
     }
@@ -114,7 +166,7 @@ export default function SettingsPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <div className="max-w-[600px] mx-auto px-6 py-8">
+      <div className="mx-auto px-6 py-8" style={{maxWidth: '600px'}}>
         <h1 className="text-2xl font-bold text-gray-900 mb-6">Settings</h1>
 
         <div className="space-y-5">

@@ -13,6 +13,7 @@ const ROUTE_LABELS: Record<string, string> = {
   "applied-jobs": "Applied Jobs",
   "saved-jobs": "Saved Jobs",
   "saved-searches": "Saved Searches",
+  "application-drafts": "Application Drafts",
   jobs: "Browse Jobs",
   notifications: "Notifications",
   community: "Community",

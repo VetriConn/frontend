@@ -1,7 +1,12 @@
 "use client";
 
+import { useState } from "react";
 import useSWR from "swr";
-import { getEmployerApplications } from "@/lib/api";
+import {
+  getEmployerApplications,
+  updateEmployerApplicationStatus,
+} from "@/lib/api";
+import { useToaster } from "@/components/ui/Toaster";
 import {
   HiOutlineUserGroup,
   HiOutlineBriefcase,
@@ -65,10 +70,42 @@ function ApplicationStatusBadge({ status }: { status: string }) {
 }
 
 export default function ApplicationsPage() {
-  const { data: applications = [], isLoading } = useSWR(
-    "employer-applications",
-    getEmployerApplications,
+  const { showToast } = useToaster();
+  const [busyApplicationId, setBusyApplicationId] = useState<string | null>(
+    null,
   );
+  const {
+    data: applications = [],
+    isLoading,
+    mutate,
+  } = useSWR("employer-applications", getEmployerApplications);
+
+  const handleStatusChange = async (
+    applicationId: string,
+    status: "reviewed" | "accepted" | "rejected",
+  ) => {
+    setBusyApplicationId(applicationId);
+    try {
+      await updateEmployerApplicationStatus(applicationId, status);
+      await mutate();
+      showToast({
+        type: "success",
+        title: "Application updated",
+        description: `Status changed to ${status}`,
+      });
+    } catch (err) {
+      showToast({
+        type: "error",
+        title: "Update failed",
+        description:
+          err instanceof Error
+            ? err.message
+            : "Could not update application status",
+      });
+    } finally {
+      setBusyApplicationId(null);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -148,6 +185,36 @@ export default function ApplicationsPage() {
                   )}
 
                 <div className="mt-4 flex flex-wrap items-center gap-2">
+                  <button
+                    type="button"
+                    disabled={busyApplicationId === application._id}
+                    onClick={() =>
+                      handleStatusChange(application._id, "reviewed")
+                    }
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-blue-200 text-xs font-medium text-blue-700 hover:bg-blue-50 disabled:opacity-50"
+                  >
+                    Mark Reviewed
+                  </button>
+                  <button
+                    type="button"
+                    disabled={busyApplicationId === application._id}
+                    onClick={() =>
+                      handleStatusChange(application._id, "accepted")
+                    }
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-green-200 text-xs font-medium text-green-700 hover:bg-green-50 disabled:opacity-50"
+                  >
+                    Accept
+                  </button>
+                  <button
+                    type="button"
+                    disabled={busyApplicationId === application._id}
+                    onClick={() =>
+                      handleStatusChange(application._id, "rejected")
+                    }
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-red-200 text-xs font-medium text-red-700 hover:bg-red-50 disabled:opacity-50"
+                  >
+                    Reject
+                  </button>
                   {application.resume_url && (
                     <a
                       href={application.resume_url}

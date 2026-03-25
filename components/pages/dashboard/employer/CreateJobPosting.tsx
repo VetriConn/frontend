@@ -2,6 +2,8 @@
 
 import React, { useState, useCallback } from "react";
 import Link from "next/link";
+import { useRouter, useSearchParams } from "next/navigation";
+import { mutate } from "swr";
 import {
   HiOutlineBriefcase,
   HiOutlineArrowLeft,
@@ -9,6 +11,14 @@ import {
   HiOutlineClipboardDocument,
   HiCheck,
 } from "react-icons/hi2";
+import { useToaster } from "@/components/ui/Toaster";
+import { useUserProfile } from "@/hooks/useUserProfile";
+import {
+  createEmployerJob as createEmployerJobApi,
+  getEmployerJobById,
+  updateEmployerJob,
+} from "@/lib/api";
+import type { EmployerDraftPayload, EmployerJobDetail } from "@/types/api";
 
 // ─── Constants ───────────────────────────────────────────────────────────────
 
@@ -683,12 +693,156 @@ function StepReview({ formData }: { formData: JobFormData }) {
 // ─── Main Wizard Component ───────────────────────────────────────────────────
 
 const CreateJobPosting = () => {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const { showToast } = useToaster();
+  const { userProfile } = useUserProfile();
   const [currentStep, setCurrentStep] = useState(1);
   const [formData, setFormData] = useState<JobFormData>(INITIAL_FORM_DATA);
   const [errors, setErrors] = useState<FormErrors>({});
   const [isSaving, setIsSaving] = useState(false);
+  const [isDraftLoading, setIsDraftLoading] = useState(false);
+  const [editingJobId, setEditingJobId] = useState<string>("");
 
   const totalSteps = WIZARD_STEPS.length;
+  const draftId = searchParams.get("draftId");
+
+  const mapJobToFormData = useCallback((job: EmployerJobDetail): JobFormData => {
+    const draft = (job.draft_payload || {}) as EmployerDraftPayload;
+    const tags = job.tags || [];
+    const qualifications = job.qualifications || [];
+    const responsibilities = job.responsibilities || [];
+
+    const pickFromOptions = (
+      options: Array<{ value: string }>,
+      ...candidates: Array<string | undefined>
+    ): string => {
+      for (const candidate of candidates) {
+        if (!candidate) continue;
+        if (options.some((opt) => opt.value === candidate)) {
+          return candidate;
+        }
+      }
+      return "";
+    };
+
+    const fallbackJobCategory = pickFromOptions(
+      JOB_CATEGORIES,
+      ...tags,
+      draft.job_category,
+    );
+    const fallbackJobType = pickFromOptions(JOB_TYPES, ...tags, draft.job_type);
+    const fallbackEmploymentType = pickFromOptions(
+      EMPLOYMENT_TYPES,
+      ...tags,
+      draft.employment_type,
+    );
+    const fallbackWorkSchedule = pickFromOptions(
+      WORK_SCHEDULES,
+      ...tags,
+      draft.work_schedule,
+    );
+    const fallbackExperienceLevel = pickFromOptions(
+      EXPERIENCE_LEVELS,
+      ...qualifications,
+      draft.experience_level,
+    );
+    const fallbackPhysicalDemands = pickFromOptions(
+      PHYSICAL_DEMANDS,
+      ...responsibilities,
+      draft.physical_demands,
+    );
+
+    if (Object.keys(draft).length > 0) {
+      return {
+        ...INITIAL_FORM_DATA,
+        ...draft,
+        job_title: draft.job_title || job.role || "",
+        job_category: draft.job_category || fallbackJobCategory,
+        job_type: draft.job_type || fallbackJobType,
+        employment_type: draft.employment_type || fallbackEmploymentType,
+        description: draft.description || job.description || job.full_description || "",
+        experience_level: draft.experience_level || fallbackExperienceLevel,
+        skills: draft.skills || (qualifications[1] || qualifications[0] || ""),
+        physical_demands: draft.physical_demands || fallbackPhysicalDemands,
+        salary_min:
+          draft.salary_min ||
+          (job.salary_range?.start_salary?.number !== undefined
+            ? String(job.salary_range.start_salary.number)
+            : job.salary?.number !== undefined
+              ? String(job.salary.number)
+              : ""),
+        salary_max:
+          draft.salary_max ||
+          (job.salary_range?.end_salary?.number !== undefined
+            ? String(job.salary_range.end_salary.number)
+            : ""),
+        payment_type: draft.payment_type || "",
+        city: draft.city || "",
+        country: draft.country || "",
+        work_schedule: draft.work_schedule || fallbackWorkSchedule,
+      };
+    }
+
+    const [city = "", country = ""] = (job.location || "")
+      .split(",")
+      .map((part) => part.trim());
+
+    return {
+      ...INITIAL_FORM_DATA,
+      job_title: job.role || "",
+      job_category: fallbackJobCategory,
+      job_type: fallbackJobType,
+      employment_type: fallbackEmploymentType,
+      description: job.description || job.full_description || "",
+      experience_level: fallbackExperienceLevel,
+      city,
+      country,
+      salary_min:
+        job.salary_range?.start_salary?.number !== undefined
+          ? String(job.salary_range.start_salary.number)
+          : job.salary?.number !== undefined
+            ? String(job.salary.number)
+            : "",
+      salary_max:
+        job.salary_range?.end_salary?.number !== undefined
+          ? String(job.salary_range.end_salary.number)
+          : "",
+      skills: qualifications.join(", "),
+      physical_demands: fallbackPhysicalDemands,
+      work_schedule: fallbackWorkSchedule,
+    };
+  }, []);
+
+  React.useEffect(() => {
+    if (!draftId) return;
+
+    let active = true;
+    setIsDraftLoading(true);
+
+    void getEmployerJobById(draftId)
+      .then((job) => {
+        if (!active) return;
+        setEditingJobId(job._id);
+        setFormData(mapJobToFormData(job));
+      })
+      .catch((err) => {
+        if (!active) return;
+        showToast({
+          type: "error",
+          title: "Unable to load draft",
+          description:
+            err instanceof Error ? err.message : "Could not load draft job",
+        });
+      })
+      .finally(() => {
+        if (active) setIsDraftLoading(false);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [draftId, mapJobToFormData, showToast]);
 
   const handleFieldChange = useCallback(
     (field: keyof JobFormData, value: string) => {
@@ -749,29 +903,113 @@ const CreateJobPosting = () => {
     }
   }, [currentStep]);
 
+  const buildPayload = useCallback(
+    (status: "draft" | "published") => ({
+      role: formData.job_title,
+      description: formData.description,
+      skills: formData.skills,
+      experience_level: formData.experience_level,
+      physical_demands: formData.physical_demands,
+      salary_min: formData.salary_min,
+      salary_max: formData.salary_max,
+      payment_type: formData.payment_type,
+      city: formData.city,
+      country: formData.country,
+      work_schedule: formData.work_schedule,
+      employment_type: formData.employment_type,
+      job_type: formData.job_type,
+      job_category: formData.job_category,
+      status,
+      company_name: userProfile?.employer_profile?.company_name,
+      company_logo: userProfile?.employer_profile?.logo_url,
+      draft_payload: {
+        job_title: formData.job_title,
+        job_category: formData.job_category,
+        job_type: formData.job_type,
+        employment_type: formData.employment_type,
+        description: formData.description,
+        experience_level: formData.experience_level,
+        skills: formData.skills,
+        physical_demands: formData.physical_demands,
+        salary_min: formData.salary_min,
+        salary_max: formData.salary_max,
+        payment_type: formData.payment_type,
+        city: formData.city,
+        country: formData.country,
+        work_schedule: formData.work_schedule,
+      },
+    }),
+    [formData, userProfile],
+  );
+
   const handleSaveDraft = useCallback(async () => {
+    if (!formData.job_title.trim()) {
+      setErrors((prev) => ({
+        ...prev,
+        job_title: "Job title is required to save a draft",
+      }));
+      setCurrentStep(1);
+      return;
+    }
+
     setIsSaving(true);
     try {
-      // TODO: Wire up to backend API
-      await new Promise((r) => setTimeout(r, 600));
-    } catch {
-      // Error handling with real API
+      if (editingJobId) {
+        await updateEmployerJob(editingJobId, buildPayload("draft"));
+      } else {
+        await createEmployerJobApi(buildPayload("draft"));
+      }
+      await mutate("employer-jobs-dashboard");
+      await mutate("employer-jobs-manage");
+      await mutate("employer-jobs-drafts");
+      showToast({
+        type: "success",
+        title: "Draft saved",
+        description: "Your job draft was saved successfully",
+      });
+    } catch (err) {
+      const message =
+        err instanceof Error ? err.message : "Failed to save draft";
+      showToast({
+        type: "error",
+        title: "Could not save draft",
+        description: message,
+      });
     } finally {
       setIsSaving(false);
     }
-  }, []);
+  }, [buildPayload, editingJobId, formData.job_title, showToast]);
 
   const handlePublish = useCallback(async () => {
+    if (!validateStep()) return;
+
     setIsSaving(true);
     try {
-      // TODO: Wire up to backend API
-      await new Promise((r) => setTimeout(r, 800));
-    } catch {
-      // Error handling with real API
+      if (editingJobId) {
+        await updateEmployerJob(editingJobId, buildPayload("published"));
+      } else {
+        await createEmployerJobApi(buildPayload("published"));
+      }
+      await mutate("employer-jobs-dashboard");
+      await mutate("employer-jobs-manage");
+      await mutate("employer-jobs-drafts");
+      showToast({
+        type: "success",
+        title: "Job published",
+        description: "Your job is now live",
+      });
+      router.push("/dashboard/employer/jobs");
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Failed to publish";
+      showToast({
+        type: "error",
+        title: "Publish failed",
+        description: message,
+      });
     } finally {
       setIsSaving(false);
     }
-  }, []);
+  }, [buildPayload, editingJobId, router, showToast, validateStep]);
 
   // ─── Render Current Step ─────────────────────────────────────────────────
 
@@ -819,7 +1057,7 @@ const CreateJobPosting = () => {
   return (
     <div className="min-h-screen bg-gray-50">
       <div
-        className={`mx-auto px-6 py-8 ${currentStep === 5 ? "max-w-[780px]" : "max-w-[560px]"}`}
+        className={`mx-auto px-6 py-8 ${currentStep === 5 ? "max-w-full lg:max-w-4xl" : "max-w-full lg:max-w-2xl"}`}
       >
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
@@ -829,7 +1067,7 @@ const CreateJobPosting = () => {
             </div>
             <div>
               <h1 className="text-lg font-bold text-gray-900">
-                Create Job Posting
+                {editingJobId ? "Continue Draft" : "Create Job Posting"}
               </h1>
               <p className="text-xs text-gray-500">
                 Step {currentStep} of {totalSteps}
@@ -846,17 +1084,27 @@ const CreateJobPosting = () => {
         </div>
 
         {/* Stepper */}
-        <div className="flex items-center justify-between mb-8">
-          {WIZARD_STEPS.map((step, i) => (
-            <React.Fragment key={step.number}>
-              <div className="flex flex-col items-center gap-1.5">
+        <div className="mb-8">
+          {/* Circle + connector row */}
+          <div className="relative flex items-center justify-between">
+            {/* Full background track */}
+            <div className="absolute inset-x-0 top-1/2 -translate-y-1/2 bg-gray-200" style={{height: '2px'}} />
+            {/* Filled progress track */}
+            <div
+              className="absolute left-0 top-1/2 -translate-y-1/2 bg-primary transition-all duration-300" style={{height: '2px'}}
+              style={{
+                width: `${((currentStep - 1) / (WIZARD_STEPS.length - 1)) * 100}%`,
+              }}
+            />
+            {WIZARD_STEPS.map((step) => (
+              <div key={step.number} className="relative z-10 bg-gray-50 px-1">
                 <div
                   className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold transition-colors ${
-                    step.number === currentStep
+                    step.number < currentStep
                       ? "bg-primary text-white"
-                      : step.number < currentStep
-                        ? "bg-primary text-white"
-                        : "bg-gray-100 text-gray-400"
+                      : step.number === currentStep
+                        ? "bg-primary text-white ring-4 ring-red-100"
+                        : "bg-white border-2 border-gray-200 text-gray-400"
                   }`}
                 >
                   {step.number < currentStep ? (
@@ -865,30 +1113,31 @@ const CreateJobPosting = () => {
                     step.number
                   )}
                 </div>
-                <span
-                  className={`text-xs font-medium hidden sm:block ${
-                    step.number <= currentStep
-                      ? "text-gray-900"
-                      : "text-gray-400"
-                  }`}
-                >
-                  {step.label}
-                </span>
               </div>
-              {i < WIZARD_STEPS.length - 1 && (
-                <div
-                  className={`flex-1 h-[2px] mx-2 sm:mx-3 ${
-                    step.number < currentStep ? "bg-primary" : "bg-gray-200"
-                  }`}
-                />
-              )}
-            </React.Fragment>
-          ))}
+            ))}
+          </div>
+          {/* Labels row — each label is centred beneath its circle */}
+          <div className="hidden sm:grid grid-cols-5 mt-2.5">
+            {WIZARD_STEPS.map((step) => (
+              <span
+                key={step.number}
+                className={`text-xs font-medium text-center ${
+                  step.number <= currentStep ? "text-gray-900" : "text-gray-400"
+                }`}
+              >
+                {step.label}
+              </span>
+            ))}
+          </div>
         </div>
 
         {/* Step Content */}
         <div className="bg-white rounded-xl border border-gray-200 p-6 mb-6">
-          {renderStep()}
+          {isDraftLoading ? (
+            <div className="text-sm text-gray-500">Loading draft...</div>
+          ) : (
+            renderStep()
+          )}
         </div>
 
         {/* Action Buttons */}

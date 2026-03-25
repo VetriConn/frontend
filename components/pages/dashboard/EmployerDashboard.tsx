@@ -13,6 +13,7 @@ import {
   HiOutlinePlusCircle,
   HiOutlineBuildingOffice2,
   HiOutlineCalendar,
+  HiOutlineArrowTopRightOnSquare,
 } from "react-icons/hi2";
 
 function formatDate(value?: string) {
@@ -33,7 +34,9 @@ const EmployerDashboard = () => {
 
   const listings = jobs;
   const totalJobs = listings.length;
-  const activePosts = listings.length;
+  const activePosts = listings.filter(
+    (job) => job.status === "published",
+  ).length;
   const totalApplications = listings.reduce(
     (sum, j) => sum + (j.application_count || 0),
     0,
@@ -136,6 +139,9 @@ const EmployerDashboard = () => {
                     <th className="text-right font-medium text-gray-400 pr-6 pl-3 py-2.5">
                       Applications
                     </th>
+                    <th className="text-right font-medium text-gray-400 pr-6 pl-3 py-2.5">
+                      View
+                    </th>
                   </tr>
                 </thead>
                 <tbody>
@@ -158,6 +164,21 @@ const EmployerDashboard = () => {
                       </td>
                       <td className="pr-6 pl-3 py-3 text-right text-gray-500">
                         {job.application_count || 0}
+                      </td>
+                      <td className="pr-6 pl-3 py-3 text-right">
+                        {job.status === "published" ? (
+                          <Link
+                            href={`/jobs/${job._id}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-1.5 text-xs text-primary hover:text-primary-hover font-medium"
+                          >
+                            <HiOutlineArrowTopRightOnSquare className="w-3.5 h-3.5" />
+                            Public View
+                          </Link>
+                        ) : (
+                          <span className="text-xs text-gray-400">Draft</span>
+                        )}
                       </td>
                     </tr>
                   ))}

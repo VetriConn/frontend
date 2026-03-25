@@ -20,6 +20,8 @@ import { Job } from "@/types/job";
 import { getMyApplications } from "@/lib/api";
 import { useSavedJobs } from "@/hooks/useSavedJobs";
 import { getInitials } from "@/lib/initials";
+import { hasApplicationDraft } from "@/lib/applicationDrafts";
+import { useUserProfile } from "@/hooks/useUserProfile";
 
 type JobDescriptorProps = Job;
 
@@ -79,7 +81,11 @@ const JobDescriptor: React.FC<JobDescriptorProps> = ({
   applicationLink,
 }) => {
   const [hasApplied, setHasApplied] = useState(false);
+  const [hasDraft, setHasDraft] = useState(false);
   const { isSaved, isMutating, toggleSaved } = useSavedJobs();
+  const { userProfile } = useUserProfile();
+  const isEmployerPreview =
+    userProfile?.role === "employer" || userProfile?.role === "admin";
 
   useEffect(() => {
     let isMounted = true;
@@ -108,6 +114,10 @@ const JobDescriptor: React.FC<JobDescriptorProps> = ({
     return () => {
       isMounted = false;
     };
+  }, [id]);
+
+  useEffect(() => {
+    setHasDraft(hasApplicationDraft(id));
   }, [id]);
 
   const handleToggleSave = async () => {
@@ -397,7 +407,15 @@ const JobDescriptor: React.FC<JobDescriptorProps> = ({
                 </div>
 
                 {/* Apply Button */}
-                {applicationLink ? (
+                {isEmployerPreview ? (
+                  <button
+                    type="button"
+                    disabled
+                    className="flex items-center justify-center gap-2 w-full bg-gray-200 text-gray-600 font-semibold text-sm py-3 px-4 rounded-lg cursor-not-allowed mb-3"
+                  >
+                    Employer Preview Mode
+                  </button>
+                ) : applicationLink ? (
                   <a
                     href={applicationLink}
                     target="_blank"
@@ -419,7 +437,7 @@ const JobDescriptor: React.FC<JobDescriptorProps> = ({
                     href={`/jobs/${id}/apply`}
                     className="flex items-center justify-center gap-2 w-full bg-primary hover:bg-primary-hover text-white font-semibold text-sm py-3 px-4 rounded-lg transition-colors no-underline mb-3"
                   >
-                    Apply for this Job
+                    {hasDraft ? "Continue Draft Application" : "Apply for this Job"}
                     <HiOutlineArrowLeft className="rotate-180 text-base" />
                   </Link>
                 )}

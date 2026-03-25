@@ -229,7 +229,7 @@ const SearchResultsPage = () => {
   // Handle apply for a job
   const handleApply = useCallback(
     (jobId: string) => {
-      router.push(`/jobs/${jobId}`);
+      router.push(`/jobs/${jobId}/apply`);
     },
     [router],
   );

@@ -1,8 +1,11 @@
 "use client";
 
 import React, { useState, useCallback } from "react";
+import Image from "next/image";
 import { useUserProfile } from "@/hooks/useUserProfile";
 import { usePatchProfile } from "@/hooks/usePatchProfile";
+import { uploadEmployerCompanyAsset } from "@/lib/api";
+import { useToaster } from "@/components/ui/Toaster";
 import { DashboardSkeleton } from "@/components/ui/Skeleton";
 import {
   HiOutlineBuildingOffice2,
@@ -58,6 +61,8 @@ interface CompanyFormData {
   phone_number: string;
   company_size: string;
   established_year: string;
+  logo_url: string;
+  banner_url: string;
 }
 
 interface FormErrors {
@@ -76,6 +81,7 @@ const labelClasses = "block text-sm font-medium text-gray-700 mb-1.5";
 const CompanyProfileSetup = () => {
   const { userProfile, isLoading } = useUserProfile();
   const { patchProfile, isLoading: isSaving } = usePatchProfile();
+  const { showToast } = useToaster();
 
   const [formData, setFormData] = useState<CompanyFormData>({
     company_name: "",
@@ -87,9 +93,16 @@ const CompanyProfileSetup = () => {
     phone_number: "",
     company_size: "",
     established_year: "",
+    logo_url: "",
+    banner_url: "",
   });
 
   const [errors, setErrors] = useState<FormErrors>({});
+  const [uploadingAsset, setUploadingAsset] = useState<
+    "logo" | "banner" | null
+  >(null);
+  const logoInputRef = React.useRef<HTMLInputElement>(null);
+  const bannerInputRef = React.useRef<HTMLInputElement>(null);
 
   React.useEffect(() => {
     const employerProfile = userProfile?.employer_profile;
@@ -109,6 +122,8 @@ const CompanyProfileSetup = () => {
         phone_number:
           employerProfile.phone_number || userProfile.phone_number || "",
         company_size: employerProfile.company_size || "",
+        logo_url: employerProfile.logo_url || "",
+        banner_url: employerProfile.banner_url || "",
       }));
     } else if (userProfile) {
       setFormData((prev) => ({
@@ -168,6 +183,8 @@ const CompanyProfileSetup = () => {
           website: formData.website,
           company_size: formData.company_size,
           about_company: formData.description,
+          logo_url: formData.logo_url,
+          banner_url: formData.banner_url,
           notification_preferences: {
             email_notifications:
               userProfile?.employer_profile?.notification_preferences
@@ -202,12 +219,46 @@ const CompanyProfileSetup = () => {
     formData.description,
     formData.industry,
     formData.location,
+    formData.logo_url,
     formData.phone_number,
+    formData.banner_url,
     formData.website,
     patchProfile,
     userProfile?.employer_profile,
     validate,
   ]);
+
+  const handleAssetUpload = useCallback(
+    async (assetType: "logo" | "banner", file?: File) => {
+      if (!file) return;
+
+      setUploadingAsset(assetType);
+      try {
+        const result = await uploadEmployerCompanyAsset(assetType, file);
+        setFormData((prev) => ({
+          ...prev,
+          [assetType === "logo" ? "logo_url" : "banner_url"]: result.asset_url,
+        }));
+        showToast({
+          type: "success",
+          title: assetType === "logo" ? "Logo uploaded" : "Banner uploaded",
+          description: "Upload successful",
+        });
+      } catch (err) {
+        showToast({
+          type: "error",
+          title: "Upload failed",
+          description:
+            err instanceof Error
+              ? err.message
+              : "Could not upload file. Please try a smaller image.",
+        });
+      } finally {
+        setUploadingAsset(null);
+      }
+    },
+    [showToast],
+  );
 
   if (isLoading) return <DashboardSkeleton />;
 
@@ -245,21 +296,79 @@ const CompanyProfileSetup = () => {
                   <label className={labelClasses}>Company Logo</label>
                   <button
                     type="button"
+                    onClick={() => logoInputRef.current?.click()}
+                    disabled={uploadingAsset === "logo"}
                     className="w-full h-28 border-2 border-dashed border-gray-200 rounded-lg flex flex-col items-center justify-center gap-1.5 text-gray-400 hover:border-gray-300 hover:text-gray-500 transition-colors"
                   >
-                    <HiOutlinePhoto className="w-6 h-6" />
-                    <span className="text-xs">Click to upload</span>
+                    {formData.logo_url ? (
+                      <Image
+                        src={formData.logo_url}
+                        alt="Company logo"
+                        width={64}
+                        height={64}
+                        className="w-16 h-16 rounded-md object-contain bg-white"
+                      />
+                    ) : (
+                      <HiOutlinePhoto className="w-6 h-6" />
+                    )}
+                    <span className="text-xs">
+                      {uploadingAsset === "logo"
+                        ? "Uploading..."
+                        : formData.logo_url
+                          ? "Change logo"
+                          : "Click to upload"}
+                    </span>
                   </button>
+                  <input
+                    ref={logoInputRef}
+                    type="file"
+                    accept="image/png,image/jpeg,image/jpg,image/webp"
+                    className="hidden"
+                    onChange={(event) => {
+                      const file = event.target.files?.[0];
+                      void handleAssetUpload("logo", file);
+                      event.currentTarget.value = "";
+                    }}
+                  />
                 </div>
                 <div>
                   <label className={labelClasses}>Banner Image</label>
                   <button
                     type="button"
+                    onClick={() => bannerInputRef.current?.click()}
+                    disabled={uploadingAsset === "banner"}
                     className="w-full h-28 border-2 border-dashed border-gray-200 rounded-lg flex flex-col items-center justify-center gap-1.5 text-gray-400 hover:border-gray-300 hover:text-gray-500 transition-colors"
                   >
-                    <HiOutlinePhoto className="w-6 h-6" />
-                    <span className="text-xs">Click to upload</span>
+                    {formData.banner_url ? (
+                      <Image
+                        src={formData.banner_url}
+                        alt="Company banner"
+                        width={180}
+                        height={64}
+                        className="w-full h-16 rounded-md object-cover px-2"
+                      />
+                    ) : (
+                      <HiOutlinePhoto className="w-6 h-6" />
+                    )}
+                    <span className="text-xs">
+                      {uploadingAsset === "banner"
+                        ? "Uploading..."
+                        : formData.banner_url
+                          ? "Change banner"
+                          : "Click to upload"}
+                    </span>
                   </button>
+                  <input
+                    ref={bannerInputRef}
+                    type="file"
+                    accept="image/png,image/jpeg,image/jpg,image/webp"
+                    className="hidden"
+                    onChange={(event) => {
+                      const file = event.target.files?.[0];
+                      void handleAssetUpload("banner", file);
+                      event.currentTarget.value = "";
+                    }}
+                  />
                 </div>
               </div>
 
@@ -415,15 +524,38 @@ const CompanyProfileSetup = () => {
                 Live Preview
               </h3>
 
-              <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+              <div className="bg-white rounded-xl border border-gray-200 overflow-visible">
                 {/* Banner area */}
-                <div className="h-24 bg-primary" />
+                {formData.banner_url ? (
+                  <div className="h-24 relative rounded-t-xl overflow-hidden">
+                    <Image
+                      src={formData.banner_url}
+                      alt="Company banner"
+                      fill
+                      className="object-cover"
+                    />
+                  </div>
+                ) : (
+                  <div className="h-24 bg-primary rounded-t-xl" />
+                )}
 
                 {/* Logo */}
-                <div className="px-5 -mt-6">
-                  <div className="w-12 h-12 bg-primary/90 rounded-lg flex items-center justify-center border-2 border-white">
-                    <HiOutlineBuildingOffice2 className="w-6 h-6 text-white" />
-                  </div>
+                <div className="px-5 -mt-7 relative z-10">
+                  {formData.logo_url ? (
+                    <div className="w-14 h-14 rounded-lg overflow-hidden border-2 border-white bg-white shadow-sm">
+                      <Image
+                        src={formData.logo_url}
+                        alt="Company logo"
+                        width={56}
+                        height={56}
+                        className="w-full h-full object-contain"
+                      />
+                    </div>
+                  ) : (
+                    <div className="w-14 h-14 bg-primary/90 rounded-lg flex items-center justify-center border-2 border-white shadow-sm">
+                      <HiOutlineBuildingOffice2 className="w-6 h-6 text-white" />
+                    </div>
+                  )}
                 </div>
 
                 {/* Content */}

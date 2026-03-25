@@ -1,10 +1,11 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { ChangeEvent, useMemo, useRef, useState } from "react";
 import useSWR from "swr";
 import {
   getEmployerMessageThreads,
   getEmployerThreadMessages,
+  sendEmployerAttachmentMessage,
   sendEmployerMessage,
 } from "@/lib/api";
 import { getInitials } from "@/lib/initials";
@@ -31,7 +32,9 @@ export default function MessagesPage() {
   const [selectedId, setSelectedId] = useState<string>("");
   const [messageInput, setMessageInput] = useState("");
   const [isSending, setIsSending] = useState(false);
+  const [isUploadingAttachment, setIsUploadingAttachment] = useState(false);
   const [sendError, setSendError] = useState<string>("");
+  const attachmentInputRef = useRef<HTMLInputElement>(null);
 
   const resolvedSelectedId =
     selectedId || (threads.length > 0 ? threads[0].application_id : "");
@@ -81,6 +84,8 @@ export default function MessagesPage() {
         id: msg._id,
         sender: msg.sender === "employer" ? ("me" as const) : ("them" as const),
         text: msg.content,
+        attachmentUrl: msg.attachment_url,
+        attachmentName: msg.attachment_name,
         timestamp: formatTimestamp(msg.createdAt),
       }));
     }
@@ -91,6 +96,8 @@ export default function MessagesPage() {
         id: `${selectedConvo.id}-app`,
         sender: "them" as const,
         text: selectedConvo.additionalInfo.trim(),
+        attachmentUrl: undefined,
+        attachmentName: undefined,
         timestamp: formatTimestamp(selectedConvo.appliedAt),
       });
     }
@@ -99,6 +106,8 @@ export default function MessagesPage() {
         id: `${selectedConvo.id}-skills`,
         sender: "them" as const,
         text: `Top skills: ${selectedConvo.selectedSkills.join(", ")}`,
+        attachmentUrl: undefined,
+        attachmentName: undefined,
         timestamp: formatTimestamp(selectedConvo.appliedAt),
       });
     }
@@ -123,6 +132,35 @@ export default function MessagesPage() {
       );
     } finally {
       setIsSending(false);
+    }
+  };
+
+  const handleAttachmentChange = async (
+    event: ChangeEvent<HTMLInputElement>,
+  ) => {
+    const file = event.target.files?.[0];
+    event.currentTarget.value = "";
+
+    if (!selectedConvo || !file || isUploadingAttachment) return;
+
+    setSendError("");
+    setIsUploadingAttachment(true);
+    try {
+      await sendEmployerAttachmentMessage(
+        selectedConvo.id,
+        file,
+        messageInput.trim() || undefined,
+      );
+      setMessageInput("");
+      await Promise.all([mutateThread(), mutateThreads()]);
+    } catch (err) {
+      setSendError(
+        err instanceof Error
+          ? err.message
+          : "Unable to send attachment. Please try again.",
+      );
+    } finally {
+      setIsUploadingAttachment(false);
     }
   };
 
@@ -222,6 +260,20 @@ export default function MessagesPage() {
                         }`}
                       >
                         <p className="text-sm leading-relaxed">{msg.text}</p>
+                        {msg.attachmentUrl && (
+                          <a
+                            href={msg.attachmentUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className={`block mt-2 text-xs underline ${
+                              msg.sender === "me"
+                                ? "text-white"
+                                : "text-gray-600"
+                            }`}
+                          >
+                            {msg.attachmentName || "Open attachment"}
+                          </a>
+                        )}
                         <p
                           className={`text-[10px] mt-1 ${
                             msg.sender === "me"
@@ -249,11 +301,21 @@ export default function MessagesPage() {
                   )}
                   <div className="flex items-center gap-2">
                     <button
+                      type="button"
                       className="w-9 h-9 flex items-center justify-center text-gray-400 hover:text-gray-600 transition-colors"
                       aria-label="Attach file"
+                      onClick={() => attachmentInputRef.current?.click()}
+                      disabled={isUploadingAttachment}
                     >
                       <HiOutlinePaperClip className="w-5 h-5" />
                     </button>
+                    <input
+                      ref={attachmentInputRef}
+                      type="file"
+                      accept=".pdf,.doc,.docx,.txt,image/jpeg,image/png,image/webp"
+                      className="hidden"
+                      onChange={handleAttachmentChange}
+                    />
                     <input
                       type="text"
                       value={messageInput}
@@ -265,7 +327,11 @@ export default function MessagesPage() {
                       className="w-9 h-9 bg-primary text-white rounded-lg flex items-center justify-center hover:bg-primary-hover transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                       aria-label="Send message"
                       onClick={handleSend}
-                      disabled={isSending || !messageInput.trim()}
+                      disabled={
+                        isSending ||
+                        isUploadingAttachment ||
+                        !messageInput.trim()
+                      }
                     >
                       <HiOutlinePaperAirplane className="w-4 h-4" />
                     </button>

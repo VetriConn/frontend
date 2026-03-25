@@ -18,6 +18,7 @@ import {
   HiOutlineMagnifyingGlass,
   HiOutlineBuildingOffice2,
   HiOutlinePlusCircle,
+  HiOutlineClipboardDocument,
   HiOutlineDocumentText,
   HiOutlineUserGroup,
   HiOutlineChatBubbleLeftRight,
@@ -146,21 +147,30 @@ const DashboardNavbar = () => {
     ? "Loading..."
     : userProfile?.full_name || "User";
   const isEmployer = userProfile?.role === "employer";
+  const isJobSeeker = userProfile?.role === "job_seeker";
   const userRole = isUserProfileLoading
     ? "Loading..."
     : isEmployer
       ? "Employer"
       : "Job Seeker";
 
+  // Don't render role-specific nav until the profile is confirmed to avoid flash
   const navItems = useMemo(
-    () => (isEmployer ? employerNavItems : jobSeekerNavItems),
-    [isEmployer],
+    () =>
+      isUserProfileLoading
+        ? []
+        : isEmployer
+          ? employerNavItems
+          : isJobSeeker
+            ? jobSeekerNavItems
+            : [],
+    [isUserProfileLoading, isEmployer, isJobSeeker],
   );
   const hasUnreadNotifications = unreadCount > 0;
 
   return (
-    <nav className="bg-white border-b-[1px] border-gray-200 sticky top-0 z-[100]">
-      <div className="max-w-[1400px] mx-auto flex items-center justify-between py-3 px-6 lg:px-4">
+    <nav className="bg-white border-b border-gray-200 sticky top-0 z-100">
+      <div className="max-w-7xl mx-auto flex items-center justify-between py-3 px-6 lg:px-4">
         {/* Logo */}
         <Link href="/dashboard" className="flex items-center shrink-0">
           <Image
@@ -215,7 +225,10 @@ const DashboardNavbar = () => {
               )}
               {/* Dropdown menu - role aware */}
               {item.hasDropdown && isJobsDropdownOpen && (
-                <div className="absolute top-full left-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg min-w-[200px] py-1 z-50">
+                <div
+                  className="absolute top-full left-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg py-1 z-50"
+                  style={{ minWidth: "200px" }}
+                >
                   {isEmployer ? (
                     <>
                       <div className="px-4 py-1.5 text-[11px] font-semibold text-primary uppercase tracking-wider">
@@ -236,6 +249,14 @@ const DashboardNavbar = () => {
                       >
                         <HiOutlineDocumentText className="text-gray-400" />
                         Manage Job Postings
+                      </Link>
+                      <Link
+                        href="/dashboard/employer/drafts"
+                        className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                        onClick={() => setIsJobsDropdownOpen(false)}
+                      >
+                        <HiOutlineClipboardDocument className="text-gray-400" />
+                        Manage Job Drafts
                       </Link>
                       <Link
                         href="/dashboard/employer/applications"
@@ -275,6 +296,13 @@ const DashboardNavbar = () => {
                         onClick={() => setIsJobsDropdownOpen(false)}
                       >
                         Applied Jobs
+                      </Link>
+                      <Link
+                        href="/dashboard/application-drafts"
+                        className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                        onClick={() => setIsJobsDropdownOpen(false)}
+                      >
+                        Application Drafts
                       </Link>
                       <Link
                         href="/dashboard/jobs"
@@ -366,7 +394,10 @@ const DashboardNavbar = () => {
             </button>
 
             {isProfileDropdownOpen && (
-              <div className="absolute top-full right-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg min-w-[200px] py-1 z-50">
+              <div
+                className="absolute top-full right-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg py-1 z-50"
+                style={{ minWidth: "200px" }}
+              >
                 {isEmployer ? (
                   <>
                     <Link
@@ -421,6 +452,14 @@ const DashboardNavbar = () => {
                       Applied Jobs
                     </Link>
                     <Link
+                      href="/dashboard/application-drafts"
+                      className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50"
+                      onClick={() => setIsProfileDropdownOpen(false)}
+                    >
+                      <HiOutlineClipboardDocument className="text-gray-400" />
+                      Application Drafts
+                    </Link>
+                    <Link
                       href="/dashboard/saved-jobs"
                       className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50"
                       onClick={() => setIsProfileDropdownOpen(false)}
@@ -473,7 +512,10 @@ const DashboardNavbar = () => {
           </button>
 
           {isMobileMenuOpen && (
-            <div className="absolute top-full right-0 mt-2 bg-white border border-gray-200 rounded-lg shadow-lg min-w-[220px] py-2 z-50">
+            <div
+              className="absolute top-full right-0 mt-2 bg-white border border-gray-200 rounded-lg shadow-lg py-2 z-50"
+              style={{ minWidth: "220px" }}
+            >
               {navItems.map((item) => (
                 <Link
                   key={item.name}
@@ -510,6 +552,14 @@ const DashboardNavbar = () => {
                   >
                     <HiOutlineUserGroup className="text-gray-400" />
                     Applications
+                  </Link>
+                  <Link
+                    href="/dashboard/employer/drafts"
+                    className="flex items-center gap-3 px-4 py-3 text-sm text-gray-700 hover:bg-gray-50"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                  >
+                    <HiOutlineClipboardDocument className="text-gray-400" />
+                    Manage Job Drafts
                   </Link>
                   <Link
                     href="/dashboard/notifications"
@@ -584,6 +634,14 @@ const DashboardNavbar = () => {
                   >
                     <HiOutlineBriefcase className="text-gray-400" />
                     Applied Jobs
+                  </Link>
+                  <Link
+                    href="/dashboard/application-drafts"
+                    className="flex items-center gap-3 px-4 py-3 text-sm text-gray-700 hover:bg-gray-50"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                  >
+                    <HiOutlineClipboardDocument className="text-gray-400" />
+                    Application Drafts
                   </Link>
                   <Link
                     href="/dashboard/saved-jobs"

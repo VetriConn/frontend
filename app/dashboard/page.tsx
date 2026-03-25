@@ -33,13 +33,17 @@ const Dashboard = () => {
     );
   }
 
-  // Render dashboard based on role
+  // Render dashboard based on confirmed role only — never fall through to a default
   if (userProfile.role === "employer") {
     return <EmployerDashboard />;
   }
 
-  // Default to job seeker dashboard
-  return <JobSeekerDashboard />;
+  if (userProfile.role === "job_seeker") {
+    return <JobSeekerDashboard />;
+  }
+
+  // Role not yet known or unrecognised — hold at skeleton
+  return <DashboardSkeleton />;
 };
 
 export default Dashboard;

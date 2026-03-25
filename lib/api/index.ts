@@ -58,8 +58,15 @@ export {
 // Employer
 export {
   getEmployerJobs,
+  getEmployerJobById,
   getEmployerApplications,
+  createEmployerJob,
+  updateEmployerJob,
+  deleteEmployerJob,
+  updateEmployerApplicationStatus,
+  uploadEmployerCompanyAsset,
   getEmployerMessageThreads,
   getEmployerThreadMessages,
   sendEmployerMessage,
+  sendEmployerAttachmentMessage,
 } from "./employer";

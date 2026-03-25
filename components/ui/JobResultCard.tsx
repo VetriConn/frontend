@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import clsx from "clsx";
 import {
@@ -9,6 +9,7 @@ import {
   HiOutlineBriefcase,
   HiOutlineCurrencyDollar,
 } from "react-icons/hi2";
+import { hasApplicationDraft } from "@/lib/applicationDrafts";
 
 interface JobResultCardProps {
   id: string;
@@ -32,6 +33,11 @@ export const JobResultCard = ({
   onApply,
 }: JobResultCardProps) => {
   const router = useRouter();
+  const [hasDraft, setHasDraft] = useState(false);
+
+  useEffect(() => {
+    setHasDraft(hasApplicationDraft(id));
+  }, [id]);
 
   const handleApplyClick = () => {
     if (onApply) {
@@ -46,7 +52,7 @@ export const JobResultCard = ({
       className={clsx(
         "bg-white border border-gray-200 rounded-xl p-4 sm:p-6",
         "transition-shadow duration-200 hover:shadow-md",
-        "flex flex-col gap-4"
+        "flex flex-col gap-4",
       )}
       aria-labelledby={`job-title-${id}`}
     >
@@ -115,9 +121,9 @@ export const JobResultCard = ({
           type="button"
           onClick={handleApplyClick}
           className="btn-primary w-full md:w-auto whitespace-nowrap min-h-[48px]"
-          aria-label={`Apply now for ${title} at ${company}`}
+          aria-label={`${hasDraft ? "Continue application draft" : "Apply now"} for ${title} at ${company}`}
         >
-          Apply Now
+          {hasDraft ? "Continue Draft" : "Apply Now"}
         </button>
       </div>
     </article>

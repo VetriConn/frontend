@@ -26,7 +26,12 @@ import "react-day-picker/style.css";
 import { format, parse } from "date-fns";
 import { Job } from "@/types/job";
 import { submitJobApplication } from "@/lib/api";
-
+import {
+  getApplicationDraft,
+  removeApplicationDraft,
+  saveApplicationDraft,
+} from "@/lib/applicationDrafts";
+import { useToaster } from "@/components/ui/Toaster";
 
 // Canonical profile shape subset used for pre-filling application form
 import type { UserProfile } from "@/types/api";
@@ -94,6 +99,7 @@ export default function JobApplicationForm({
   job,
   userProfile,
 }: JobApplicationFormProps) {
+  const { showToast } = useToaster();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -114,24 +120,18 @@ export default function JobApplicationForm({
 
   // Restore draft from localStorage on mount
   useEffect(() => {
-    try {
-      const saved = localStorage.getItem(`vetriconn-draft-${job.id}`);
-      if (saved) {
-        const draft = JSON.parse(saved);
-        setFormData((prev) => ({
-          ...prev,
-          relevantExperience:
-            draft.relevantExperience || prev.relevantExperience,
-          selectedSkills: draft.selectedSkills || prev.selectedSkills,
-          earliestStartDate: draft.earliestStartDate || prev.earliestStartDate,
-          preferredSchedule: draft.preferredSchedule || prev.preferredSchedule,
-          workLocationPreference:
-            draft.workLocationPreference || prev.workLocationPreference,
-          additionalInfo: draft.additionalInfo || prev.additionalInfo,
-        }));
-      }
-    } catch {
-      // Ignore corrupted drafts
+    const draft = getApplicationDraft(job.id);
+    if (draft) {
+      setFormData((prev) => ({
+        ...prev,
+        relevantExperience: draft.relevantExperience || prev.relevantExperience,
+        selectedSkills: draft.selectedSkills || prev.selectedSkills,
+        earliestStartDate: draft.earliestStartDate || prev.earliestStartDate,
+        preferredSchedule: draft.preferredSchedule || prev.preferredSchedule,
+        workLocationPreference:
+          draft.workLocationPreference || prev.workLocationPreference,
+        additionalInfo: draft.additionalInfo || prev.additionalInfo,
+      }));
     }
   }, [job.id]);
 
@@ -262,7 +262,7 @@ export default function JobApplicationForm({
       }
       await submitJobApplication(job.id, apiFormData);
       // Clear draft on successful submission
-      localStorage.removeItem(`vetriconn-draft-${job.id}`);
+      removeApplicationDraft(job.id);
       setIsSubmitting(false);
       setSubmitted(true);
     } catch {
@@ -272,13 +272,24 @@ export default function JobApplicationForm({
   };
 
   const handleSaveDraft = () => {
-    const draft = {
-      ...formData,
-      resume: null, // Files can't be stored in localStorage
+    saveApplicationDraft(job.id, {
+      jobId: job.id,
+      jobTitle: job.role,
+      companyName: job.company_name,
+      location: job.location,
+      relevantExperience: formData.relevantExperience,
+      selectedSkills: formData.selectedSkills,
+      earliestStartDate: formData.earliestStartDate,
+      preferredSchedule: formData.preferredSchedule,
+      workLocationPreference: formData.workLocationPreference,
+      additionalInfo: formData.additionalInfo,
       savedAt: new Date().toISOString(),
-    };
-    localStorage.setItem(`vetriconn-draft-${job.id}`, JSON.stringify(draft));
-    alert("Application draft saved! You can finish it later.");
+    });
+    showToast({
+      type: "success",
+      title: "Draft saved",
+      description: "You can continue this application later.",
+    });
   };
 
   // ── Success screen ────────────────────────────────────────

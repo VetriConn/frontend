@@ -319,6 +319,10 @@ export interface EmployerThreadSummary {
     _id: string;
     sender: EmployerMessageSender;
     content: string;
+    attachment_url?: string;
+    attachment_name?: string;
+    attachment_mime_type?: string;
+    attachment_size?: number;
     createdAt: string;
   } | null;
 }
@@ -330,6 +334,10 @@ export interface EmployerThreadMessage {
   applicant_id: string;
   sender: EmployerMessageSender;
   content: string;
+  attachment_url?: string;
+  attachment_name?: string;
+  attachment_mime_type?: string;
+  attachment_size?: number;
   read_by_employer: boolean;
   read_by_applicant: boolean;
   createdAt: string;
@@ -376,9 +384,54 @@ export interface EmployerJobSummary {
   role: string;
   company_name: string;
   location?: string;
+  status?: "draft" | "published";
   application_count?: number;
   createdAt?: string;
   updatedAt?: string;
+}
+
+export interface EmployerDraftPayload {
+  job_title?: string;
+  job_category?: string;
+  job_type?: string;
+  employment_type?: string;
+  description?: string;
+  experience_level?: string;
+  skills?: string;
+  physical_demands?: string;
+  salary_min?: string;
+  salary_max?: string;
+  payment_type?: string;
+  city?: string;
+  country?: string;
+  work_schedule?: string;
+}
+
+export interface EmployerJobDetail extends EmployerJobSummary {
+  description?: string;
+  full_description?: string;
+  tags?: string[];
+  qualifications?: string[];
+  responsibilities?: string[];
+  company_logo?: string;
+  salary?: {
+    number: number;
+    currency: string;
+    symbol: string;
+  };
+  salary_range?: {
+    start_salary?: {
+      number?: number;
+      currency?: string;
+      symbol?: string;
+    };
+    end_salary?: {
+      number?: number;
+      currency?: string;
+      symbol?: string;
+    };
+  };
+  draft_payload?: EmployerDraftPayload;
 }
 
 // Attachment types (matching backend schema)

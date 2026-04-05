@@ -1,4 +1,5 @@
 "use client";
+import { useCallback, useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import DottedBox from "@/public/images/dotted_box.svg";
@@ -10,7 +11,27 @@ const COLLAGE_IMAGES = [
   { src: "/images/Hero/6.svg", alt: "Professional collaboration" },
 ] as const;
 
+const CAROUSEL_INTERVAL_MS = 5000;
+
 export const HeroSection = () => {
+  const [activeImageIndex, setActiveImageIndex] = useState(0);
+  const [isCarouselPaused, setIsCarouselPaused] = useState(false);
+
+  const goToNextImage = useCallback(() => {
+    setActiveImageIndex(
+      (currentIndex) => (currentIndex + 1) % COLLAGE_IMAGES.length,
+    );
+  }, []);
+
+  useEffect(() => {
+    if (isCarouselPaused) {
+      return;
+    }
+
+    const intervalId = window.setInterval(goToNextImage, CAROUSEL_INTERVAL_MS);
+    return () => window.clearInterval(intervalId);
+  }, [goToNextImage, isCarouselPaused]);
+
   return (
     <header className="px-[5%] py-4 pb-16 bg-white relative overflow-hidden mobile:px-[5%] mobile:py-1.5 mobile:pb-8 mobile:min-h-auto">
       <div className="max-w-[1340px] mx-auto">
@@ -84,8 +105,13 @@ export const HeroSection = () => {
           </Link>
         </div>
 
-        {/* Right — Image collage with Vetriconn logo background */}
-        <div className="relative flex-[0_0_auto] w-[650px] max-w-[650px] h-[455px] mobile:flex-none mobile:w-full mobile:max-w-full mobile:h-[300px]">
+        {/* Right — Hero image carousel */}
+        <div
+          className="relative flex-[0_0_auto] w-[650px] max-w-[650px] h-[455px] mobile:flex-none mobile:w-full mobile:max-w-full mobile:h-[300px]"
+          onMouseEnter={() => setIsCarouselPaused(true)}
+          onMouseLeave={() => setIsCarouselPaused(false)}
+          aria-label="Homepage hero image carousel"
+        >
           {/* Maple leaf watermark */}
           <div
             className="absolute bottom-2 right-2 w-[100px] h-[100px] rounded-[10px] bg-[url('/favicon.svg')] bg-no-repeat bg-center bg-contain z-[1] opacity-80 mobile:hidden"
@@ -98,40 +124,28 @@ export const HeroSection = () => {
             aria-hidden="true"
           />
 
-          {/* Image 1 — top-left */}
-          <div className="absolute left-0 top-0 w-[48%] h-[55%] -rotate-3 rounded-2xl overflow-hidden shadow-lg z-[3]">
-            <Image
-              src={COLLAGE_IMAGES[0].src}
-              alt={COLLAGE_IMAGES[0].alt}
-              fill
-              className="object-cover"
-              sizes="(max-width: 768px) 50vw, 25vw"
-              priority
-            />
-          </div>
-
-          {/* Image 2 — top-right */}
-          <div className="absolute right-0 top-2 w-[48%] h-[55%] rotate-3 rounded-2xl overflow-hidden shadow-lg z-[4]">
-            <Image
-              src={COLLAGE_IMAGES[1].src}
-              alt={COLLAGE_IMAGES[1].alt}
-              fill
-              className="object-cover"
-              sizes="(max-width: 768px) 50vw, 25vw"
-              priority
-            />
-          </div>
-
-          {/* Image 3 — bottom-center */}
-          <div className="absolute left-[15%] bottom-0 w-[52%] h-[50%] rotate-2 rounded-2xl overflow-hidden shadow-lg z-[5]">
-            <Image
-              src={COLLAGE_IMAGES[2].src}
-              alt={COLLAGE_IMAGES[2].alt}
-              fill
-              className="object-cover"
-              sizes="(max-width: 768px) 80vw, 30vw"
-              priority
-            />
+          {/* Carousel frame */}
+          <div className="absolute inset-x-2 inset-y-2 mobile:inset-0 rounded-2xl overflow-hidden shadow-xl z-4 bg-white">
+            {COLLAGE_IMAGES.map((image, index) => (
+              <div
+                key={image.src}
+                className={`absolute inset-0 transition-opacity duration-500 ${
+                  index === activeImageIndex
+                    ? "opacity-100 pointer-events-auto"
+                    : "opacity-0 pointer-events-none"
+                }`}
+                aria-hidden={index !== activeImageIndex}
+              >
+                <Image
+                  src={image.src}
+                  alt={image.alt}
+                  fill
+                  className="object-cover"
+                  sizes="(max-width: 768px) 92vw, 40vw"
+                  priority={index === 0}
+                />
+              </div>
+            ))}
           </div>
 
           {/* Decorative accents near images */}

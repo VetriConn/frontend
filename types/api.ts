@@ -25,6 +25,15 @@ export interface LoginResponse {
     };
     token: string;
   };
+  /** Set when the user has 2FA enabled. Frontend must call /2fa/challenge
+   * with the partial-session token before a full session is issued. */
+  requires2FA?: boolean;
+  /**
+   * Short-lived token issued alongside `requires2FA`. The frontend stores
+   * it in memory only (no localStorage) and includes it on the challenge
+   * request so the backend can match the partial session.
+   */
+  partialSessionToken?: string;
   error?: string;
 }
 
@@ -171,6 +180,12 @@ export interface UserProfile {
 
   // Email verification fields
   emailVerified?: boolean;
+
+  // Admin elevation flag — only meaningful when role === "admin".
+  is_super_admin?: boolean;
+
+  // Two-factor enabled (set by /2fa/verify, cleared by /2fa/disable).
+  two_factor_enabled?: boolean;
 }
 
 // User profile response from API (matches backend UserProfileResponse)

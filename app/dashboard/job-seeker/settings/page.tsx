@@ -28,7 +28,10 @@ import {
   requestDataExport,
   deactivateAccount as deactivateAccountApi,
   updateUserSettings,
+  patchUserProfile,
 } from "@/lib/api";
+import TwoFactorSetupDialog from "@/components/security/TwoFactorSetupDialog";
+import DisableTwoFactorDialog from "@/components/security/DisableTwoFactorDialog";
 
 // ─── Types ──────────────────────────────────────────────────────────────────────
 
@@ -45,9 +48,6 @@ interface SettingsState {
   applicationApprovedRejected: boolean;
   messages: boolean;
   communityUpdates: boolean;
-
-  // Two-Step Verification
-  twoStepVerification: boolean;
 
   // Privacy
   profileVisibility: string;
@@ -192,7 +192,8 @@ function SelectField({
 
 export default function AccountSettingsPage() {
   // ─── Fetch user profile from DB ───────────────────────────────────────────
-  const { userProfile, isLoading: profileLoading } = useUserProfile();
+  const { userProfile, isLoading: profileLoading, mutateProfile } =
+    useUserProfile();
   const { showToast } = useToaster();
 
   const [settings, setSettings] = useState<SettingsState>({
@@ -207,10 +208,24 @@ export default function AccountSettingsPage() {
     messages: true,
     communityUpdates: false,
 
-    twoStepVerification: false,
-
     profileVisibility: "employers-only",
   });
+
+  // ─── Two-step verification (derived from profile) ─────────────────────────
+  const twoFactorEnabled = Boolean(userProfile?.two_factor_enabled);
+  const [twoFactorSetupOpen, setTwoFactorSetupOpen] = useState(false);
+  const [twoFactorDisableOpen, setTwoFactorDisableOpen] = useState(false);
+  const handleTwoFactorToggle = () => {
+    if (twoFactorEnabled) {
+      setTwoFactorDisableOpen(true);
+    } else {
+      setTwoFactorSetupOpen(true);
+    }
+  };
+  const handleTwoFactorChange = () => {
+    // Re-fetch the profile so the derived flag flips.
+    mutateProfile();
+  };
 
   const update = <K extends keyof SettingsState>(
     key: K,
@@ -218,9 +233,43 @@ export default function AccountSettingsPage() {
   ) => {
     const newSettings = { ...settings, [key]: value };
     setSettings(newSettings);
-    // Persist to backend (fire-and-forget)
-    updateUserSettings(newSettings).catch(() => {
-      // Settings save failed silently — will retry on next toggle
+
+    // `jobSeekingStatus` lives on the user profile (not in generic settings).
+    // Persist it through `patchUserProfile` and revalidate the SWR cache so
+    // the badge on the profile page updates immediately.
+    if (key === "jobSeekingStatus") {
+      patchUserProfile({
+        job_seeking_status:
+          value as SettingsState["jobSeekingStatus"] as
+            | "none"
+            | "actively_looking"
+            | "open_to_offers"
+            | "not_looking",
+      })
+        .then(() => mutateProfile())
+        .catch((error: unknown) => {
+          showToast({
+            type: "error",
+            title: "Couldn't update your status",
+            description:
+              error instanceof Error
+                ? error.message
+                : "Please try again in a moment.",
+          });
+        });
+      return;
+    }
+
+    // Everything else is a generic preference — save through `updateUserSettings`.
+    updateUserSettings(newSettings).catch((error: unknown) => {
+      showToast({
+        type: "error",
+        title: "Couldn't save your changes",
+        description:
+          error instanceof Error
+            ? error.message
+            : "Please try again in a moment.",
+      });
     });
   };
 
@@ -457,19 +506,23 @@ export default function AccountSettingsPage() {
                 <div>
                   <h4 className="text-sm font-semibold text-gray-900 mb-1">
                     Two-Step Verification
+                    {twoFactorEnabled && (
+                      <span className="ml-2 inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200/70">
+                        On
+                      </span>
+                    )}
                   </h4>
                   <p className="text-sm text-gray-500 leading-relaxed">
-                    Add an extra layer of security. When you sign in, we&apos;ll
-                    send a code to your phone that you&apos;ll need to enter.
+                    Pair an authenticator app like 1Password or Google
+                    Authenticator. We&apos;ll ask for a 6-digit code each time
+                    you sign in.
                   </p>
                 </div>
               </div>
               <div className="shrink-0 pt-1">
                 <Toggle
-                  enabled={settings.twoStepVerification}
-                  onToggle={() =>
-                    update("twoStepVerification", !settings.twoStepVerification)
-                  }
+                  enabled={twoFactorEnabled}
+                  onToggle={handleTwoFactorToggle}
                 />
               </div>
             </div>
@@ -1238,6 +1291,18 @@ export default function AccountSettingsPage() {
             </div>
           </div>
         )}
+
+        {/* Two-Factor dialogs */}
+        <TwoFactorSetupDialog
+          open={twoFactorSetupOpen}
+          onClose={() => setTwoFactorSetupOpen(false)}
+          onEnrolled={handleTwoFactorChange}
+        />
+        <DisableTwoFactorDialog
+          open={twoFactorDisableOpen}
+          onClose={() => setTwoFactorDisableOpen(false)}
+          onDisabled={handleTwoFactorChange}
+        />
       </div>
     </RoleGuard>
   );

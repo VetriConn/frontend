@@ -115,6 +115,17 @@ export async function uploadResume(
 
 /**
  * Login user
+ *
+ * Returns either:
+ *   - A full session (with `data.user` + `data.token`).
+ *   - A 2FA challenge (`requires2FA: true` + `partialSessionToken`). The
+ *     caller must run the user through the 2FA challenge dialog and then
+ *     POST /api/v1/auth/2fa/challenge with that token.
+ *
+ * Until the backend wires up partial sessions, the frontend can simulate
+ * the challenge path locally by signing in with an email containing
+ * "2fa" (e.g. user+2fa@vetriconn.com). This is documented in
+ * PublicBETODO.txt §8.
  */
 export async function loginUser(
   email: string,
@@ -126,14 +137,34 @@ export async function loginUser(
     );
   }
 
+  // Mock 2FA detour — only triggers in dev when the email contains "2fa".
+  // The real backend will return `requires2FA: true` itself once shipped.
+  const SIMULATE_2FA =
+    process.env.NEXT_PUBLIC_NODE_ENV === "development" &&
+    /2fa/i.test(email);
+
   try {
-    return await apiFetch<LoginResponse>(`${API_BASE_URL}/api/v1/auth/login`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
+    const response = await apiFetch<LoginResponse>(
+      `${API_BASE_URL}/api/v1/auth/login`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email, password }),
       },
-      body: JSON.stringify({ email, password }),
-    });
+    );
+
+    if (SIMULATE_2FA && response.success) {
+      return {
+        success: true,
+        message: "Two-factor verification required",
+        requires2FA: true,
+        partialSessionToken: `mock-partial-${Date.now()}`,
+      };
+    }
+
+    return response;
   } catch (error) {
     throw error instanceof Error ? error : new Error("Login failed");
   }

@@ -21,10 +21,10 @@ export const API_CONFIG = {
       RESET_PASSWORD: "/api/v1/auth/reset-password",
     },
     USER: {
-      PROFILE: "/api/v1/user/profile",
-      UPDATE_PROFILE: "/api/v1/user/profile",
-      UPLOAD_PICTURE: "/api/v1/user/profile-picture",
-      DELETE_PICTURE: "/api/v1/user/profile-picture",
+      PROFILE: "/api/v1/auth/profile",
+      UPDATE_PROFILE: "/api/v1/auth/profile",
+      UPLOAD_PICTURE: "/api/v1/auth/profile-picture",
+      DELETE_PICTURE: "/api/v1/auth/profile-picture",
       UPLOAD_RESUME: "/api/v1/user/upload-resume",
     },
     CONTACT: {

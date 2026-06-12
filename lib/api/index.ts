@@ -78,3 +78,36 @@ export {
   sendJobSeekerMessage,
   sendJobSeekerAttachmentMessage,
 } from "./jobseeker";
+
+// Job Seeker Drafts
+export {
+  getDrafts,
+  getDraft,
+  upsertDraft,
+  deleteDraft,
+} from "./jobseeker";
+
+// Job Seeker Saved Searches
+export {
+  getSavedSearches as getSavedSearchesApi,
+  createSavedSearch,
+  updateSavedSearch,
+  deleteSavedSearch,
+  runSavedSearch,
+} from "./jobseeker";
+
+// Job Seeker Application Tracker
+export {
+  getTrackerEntries,
+  createTrackerEntry,
+  updateTrackerEntry,
+  deleteTrackerEntry,
+} from "./jobseeker";
+
+// Attachments
+export {
+  uploadAttachment,
+  getUserAttachments,
+  updateAttachment,
+  deleteAttachment,
+} from "./attachments";

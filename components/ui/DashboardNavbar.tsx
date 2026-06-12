@@ -60,7 +60,7 @@ const jobSeekerNavItems: NavItem[] = [
   },
   {
     name: "Inbox",
-    href: "/dashboard/employer/inbox",
+    href: "/dashboard/job-seeker/inbox",
     icon: <HiOutlineInbox className="w-5 h-5" />,
   },
 ];

@@ -35,7 +35,7 @@ export const LoadMoreButton = ({
         "transition-colors duration-200",
         "disabled:opacity-50 disabled:cursor-not-allowed",
         "flex items-center justify-center gap-2",
-        "min-h-48"
+        "min-h-12"
       )}
     >
       {isLoading ? (

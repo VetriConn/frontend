@@ -118,21 +118,30 @@ export default function JobApplicationForm({
     additionalInfo: "",
   });
 
-  // Restore draft from localStorage on mount
+  // Restore draft from backend on mount
   useEffect(() => {
-    const draft = getApplicationDraft(job.id);
-    if (draft) {
-      setFormData((prev) => ({
-        ...prev,
-        relevantExperience: draft.relevantExperience || prev.relevantExperience,
-        selectedSkills: draft.selectedSkills || prev.selectedSkills,
-        earliestStartDate: draft.earliestStartDate || prev.earliestStartDate,
-        preferredSchedule: draft.preferredSchedule || prev.preferredSchedule,
-        workLocationPreference:
-          draft.workLocationPreference || prev.workLocationPreference,
-        additionalInfo: draft.additionalInfo || prev.additionalInfo,
-      }));
+    let cancelled = false;
+    async function loadDraft() {
+      try {
+        const draft = await getApplicationDraft(job.id);
+        if (draft && !cancelled) {
+          setFormData((prev) => ({
+            ...prev,
+            relevantExperience: draft.relevantExperience || prev.relevantExperience,
+            selectedSkills: draft.selectedSkills || prev.selectedSkills,
+            earliestStartDate: draft.earliestStartDate || prev.earliestStartDate,
+            preferredSchedule: draft.preferredSchedule || prev.preferredSchedule,
+            workLocationPreference:
+              draft.workLocationPreference || prev.workLocationPreference,
+            additionalInfo: draft.additionalInfo || prev.additionalInfo,
+          }));
+        }
+      } catch (err) {
+        console.error("Failed to load draft:", err);
+      }
     }
+    loadDraft();
+    return () => { cancelled = true; };
   }, [job.id]);
 
   // Track which fields were pre-filled
@@ -262,7 +271,7 @@ export default function JobApplicationForm({
       }
       await submitJobApplication(job.id, apiFormData);
       // Clear draft on successful submission
-      removeApplicationDraft(job.id);
+      await removeApplicationDraft(job.id);
       setIsSubmitting(false);
       setSubmitted(true);
     } catch {
@@ -271,25 +280,34 @@ export default function JobApplicationForm({
     }
   };
 
-  const handleSaveDraft = () => {
-    saveApplicationDraft(job.id, {
-      jobId: job.id,
-      jobTitle: job.role,
-      companyName: job.company_name,
-      location: job.location,
-      relevantExperience: formData.relevantExperience,
-      selectedSkills: formData.selectedSkills,
-      earliestStartDate: formData.earliestStartDate,
-      preferredSchedule: formData.preferredSchedule,
-      workLocationPreference: formData.workLocationPreference,
-      additionalInfo: formData.additionalInfo,
-      savedAt: new Date().toISOString(),
-    });
-    showToast({
-      type: "success",
-      title: "Draft saved",
-      description: "You can continue this application later.",
-    });
+  const handleSaveDraft = async () => {
+    try {
+      await saveApplicationDraft(job.id, {
+        jobId: job.id,
+        jobTitle: job.role,
+        companyName: job.company_name,
+        location: job.location,
+        relevantExperience: formData.relevantExperience,
+        selectedSkills: formData.selectedSkills,
+        earliestStartDate: formData.earliestStartDate,
+        preferredSchedule: formData.preferredSchedule,
+        workLocationPreference: formData.workLocationPreference,
+        additionalInfo: formData.additionalInfo,
+        savedAt: new Date().toISOString(),
+      });
+      showToast({
+        type: "success",
+        title: "Draft saved",
+        description: "You can continue this application later.",
+      });
+    } catch (err) {
+      console.error("Failed to save draft:", err);
+      showToast({
+        type: "error",
+        title: "Save failed",
+        description: "Could not save draft. Please try again.",
+      });
+    }
   };
 
   // ── Success screen ────────────────────────────────────────

@@ -1,4 +1,5 @@
 import React from "react";
+import Link from "next/link";
 import { HiOutlineCheck, HiOutlineTrash } from "react-icons/hi2";
 import { NotificationItem as NotificationItemType } from "@/types/api";
 import { NOTIFICATION_CONFIG } from "./notification-config";
@@ -40,23 +41,43 @@ export function NotificationItem({
       </div>
 
       {/* Content */}
-      <div className="flex-1 min-w-0">
-        <h4
-          className={`text-sm leading-snug mb-1 ${
-            notification.is_read
-              ? "font-medium text-gray-700"
-              : "font-semibold text-gray-900"
-          }`}
-        >
-          {notification.title}
-        </h4>
-        <p className="text-sm text-gray-500 leading-relaxed">
-          {notification.description}
-        </p>
-        <span className="text-xs text-gray-400 mt-2 block">
-          {formatRelativeTime(notification.createdAt)}
-        </span>
-      </div>
+      {notification.link ? (
+        <Link href={notification.link} className="flex-1 min-w-0 block hover:no-underline">
+          <h4
+            className={`text-sm leading-snug mb-1 ${
+              notification.is_read
+                ? "font-medium text-gray-700 hover:text-primary transition-colors"
+                : "font-semibold text-gray-900 hover:text-primary transition-colors"
+            }`}
+          >
+            {notification.title}
+          </h4>
+          <p className="text-sm text-gray-500 leading-relaxed">
+            {notification.description}
+          </p>
+          <span className="text-xs text-gray-400 mt-2 block">
+            {formatRelativeTime(notification.createdAt)}
+          </span>
+        </Link>
+      ) : (
+        <div className="flex-1 min-w-0">
+          <h4
+            className={`text-sm leading-snug mb-1 ${
+              notification.is_read
+                ? "font-medium text-gray-700"
+                : "font-semibold text-gray-900"
+            }`}
+          >
+            {notification.title}
+          </h4>
+          <p className="text-sm text-gray-500 leading-relaxed">
+            {notification.description}
+          </p>
+          <span className="text-xs text-gray-400 mt-2 block">
+            {formatRelativeTime(notification.createdAt)}
+          </span>
+        </div>
+      )}
 
       {/* Actions — visible on hover */}
       <div className="flex items-center gap-1 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity pt-1">

@@ -1,6 +1,14 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import {
+  getSavedSearches,
+  createSavedSearch,
+  updateSavedSearch,
+  deleteSavedSearch,
+  runSavedSearch as runSavedSearchApi,
+  type SavedSearchResponse,
+} from "@/lib/api/jobseeker";
 
 // ─── Types ──────────────────────────────────────────────────────────────────────
 
@@ -20,33 +28,25 @@ export interface SavedSearch {
   lastRunAt?: string;
 }
 
-// ─── Constants ──────────────────────────────────────────────────────────────────
-
-const STORAGE_KEY = "vetriconn_saved_searches";
-
 // ─── Helpers ────────────────────────────────────────────────────────────────────
 
-function generateId(): string {
-  return `ss_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
-}
-
-function loadFromStorage(): SavedSearch[] {
-  if (typeof window === "undefined") return [];
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    return raw ? JSON.parse(raw) : [];
-  } catch {
-    return [];
-  }
-}
-
-function saveToStorage(searches: SavedSearch[]): void {
-  if (typeof window === "undefined") return;
-  try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(searches));
-  } catch {
-    // Ignore localStorage write failures.
-  }
+/**
+ * Map backend response (snake_case) to frontend shape (camelCase).
+ */
+function mapFromBackend(raw: SavedSearchResponse): SavedSearch {
+  return {
+    id: raw._id,
+    name: raw.name,
+    filters: {
+      keyword: raw.filters.keyword || undefined,
+      location: raw.filters.location || undefined,
+      jobType: raw.filters.job_type || undefined,
+      experienceLevel: raw.filters.experience_level || undefined,
+    },
+    alertEnabled: raw.alert_enabled,
+    createdAt: raw.createdAt,
+    lastRunAt: raw.last_run_at || undefined,
+  };
 }
 
 /**
@@ -83,59 +83,104 @@ export function useSavedSearches() {
   const [searches, setSearches] = useState<SavedSearch[]>([]);
   const [isLoaded, setIsLoaded] = useState(false);
 
-  // Load from localStorage on mount
+  // Fetch from backend on mount
   useEffect(() => {
-    setSearches(loadFromStorage());
-    setIsLoaded(true);
+    let cancelled = false;
+
+    async function load() {
+      try {
+        const raw = await getSavedSearches();
+        if (!cancelled) {
+          setSearches(raw.map(mapFromBackend));
+        }
+      } catch (err) {
+        console.error("Failed to load saved searches:", err);
+      } finally {
+        if (!cancelled) {
+          setIsLoaded(true);
+        }
+      }
+    }
+
+    load();
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
-  // Persist to localStorage whenever searches change (after initial load)
-  useEffect(() => {
-    if (isLoaded) {
-      saveToStorage(searches);
-    }
-  }, [searches, isLoaded]);
-
   const addSearch = useCallback(
-    (filters: SavedSearchFilters, customName?: string) => {
+    async (filters: SavedSearchFilters, customName?: string) => {
       const name = customName || buildSearchName(filters);
-      const newSearch: SavedSearch = {
-        id: generateId(),
-        name,
-        filters,
-        alertEnabled: false,
-        createdAt: new Date().toISOString(),
-      };
-      setSearches((prev) => [newSearch, ...prev]);
-      return newSearch;
+      try {
+        const raw = await createSavedSearch(name, filters);
+        const mapped = mapFromBackend(raw);
+        setSearches((prev) => [mapped, ...prev]);
+        return mapped;
+      } catch (err) {
+        console.error("Failed to create saved search:", err);
+        throw err;
+      }
     },
     [],
   );
 
-  const removeSearch = useCallback((id: string) => {
+  const removeSearch = useCallback(async (id: string) => {
+    // Optimistic removal
     setSearches((prev) => prev.filter((s) => s.id !== id));
+    try {
+      await deleteSavedSearch(id);
+    } catch (err) {
+      console.error("Failed to delete saved search:", err);
+      // Re-fetch on failure to restore correct state
+      const raw = await getSavedSearches();
+      setSearches(raw.map(mapFromBackend));
+    }
   }, []);
 
-  const toggleAlert = useCallback((id: string) => {
+  const toggleAlert = useCallback(async (id: string) => {
+    // Optimistic toggle
     setSearches((prev) =>
       prev.map((s) =>
         s.id === id ? { ...s, alertEnabled: !s.alertEnabled } : s,
       ),
     );
-  }, []);
+    try {
+      // Read current state after optimistic update
+      const current = searches.find((s) => s.id === id);
+      await updateSavedSearch(id, { alertEnabled: !(current?.alertEnabled ?? false) });
+    } catch (err) {
+      console.error("Failed to toggle alert:", err);
+      const raw = await getSavedSearches();
+      setSearches(raw.map(mapFromBackend));
+    }
+  }, [searches]);
 
-  const updateLastRun = useCallback((id: string) => {
+  const updateLastRun = useCallback(async (id: string) => {
+    // Optimistic update
     setSearches((prev) =>
       prev.map((s) =>
         s.id === id ? { ...s, lastRunAt: new Date().toISOString() } : s,
       ),
     );
+    try {
+      await runSavedSearchApi(id);
+    } catch (err) {
+      console.error("Failed to record search run:", err);
+    }
   }, []);
 
-  const renameSearch = useCallback((id: string, newName: string) => {
+  const renameSearch = useCallback(async (id: string, newName: string) => {
+    // Optimistic update
     setSearches((prev) =>
       prev.map((s) => (s.id === id ? { ...s, name: newName } : s)),
     );
+    try {
+      await updateSavedSearch(id, { name: newName });
+    } catch (err) {
+      console.error("Failed to rename search:", err);
+      const raw = await getSavedSearches();
+      setSearches(raw.map(mapFromBackend));
+    }
   }, []);
 
   const hasSearch = useCallback(

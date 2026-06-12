@@ -45,7 +45,7 @@ export const SearchBar = ({
           onChange={(e) => onChange(e.target.value)}
           onKeyDown={handleKeyDown}
           placeholder={placeholder}
-          className="flex-1 py-3 sm:py-3 px-3 text-base outline-none bg-transparent text-gray-900 placeholder:text-gray-400 min-h-48"
+          className="flex-1 py-3 sm:py-3 px-3 text-base outline-none bg-transparent text-gray-900 placeholder:text-gray-400 min-h-12"
           aria-describedby={`${inputId}-description`}
         />
         <span id={`${inputId}-description`} className="sr-only">
@@ -55,7 +55,7 @@ export const SearchBar = ({
       <button
         type="button"
         onClick={onSearch}
-        className="btn-primary rounded-none sm:rounded-none px-6 py-3 min-h-48 border-t sm:border-t-0 border-gray-200"
+        className="btn-primary rounded-none sm:rounded-none px-6 py-3 min-h-12 border-t sm:border-t-0 border-gray-200"
       >
         Search
       </button>

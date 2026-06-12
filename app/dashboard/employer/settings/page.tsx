@@ -64,20 +64,40 @@ export default function EmployerSettingsPage() {
   const { showToast } = useToaster();
 
   const [settings, setSettings] = useState<EmployerSettingsState>({
-    companySize: "1-10",
-    industry: "technology",
-    hiringFrequency: "monthly",
-    publicCompanyProfile: true,
-    showContactInformation: true,
+    companySize: userProfile?.employer_profile?.company_size || "1-10",
+    industry: userProfile?.employer_profile?.industry || "technology",
+    hiringFrequency: userProfile?.employer_profile?.hiring_frequency || "monthly",
+    publicCompanyProfile: userProfile?.employer_profile?.company_preferences?.public_company_profile ?? true,
+    showContactInformation: userProfile?.employer_profile?.company_preferences?.show_contact_information ?? true,
 
-    emailNotifications: true,
-    applicationAlerts: true,
-    jobApprovedRejected: true,
-    messages: true,
-    platformUpdates: false,
+    emailNotifications: userProfile?.employer_profile?.notification_preferences?.email_notifications ?? true,
+    applicationAlerts: userProfile?.employer_profile?.notification_preferences?.application_alerts ?? userProfile?.employer_profile?.notification_preferences?.new_applications ?? true,
+    jobApprovedRejected: userProfile?.employer_profile?.notification_preferences?.job_approved_rejected ?? true,
+    messages: userProfile?.employer_profile?.notification_preferences?.messages ?? true,
+    platformUpdates: userProfile?.employer_profile?.notification_preferences?.platform_updates ?? false,
 
-    companyProfileVisibility: "public",
+    companyProfileVisibility: userProfile?.employer_profile?.company_preferences?.company_profile_visibility || "public",
   });
+
+  // Synchronize state with userProfile when fetched
+  React.useEffect(() => {
+    if (userProfile && userProfile.employer_profile) {
+      const ep = userProfile.employer_profile;
+      setSettings({
+        companySize: ep.company_size || "1-10",
+        industry: ep.industry || "technology",
+        hiringFrequency: ep.hiring_frequency || "monthly",
+        publicCompanyProfile: ep.company_preferences?.public_company_profile ?? true,
+        showContactInformation: ep.company_preferences?.show_contact_information ?? true,
+        emailNotifications: ep.notification_preferences?.email_notifications ?? true,
+        applicationAlerts: ep.notification_preferences?.application_alerts ?? ep.notification_preferences?.new_applications ?? true,
+        jobApprovedRejected: ep.notification_preferences?.job_approved_rejected ?? true,
+        messages: ep.notification_preferences?.messages ?? true,
+        platformUpdates: ep.notification_preferences?.platform_updates ?? false,
+        companyProfileVisibility: ep.company_preferences?.company_profile_visibility || "public",
+      });
+    }
+  }, [userProfile]);
 
   // ─── Two-step verification (derived from profile) ─────────────────────────
   const twoFactorEnabled = Boolean(userProfile?.two_factor_enabled);

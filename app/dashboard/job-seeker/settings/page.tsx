@@ -197,19 +197,37 @@ export default function AccountSettingsPage() {
   const { showToast } = useToaster();
 
   const [settings, setSettings] = useState<SettingsState>({
-    jobSeekingStatus: userProfile?.job_seeking_status || "none",
-    preferredWorkType: "hybrid",
-    preferredLocation: "within-25",
-    experienceLevel: "senior",
+    jobSeekingStatus: userProfile?.job_seeking_settings?.status || userProfile?.job_seeking_status || "none",
+    preferredWorkType: userProfile?.job_seeking_settings?.preferred_work_type || "no-preference",
+    preferredLocation: userProfile?.job_seeking_settings?.preferred_location || "anywhere",
+    experienceLevel: userProfile?.job_seeking_settings?.experience_level || "entry",
 
-    emailNotifications: true,
-    jobAlerts: true,
-    applicationApprovedRejected: true,
-    messages: true,
-    communityUpdates: false,
+    emailNotifications: userProfile?.notification_preferences?.email_notifications ?? true,
+    jobAlerts: userProfile?.notification_preferences?.job_alerts ?? true,
+    applicationApprovedRejected: userProfile?.notification_preferences?.application_approved_rejected ?? true,
+    messages: userProfile?.notification_preferences?.messages ?? true,
+    communityUpdates: userProfile?.notification_preferences?.community_updates ?? false,
 
-    profileVisibility: "employers-only",
+    profileVisibility: userProfile?.privacy_preferences?.profile_visibility || "everyone",
   });
+
+  // Synchronize state with userProfile when fetched
+  React.useEffect(() => {
+    if (userProfile) {
+      setSettings({
+        jobSeekingStatus: userProfile.job_seeking_settings?.status || userProfile.job_seeking_status || "none",
+        preferredWorkType: userProfile.job_seeking_settings?.preferred_work_type || "no-preference",
+        preferredLocation: userProfile.job_seeking_settings?.preferred_location || "anywhere",
+        experienceLevel: userProfile.job_seeking_settings?.experience_level || "entry",
+        emailNotifications: userProfile.notification_preferences?.email_notifications ?? true,
+        jobAlerts: userProfile.notification_preferences?.job_alerts ?? true,
+        applicationApprovedRejected: userProfile.notification_preferences?.application_approved_rejected ?? true,
+        messages: userProfile.notification_preferences?.messages ?? true,
+        communityUpdates: userProfile.notification_preferences?.community_updates ?? false,
+        profileVisibility: userProfile.privacy_preferences?.profile_visibility || "everyone",
+      });
+    }
+  }, [userProfile]);
 
   // ─── Two-step verification (derived from profile) ─────────────────────────
   const twoFactorEnabled = Boolean(userProfile?.two_factor_enabled);

@@ -118,7 +118,21 @@ const JobDescriptor: React.FC<JobDescriptorProps> = ({
   }, [id]);
 
   useEffect(() => {
-    setHasDraft(hasApplicationDraft(id));
+    let cancelled = false;
+    async function checkDraft() {
+      try {
+        const result = await hasApplicationDraft(id);
+        if (!cancelled) {
+          setHasDraft(result);
+        }
+      } catch (err) {
+        console.error("Error checking draft:", err);
+      }
+    }
+    checkDraft();
+    return () => {
+      cancelled = true;
+    };
   }, [id]);
 
   const handleToggleSave = async () => {

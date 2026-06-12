@@ -312,7 +312,7 @@ const FilterContent = ({
       <button
         type="button"
         onClick={onApplyFilters}
-        className="btn-primary w-full mt-4 min-h-48"
+        className="btn-primary w-full mt-4 min-h-12"
       >
         Apply Filters
       </button>
@@ -385,7 +385,7 @@ export const FilterPanel = ({
           "bg-white border border-gray-200 rounded-xl p-4",
           "text-gray-700 font-medium",
           "hover:bg-gray-50 transition-colors",
-          "min-h-48"
+          "min-h-12"
         )}
         aria-expanded={isMobileOpen}
         aria-controls="mobile-filter-drawer"

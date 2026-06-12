@@ -14,6 +14,12 @@ const nextConfig: NextConfig = {
         hostname: "res.cloudinary.com",
       },
     ],
+    // Use a custom loader for ALL images. Cloudinary URLs get Cloudinary
+    // transformations and skip Next's optimizer (which 504s on slow upstreams).
+    // Local images pass through unchanged.
+    loader: "custom",
+    loaderFile: "./lib/cloudinary-loader.ts",
+    minimumCacheTTL: 60 * 60 * 24, // 1 day
   },
   webpack(config) {
     // Add SVGR loader for webpack builds

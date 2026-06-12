@@ -28,7 +28,10 @@ const RecommendedJobCard: React.FC<RecommendedJobCardProps> = ({
   salary_range,
 }) => {
   return (
-    <div className="bg-white rounded-xl border border-gray-200 p-5 flex flex-col justify-between hover:shadow-md transition-shadow">
+    <Link
+      href={`/jobs/${id}`}
+      className="group bg-white rounded-xl border border-gray-200 p-5 flex flex-col justify-between hover:shadow-md transition-shadow no-underline text-current"
+    >
       <div>
         <h3 className="text-lg md:text-2xl font-semibold text-gray-900 leading-tight">
           {role}
@@ -55,13 +58,10 @@ const RecommendedJobCard: React.FC<RecommendedJobCardProps> = ({
         </div>
       </div>
 
-      <Link
-        href={`/jobs/${id}`}
-        className="block w-full bg-primary text-white text-center py-2.5 rounded-lg font-medium hover:bg-primary-hover transition-colors text-sm"
-      >
+      <div className="block w-full bg-primary text-white text-center py-2.5 rounded-lg font-medium group-hover:bg-primary-hover transition-colors text-sm">
         Apply Now
-      </Link>
-    </div>
+      </div>
+    </Link>
   );
 };
 

@@ -1,6 +1,13 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import {
+  getTrackerEntries,
+  createTrackerEntry,
+  updateTrackerEntry,
+  deleteTrackerEntry,
+  type TrackerEntryResponse,
+} from "@/lib/api/jobseeker";
 
 // ─── Types ──────────────────────────────────────────────────────────────────────
 
@@ -92,33 +99,24 @@ export const APPLICATION_STATUS_CONFIG: Record<
   },
 };
 
-// ─── Constants ──────────────────────────────────────────────────────────────────
-
-const STORAGE_KEY = "vetriconn_applications";
-
 // ─── Helpers ────────────────────────────────────────────────────────────────────
 
-function generateId(): string {
-  return `app_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
-}
-
-function loadFromStorage(): ApplicationEntry[] {
-  if (typeof window === "undefined") return [];
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    return raw ? JSON.parse(raw) : [];
-  } catch {
-    return [];
-  }
-}
-
-function saveToStorage(applications: ApplicationEntry[]): void {
-  if (typeof window === "undefined") return;
-  try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(applications));
-  } catch {
-    // Ignore localStorage write failures.
-  }
+/**
+ * Map backend response (snake_case) to frontend shape (camelCase).
+ */
+function mapFromBackend(raw: TrackerEntryResponse): ApplicationEntry {
+  return {
+    id: raw._id,
+    job_id: raw.job_id || undefined,
+    company: raw.company_name,
+    position: raw.job_title,
+    status: raw.status,
+    source: raw.source,
+    applied_date: raw.applied_at || raw.createdAt,
+    notes: raw.notes || undefined,
+    location: raw.location || undefined,
+    updated_at: raw.updatedAt,
+  };
 }
 
 // ─── Hook ───────────────────────────────────────────────────────────────────────
@@ -127,54 +125,106 @@ export function useApplications() {
   const [applications, setApplications] = useState<ApplicationEntry[]>([]);
   const [isLoaded, setIsLoaded] = useState(false);
 
-  // Load from localStorage on mount
+  // Fetch from backend on mount
   useEffect(() => {
-    setApplications(loadFromStorage());
-    setIsLoaded(true);
+    let cancelled = false;
+
+    async function load() {
+      try {
+        const { entries } = await getTrackerEntries({ limit: 200 });
+        if (!cancelled) {
+          setApplications(entries.map(mapFromBackend));
+        }
+      } catch (err) {
+        console.error("Failed to load tracker entries:", err);
+      } finally {
+        if (!cancelled) {
+          setIsLoaded(true);
+        }
+      }
+    }
+
+    load();
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
-  // Persist on change
-  useEffect(() => {
-    if (isLoaded) {
-      saveToStorage(applications);
-    }
-  }, [applications, isLoaded]);
-
   const addApplication = useCallback(
-    (entry: Omit<ApplicationEntry, "id" | "updated_at">) => {
-      const newEntry: ApplicationEntry = {
-        ...entry,
-        id: generateId(),
-        updated_at: new Date().toISOString(),
-      };
-      setApplications((prev) => [newEntry, ...prev]);
-      return newEntry;
+    async (entry: Omit<ApplicationEntry, "id" | "updated_at">) => {
+      try {
+        const raw = await createTrackerEntry({
+          job_title: entry.position,
+          company_name: entry.company,
+          location: entry.location,
+          status: entry.status,
+          notes: entry.notes,
+          applied_at: entry.applied_date,
+        });
+        const mapped = mapFromBackend(raw);
+        setApplications((prev) => [mapped, ...prev]);
+        return mapped;
+      } catch (err) {
+        console.error("Failed to create tracker entry:", err);
+        throw err;
+      }
     },
     [],
   );
 
-  const updateStatus = useCallback((id: string, status: ApplicationStatus) => {
-    setApplications((prev) =>
-      prev.map((app) =>
-        app.id === id
-          ? { ...app, status, updated_at: new Date().toISOString() }
-          : app,
-      ),
-    );
-  }, []);
+  const updateStatus = useCallback(
+    async (id: string, status: ApplicationStatus) => {
+      // Optimistic update
+      setApplications((prev) =>
+        prev.map((app) =>
+          app.id === id
+            ? { ...app, status, updated_at: new Date().toISOString() }
+            : app,
+        ),
+      );
+      try {
+        await updateTrackerEntry(id, { status });
+      } catch (err) {
+        console.error("Failed to update tracker status:", err);
+        // Re-fetch on failure
+        const { entries } = await getTrackerEntries({ limit: 200 });
+        setApplications(entries.map(mapFromBackend));
+      }
+    },
+    [],
+  );
 
-  const updateNotes = useCallback((id: string, notes: string) => {
-    setApplications((prev) =>
-      prev.map((app) =>
-        app.id === id
-          ? { ...app, notes, updated_at: new Date().toISOString() }
-          : app,
-      ),
-    );
-  }, []);
+  const updateNotes = useCallback(
+    async (id: string, notes: string) => {
+      // Optimistic update
+      setApplications((prev) =>
+        prev.map((app) =>
+          app.id === id
+            ? { ...app, notes, updated_at: new Date().toISOString() }
+            : app,
+        ),
+      );
+      try {
+        await updateTrackerEntry(id, { notes });
+      } catch (err) {
+        console.error("Failed to update tracker notes:", err);
+        const { entries } = await getTrackerEntries({ limit: 200 });
+        setApplications(entries.map(mapFromBackend));
+      }
+    },
+    [],
+  );
 
-  const removeApplication = useCallback((id: string) => {
+  const removeApplication = useCallback(async (id: string) => {
+    // Optimistic removal
     setApplications((prev) => prev.filter((app) => app.id !== id));
+    try {
+      await deleteTrackerEntry(id);
+    } catch (err) {
+      console.error("Failed to delete tracker entry:", err);
+      const { entries } = await getTrackerEntries({ limit: 200 });
+      setApplications(entries.map(mapFromBackend));
+    }
   }, []);
 
   const getByJobId = useCallback(

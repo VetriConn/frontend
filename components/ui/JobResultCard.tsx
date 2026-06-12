@@ -36,7 +36,21 @@ export const JobResultCard = ({
   const [hasDraft, setHasDraft] = useState(false);
 
   useEffect(() => {
-    setHasDraft(hasApplicationDraft(id));
+    let cancelled = false;
+    async function checkDraft() {
+      try {
+        const result = await hasApplicationDraft(id);
+        if (!cancelled) {
+          setHasDraft(result);
+        }
+      } catch (err) {
+        console.error("Error checking draft:", err);
+      }
+    }
+    checkDraft();
+    return () => {
+      cancelled = true;
+    };
   }, [id]);
 
   const handleApplyClick = () => {
@@ -47,13 +61,22 @@ export const JobResultCard = ({
     }
   };
 
+  const handleCardClick = (e: React.MouseEvent) => {
+    const target = e.target as HTMLElement;
+    if (target.closest("button") || target.closest("a")) {
+      return;
+    }
+    router.push(`/jobs/${id}`);
+  };
+
   return (
     <article
       className={clsx(
         "bg-white border border-gray-200 rounded-lg md:rounded-xl p-4 md:p-6",
-        "transition-shadow duration-200 hover:shadow-md",
+        "transition-shadow duration-200 hover:shadow-md cursor-pointer",
         "flex flex-col gap-4",
       )}
+      onClick={handleCardClick}
       aria-labelledby={`job-title-${id}`}
     >
       {/* Job Info Section */}
@@ -120,7 +143,7 @@ export const JobResultCard = ({
         <button
           type="button"
           onClick={handleApplyClick}
-          className="btn-primary w-full md:w-auto whitespace-nowrap min-h-48"
+          className="btn-primary w-full md:w-auto whitespace-nowrap min-h-12"
           aria-label={`${hasDraft ? "Continue application draft" : "Apply now"} for ${title} at ${company}`}
         >
           {hasDraft ? "Continue Draft" : "Apply Now"}

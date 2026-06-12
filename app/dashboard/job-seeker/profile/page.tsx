@@ -21,7 +21,13 @@ import { AddEducationForm } from "@/components/pages/profile/AddEducationForm";
 import { UploadDocumentForm } from "@/components/pages/profile/UploadDocumentForm";
 import { ErrorState } from "@/components/ui/ErrorState";
 import { ProfilePreviewDialog } from "@/components/ui/ProfilePreviewDialog";
-import { uploadProfilePicture, deleteProfilePicture } from "@/lib/api";
+import {
+  uploadProfilePicture,
+  deleteProfilePicture,
+  getUserAttachments,
+  uploadAttachment,
+  deleteAttachment,
+} from "@/lib/api";
 import { useToaster } from "@/components/ui/Toaster";
 import { RoleGuard } from "@/components/auth/RoleGuard";
 import { WorkExperience, Education, UserDocument } from "@/types/api";
@@ -119,12 +125,24 @@ export default function ProfilePage() {
     userProfile?.skills,
   ]);
 
-  // Documents remain local-only for now until backend upload wiring is finished.
+  // Load attachments from backend
   useEffect(() => {
-    if (userProfile) {
-      setLocalDocuments(userProfile.documents || []);
+    let cancelled = false;
+    async function loadAttachments() {
+      try {
+        const docs = await getUserAttachments();
+        if (!cancelled) {
+          setLocalDocuments(docs as UserDocument[]);
+        }
+      } catch (err) {
+        console.error("Failed to load documents:", err);
+      }
     }
-  }, [userProfile?.documents]);
+    loadAttachments();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   // --- Contact handlers ---
   const handleEditContact = useCallback(() => {
@@ -362,21 +380,41 @@ export default function ProfilePage() {
     e.preventDefault();
     if (!uploadedFile) return;
 
-    const newDoc: UserDocument = {
-      _id: `doc-${Date.now()}`,
-      name: uploadedFile.name,
-      url: URL.createObjectURL(uploadedFile),
-      file_type: uploadedFile.name.split(".").pop() || "pdf",
-      file_size: uploadedFile.size,
-      upload_date: new Date().toISOString(),
-    };
+    try {
+      // Optimistic update
+      const tempId = `temp-${Date.now()}`;
+      const tempDoc: UserDocument = {
+        _id: tempId,
+        name: uploadedFile.name,
+        url: URL.createObjectURL(uploadedFile),
+        file_type: uploadedFile.name.split(".").pop() || "pdf",
+        file_size: uploadedFile.size,
+        upload_date: new Date().toISOString(),
+      };
+      setLocalDocuments((prev) => [...prev, tempDoc]);
+      setEditSection(null);
 
-    setLocalDocuments((prev) => [...prev, newDoc]);
-
-    // TODO: Upload to backend (Cloudinary) when API is ready.
-
-    setEditSection(null);
-    setUploadedFile(null);
+      const res = await uploadAttachment(uploadedFile, uploadedFile.name);
+      setLocalDocuments(res.user_attachments as UserDocument[]);
+      showToast({
+        type: "success",
+        title: "Document uploaded",
+        description: "Your document has been uploaded successfully.",
+      });
+    } catch (err) {
+      console.error(err);
+      try {
+        const docs = await getUserAttachments();
+        setLocalDocuments(docs as UserDocument[]);
+      } catch {}
+      showToast({
+        type: "error",
+        title: "Upload failed",
+        description: "Could not upload document. Please try again.",
+      });
+    } finally {
+      setUploadedFile(null);
+    }
   };
 
   const handleDownloadDocument = useCallback((doc: UserDocument) => {
@@ -385,9 +423,30 @@ export default function ProfilePage() {
     }
   }, []);
 
-  const handleDeleteDocument = useCallback((doc: UserDocument) => {
+  const handleDeleteDocument = useCallback(async (doc: UserDocument) => {
+    if (!doc._id) return;
+
+    const originalDocs = [...localDocuments];
     setLocalDocuments((prev) => prev.filter((d) => d._id !== doc._id));
-  }, []);
+
+    try {
+      const updated = await deleteAttachment(doc._id);
+      setLocalDocuments(updated as UserDocument[]);
+      showToast({
+        type: "success",
+        title: "Document deleted",
+        description: "Your document has been deleted successfully.",
+      });
+    } catch (err) {
+      console.error(err);
+      setLocalDocuments(originalDocs);
+      showToast({
+        type: "error",
+        title: "Delete failed",
+        description: "Could not delete document. Please try again.",
+      });
+    }
+  }, [localDocuments, showToast]);
 
   const handleCloseDialog = useCallback(() => {
     setEditSection(null);

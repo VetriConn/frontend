@@ -13,6 +13,7 @@ import { ZodError } from "zod";
 import { loginUser } from "@/lib/api";
 import { FormField } from "@/components/ui/FormField";
 import { PasswordField } from "@/components/ui/PasswordField";
+import TwoFactorChallengeDialog from "@/components/security/TwoFactorChallengeDialog";
 
 export const SignIn = () => {
   const [email, setEmail] = useState("");
@@ -20,9 +21,23 @@ export const SignIn = () => {
   const [terms, setTerms] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // 2FA challenge state
+  const [twoFactorOpen, setTwoFactorOpen] = useState(false);
+  const [partialToken, setPartialToken] = useState<string | undefined>();
+
   const router = useRouter();
   const { showToast } = useToaster();
   const isButtonDisabled = isSubmitting || !email.trim() || !password.trim();
+
+  const finishSignIn = () => {
+    showToast({
+      type: "success",
+      title: "Login successful",
+      description: "Welcome back! Redirecting to dashboard...",
+    });
+    setTimeout(() => router.push("/dashboard"), 1200);
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -31,13 +46,16 @@ export const SignIn = () => {
     try {
       signInSchema.parse({ email, password });
       const response = await loginUser(email, password);
+
+      // 2FA detour — open challenge dialog instead of going to dashboard.
+      if (response.success && response.requires2FA) {
+        setPartialToken(response.partialSessionToken);
+        setTwoFactorOpen(true);
+        return;
+      }
+
       if (response.success && response.data) {
-        showToast({
-          type: "success",
-          title: "Login successful",
-          description: "Welcome back! Redirecting to dashboard...",
-        });
-        setTimeout(() => router.push("/dashboard"), 1500);
+        finishSignIn();
       } else {
         throw new Error(response.error || "Login failed");
       }
@@ -210,6 +228,22 @@ export const SignIn = () => {
         </div>
         <DottedBox3 className="absolute bottom-15 right-8 h-auto z-0 opacity-60" />
       </div>
+
+      {/* 2FA challenge dialog */}
+      <TwoFactorChallengeDialog
+        open={twoFactorOpen}
+        emailHint={email}
+        partialSessionToken={partialToken}
+        onClose={() => {
+          setTwoFactorOpen(false);
+          setPartialToken(undefined);
+        }}
+        onVerified={() => {
+          setTwoFactorOpen(false);
+          setPartialToken(undefined);
+          finishSignIn();
+        }}
+      />
     </div>
   );
 };

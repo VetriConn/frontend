@@ -5,6 +5,7 @@
 
 import { API_BASE_URL, normalizeAttachments } from "./client";
 import { apiFetch } from "./client";
+import { API_CONFIG } from "../api-config";
 import type {
   BackendAttachment,
   UserProfile,
@@ -15,7 +16,7 @@ import type {
 export async function getUserProfile(): Promise<UserProfileResponse> {
   try {
     const data = await apiFetch<UserProfileResponse>(
-      `${API_BASE_URL}/api/v1/auth/profile`,
+      `${API_BASE_URL}${API_CONFIG.ENDPOINTS.USER.PROFILE}`,
       {
         method: "GET",
         headers: {
@@ -51,7 +52,7 @@ export async function patchUserProfile(
   profileData: Partial<UserProfile>,
 ): Promise<UserProfileResponse> {
   return await apiFetch<UserProfileResponse>(
-    `${API_BASE_URL}/api/v1/auth/profile`,
+    `${API_BASE_URL}${API_CONFIG.ENDPOINTS.USER.UPDATE_PROFILE}`,
     {
       method: "PATCH",
       headers: {
@@ -70,7 +71,7 @@ export async function uploadProfilePicture(
   formData.append("picture", file);
 
   const data = await apiFetch<{ data: { picture_url: string } }>(
-    `${API_BASE_URL}/api/v1/auth/profile-picture`,
+    `${API_BASE_URL}${API_CONFIG.ENDPOINTS.USER.UPLOAD_PICTURE}`,
     {
       method: "POST",
       body: formData,
@@ -83,7 +84,7 @@ export async function uploadProfilePicture(
 // Delete profile picture
 export async function deleteProfilePicture(): Promise<void> {
   await apiFetch<{ success: boolean; message: string }>(
-    `${API_BASE_URL}/api/v1/auth/profile-picture`,
+    `${API_BASE_URL}${API_CONFIG.ENDPOINTS.USER.DELETE_PICTURE}`,
     {
       method: "DELETE",
     },

@@ -1,5 +1,5 @@
 "use client";
-import React from "react";
+import React, { useEffect } from "react";
 import dynamic from "next/dynamic";
 import { useUserProfile } from "@/hooks/useUserProfile";
 import { useRouter } from "next/navigation";
@@ -23,6 +23,13 @@ const EmployerDashboard = dynamic(
 const Dashboard = () => {
   const { userProfile, isLoading, isError } = useUserProfile();
   const router = useRouter();
+
+  // Admins live under /admin — bounce them out of the seeker/employer dashboard.
+  useEffect(() => {
+    if (!isLoading && userProfile?.role === "admin") {
+      router.replace("/admin");
+    }
+  }, [isLoading, userProfile, router]);
 
   if (isLoading) {
     return <DashboardSkeleton />;
@@ -54,6 +61,11 @@ const Dashboard = () => {
 
   if (userProfile.role === "job_seeker") {
     return <JobSeekerDashboard />;
+  }
+
+  if (userProfile.role === "admin") {
+    // Effect above redirects to /admin; render skeleton during the flip.
+    return <DashboardSkeleton />;
   }
 
   // Role not yet known or unrecognised — hold at skeleton

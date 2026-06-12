@@ -31,6 +31,8 @@ import {
   updateUserSettings,
 } from "@/lib/api";
 import { Toggle, SectionCard, SelectField } from "@/components/ui/settings";
+import TwoFactorSetupDialog from "@/components/security/TwoFactorSetupDialog";
+import DisableTwoFactorDialog from "@/components/security/DisableTwoFactorDialog";
 
 // ─── Types ──────────────────────────────────────────────────────────────────────
 
@@ -49,9 +51,6 @@ interface EmployerSettingsState {
   messages: boolean;
   platformUpdates: boolean;
 
-  // Two-Step Verification
-  twoStepVerification: boolean;
-
   // Privacy
   companyProfileVisibility: string;
 }
@@ -60,26 +59,60 @@ interface EmployerSettingsState {
 
 export default function EmployerSettingsPage() {
   // ─── Fetch user profile from DB ───────────────────────────────────────────
-  const { userProfile, isLoading: profileLoading } = useUserProfile();
+  const { userProfile, isLoading: profileLoading, mutateProfile } =
+    useUserProfile();
   const { showToast } = useToaster();
 
   const [settings, setSettings] = useState<EmployerSettingsState>({
-    companySize: "1-10",
-    industry: "technology",
-    hiringFrequency: "monthly",
-    publicCompanyProfile: true,
-    showContactInformation: true,
+    companySize: userProfile?.employer_profile?.company_size || "1-10",
+    industry: userProfile?.employer_profile?.industry || "technology",
+    hiringFrequency: userProfile?.employer_profile?.hiring_frequency || "monthly",
+    publicCompanyProfile: userProfile?.employer_profile?.company_preferences?.public_company_profile ?? true,
+    showContactInformation: userProfile?.employer_profile?.company_preferences?.show_contact_information ?? true,
 
-    emailNotifications: true,
-    applicationAlerts: true,
-    jobApprovedRejected: true,
-    messages: true,
-    platformUpdates: false,
+    emailNotifications: userProfile?.employer_profile?.notification_preferences?.email_notifications ?? true,
+    applicationAlerts: userProfile?.employer_profile?.notification_preferences?.application_alerts ?? userProfile?.employer_profile?.notification_preferences?.new_applications ?? true,
+    jobApprovedRejected: userProfile?.employer_profile?.notification_preferences?.job_approved_rejected ?? true,
+    messages: userProfile?.employer_profile?.notification_preferences?.messages ?? true,
+    platformUpdates: userProfile?.employer_profile?.notification_preferences?.platform_updates ?? false,
 
-    twoStepVerification: false,
-
-    companyProfileVisibility: "public",
+    companyProfileVisibility: userProfile?.employer_profile?.company_preferences?.company_profile_visibility || "public",
   });
+
+  // Synchronize state with userProfile when fetched
+  React.useEffect(() => {
+    if (userProfile && userProfile.employer_profile) {
+      const ep = userProfile.employer_profile;
+      setSettings({
+        companySize: ep.company_size || "1-10",
+        industry: ep.industry || "technology",
+        hiringFrequency: ep.hiring_frequency || "monthly",
+        publicCompanyProfile: ep.company_preferences?.public_company_profile ?? true,
+        showContactInformation: ep.company_preferences?.show_contact_information ?? true,
+        emailNotifications: ep.notification_preferences?.email_notifications ?? true,
+        applicationAlerts: ep.notification_preferences?.application_alerts ?? ep.notification_preferences?.new_applications ?? true,
+        jobApprovedRejected: ep.notification_preferences?.job_approved_rejected ?? true,
+        messages: ep.notification_preferences?.messages ?? true,
+        platformUpdates: ep.notification_preferences?.platform_updates ?? false,
+        companyProfileVisibility: ep.company_preferences?.company_profile_visibility || "public",
+      });
+    }
+  }, [userProfile]);
+
+  // ─── Two-step verification (derived from profile) ─────────────────────────
+  const twoFactorEnabled = Boolean(userProfile?.two_factor_enabled);
+  const [twoFactorSetupOpen, setTwoFactorSetupOpen] = useState(false);
+  const [twoFactorDisableOpen, setTwoFactorDisableOpen] = useState(false);
+  const handleTwoFactorToggle = () => {
+    if (twoFactorEnabled) {
+      setTwoFactorDisableOpen(true);
+    } else {
+      setTwoFactorSetupOpen(true);
+    }
+  };
+  const handleTwoFactorChange = () => {
+    mutateProfile();
+  };
 
   const update = <K extends keyof EmployerSettingsState>(
     key: K,
@@ -87,9 +120,16 @@ export default function EmployerSettingsPage() {
   ) => {
     const newSettings = { ...settings, [key]: value };
     setSettings(newSettings);
-    // Persist to backend (fire-and-forget)
-    updateUserSettings(newSettings).catch(() => {
-      // Settings save failed silently — will retry on next toggle
+    // Persist to backend (fire-and-forget but surface failures)
+    updateUserSettings(newSettings).catch((error: unknown) => {
+      showToast({
+        type: "error",
+        title: "Couldn't save your changes",
+        description:
+          error instanceof Error
+            ? error.message
+            : "Please try again in a moment.",
+      });
     });
   };
 
@@ -326,19 +366,23 @@ export default function EmployerSettingsPage() {
                 <div>
                   <h4 className="text-sm font-semibold text-gray-900 mb-1">
                     Two-Step Verification
+                    {twoFactorEnabled && (
+                      <span className="ml-2 inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200/70">
+                        On
+                      </span>
+                    )}
                   </h4>
                   <p className="text-sm text-gray-500 leading-relaxed">
-                    Add an extra layer of security. When you sign in, we'll send
-                    a code to your phone that you'll need to enter.
+                    Pair an authenticator app like 1Password or Google
+                    Authenticator. We&apos;ll ask for a 6-digit code each time
+                    you sign in.
                   </p>
                 </div>
               </div>
               <div className="shrink-0 pt-1">
                 <Toggle
-                  enabled={settings.twoStepVerification}
-                  onToggle={() =>
-                    update("twoStepVerification", !settings.twoStepVerification)
-                  }
+                  enabled={twoFactorEnabled}
+                  onToggle={handleTwoFactorToggle}
                 />
               </div>
             </div>
@@ -1092,6 +1136,18 @@ export default function EmployerSettingsPage() {
             </div>
           </div>
         )}
+
+        {/* Two-Factor dialogs */}
+        <TwoFactorSetupDialog
+          open={twoFactorSetupOpen}
+          onClose={() => setTwoFactorSetupOpen(false)}
+          onEnrolled={handleTwoFactorChange}
+        />
+        <DisableTwoFactorDialog
+          open={twoFactorDisableOpen}
+          onClose={() => setTwoFactorDisableOpen(false)}
+          onDisabled={handleTwoFactorChange}
+        />
       </div>
     </RoleGuard>
   );

@@ -25,6 +25,15 @@ export interface LoginResponse {
     };
     token: string;
   };
+  /** Set when the user has 2FA enabled. Frontend must call /2fa/challenge
+   * with the partial-session token before a full session is issued. */
+  requires2FA?: boolean;
+  /**
+   * Short-lived token issued alongside `requires2FA`. The frontend stores
+   * it in memory only (no localStorage) and includes it on the challenge
+   * request so the backend can match the partial session.
+   */
+  partialSessionToken?: string;
   error?: string;
 }
 
@@ -147,6 +156,7 @@ export interface UserProfile {
     company_email?: string;
     website?: string;
     company_size?: string;
+    hiring_frequency?: string;
     about_company?: string;
     logo_url?: string;
     banner_url?: string;
@@ -155,10 +165,12 @@ export interface UserProfile {
       job_approved_rejected: boolean;
       new_applications: boolean;
       messages: boolean;
+      platform_updates?: boolean;
     };
     company_preferences: {
       public_company_profile: boolean;
       show_contact_information: boolean;
+      company_profile_visibility?: string;
     };
   };
 
@@ -171,6 +183,30 @@ export interface UserProfile {
 
   // Email verification fields
   emailVerified?: boolean;
+
+  // Admin elevation flag — only meaningful when role === "admin".
+  is_super_admin?: boolean;
+
+  // Two-factor enabled (set by /2fa/verify, cleared by /2fa/disable).
+  two_factor_enabled?: boolean;
+
+  // Job seeker settings
+  notification_preferences?: {
+    email_notifications: boolean;
+    job_alerts: boolean;
+    application_approved_rejected: boolean;
+    messages: boolean;
+    community_updates: boolean;
+  };
+  privacy_preferences?: {
+    profile_visibility: "everyone" | "employers-only" | "private";
+  };
+  job_seeking_settings?: {
+    status: "none" | "actively_looking" | "open_to_opportunities" | "not_looking";
+    preferred_work_type: "remote" | "on-site" | "hybrid" | "no-preference";
+    preferred_location: "within-10" | "within-25" | "within-50" | "anywhere";
+    experience_level: "entry" | "mid" | "senior" | "executive";
+  };
 }
 
 // User profile response from API (matches backend UserProfileResponse)
@@ -208,6 +244,7 @@ export interface UserProfileResponse {
         company_email?: string;
         website?: string;
         company_size?: string;
+        hiring_frequency?: string;
         about_company?: string;
         logo_url?: string;
         banner_url?: string;
@@ -216,10 +253,12 @@ export interface UserProfileResponse {
           job_approved_rejected: boolean;
           new_applications: boolean;
           messages: boolean;
+          platform_updates?: boolean;
         };
         company_preferences: {
           public_company_profile: boolean;
           show_contact_information: boolean;
+          company_profile_visibility?: string;
         };
       };
       job_seeking_status?:

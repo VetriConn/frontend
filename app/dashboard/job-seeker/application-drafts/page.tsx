@@ -21,9 +21,17 @@ import { formatFullDateTime } from "@/lib/date-utils";
 export default function ApplicationDraftsPage() {
   const { showToast } = useToaster();
   const [drafts, setDrafts] = useState<ApplicationDraftRecord[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
-  const loadDrafts = useCallback(() => {
-    setDrafts(listApplicationDrafts());
+  const loadDrafts = useCallback(async () => {
+    try {
+      const result = await listApplicationDrafts();
+      setDrafts(result);
+    } catch (err) {
+      console.error("Failed to load drafts:", err);
+    } finally {
+      setIsLoading(false);
+    }
   }, []);
 
   useEffect(() => {
@@ -31,17 +39,43 @@ export default function ApplicationDraftsPage() {
   }, [loadDrafts]);
 
   const handleDelete = useCallback(
-    (jobId: string) => {
-      removeApplicationDraft(jobId);
-      loadDrafts();
-      showToast({
-        type: "success",
-        title: "Draft deleted",
-        description: "The application draft was removed.",
-      });
+    async (jobId: string) => {
+      // Optimistic removal
+      setDrafts((prev) => prev.filter((d) => d.jobId !== jobId));
+      try {
+        await removeApplicationDraft(jobId);
+        showToast({
+          type: "success",
+          title: "Draft deleted",
+          description: "The application draft was removed.",
+        });
+      } catch {
+        // Re-fetch on failure
+        loadDrafts();
+        showToast({
+          type: "error",
+          title: "Delete failed",
+          description: "Could not delete the draft. Please try again.",
+        });
+      }
     },
     [loadDrafts, showToast],
   );
+
+  if (isLoading) {
+    return (
+      <RoleGuard allowedRoles={["job_seeker"]}>
+        <div className="max-w-4xl mx-auto py-8 px-4 md:px-6">
+          <div className="animate-pulse space-y-4">
+            <div className="h-8 bg-gray-200 rounded w-1/3" />
+            <div className="h-4 bg-gray-200 rounded w-1/2" />
+            <div className="h-24 bg-gray-200 rounded-xl" />
+            <div className="h-24 bg-gray-200 rounded-xl" />
+          </div>
+        </div>
+      </RoleGuard>
+    );
+  }
 
   return (
     <RoleGuard allowedRoles={["job_seeker"]}>

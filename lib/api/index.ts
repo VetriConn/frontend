@@ -71,39 +71,43 @@ export {
   sendEmployerAttachmentMessage,
 } from "./employer";
 
-// Job Seeker Messaging (placeholder functions - to be implemented)
-export const getJobSeekerMessageThreads = async () => {
-  // TODO: Implement API call to GET /api/v1/job-seeker/message-threads
-  return [];
-};
+// Job Seeker Messaging
+export {
+  getJobSeekerMessageThreads,
+  getJobSeekerThreadMessages,
+  sendJobSeekerMessage,
+  sendJobSeekerAttachmentMessage,
+} from "./jobseeker";
 
-export const getJobSeekerThreadMessages = async (applicationId: string) => {
-  // TODO: Implement API call to GET /api/v1/job-seeker/threads/:applicationId/messages
-  return { messages: [] };
-};
+// Job Seeker Drafts
+export {
+  getDrafts,
+  getDraft,
+  upsertDraft,
+  deleteDraft,
+} from "./jobseeker";
 
-export const sendJobSeekerMessage = async (applicationId: string, content: string) => {
-  // TODO: Implement API call to POST /api/v1/job-seeker/messages
-  return {
-    _id: `msg-${Date.now()}`,
-    sender: "job_seeker" as const,
-    content,
-    createdAt: new Date().toISOString(),
-  };
-};
+// Job Seeker Saved Searches
+export {
+  getSavedSearches as getSavedSearchesApi,
+  createSavedSearch,
+  updateSavedSearch,
+  deleteSavedSearch,
+  runSavedSearch,
+} from "./jobseeker";
 
-export const sendJobSeekerAttachmentMessage = async (
-  applicationId: string,
-  file: File,
-  content?: string
-) => {
-  // TODO: Implement API call to POST /api/v1/job-seeker/messages/attachment
-  return {
-    _id: `msg-${Date.now()}`,
-    sender: "job_seeker" as const,
-    content: content || "Sent an attachment",
-    createdAt: new Date().toISOString(),
-    attachment_url: "#",
-    attachment_name: file.name,
-  };
-};
+// Job Seeker Application Tracker
+export {
+  getTrackerEntries,
+  createTrackerEntry,
+  updateTrackerEntry,
+  deleteTrackerEntry,
+} from "./jobseeker";
+
+// Attachments
+export {
+  uploadAttachment,
+  getUserAttachments,
+  updateAttachment,
+  deleteAttachment,
+} from "./attachments";

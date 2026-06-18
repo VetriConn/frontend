@@ -164,6 +164,7 @@ export interface UserProfile {
       email_notifications: boolean;
       job_approved_rejected: boolean;
       new_applications: boolean;
+      application_alerts?: boolean;
       messages: boolean;
       platform_updates?: boolean;
     };
@@ -252,6 +253,7 @@ export interface UserProfileResponse {
           email_notifications: boolean;
           job_approved_rejected: boolean;
           new_applications: boolean;
+          application_alerts?: boolean;
           messages: boolean;
           platform_updates?: boolean;
         };

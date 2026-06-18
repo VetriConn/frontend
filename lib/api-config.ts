@@ -3,7 +3,9 @@
  * Dynamically selects backend URL based on environment
  */
 
-const isDevelopment = process.env.NEXT_PUBLIC_NODE_ENV === "development";
+const isDevelopment =
+  process.env.NODE_ENV === "development" ||
+  process.env.NEXT_PUBLIC_NODE_ENV === "development";
 
 export const API_CONFIG = {
   BASE_URL: isDevelopment

@@ -83,7 +83,7 @@ export async function apiFetch<T>(
   } catch (error) {
     if (error instanceof TypeError && error.message.includes("fetch")) {
       throw new Error(
-        `Network error: Unable to connect to ${API_BASE_URL}. Please ensure the backend server is running.`,
+        `Network error: Unable to connect to the server. Please try again.`,
       );
     }
 
@@ -111,7 +111,7 @@ export async function apiFetchBlob(
   } catch (error) {
     if (error instanceof TypeError && error.message.includes("fetch")) {
       throw new Error(
-        `Network error: Unable to connect to ${API_BASE_URL}. Please ensure the backend server is running.`,
+        `Network error: Unable to connect to the backend server. Please ensure the server is running.`,
       );
     }
 

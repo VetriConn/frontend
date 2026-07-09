@@ -155,12 +155,13 @@ export async function loginUser(
       },
     );
 
-    if (SIMULATE_2FA && response.success) {
+    const requires2FA = (response.data as any)?.requires_2fa === true || response.requires2FA === true;
+
+    if (requires2FA) {
       return {
         success: true,
-        message: "Two-factor verification required",
+        message: response.message || "Two-factor verification required",
         requires2FA: true,
-        partialSessionToken: `mock-partial-${Date.now()}`,
       };
     }
 

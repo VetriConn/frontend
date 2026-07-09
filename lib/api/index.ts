@@ -111,3 +111,10 @@ export {
   updateAttachment,
   deleteAttachment,
 } from "./attachments";
+
+// Direct Uploads
+export {
+  getUploadSignature,
+  uploadDirectToCloudinary,
+} from "./upload";
+export type { CloudinaryUploadResponse, SignatureData } from "./upload";

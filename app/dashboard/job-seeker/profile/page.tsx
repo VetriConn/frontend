@@ -21,12 +21,16 @@ import { AddEducationForm } from "@/components/pages/profile/AddEducationForm";
 import { UploadDocumentForm } from "@/components/pages/profile/UploadDocumentForm";
 import { ErrorState } from "@/components/ui/ErrorState";
 import { ProfilePreviewDialog } from "@/components/ui/ProfilePreviewDialog";
+import { ProfilePhotoModal } from "@/components/security/ProfilePhotoModal";
 import {
   uploadProfilePicture,
   deleteProfilePicture,
   getUserAttachments,
   uploadAttachment,
   deleteAttachment,
+  updateUserSettings,
+  getUploadSignature,
+  uploadDirectToCloudinary,
 } from "@/lib/api";
 import { useToaster } from "@/components/ui/Toaster";
 import { RoleGuard } from "@/components/auth/RoleGuard";
@@ -108,6 +112,8 @@ export default function ProfilePage() {
   const [photoFile, setPhotoFile] = useState<File | null>(null);
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
   const [isUploadingPhoto, setIsUploadingPhoto] = useState(false);
+  const [isUploadingDoc, setIsUploadingDoc] = useState(false);
+  const [deletingDocId, setDeletingDocId] = useState<string | null>(null);
 
   // ─── Profile Preview state ────────────────────────────────────────────────
   const [showPreview, setShowPreview] = useState(false);
@@ -380,6 +386,7 @@ export default function ProfilePage() {
     e.preventDefault();
     if (!uploadedFile) return;
 
+    setIsUploadingDoc(true);
     try {
       // Optimistic update
       const tempId = `temp-${Date.now()}`;
@@ -394,7 +401,9 @@ export default function ProfilePage() {
       setLocalDocuments((prev) => [...prev, tempDoc]);
       setEditSection(null);
 
-      const res = await uploadAttachment(uploadedFile, uploadedFile.name);
+      // Call the API service passing the binary File object directly
+      const res = await uploadAttachment(uploadedFile);
+
       setLocalDocuments(res.user_attachments as UserDocument[]);
       showToast({
         type: "success",
@@ -414,6 +423,7 @@ export default function ProfilePage() {
       });
     } finally {
       setUploadedFile(null);
+      setIsUploadingDoc(false);
     }
   };
 
@@ -423,9 +433,16 @@ export default function ProfilePage() {
     }
   }, []);
 
+  const handleViewDocument = useCallback((doc: UserDocument) => {
+    if (doc.url && doc.url !== "#") {
+      window.open(doc.url, "_blank");
+    }
+  }, []);
+
   const handleDeleteDocument = useCallback(async (doc: UserDocument) => {
     if (!doc._id) return;
 
+    setDeletingDocId(doc._id);
     const originalDocs = [...localDocuments];
     setLocalDocuments((prev) => prev.filter((d) => d._id !== doc._id));
 
@@ -445,6 +462,8 @@ export default function ProfilePage() {
         title: "Delete failed",
         description: "Could not delete document. Please try again.",
       });
+    } finally {
+      setDeletingDocId(null);
     }
   }, [localDocuments, showToast]);
 
@@ -461,54 +480,29 @@ export default function ProfilePage() {
 
   // --- Photo handlers ---
   const handleChangePhoto = useCallback(() => {
-    setPhotoFile(null);
-    setPhotoPreview(null);
     setEditSection("photo");
   }, []);
 
-  const handlePhotoFileSelect = useCallback(
-    (e: React.ChangeEvent<HTMLInputElement>) => {
-      const file = e.target.files?.[0];
-      if (!file) return;
-
-      // Validate file type
-      const allowed = ["image/jpeg", "image/jpg", "image/png", "image/webp"];
-      if (!allowed.includes(file.type)) {
-        alert("Please select a JPEG, PNG, or WebP image.");
-        return;
-      }
-
-      // Validate file size (5MB)
-      if (file.size > 5 * 1024 * 1024) {
-        alert("Image must be smaller than 5MB.");
-        return;
-      }
-
-      setPhotoFile(file);
-      setPhotoPreview(URL.createObjectURL(file));
-    },
-    [],
-  );
-
-  const handlePhotoUpload = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!photoFile) return;
-
+  const handlePhotoSave = async (croppedFile: File) => {
     setIsUploadingPhoto(true);
     try {
-      await uploadProfilePicture(photoFile);
+      const signatureData = await getUploadSignature("profile_picture");
+      const uploadRes = await uploadDirectToCloudinary(croppedFile, signatureData);
+      await uploadProfilePicture(uploadRes.secure_url);
       mutateProfile();
       setEditSection(null);
-      setPhotoFile(null);
-      if (photoPreview) URL.revokeObjectURL(photoPreview);
-      setPhotoPreview(null);
-    } catch {
+      showToast({
+        type: "success",
+        title: "Photo updated",
+        description: "Your profile picture has been updated successfully.",
+      });
+    } catch (err: any) {
       showToast({
         type: "error",
         title: "Upload failed",
-        description:
-          "Failed to upload photo. Please check your connection and try again.",
+        description: err.message || "Failed to upload photo. Please check your connection and try again.",
       });
+      throw new Error("Failed to upload photo.");
     } finally {
       setIsUploadingPhoto(false);
     }
@@ -528,6 +522,26 @@ export default function ProfilePage() {
       });
     } finally {
       setIsUploadingPhoto(false);
+    }
+  };
+
+  const handleVisibilityChange = async (visibility: "everyone" | "employers-only" | "private") => {
+    try {
+      await updateUserSettings({ profileVisibility: visibility });
+      mutateProfile();
+      showToast({
+        type: "success",
+        title: "Visibility updated",
+        description: `Your profile photo visibility is now set to ${
+          visibility === "everyone" ? "Anyone" : visibility === "employers-only" ? "Employers only" : "Private"
+        }.`,
+      });
+    } catch {
+      showToast({
+        type: "error",
+        title: "Update failed",
+        description: "Failed to update photo visibility. Please try again.",
+      });
     }
   };
 
@@ -871,6 +885,9 @@ export default function ProfilePage() {
                 onUpload={handleUploadDocument}
                 onDownload={handleDownloadDocument}
                 onDelete={handleDeleteDocument}
+                onView={handleViewDocument}
+                isUploading={isUploadingDoc}
+                deletingDocId={deletingDocId || undefined}
               />
             </div>
           </div>
@@ -1116,89 +1133,18 @@ export default function ProfilePage() {
           <UploadDocumentForm onFileSelected={setUploadedFile} />
         </EditDialog>
 
-        {/* Photo Upload Dialog */}
-        <EditDialog
+        {/* Photo Upload & Edit Dialog */}
+        <ProfilePhotoModal
           isOpen={editSection === "photo"}
-          title="Change Profile Photo"
+          currentPhotoUrl={userProfile.picture || undefined}
+          userName={userProfile.full_name}
+          currentVisibility={userProfile?.privacy_preferences?.profile_visibility}
           onClose={handleCloseDialog}
-          onSubmit={handlePhotoUpload}
+          onSave={handlePhotoSave}
+          onDelete={handleDeletePhoto}
+          onVisibilityChange={handleVisibilityChange}
           isSubmitting={isUploadingPhoto}
-          submitLabel={photoFile ? "Upload Photo" : "Save"}
-        >
-          <div className="space-y-4 md:space-y-5">
-            {/* Preview */}
-            <div className="flex justify-center">
-              <div className="w-32 h-32 rounded-full overflow-hidden border-2 border-gray-200 bg-gray-100 flex items-center justify-center">
-                {photoPreview ? (
-                  <img
-                    src={photoPreview}
-                    alt="Preview"
-                    className="w-full h-full object-cover"
-                  />
-                ) : userProfile.picture ? (
-                  <img
-                    src={userProfile.picture}
-                    alt="Current photo"
-                    className="w-full h-full object-cover"
-                  />
-                ) : (
-                  <span className="text-4xl font-bold text-gray-400">
-                    {userProfile.full_name
-                      .split(" ")
-                      .map((n: string) => n[0])
-                      .join("")
-                      .toUpperCase()}
-                  </span>
-                )}
-              </div>
-            </div>
-
-            {/* File picker */}
-            <div>
-              <label
-                htmlFor="photo-upload"
-                className="flex items-center justify-center gap-2 w-full px-4 py-3 border-2 border-dashed border-gray-300 rounded-xl text-sm font-medium text-gray-600 hover:border-primary hover:text-primary cursor-pointer transition-colors"
-              >
-                <svg
-                  className="w-5 h-5"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                  strokeWidth={2}
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5"
-                  />
-                </svg>
-                {photoFile ? photoFile.name : "Choose a photo"}
-              </label>
-              <input
-                id="photo-upload"
-                type="file"
-                accept="image/jpeg,image/jpg,image/png,image/webp"
-                className="hidden"
-                onChange={handlePhotoFileSelect}
-              />
-              <p className="text-xs text-gray-400 mt-2 text-center">
-                JPEG, PNG, or WebP — max 5 MB
-              </p>
-            </div>
-
-            {/* Delete current photo */}
-            {userProfile.picture && !photoFile && (
-              <button
-                type="button"
-                onClick={handleDeletePhoto}
-                disabled={isUploadingPhoto}
-                className="w-full px-4 py-2.5 text-sm font-medium text-red-600 bg-red-50 border border-red-200 rounded-lg hover:bg-red-100 transition-colors cursor-pointer disabled:opacity-50"
-              >
-                Remove current photo
-              </button>
-            )}
-          </div>
-        </EditDialog>
+        />
 
         {/* Skills Edit Dialog */}
         <EditDialog

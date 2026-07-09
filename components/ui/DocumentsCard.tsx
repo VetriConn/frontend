@@ -13,6 +13,9 @@ interface DocumentsCardProps {
   onUpload: () => void;
   onDownload?: (doc: UserDocument) => void;
   onDelete?: (doc: UserDocument) => void;
+  onView?: (doc: UserDocument) => void;
+  isUploading?: boolean;
+  deletingDocId?: string;
 }
 
 export const DocumentsCard: React.FC<DocumentsCardProps> = ({
@@ -20,6 +23,9 @@ export const DocumentsCard: React.FC<DocumentsCardProps> = ({
   onUpload,
   onDownload,
   onDelete,
+  onView,
+  isUploading = false,
+  deletingDocId,
 }) => {
   const formatDate = (date?: Date | string) => {
     if (!date) return "";
@@ -65,58 +71,96 @@ export const DocumentsCard: React.FC<DocumentsCardProps> = ({
         </div>
         <button
           onClick={onUpload}
-          className="flex items-center gap-1.5 px-4 py-2 md:px-5 md:py-2.5 min-h-[44px] bg-red-50 text-red-700 border border-red-200 rounded-lg hover:bg-red-100 transition-colors font-medium text-sm md:text-base"
+          disabled={isUploading}
+          className="flex items-center gap-1.5 px-4 py-2 md:px-5 md:py-2.5 min-h-[44px] bg-red-50 text-red-700 border border-red-200 rounded-lg hover:bg-red-100 transition-colors font-medium text-sm md:text-base disabled:opacity-50"
           aria-label="Upload document"
         >
-          <HiOutlineArrowUpTray className="w-4 h-4 md:w-5 md:h-5" />
-          Upload
+          {isUploading ? (
+            <div className="w-4 h-4 border-2 border-red-700 border-t-transparent rounded-full animate-spin" />
+          ) : (
+            <HiOutlineArrowUpTray className="w-4 h-4 md:w-5 md:h-5" />
+          )}
+          {isUploading ? "Uploading..." : "Upload"}
         </button>
       </div>
 
       {hasDocuments ? (
         <div className="space-y-4">
-          {sortedDocuments.map((doc, index) => (
-            <div key={doc._id || index} className="flex items-center gap-4">
-              {/* File icon */}
-              <div className="w-10 h-10 rounded-full bg-red-50 flex items-center justify-center shrink-0">
-                <HiOutlineDocumentText className="w-5 h-5 md:w-6 md:h-6 text-red-500" />
-              </div>
+          {sortedDocuments.map((doc, index) => {
+            const isDeleting = deletingDocId === doc._id;
+            return (
+              <div key={doc._id || index} className="flex items-center gap-4">
+                {/* File icon */}
+                <div className="w-10 h-10 rounded-full bg-red-50 flex items-center justify-center shrink-0">
+                  <HiOutlineDocumentText className="w-5 h-5 md:w-6 md:h-6 text-red-500" />
+                </div>
 
-              {/* File info */}
-              <div className="flex-1 min-w-0">
-                <h3 className="text-sm md:text-base font-bold text-gray-900 truncate">
-                  {doc.name}
-                </h3>
-                <p className="text-xs text-gray-400">
-                  {formatFileSize(doc.file_size)}
-                  {doc.upload_date && (
+                {/* File info */}
+                {onView ? (
+                  <button
+                    onClick={() => onView(doc)}
+                    className="flex-1 min-w-0 text-left group focus:outline-none cursor-pointer"
+                    title={`View ${doc.name}`}
+                  >
+                    <h3 className="text-sm md:text-base font-medium text-gray-700 group-hover:text-red-600 transition-colors truncate">
+                      {doc.name}
+                    </h3>
+                    <p className="text-xs text-gray-400 group-hover:text-red-500/80 transition-colors">
+                      {formatFileSize(doc.file_size)}
+                      {doc.upload_date && (
+                        <>
+                          {doc.file_size ? " • " : ""}
+                          Uploaded {formatDate(doc.upload_date)}
+                        </>
+                      )}
+                    </p>
+                  </button>
+                ) : (
+                  <div className="flex-1 min-w-0">
+                    <h3 className="text-sm md:text-base font-medium text-gray-700 truncate">
+                      {doc.name}
+                    </h3>
+                    <p className="text-xs text-gray-400">
+                      {formatFileSize(doc.file_size)}
+                      {doc.upload_date && (
+                        <>
+                          {doc.file_size ? " • " : ""}
+                          Uploaded {formatDate(doc.upload_date)}
+                        </>
+                      )}
+                    </p>
+                  </div>
+                )}
+
+                {/* Actions */}
+                <div className="flex items-center gap-2 shrink-0">
+                  {isDeleting ? (
+                    <div 
+                      className="w-5 h-5 border-2 border-red-600 border-t-transparent rounded-full animate-spin mr-3"
+                      aria-label="Deleting document"
+                    />
+                  ) : (
                     <>
-                      {doc.file_size ? " • " : ""}
-                      Uploaded {formatDate(doc.upload_date)}
+                      <button
+                        onClick={() => onDownload?.(doc)}
+                        className="p-2 min-h-[44px] min-w-[44px] text-gray-400 hover:text-gray-600 transition-colors flex items-center justify-center"
+                        aria-label={`Download ${doc.name}`}
+                      >
+                        <HiOutlineArrowDownTray className="w-5 h-5 md:w-6 md:h-6" />
+                      </button>
+                      <button
+                        onClick={() => onDelete?.(doc)}
+                        className="p-2 min-h-[44px] min-w-[44px] text-gray-400 hover:text-red-500 transition-colors flex items-center justify-center"
+                        aria-label={`Delete ${doc.name}`}
+                      >
+                        <HiOutlineTrash className="w-5 h-5 md:w-6 md:h-6" />
+                      </button>
                     </>
                   )}
-                </p>
+                </div>
               </div>
-
-              {/* Actions */}
-              <div className="flex items-center gap-2 shrink-0">
-                <button
-                  onClick={() => onDownload?.(doc)}
-                  className="p-2 min-h-[44px] min-w-[44px] text-gray-400 hover:text-gray-600 transition-colors flex items-center justify-center"
-                  aria-label={`Download ${doc.name}`}
-                >
-                  <HiOutlineArrowDownTray className="w-5 h-5 md:w-6 md:h-6" />
-                </button>
-                <button
-                  onClick={() => onDelete?.(doc)}
-                  className="p-2 min-h-[44px] min-w-[44px] text-gray-400 hover:text-red-500 transition-colors flex items-center justify-center"
-                  aria-label={`Delete ${doc.name}`}
-                >
-                  <HiOutlineTrash className="w-5 h-5 md:w-6 md:h-6" />
-                </button>
-              </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       ) : (
         <div className="text-center py-8">

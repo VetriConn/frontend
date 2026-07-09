@@ -73,6 +73,20 @@ export async function challengeTwoFactor(code: string): Promise<void> {
   );
 }
 
+/**
+ * Used at sign-in to authenticate using a backup recovery code.
+ */
+export async function challengeTwoFactorRecovery(recoveryCode: string): Promise<void> {
+  await apiFetch<ApiEnvelope<{ success: boolean }>>(
+    `${API_BASE_URL}/api/v1/auth/2fa/recovery`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ recovery_code: recoveryCode }),
+    },
+  );
+}
+
 export async function regenerateRecoveryCodes(
   password: string,
 ): Promise<string[]> {

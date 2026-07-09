@@ -4,7 +4,11 @@ import React, { useState, useCallback } from "react";
 import Image from "next/image";
 import { useUserProfile } from "@/hooks/useUserProfile";
 import { usePatchProfile } from "@/hooks/usePatchProfile";
-import { uploadEmployerCompanyAsset } from "@/lib/api";
+import {
+  uploadEmployerCompanyAsset,
+  getUploadSignature,
+  uploadDirectToCloudinary,
+} from "@/lib/api";
 import { useToaster } from "@/components/ui/Toaster";
 import { DashboardSkeleton } from "@/components/ui/Skeleton";
 import {
@@ -234,7 +238,11 @@ const CompanyProfileSetup = () => {
 
       setUploadingAsset(assetType);
       try {
-        const result = await uploadEmployerCompanyAsset(assetType, file);
+        const uploadType = assetType === "logo" ? "company_logo" : "company_banner";
+        const signatureData = await getUploadSignature(uploadType);
+        const uploadRes = await uploadDirectToCloudinary(file, signatureData);
+        
+        const result = await uploadEmployerCompanyAsset(assetType, uploadRes.secure_url);
         setFormData((prev) => ({
           ...prev,
           [assetType === "logo" ? "logo_url" : "banner_url"]: result.asset_url,

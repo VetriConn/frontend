@@ -242,7 +242,7 @@ const DashboardNavbar = () => {
   const getAvatarUrl = () => {
     if (!userProfile) return null;
     if (isEmployer) {
-      return userProfile.employer_profile?.logo_url || null;
+      return userProfile.employer_profile?.company_logo || userProfile.employer_profile?.logo_url || null;
     }
     return userProfile.picture || null;
   };

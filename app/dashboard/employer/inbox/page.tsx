@@ -64,12 +64,17 @@ export default function EmployerMessagesPage() {
         id: thread.application_id,
         name: thread.applicant.full_name,
         subtitle: `Applicant — ${thread.job?.role || "Job Posting"}`,
-        avatar: null,
+        avatar: (thread.applicant as any)?.picture || null,
         lastMessage:
-          thread.last_message?.content?.trim() ||
+          (typeof thread.last_message === "string"
+            ? thread.last_message
+            : (thread.last_message as any)?.content)?.trim() ||
           thread.additional_info?.trim() ||
           "No messages yet",
-        appliedAt: thread.last_message?.createdAt || thread.applied_at || "",
+        appliedAt:
+          (typeof thread.last_message === "object" && thread.last_message
+            ? thread.last_message.createdAt
+            : thread.applied_at) || "",
         email: thread.applicant.email,
         phone: thread.applicant.phone,
         selectedSkills: thread.selected_skills || [],
@@ -240,8 +245,9 @@ export default function EmployerMessagesPage() {
                     messages={messages}
                     messagesEndRef={messagesEndRef}
                     userName={userProfile?.full_name || "Employer"}
-                    userAvatar={userProfile?.picture}
+                    userAvatar={userProfile?.employer_profile?.company_logo || userProfile?.employer_profile?.logo_url || userProfile?.picture}
                     themName={selectedConvo.name}
+                    themAvatar={selectedConvo.avatar}
                   />
 
                   <ChatInput

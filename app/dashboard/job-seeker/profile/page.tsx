@@ -894,10 +894,12 @@ export default function ProfilePage() {
 
           {/* Sidebar */}
           <div className="space-y-4 md:space-y-6 lg:col-span-1">
-            <ProfileCompletionCard
-              completion={profileCompletion}
-              onSectionClick={handleSectionClick}
-            />
+            {profileCompletion.percentage <= 75 && (
+              <ProfileCompletionCard
+                completion={profileCompletion}
+                onSectionClick={handleSectionClick}
+              />
+            )}
             <QuickActionsCard
               appliedJobsCount={userProfile.applied_jobs_count ?? 0}
               savedJobsCount={userProfile.saved_jobs?.length ?? 0}

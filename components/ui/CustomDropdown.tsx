@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
+import { createPortal } from "react-dom";
 import clsx from "clsx";
 
 interface DropdownOption {
@@ -9,7 +10,7 @@ interface DropdownOption {
 }
 
 interface CustomDropdownProps {
-  label: string;
+  label?: string;
   name: string;
   placeholder: string;
   value: string;
@@ -18,6 +19,9 @@ interface CustomDropdownProps {
   error?: string;
   required?: boolean;
   helperText?: string;
+  disabled?: boolean;
+  hideHeader?: boolean;
+  openUpward?: boolean;
 }
 
 export const CustomDropdown = ({
@@ -30,9 +34,14 @@ export const CustomDropdown = ({
   error,
   required = false,
   helperText,
+  disabled = false,
+  hideHeader = false,
+  openUpward = false,
 }: CustomDropdownProps) => {
   const [isOpen, setIsOpen] = useState(false);
+  const [coords, setCoords] = useState({ top: 0, left: 0, width: 0 });
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const triggerRef = useRef<HTMLButtonElement>(null);
 
   // Get selected option label
   const selectedOption = options.find((opt) => opt.value === value);
@@ -41,7 +50,12 @@ export const CustomDropdown = ({
   // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node) &&
+        triggerRef.current &&
+        !triggerRef.current.contains(event.target as Node)
+      ) {
         setIsOpen(false);
       }
     };
@@ -50,12 +64,37 @@ export const CustomDropdown = ({
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
+  const updateCoords = () => {
+    if (triggerRef.current) {
+      const rect = triggerRef.current.getBoundingClientRect();
+      setCoords({
+        top: rect.top,
+        left: rect.left,
+        width: rect.width,
+      });
+    }
+  };
+
+  useEffect(() => {
+    if (isOpen) {
+      updateCoords();
+      window.addEventListener("scroll", updateCoords, true);
+      window.addEventListener("resize", updateCoords);
+    }
+    return () => {
+      window.removeEventListener("scroll", updateCoords, true);
+      window.removeEventListener("resize", updateCoords);
+    };
+  }, [isOpen]);
+
   const handleSelect = (optionValue: string) => {
+    if (disabled) return;
     onChange(optionValue);
     setIsOpen(false);
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (disabled) return;
     if (e.key === "Enter" || e.key === " ") {
       e.preventDefault();
       setIsOpen(!isOpen);
@@ -64,74 +103,95 @@ export const CustomDropdown = ({
     }
   };
 
+  const dropdownMenu = isOpen && (
+    <div
+      ref={dropdownRef}
+      className={clsx(
+        "absolute z-[9999] bg-white border border-gray-200 rounded-lg shadow-lg overflow-hidden"
+      )}
+      style={{
+        width: coords.width,
+        left: coords.left,
+        top: openUpward
+          ? coords.top - (options.length * 40 + (hideHeader ? 0 : 44)) - 8 + window.scrollY
+          : coords.top + 36 + window.scrollY, // Fallback offsets adjusted for window scroll
+        position: "absolute",
+      }}
+      role="listbox"
+    >
+      {/* Header */}
+      {!hideHeader && (
+        <div className="bg-primary text-white px-4 py-3 font-medium text-sm">
+          {placeholder}
+        </div>
+      )}
+
+      {/* Options */}
+      <div className="max-h-60 overflow-y-auto">
+        {options.map((option) => (
+          <button
+            key={option.value}
+            type="button"
+            onClick={() => handleSelect(option.value)}
+            className={clsx(
+              "w-full px-4 py-2.5 text-left text-xs transition-colors",
+              "hover:bg-gray-100 focus:bg-gray-100 focus:outline-none",
+              value === option.value
+                ? "bg-red-50 text-primary font-medium"
+                : "text-gray-700"
+            )}
+            role="option"
+            aria-selected={value === option.value}
+          >
+            {option.label}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+
   return (
     <div className="w-full">
       {/* Label */}
-      <label htmlFor={name} className="block text-sm font-medium text-gray-700 mb-2">
-        {label}
-        {required && <span className="text-red-500 ml-1">*</span>}
-      </label>
+      {label && (
+        <label htmlFor={name} className="block text-sm font-medium text-gray-700 mb-2">
+          {label}
+          {required && <span className="text-red-500 ml-1">*</span>}
+        </label>
+      )}
 
       {/* Dropdown Container */}
-      <div ref={dropdownRef} className="relative">
+      <div className="relative">
         {/* Trigger Button */}
         <button
+          ref={triggerRef}
           type="button"
           id={name}
+          disabled={disabled}
           onClick={() => setIsOpen(!isOpen)}
           onKeyDown={handleKeyDown}
           className={clsx(
-            "w-full px-4 py-3 text-left bg-white border rounded-10 transition-all",
-            "flex items-center justify-between",
-            "focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent",
-            error
-              ? "border-red-500 focus:ring-red-500"
-              : "border-gray-300 hover:border-gray-400",
+            "w-full px-3 py-1.5 text-xs text-left bg-white border rounded-lg transition-all",
+            "flex items-center justify-between gap-2",
+            "focus:outline-none focus:ring-1 focus:ring-primary focus:border-transparent",
+            disabled
+              ? "opacity-60 cursor-not-allowed bg-gray-50 border-gray-200"
+              : error
+                ? "border-red-500 focus:ring-red-500"
+                : "border-gray-200 hover:border-gray-300",
             !selectedOption && "text-gray-400"
           )}
           aria-haspopup="listbox"
           aria-expanded={isOpen}
         >
-          <span className={clsx(selectedOption ? "text-gray-900" : "text-gray-400")}>
+          <span className={clsx(selectedOption ? "text-gray-900 font-medium" : "text-gray-400")}>
             {displayValue}
           </span>
-          <ChevronIcon className={clsx("w-5 h-5 text-gray-400 transition-transform", isOpen && "rotate-180")} />
+          <ChevronIcon className={clsx("w-4 h-4 text-gray-400 transition-transform shrink-0", isOpen && "rotate-180")} />
         </button>
 
-        {/* Dropdown Menu */}
-        {isOpen && (
-          <div
-            className="absolute z-50 w-full mt-1 bg-white border border-gray-200 rounded-10 shadow-lg overflow-hidden"
-            role="listbox"
-          >
-            {/* Header */}
-            <div className="bg-primary text-white px-4 py-3 font-medium text-sm">
-              {placeholder}
-            </div>
-
-            {/* Options */}
-            <div className="max-h-60 overflow-y-auto">
-              {options.map((option) => (
-                <button
-                  key={option.value}
-                  type="button"
-                  onClick={() => handleSelect(option.value)}
-                  className={clsx(
-                    "w-full px-4 py-3 text-left text-sm transition-colors",
-                    "hover:bg-gray-100 focus:bg-gray-100 focus:outline-none",
-                    value === option.value
-                      ? "bg-red-50 text-primary font-medium"
-                      : "text-gray-700"
-                  )}
-                  role="option"
-                  aria-selected={value === option.value}
-                >
-                  {option.label}
-                </button>
-              ))}
-            </div>
-          </div>
-        )}
+        {/* Portal drop container */}
+        {typeof document !== "undefined" && createPortal(dropdownMenu, document.body)}
       </div>
 
       {/* Helper Text */}

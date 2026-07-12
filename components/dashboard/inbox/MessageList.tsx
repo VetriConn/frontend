@@ -38,7 +38,12 @@ export function MessageList({
           className={`flex gap-3 ${msg.sender === "me" ? "justify-end" : "justify-start"}`}
         >
           {msg.sender === "them" && (
-            <Avatar src={themAvatar} name={themName} size={32} className="mt-1" />
+            <Avatar
+              src={themAvatar}
+              name={themName}
+              size={32}
+              className="mt-1 bg-gray-200 text-gray-700"
+            />
           )}
 
           <div
@@ -52,19 +57,23 @@ export function MessageList({
               {msg.text}
             </p>
             {msg.attachmentUrl && (
-              <a
-                href={msg.attachmentUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className={`flex items-center gap-2 mt-3 pt-3 border-t ${
-                  msg.sender === "me"
-                    ? "border-white/20 text-white"
-                    : "border-gray-200 text-primary"
-                } text-xs font-medium hover:underline`}
-              >
-                <HiOutlineDocumentText className="w-4 h-4" />
-                {msg.attachmentName || "View attachment"}
-              </a>
+              <div className="mt-3">
+                <a
+                  href={msg.attachmentUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className={`flex items-center gap-2.5 p-2.5 rounded-lg border transition-all text-xs font-medium ${
+                    msg.sender === "me"
+                      ? "bg-white/10 hover:bg-white/20 border-white/10 text-white"
+                      : "bg-gray-50 hover:bg-gray-100 border-gray-200 text-primary"
+                  }`}
+                >
+                  <HiOutlineDocumentText className="w-4 h-4 shrink-0" />
+                  <span className="truncate flex-1">
+                    {msg.attachmentName || "View attachment"}
+                  </span>
+                </a>
+              </div>
             )}
             <p
               className={`text-[10px] mt-1.5 ${
@@ -76,7 +85,12 @@ export function MessageList({
           </div>
 
           {msg.sender === "me" && (
-            <Avatar src={userAvatar} name={userName} size={32} className="mt-1" />
+            <Avatar
+              src={userAvatar}
+              name={userName}
+              size={32}
+              className="mt-1 bg-primary/20 text-primary border border-primary/10"
+            />
           )}
         </div>
       ))}

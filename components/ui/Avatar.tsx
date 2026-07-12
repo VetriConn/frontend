@@ -27,9 +27,15 @@ export function Avatar({ src, name, size = 40, className = "", alt }: AvatarProp
   const initials = getInitials(name);
   const altText = alt || name;
 
+  const hasBgClass = className.split(" ").some((c) => c.startsWith("bg-"));
+  const defaultBg = hasBgClass ? "" : "bg-gray-200";
+
+  const hasTextClass = className.split(" ").some((c) => c.startsWith("text-"));
+  const defaultText = hasTextClass ? "" : "text-gray-500";
+
   return (
     <div
-      className={`rounded-full bg-gray-200 flex items-center justify-center overflow-hidden shrink-0 ${className}`}
+      className={`rounded-full ${defaultBg} flex items-center justify-center overflow-hidden shrink-0 ${className}`}
       style={{ width: size, height: size, aspectRatio: '1' }}
     >
       {hasValidSrc ? (
@@ -43,7 +49,7 @@ export function Avatar({ src, name, size = 40, className = "", alt }: AvatarProp
           loading="lazy"
         />
       ) : (
-        <span className="text-gray-500 font-medium" style={{ fontSize: `${size * 0.35}px` }}>
+        <span className={`${defaultText} font-medium`} style={{ fontSize: `${size * 0.35}px` }}>
           {initials}
         </span>
       )}

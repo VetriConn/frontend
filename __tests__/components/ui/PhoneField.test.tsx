@@ -143,8 +143,8 @@ describe("PhoneField", () => {
     ).not.toBeInTheDocument();
   });
 
-  it("should expose the country selector with an accessible name", () => {
-    render(
+  it("should expose the country picker as a custom listbox trigger, not a native select", () => {
+    const { container } = render(
       <PhoneField
         label="Phone Number"
         name="phone_number"
@@ -153,12 +153,17 @@ describe("PhoneField", () => {
       />,
     );
 
-    expect(
-      screen.getByLabelText("Phone Number country"),
-    ).toBeInTheDocument();
+    const trigger = screen.getByRole("button", {
+      name: "Phone Number country",
+    });
+    expect(trigger).toHaveAttribute("aria-haspopup", "listbox");
+    expect(trigger).toHaveAttribute("aria-expanded", "false");
+
+    // A native <select> is exactly what this replaces — 250 OS-drawn rows.
+    expect(container.querySelector("select")).toBeNull();
   });
 
-  it("should default the country selector to Canada", () => {
+  it("should default the country picker to Canada", () => {
     render(
       <PhoneField
         label="Phone Number"
@@ -168,9 +173,11 @@ describe("PhoneField", () => {
       />,
     );
 
-    expect(screen.getByLabelText("Phone Number country")).toHaveValue(
-      DEFAULT_PHONE_COUNTRY,
-    );
+    // The trigger shows the flag for the default country.
+    expect(
+      screen.getByRole("button", { name: "Phone Number country" }),
+    ).toHaveAttribute("title", "Canada");
+    expect(DEFAULT_PHONE_COUNTRY).toBe("CA");
   });
 
   it("should render an existing E.164 value in national format", () => {
@@ -216,6 +223,90 @@ describe("PhoneField", () => {
     );
 
     expect(screen.getByRole("textbox")).toBeDisabled();
+  });
+});
+
+describe("country picker dropdown", () => {
+  const openPicker = async () => {
+    const user = userEvent.setup();
+    render(<PhoneInputControl name="phone" value="" onChange={() => {}} />);
+    await user.click(screen.getByRole("button", { name: "Country" }));
+    return user;
+  };
+
+  it("should stay closed until the trigger is clicked", () => {
+    render(<PhoneInputControl name="phone" value="" onChange={() => {}} />);
+
+    expect(screen.queryByRole("listbox")).not.toBeInTheDocument();
+  });
+
+  it("should open a listbox with a search box", async () => {
+    await openPicker();
+
+    expect(screen.getByRole("listbox")).toBeInTheDocument();
+    expect(screen.getByLabelText("Search countries")).toBeInTheDocument();
+  });
+
+  it("should cap the option list height so it cannot run the page", async () => {
+    await openPicker();
+
+    // The native select rendered ~250 rows tall; this list scrolls instead.
+    const listbox = screen.getByRole("listbox");
+    expect(listbox).toHaveClass("overflow-y-auto");
+    expect(listbox.style.maxHeight).toBe("236px");
+  });
+
+  it("should filter options by the search query", async () => {
+    const user = await openPicker();
+
+    const before = screen.getAllByRole("option").length;
+    expect(before).toBeGreaterThan(50);
+
+    await user.type(screen.getByLabelText("Search countries"), "Nigeria");
+
+    const after = screen.getAllByRole("option");
+    expect(after.length).toBeLessThan(before);
+    expect(after[0]).toHaveTextContent("Nigeria");
+  });
+
+  it("should show an empty state when nothing matches", async () => {
+    const user = await openPicker();
+
+    await user.type(screen.getByLabelText("Search countries"), "zzzzzz");
+
+    expect(screen.getByText("No countries found")).toBeInTheDocument();
+    expect(screen.queryAllByRole("option")).toHaveLength(0);
+  });
+
+  it("should select a country and close the menu", async () => {
+    const user = userEvent.setup();
+    const onChange = jest.fn();
+    render(<PhoneInputControl name="phone" value="" onChange={onChange} />);
+
+    await user.click(screen.getByRole("button", { name: "Country" }));
+    await user.type(screen.getByLabelText("Search countries"), "Nigeria");
+    await user.click(screen.getByRole("option", { name: /Nigeria/ }));
+
+    expect(screen.queryByRole("listbox")).not.toBeInTheDocument();
+  });
+
+  it("should close on Escape", async () => {
+    const user = await openPicker();
+
+    expect(screen.getByRole("listbox")).toBeInTheDocument();
+    await user.keyboard("{Escape}");
+
+    expect(screen.queryByRole("listbox")).not.toBeInTheDocument();
+  });
+
+  it("should reset the search query between openings", async () => {
+    const user = await openPicker();
+
+    await user.type(screen.getByLabelText("Search countries"), "Nigeria");
+    await user.keyboard("{Escape}");
+    await user.click(screen.getByRole("button", { name: "Country" }));
+
+    expect(screen.getByLabelText("Search countries")).toHaveValue("");
   });
 });
 

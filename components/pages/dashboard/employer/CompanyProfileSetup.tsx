@@ -11,6 +11,7 @@ import {
 } from "@/lib/api";
 import { useToaster } from "@/components/ui/Toaster";
 import { DashboardSkeleton } from "@/components/ui/Skeleton";
+import { PhoneInputControl } from "@/components/ui/PhoneField";
 import {
   HiOutlineBuildingOffice2,
   HiOutlineMapPin,
@@ -488,14 +489,18 @@ const CompanyProfileSetup = () => {
               {/* Phone / Company Size */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
                 <div>
-                  <label className={labelClasses}>Phone</label>
-                  <input
-                    type="tel"
+                  <label className={labelClasses} htmlFor="company-phone">
+                    Phone
+                  </label>
+                  <PhoneInputControl
+                    id="company-phone"
+                    name="phone_number"
                     value={formData.phone_number}
-                    onChange={(e) =>
-                      handleFieldChange("phone_number", e.target.value)
+                    onChange={(value) =>
+                      handleFieldChange("phone_number", value)
                     }
                     className={inputClasses}
+                    countryLabel="Phone country"
                   />
                 </div>
                 <div>

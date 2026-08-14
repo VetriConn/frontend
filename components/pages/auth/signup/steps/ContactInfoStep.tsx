@@ -3,6 +3,7 @@
 import { useMemo } from "react";
 import { StepProps } from "@/types/signup";
 import { FormField } from "@/components/ui/FormField";
+import { PhoneField } from "@/components/ui/PhoneField";
 
 /**
  * Step 3: Contact Information
@@ -33,11 +34,9 @@ export const ContactInfoStep = ({
 
       {/* Form Fields */}
       <div className="space-y-1">
-        <FormField
+        <PhoneField
           label="Phone Number"
           name="phone_number"
-          type="tel"
-          placeholder="(123) 456-789"
           helperText="Employers may use this to contact you about opportunities."
           value={formData.phone_number}
           onChange={(value) => onFieldChange("phone_number", value)}

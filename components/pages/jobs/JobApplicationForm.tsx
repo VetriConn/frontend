@@ -32,6 +32,7 @@ import {
   saveApplicationDraft,
 } from "@/lib/applicationDrafts";
 import { useToaster } from "@/components/ui/Toaster";
+import { PhoneInputControl } from "@/components/ui/PhoneField";
 
 // Canonical profile shape subset used for pre-filling application form
 import type { UserProfile } from "@/types/api";
@@ -462,12 +463,12 @@ export default function JobApplicationForm({
             </FormField>
 
             <FormField label="Phone Number" preFilled={preFilled.phone}>
-              <input
-                type="tel"
+              <PhoneInputControl
+                name="phone"
                 value={formData.phone}
-                onChange={(e) => updateField("phone", e.target.value)}
+                onChange={(value) => updateField("phone", value)}
                 className="form-input"
-                placeholder="(555) 234-5678"
+                countryLabel="Phone country"
               />
             </FormField>
 

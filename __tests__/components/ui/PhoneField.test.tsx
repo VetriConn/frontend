@@ -12,6 +12,7 @@ import {
   PhoneField,
   PhoneInputControl,
   validatePhone,
+  toE164,
   DEFAULT_PHONE_COUNTRY,
 } from "@/components/ui/PhoneField";
 
@@ -223,6 +224,106 @@ describe("PhoneField", () => {
     );
 
     expect(screen.getByRole("textbox")).toBeDisabled();
+  });
+});
+
+describe("legacy stored values", () => {
+  // Rows written before this field existed hold free-form text. Passing those
+  // to PhoneInput unparsed logs an error and blanks the field.
+  let errorSpy: jest.SpyInstance;
+
+  beforeEach(() => {
+    errorSpy = jest.spyOn(console, "error").mockImplementation(() => {});
+  });
+
+  afterEach(() => {
+    errorSpy.mockRestore();
+  });
+
+  const renderWith = (value: string) => {
+    render(<PhoneInputControl name="phone" value={value} onChange={() => {}} />);
+    return screen.getByRole("textbox") as HTMLInputElement;
+  };
+
+  it.each([
+    ["formatted national", "(613) 555-0178"],
+    ["dashed national", "613-555-0178"],
+    ["bare national digits", "6135550178"],
+    ["spaced international", "+1 613 555 0178"],
+  ])("should display a %s value", (_label, stored) => {
+    const input = renderWith(stored);
+
+    expect(input.value.replace(/\D/g, "")).toContain("6135550178");
+  });
+
+  it.each([
+    ["formatted national", "(613) 555-0178"],
+    ["bare national digits", "6135550178"],
+  ])("should not log a library error for a %s value", (_label, stored) => {
+    renderWith(stored);
+
+    const complaints = errorSpy.mock.calls.filter((call) =>
+      String(call[0]).includes("E.164"),
+    );
+    expect(complaints).toHaveLength(0);
+  });
+
+  it("should leave an already-E.164 value untouched", () => {
+    const input = renderWith("+16135550178");
+
+    expect(input.value.replace(/\D/g, "")).toContain("6135550178");
+  });
+
+  it("should keep an incomplete E.164 value editable rather than blanking it", () => {
+    const input = renderWith("+1613");
+
+    expect(input.value).not.toBe("");
+  });
+
+  // In `international` mode the field seeds the default country's calling
+  // code, so "empty" means "+1" here rather than "".
+  it("should drop unparseable text back to an empty number", () => {
+    const input = renderWith("not a phone number");
+
+    expect(input.value).toBe("+1");
+  });
+
+  it("should render an empty number for an empty value", () => {
+    const input = renderWith("");
+
+    expect(input.value).toBe("+1");
+  });
+});
+
+describe("toE164", () => {
+  it("should normalize a legacy national value to E.164", () => {
+    expect(toE164("(613) 555-0178")).toBe("+16135550178");
+  });
+
+  it("should pass a valid E.164 value through unchanged", () => {
+    expect(toE164("+16135550178")).toBe("+16135550178");
+  });
+
+  it("should pass an incomplete E.164 value through unchanged", () => {
+    expect(toE164("+1613")).toBe("+1613");
+  });
+
+  it("should trim surrounding whitespace", () => {
+    expect(toE164("  +16135550178  ")).toBe("+16135550178");
+  });
+
+  it.each([
+    ["empty string", ""],
+    ["whitespace only", "   "],
+    ["null", null],
+    ["undefined", undefined],
+    ["unparseable text", "not a phone number"],
+  ])("should return undefined for %s", (_label, input) => {
+    expect(toE164(input)).toBeUndefined();
+  });
+
+  it("should parse a foreign number written in international form", () => {
+    expect(toE164("+234 902 168 0875")).toBe("+2349021680875");
   });
 });
 

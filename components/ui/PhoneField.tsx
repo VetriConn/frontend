@@ -3,7 +3,10 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import clsx from "clsx";
-import PhoneInput, { isValidPhoneNumber } from "react-phone-number-input";
+import PhoneInput, {
+  isValidPhoneNumber,
+  parsePhoneNumber,
+} from "react-phone-number-input";
 import flags from "react-phone-number-input/flags";
 import "react-phone-number-input/style.css";
 
@@ -38,6 +41,36 @@ const DEFAULT_BOX_CLASSES =
 
 const MENU_WIDTH = 288;
 const MENU_MAX_HEIGHT = 288;
+
+/** A `+` followed by digits only — the shape PhoneInput accepts as `value`. */
+const E164_PATTERN = /^\+\d+$/;
+
+/**
+ * Coerce a stored phone number into something PhoneInput will accept.
+ *
+ * Rows written before this field existed hold free-form text —
+ * "(613) 555-0178", "613-555-0178", "6135550178". Handing those straight to
+ * PhoneInput logs `Expected the initial value to be a E.164 phone number`
+ * on every render and leaves the field blank, so parse them first.
+ *
+ * Values that are already E.164-shaped pass through untouched even when
+ * incomplete, so a half-typed number stays editable instead of vanishing.
+ * Unparseable text yields undefined — an empty field the user can refill.
+ *
+ * This only affects display. The parent's stored value is left alone rather
+ * than silently rewritten on mount, which would mark clean forms dirty.
+ */
+export function toE164(value: string | null | undefined): string | undefined {
+  const trimmed = value?.trim();
+  if (!trimmed) return undefined;
+  if (E164_PATTERN.test(trimmed)) return trimmed;
+
+  try {
+    return parsePhoneNumber(trimmed, DEFAULT_PHONE_COUNTRY)?.number;
+  } catch {
+    return undefined;
+  }
+}
 
 type CountryOption = {
   value?: string;
@@ -323,7 +356,7 @@ export const PhoneInputControl = ({
       international
       countryCallingCodeEditable={false}
       defaultCountry={DEFAULT_PHONE_COUNTRY}
-      value={value || undefined}
+      value={toE164(value)}
       onChange={(next) => onChange(next ?? "")}
       disabled={disabled}
       placeholder={placeholder}

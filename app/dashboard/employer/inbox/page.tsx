@@ -245,7 +245,7 @@ export default function EmployerMessagesPage() {
                     messages={messages}
                     messagesEndRef={messagesEndRef}
                     userName={userProfile?.full_name || "Employer"}
-                    userAvatar={userProfile?.employer_profile?.company_logo || userProfile?.employer_profile?.logo_url || userProfile?.picture}
+                    userAvatar={userProfile?.employer_profile?.logo_url || userProfile?.picture}
                     themName={selectedConvo.name}
                     themAvatar={selectedConvo.avatar}
                   />

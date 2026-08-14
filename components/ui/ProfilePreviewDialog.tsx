@@ -276,10 +276,10 @@ export function ProfilePreviewDialog({
           </div>
 
           {/* Footer */}
-          <div className="sticky bottom-0 bg-white border-t border-gray-200 px-4 md:px-6 py-4 rounded-b-2xl shrink-0">
+          <div className="sticky bottom-0 bg-white border-t border-gray-150 px-4 md:px-6 py-3.5 rounded-b-2xl shrink-0 flex justify-end">
             <button
               onClick={onClose}
-              className="w-full px-4 py-2.5 bg-primary hover:bg-primary-hover text-white font-semibold text-sm rounded-lg transition-colors cursor-pointer min-h-44"
+              className="px-5 py-2 bg-white border border-gray-200 hover:bg-gray-50 text-gray-700 font-semibold text-sm rounded-xl transition-colors cursor-pointer"
             >
               Close Preview
             </button>

@@ -65,17 +65,27 @@ export async function patchUserProfile(
 
 // Upload profile picture
 export async function uploadProfilePicture(
-  file: File,
+  fileOrUrl: File | string,
 ): Promise<{ picture_url: string }> {
-  const formData = new FormData();
-  formData.append("picture", file);
+  let init: RequestInit;
+  if (typeof fileOrUrl === "string") {
+    init = {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ url: fileOrUrl }),
+    };
+  } else {
+    const formData = new FormData();
+    formData.append("picture", fileOrUrl);
+    init = {
+      method: "POST",
+      body: formData,
+    };
+  }
 
   const data = await apiFetch<{ data: { picture_url: string } }>(
     `${API_BASE_URL}${API_CONFIG.ENDPOINTS.USER.UPLOAD_PICTURE}`,
-    {
-      method: "POST",
-      body: formData,
-    },
+    init,
   );
 
   return data.data;

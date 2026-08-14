@@ -223,22 +223,19 @@ export default function EmployerSettingsPage() {
     setIsDownloading(true);
     setDownloadSuccess(false);
     try {
-      const blob = await requestDataExport();
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = `vetriconn-employer-data-export-${new Date().toISOString().split("T")[0]}.json`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
+      const response = await requestDataExport();
+      showToast({
+        type: "success",
+        title: "Export requested",
+        description: response.message || "Your data export is on its way to your email address.",
+      });
       setDownloadSuccess(true);
       setTimeout(() => setDownloadSuccess(false), 5000);
-    } catch {
+    } catch (err: any) {
       showToast({
         type: "error",
         title: "Export failed",
-        description: "Failed to download your data. Please try again.",
+        description: err.message || "Failed to export your data. Please try again.",
       });
     } finally {
       setIsDownloading(false);

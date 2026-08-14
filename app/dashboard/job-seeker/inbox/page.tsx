@@ -55,12 +55,17 @@ export default function JobSeekerInboxPage() {
     () =>
       threads.map((t) => ({
         id: t.application_id,
-        name: t.employer?.company_name ?? "Employer",
-        subtitle: t.job?.role ?? "Job Posting",
-        avatar: null,
+        name: (t as any).company_name || t.employer?.company_name || "Employer",
+        subtitle: (t as any).job_role || t.job?.role || "Job Posting",
+        avatar: (t as any).company_logo || null,
         lastMessage:
-          t.last_message?.content?.trim() || "No messages yet",
-        appliedAt: t.last_message?.createdAt || t.applied_at || "",
+          (typeof t.last_message === "string"
+            ? t.last_message
+            : (t.last_message as any)?.content)?.trim() || "No messages yet",
+        appliedAt:
+          (typeof t.last_message === "object" && t.last_message
+            ? t.last_message.createdAt
+            : t.applied_at) || "",
       })),
     [threads],
   );
@@ -189,8 +194,8 @@ export default function JobSeekerInboxPage() {
                   <ChatHeader
                     name={selectedConvo.name}
                     subtitle={selectedConvo.subtitle}
-                    email={selectedThreadDetail.employer?.email}
-                    phone={selectedThreadDetail.employer?.phone}
+                    email={(selectedThreadDetail as any).employer_email || selectedThreadDetail.employer?.email}
+                    phone={(selectedThreadDetail as any).employer_phone || selectedThreadDetail.employer?.phone}
                   />
 
                   {threadLoading && messages.length === 0 && (
@@ -207,6 +212,7 @@ export default function JobSeekerInboxPage() {
                     userName={userProfile?.full_name ?? "You"}
                     userAvatar={userProfile?.picture}
                     themName={selectedConvo.name}
+                    themAvatar={selectedConvo.avatar}
                   />
 
                   <ChatInput

@@ -139,20 +139,30 @@ export async function updateEmployerApplicationStatus(
 
 export async function uploadEmployerCompanyAsset(
   assetType: "logo" | "banner",
-  file: File,
+  fileOrUrl: File | string,
 ): Promise<{ asset_url: string; asset_type: "logo" | "banner" }> {
-  const formData = new FormData();
-  formData.append("asset", file);
+  let init: RequestInit;
+  if (typeof fileOrUrl === "string") {
+    init = {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ url: fileOrUrl }),
+    };
+  } else {
+    const formData = new FormData();
+    formData.append("asset", fileOrUrl);
+    init = {
+      method: "POST",
+      body: formData,
+    };
+  }
 
   const response = await apiFetch<
     ApiEnvelope<{ asset_url: string; asset_type: "logo" | "banner" }>
-  >(`${API_BASE_URL}/api/v1/employer/company-assets/${assetType}`, {
-    method: "POST",
-    body: formData,
-  });
+  >(`${API_BASE_URL}/api/v1/employer/company-assets/${assetType}`, init);
 
   if (!response.data?.asset_url || !response.data?.asset_type) {
-    throw new Error("Asset upload did not return URL");
+    throw new Error("Asset uploader did not return URL");
   }
 
   return response.data;

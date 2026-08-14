@@ -3,7 +3,7 @@
  * Password, account management, data export, and user settings
  */
 
-import { apiFetch, apiFetchBlob, API_BASE_URL } from "./client";
+import { apiFetch, apiFetchBlob, API_BASE_URL, ApiEnvelope } from "./client";
 
 // Change password
 export async function changePassword(
@@ -21,10 +21,13 @@ export async function changePassword(
 }
 
 // Request data export
-export async function requestDataExport(): Promise<Blob> {
-  return await apiFetchBlob(`${API_BASE_URL}/api/v1/auth/data-export`, {
-    method: "GET",
-  });
+export async function requestDataExport(): Promise<ApiEnvelope<{ exported_at: string }>> {
+  return await apiFetch<ApiEnvelope<{ exported_at: string }>>(
+    `${API_BASE_URL}/api/v1/auth/data-export`,
+    {
+      method: "GET",
+    },
+  );
 }
 
 // Deactivate account

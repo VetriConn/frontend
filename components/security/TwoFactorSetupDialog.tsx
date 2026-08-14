@@ -145,7 +145,8 @@ const TwoFactorSetupDialog = ({
     }
     setBusy(true);
     try {
-      await verifyTwoFactorSetup(code);
+      const recoveryCodes = await verifyTwoFactorSetup(code);
+      setSetup((prev) => prev ? { ...prev, recoveryCodes } : null);
       setStep("recovery");
     } catch (err) {
       setVerifyError(

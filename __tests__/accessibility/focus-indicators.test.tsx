@@ -149,8 +149,8 @@ describe('Focus Indicators - All Breakpoints', () => {
       
       // Close button should have hover and focus states
       expect(closeButton).toHaveClass('hover:bg-gray-100');
-      expect(closeButton).toHaveClass('min-h-44');
-      expect(closeButton).toHaveClass('min-w-44');
+      expect(closeButton).toHaveClass('min-h-[44px]');
+      expect(closeButton).toHaveClass('min-w-[44px]');
     });
 
     it('should have focus indicators on dialog action buttons', () => {
@@ -169,8 +169,8 @@ describe('Focus Indicators - All Breakpoints', () => {
       const cancelButton = screen.getByText('Cancel');
 
       // Both buttons should have minimum touch target size
-      expect(submitButton).toHaveClass('min-h-44');
-      expect(cancelButton).toHaveClass('min-h-44');
+      expect(submitButton).toHaveClass('min-h-[44px]');
+      expect(cancelButton).toHaveClass('min-h-[44px]');
     });
   });
 

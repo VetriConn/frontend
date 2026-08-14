@@ -6,9 +6,6 @@
 import { apiFetch, API_BASE_URL, ApiEnvelope } from "./client";
 import type { Attachment } from "@/types/api";
 
-/**
- * Upload a file attachment to the user's profile.
- */
 export async function uploadAttachment(
   file: File,
   description?: string,

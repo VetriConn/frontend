@@ -119,6 +119,10 @@ export {
 } from "./upload";
 export type { CloudinaryUploadResponse, SignatureData } from "./upload";
 
+// Job scraper (admin)
+export { triggerJobScrape } from "./jobs";
+export type { ScraperSourceSummary } from "./jobs";
+
 // Company Pages
 export {
   applyForCompany,

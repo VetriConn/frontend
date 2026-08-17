@@ -11,6 +11,32 @@ import {
 } from "./client";
 import type { ApplicationItem, JobsResponse } from "@/types/api";
 
+/** Per-source outcome of one scraper run. */
+export interface ScraperSourceSummary {
+  source: string;
+  found: number;
+  inserted: number;
+  updated: number;
+  skipped: number;
+}
+
+/**
+ * Run the job scraper now instead of waiting for the six-hourly cron.
+ * Admin only. `pages` caps how many result pages each source walks.
+ */
+export async function triggerJobScrape(
+  pages?: number,
+): Promise<ScraperSourceSummary[]> {
+  const query = pages ? `?pages=${pages}` : "";
+  const response = await apiFetch<
+    ApiEnvelope<ScraperSourceSummary[] | ScraperSourceSummary>
+  >(`${API_BASE_URL}/api/v1/jobs/admin/scrape${query}`, { method: "POST" });
+
+  const summary = response.data;
+  if (!summary) return [];
+  return Array.isArray(summary) ? summary : [summary];
+}
+
 // Fetch jobs from database
 export async function getJobs(options?: {
   page?: number;

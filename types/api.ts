@@ -117,6 +117,12 @@ export interface UserAttachment {
 
 // Complete User Profile Interface (matches backend IUser)
 export interface UserProfile {
+  /**
+   * The user's own id. The profile endpoint has always returned this
+   * (`id: user._id.toString()`); it just wasn't declared here. Needed to work
+   * out the viewer's role on a company from its members list.
+   */
+  id?: string;
   full_name: string;
   role: string;
   email: string;

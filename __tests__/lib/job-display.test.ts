@@ -11,6 +11,8 @@ import {
   getSourceLabel,
   getExternalApplyUrl,
   formatJobSalary,
+  getPayBasis,
+  hasComparableSalary,
 } from "@/lib/job-display";
 
 describe("isAggregatedJob", () => {
@@ -77,6 +79,73 @@ describe("getExternalApplyUrl", () => {
 
   it("should treat a whitespace-only URL as absent", () => {
     expect(getExternalApplyUrl({ external_url: "   " })).toBeNull();
+  });
+});
+
+describe("getPayBasis", () => {
+  const money = (number: number) => ({
+    symbol: "$",
+    number,
+    currency: "CAD",
+  });
+
+  it.each([
+    ["$18.50 hourly", "hourly"],
+    ["$22.00 / hr", "hourly"],
+    ["$25 per hour", "hourly"],
+    ["$45,000 annually", "annual"],
+    ["$60,000 to $75,000 per year", "annual"],
+  ])("should read %s as %s", (text, expected) => {
+    expect(getPayBasis({ salary_text: text })).toBe(expected);
+  });
+
+  it("should treat weekly and monthly rates as unspecified, not annual", () => {
+    expect(getPayBasis({ salary_text: "$1,200 monthly" })).toBe("unspecified");
+    expect(getPayBasis({ salary_text: "$500 weekly" })).toBe("unspecified");
+  });
+
+  it("should treat non-numeric wording as unspecified", () => {
+    expect(getPayBasis({ salary_text: "Competitive" })).toBe("unspecified");
+    expect(getPayBasis({ salary_text: "To be discussed" })).toBe("unspecified");
+  });
+
+  it("should read a numeric salary with no source text as annual", () => {
+    expect(getPayBasis({ salary: money(45000) })).toBe("annual");
+  });
+
+  it("should read a job with no pay information as unspecified", () => {
+    expect(getPayBasis({})).toBe("unspecified");
+    expect(getPayBasis({ salary: money(0) })).toBe("unspecified");
+  });
+});
+
+describe("hasComparableSalary", () => {
+  const money = (number: number) => ({
+    symbol: "$",
+    number,
+    currency: "CAD",
+  });
+
+  it("should be true for a numeric annual salary", () => {
+    expect(hasComparableSalary({ salary: money(45000) })).toBe(true);
+  });
+
+  it("should be true for a complete range", () => {
+    expect(
+      hasComparableSalary({
+        salary_range: { start_salary: money(45000), end_salary: money(60000) },
+      }),
+    ).toBe(true);
+  });
+
+  it("should be false for an hourly role, which salary filters cannot match", () => {
+    expect(
+      hasComparableSalary({ salary: money(0), salary_text: "$18.50 hourly" }),
+    ).toBe(false);
+  });
+
+  it("should be false when there is no pay information", () => {
+    expect(hasComparableSalary({})).toBe(false);
   });
 });
 

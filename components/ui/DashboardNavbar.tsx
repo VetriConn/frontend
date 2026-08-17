@@ -37,6 +37,7 @@ import { logoutUser } from "@/lib/api";
 import { useToaster } from "@/components/ui/Toaster";
 import { useUserProfile } from "@/hooks/useUserProfile";
 import { useNotifications } from "@/hooks/useNotifications";
+import { useMyCompanies } from "@/hooks/useCompanies";
 
 interface NavItem {
   name: string;
@@ -78,7 +79,22 @@ const employerNavItems: NavItem[] = [
     icon: <HiOutlineBriefcase className="w-5 h-5" />,
     hasDropdown: true,
   },
+  {
+    name: "Companies",
+    href: "/dashboard/companies",
+    icon: <HiOutlineBuildingOffice2 className="w-5 h-5" />,
+  },
 ];
+
+/**
+ * Shown to employers always, and to job seekers only once they belong to a
+ * company — a hiring-team invite can land on any account, regardless of role.
+ */
+const companiesNavItem: NavItem = {
+  name: "Companies",
+  href: "/dashboard/companies",
+  icon: <HiOutlineBuildingOffice2 className="w-5 h-5" />,
+};
 
 const DashboardNavbar = () => {
   const pathname = usePathname();
@@ -86,6 +102,7 @@ const DashboardNavbar = () => {
   const { showToast } = useToaster();
   const { userProfile } = useUserProfile();
   const { unreadCount } = useNotifications();
+  const { companies } = useMyCompanies();
   const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false);
   const [isJobsDropdownOpen, setIsJobsDropdownOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -254,17 +271,19 @@ const DashboardNavbar = () => {
     : "/dashboard/job-seeker/notifications";
 
   // Don't render role-specific nav until the profile is confirmed to avoid flash
-  const navItems = useMemo(
-    () =>
-      isUserProfileLoading
-        ? []
-        : isEmployer
-          ? employerNavItems
-          : isJobSeeker
-            ? jobSeekerNavItems
-            : [],
-    [isUserProfileLoading, isEmployer, isJobSeeker],
-  );
+  const navItems = useMemo(() => {
+    if (isUserProfileLoading) return [];
+    if (isEmployer) return employerNavItems;
+    if (!isJobSeeker) return [];
+
+    // Company invites go to an email address, so a job seeker can end up on a
+    // hiring team without ever being an employer. Surface Companies for them
+    // once they actually belong to one, rather than cluttering the nav for
+    // everyone who never will.
+    return companies.length > 0
+      ? [...jobSeekerNavItems, companiesNavItem]
+      : jobSeekerNavItems;
+  }, [isUserProfileLoading, isEmployer, isJobSeeker, companies.length]);
   const hasUnreadNotifications = unreadCount > 0;
 
   return (

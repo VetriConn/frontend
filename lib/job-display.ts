@@ -45,6 +45,55 @@ export function getExternalApplyUrl(job: SourceFields): string | null {
   return job.external_url?.trim() || job.applicationLink?.trim() || null;
 }
 
+/**
+ * How a job states its pay.
+ *
+ * Job Bank quotes most roles hourly, and an hourly rate has no meaningful
+ * annual figure to store — the scraper leaves `salary.number` at 0 and keeps
+ * the source's wording in `salary_text`. That means **hourly roles are
+ * invisible to any filter or sort over `salary.number`**: the backend's
+ * `minSalary`/`maxSalary` filter and `sortBy=salary` both operate on that
+ * field, so an hourly job matches a minimum of 0 and nothing else.
+ *
+ * Neither filter nor sort is currently exposed in the UI. Whoever wires them
+ * up needs to decide what happens to hourly roles rather than letting them
+ * silently disappear from results — most likely a separate pay-basis filter,
+ * which needs a backend field to be correct across pagination.
+ */
+export type PayBasis = "hourly" | "annual" | "unspecified";
+
+const HOURLY_PATTERN = /\b(hour|hourly|hr|per\s*hour)\b/i;
+const PERIODIC_PATTERN = /\b(week|weekly|day|daily|month|monthly)\b/i;
+
+/** Whether a job quotes pay hourly, annually, or not at all. */
+export function getPayBasis(job: SalaryFields): PayBasis {
+  const sourceText = job.salary_text?.trim();
+
+  if (sourceText) {
+    if (HOURLY_PATTERN.test(sourceText)) return "hourly";
+    if (PERIODIC_PATTERN.test(sourceText)) return "unspecified";
+    return /\d/.test(sourceText) ? "annual" : "unspecified";
+  }
+
+  if (job.salary?.number || job.salary_range?.start_salary?.number) {
+    return "annual";
+  }
+
+  return "unspecified";
+}
+
+/**
+ * True when a job carries a numeric annual salary, and so participates
+ * correctly in salary filtering and sorting.
+ */
+export function hasComparableSalary(job: SalaryFields): boolean {
+  return Boolean(
+    job.salary?.number ||
+      (job.salary_range?.start_salary?.number &&
+        job.salary_range?.end_salary?.number),
+  );
+}
+
 function formatCompact(symbol: string, amount: number): string {
   return `${symbol}${Math.round(amount / 1000)}K`;
 }

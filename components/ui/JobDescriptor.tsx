@@ -90,6 +90,8 @@ const JobDescriptor: React.FC<JobDescriptorProps> = ({
   source_name,
   external_url,
   salary_text,
+  posted_as,
+  company_id,
 }) => {
   const [hasApplied, setHasApplied] = useState(false);
   const [hasDraft, setHasDraft] = useState(false);
@@ -261,9 +263,21 @@ const JobDescriptor: React.FC<JobDescriptorProps> = ({
                 </div>
               )}
               <div>
-                <p className="text-base font-semibold text-gray-900">
-                  {company_name}
-                </p>
+                {/* Only postings made under a vetted Company Page have a
+                    profile to link to. Individual postings render as plain
+                    text, as before. */}
+                {posted_as === "company" && company_id ? (
+                  <Link
+                    href={`/companies/${company_id}`}
+                    className="text-base font-semibold text-gray-900 hover:text-primary no-underline"
+                  >
+                    {company_name}
+                  </Link>
+                ) : (
+                  <p className="text-base font-semibold text-gray-900">
+                    {company_name}
+                  </p>
+                )}
                 <p className="text-xs text-gray-400 flex items-center gap-1">
                   <HiOutlineShieldCheck className="w-4 h-4 md:w-5 md:h-5 text-emerald-500" />
                   Trusted employer

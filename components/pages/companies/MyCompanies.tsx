@@ -39,10 +39,11 @@ const STATUS_META: Record<
   },
 };
 
-const ROLE_LABEL: Record<string, string> = {
-  owner: "Owner",
-  admin: "Admin",
-  recruiter: "Recruiter",
+/** Article included, since "an Recruiter" is what naive logic produces. */
+const ROLE_DESCRIPTION: Record<string, string> = {
+  owner: "the Owner",
+  admin: "an Admin",
+  recruiter: "a Recruiter",
 };
 
 const CompanyCard = ({
@@ -97,7 +98,7 @@ const CompanyCard = ({
 
           {role && (
             <p className="text-xs text-gray-400 mt-1">
-              You are {role === "owner" ? "the" : "an"} {ROLE_LABEL[role]}
+              You are {ROLE_DESCRIPTION[role]}
             </p>
           )}
 

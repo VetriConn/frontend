@@ -30,6 +30,8 @@ import { CustomDropdown } from "@/components/ui/CustomDropdown";
 interface CompanyTeamProps {
   company: Company;
   myRole: CompanyRole | null;
+  /** Used to label the viewer's own row, since the API returns ids, not names. */
+  myUserId?: string;
   onChanged: () => void;
 }
 
@@ -50,6 +52,7 @@ const memberKey = (member: CompanyMember, index: number) =>
 export const CompanyTeam = ({
   company,
   myRole,
+  myUserId,
   onChanged,
 }: CompanyTeamProps) => {
   const { showToast } = useToaster();
@@ -203,8 +206,16 @@ export const CompanyTeam = ({
               className="flex flex-wrap items-center gap-3 py-3 first:pt-0 last:pb-0"
             >
               <div className="min-w-0 flex-1">
+                {/* Members who joined by invite keep their invited_email, but
+                    the owner never had one and the API returns ids rather than
+                    names — so an unlabelled row would show a raw ObjectId. */}
                 <p className="text-sm font-medium text-gray-900 truncate">
-                  {member.invited_email || member.user_id || "Teammate"}
+                  {member.invited_email ||
+                    (member.user_id && member.user_id === myUserId
+                      ? "You"
+                      : member.role === "owner"
+                        ? "Company owner"
+                        : "Teammate")}
                 </p>
                 <p className="text-xs text-gray-500">
                   {ROLE_LABEL[member.role]}

@@ -65,7 +65,12 @@ export const CompanyWorkspace = ({ companyId }: { companyId: string }) => {
           onChanged={mutate}
         />
 
-        <CompanyTeam company={company} myRole={myRole} onChanged={mutate} />
+        <CompanyTeam
+          company={company}
+          myRole={myRole}
+          myUserId={userProfile?.id}
+          onChanged={mutate}
+        />
 
         <section className="bg-white rounded-xl border border-gray-200 p-6">
           <h2 className="text-lg font-semibold text-gray-900 mb-1">

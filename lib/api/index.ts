@@ -118,3 +118,31 @@ export {
   uploadDirectToCloudinary,
 } from "./upload";
 export type { CloudinaryUploadResponse, SignatureData } from "./upload";
+
+// Company Pages
+export {
+  applyForCompany,
+  getMyCompanies,
+  getCompanyById,
+  updateCompany,
+  uploadCompanyLogo,
+  uploadCompanyBanner,
+  inviteMember,
+  acceptInvite,
+  removeMember,
+  getCompanyJobs,
+  adminListCompanies,
+  adminApproveCompany,
+  adminRejectCompany,
+  getMyRole,
+  canPostJobsFor,
+} from "./companies";
+export type {
+  Company,
+  CompanyMember,
+  CompanyRole,
+  CompanyMemberStatus,
+  CompanyStatus,
+  CompanyProfileInput,
+  ApplyForCompanyInput,
+} from "./companies";

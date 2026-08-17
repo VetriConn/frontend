@@ -2,6 +2,7 @@
 import React from "react";
 import Link from "next/link";
 import useSWR from "swr";
+import { formatJobSalary } from "@/lib/job-display";
 import {
   HiOutlineBriefcase,
   HiOutlineLocationMarker,
@@ -69,11 +70,9 @@ export const RecommendedJobs: React.FC = () => {
   const { data, isLoading } = useSWR("/jobs/recommended", getRecommendedJobs);
 
   const jobs: RecommendedJobCardProps[] = (data || []).map((job) => {
-    const salaryRange = job.salary_range?.start_salary?.number
-      ? `${job.salary?.symbol || "$"}${Math.round((job.salary_range.start_salary.number || 0) / 1000)}k - ${job.salary?.symbol || "$"}${Math.round((job.salary_range.end_salary.number || 0) / 1000)}k`
-      : job.salary?.number
-        ? `${job.salary.symbol}${Math.round(job.salary.number / 1000)}k`
-        : "Competitive";
+    // "Competitive" only when we genuinely have no figure — a scraped listing
+    // usually does, just as free text ("$18.50 hourly") rather than a number.
+    const salaryRange = formatJobSalary(job) ?? "Competitive";
 
     return {
       id: job.id || job._id,

@@ -3,8 +3,9 @@ import { HiCheckCircle } from "react-icons/hi";
 import { CiMail } from "react-icons/ci";
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useToaster } from "@/components/ui/Toaster";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { getApiUrl } from "@/lib/api-config";
+import { RETURN_URL_PARAM, withReturnUrl } from "@/lib/auth-redirect";
 
 interface CompletionStepProps {
   formData: SignupFormData;
@@ -17,7 +18,15 @@ export function CompletionStep({
 }: CompletionStepProps) {
   const { showToast } = useToaster();
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [isResending, setIsResending] = useState(false);
+
+  // Someone who signed up to accept a company invite still has to sign in
+  // afterwards — keep the invite as their destination through that hop.
+  const rawReturnUrl = searchParams.get(RETURN_URL_PARAM);
+  const signInHref = rawReturnUrl
+    ? withReturnUrl("/signin", rawReturnUrl)
+    : "/signin";
   const [timeRemaining, setTimeRemaining] = useState(0);
   const [resendAttempts, setResendAttempts] = useState(0);
   const [isCheckingVerification, setIsCheckingVerification] = useState(false);
@@ -69,7 +78,7 @@ export function CompletionStep({
 
         // Redirect after short delay
         setTimeout(() => {
-          router.push("/signin");
+          router.push(signInHref);
         }, 1500);
 
         return true;
@@ -298,7 +307,7 @@ export function CompletionStep({
       <div className="text-center pt-2">
         <button
           type="button"
-          onClick={() => router.push("/signin")}
+          onClick={() => router.push(signInHref)}
           className="text-sm text-gray-500 hover:text-gray-700 underline"
         >
           Already verified? Continue to Sign In

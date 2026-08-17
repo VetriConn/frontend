@@ -24,6 +24,12 @@ import { getInitials } from "@/lib/initials";
 import { hasApplicationDraft } from "@/lib/applicationDrafts";
 import { useUserProfile } from "@/hooks/useUserProfile";
 
+import {
+  formatJobSalary,
+  getExternalApplyUrl,
+  getSourceLabel,
+} from "@/lib/job-display";
+
 type JobDescriptorProps = Job;
 
 const tagColorMap: Record<string, string> = {
@@ -80,6 +86,10 @@ const JobDescriptor: React.FC<JobDescriptorProps> = ({
   responsibilities,
   qualifications,
   applicationLink,
+  source,
+  source_name,
+  external_url,
+  salary_text,
 }) => {
   const [hasApplied, setHasApplied] = useState(false);
   const [hasDraft, setHasDraft] = useState(false);
@@ -144,30 +154,18 @@ const JobDescriptor: React.FC<JobDescriptorProps> = ({
     }
   };
 
-  const formatSalary = (salaryObj: {
-    symbol: string;
-    number?: number;
-    currency: string;
-  }) => {
-    if (!salaryObj.number) return null;
-    return `${salaryObj.symbol}${(salaryObj.number / 1000).toFixed(0)}K`;
-  };
+  // Aggregated listings carry the source's own salary wording, which is the
+  // only form that can express hourly pay correctly.
+  const getSalaryDisplay = () =>
+    formatJobSalary({ salary, salary_range, salary_text });
 
-  const getSalaryDisplay = () => {
-    if (
-      salary_range?.start_salary?.number &&
-      salary_range?.end_salary?.number
-    ) {
-      const start = formatSalary(salary_range.start_salary);
-      const end = formatSalary(salary_range.end_salary);
-      if (start && end) return `${start} – ${end}/year`;
-    }
-    if (salary?.number) {
-      const formatted = formatSalary(salary);
-      if (formatted) return `${formatted}/year`;
-    }
-    return null;
-  };
+  const externalApplyUrl = getExternalApplyUrl({
+    source,
+    source_name,
+    external_url,
+    applicationLink,
+  });
+  const sourceLabel = getSourceLabel({ source, source_name });
 
   // Derive job type from tags if possible
   const jobTypeTags = [
@@ -426,6 +424,18 @@ const JobDescriptor: React.FC<JobDescriptorProps> = ({
                   )}
                 </div>
 
+                {/* Aggregated listings apply on the source board, so say where
+                    the button leads before the reader clicks it. */}
+                {sourceLabel && (
+                  <p className="text-xs text-gray-500 mb-2.5">
+                    Sourced from{" "}
+                    <span className="font-medium text-gray-700">
+                      {sourceLabel}
+                    </span>
+                    . Applications are handled there.
+                  </p>
+                )}
+
                 {/* Apply Button */}
                 {isEmployerPreview ? (
                   <button
@@ -435,14 +445,14 @@ const JobDescriptor: React.FC<JobDescriptorProps> = ({
                   >
                     Employer Preview Mode
                   </button>
-                ) : applicationLink ? (
+                ) : externalApplyUrl ? (
                   <a
-                    href={applicationLink}
+                    href={externalApplyUrl}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="flex items-center justify-center gap-2 w-full bg-primary hover:bg-primary-hover text-white font-semibold text-sm py-3 px-4 rounded-lg transition-colors no-underline mb-3"
                   >
-                    Apply Now
+                    {sourceLabel ? "Continue to original posting" : "Apply Now"}
                     <HiOutlineArrowLeft className="w-5 h-5 md:w-6 md:h-6 rotate-180" />
                   </a>
                 ) : hasApplied ? (

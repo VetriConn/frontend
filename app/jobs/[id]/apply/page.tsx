@@ -6,6 +6,7 @@ import { useJob } from "@/hooks/useJob";
 import { useUserProfile } from "@/hooks/useUserProfile";
 import { useParams } from "next/navigation";
 import DashboardNavbar from "@/components/ui/DashboardNavbar";
+import { getExternalApplyUrl, getSourceLabel } from "@/lib/job-display";
 
 // Lazy load the heavy job application form
 const JobApplicationForm = dynamic(
@@ -36,27 +37,36 @@ export default function ApplyPage() {
   const displayJob = job;
   const isLoading = jobLoading || profileLoading;
 
-  // If job has an external application link, redirect them back
-  if (displayJob?.applicationLink) {
+  // Jobs that are applied for elsewhere never reach our application form:
+  // employer postings with an external process, and aggregated listings whose
+  // real posting lives on the source board. Submitting our form for an
+  // aggregated listing would save an application no employer ever receives.
+  const externalApplyUrl = displayJob
+    ? getExternalApplyUrl(displayJob)
+    : null;
+  const sourceLabel = displayJob ? getSourceLabel(displayJob) : null;
+
+  if (externalApplyUrl) {
     return (
       <>
         <DashboardNavbar />
         <div className="min-h-screen bg-gray-50 flex items-center justify-center p-6">
           <div className="bg-white rounded-xl border border-gray-200 p-10 text-center max-w-md w-full">
             <h2 className="text-xl font-bold text-gray-900 mb-2">
-              External Application
+              Apply on {sourceLabel ? sourceLabel : "the employer's site"}
             </h2>
             <p className="text-sm text-gray-500 mb-6">
-              This job uses an external application process. You&apos;ll be
-              redirected to the employer&apos;s website.
+              {sourceLabel
+                ? `We found this role on ${sourceLabel}. Applications are handled there, so we'll send you straight to the original posting.`
+                : "This job uses an external application process. You'll be redirected to the employer's website."}
             </p>
             <a
-              href={displayJob.applicationLink}
+              href={externalApplyUrl}
               target="_blank"
               rel="noopener noreferrer"
               className="block w-full py-3 px-4 bg-primary hover:bg-primary-hover text-white font-semibold text-sm rounded-lg transition-colors text-center no-underline mb-3"
             >
-              Apply on External Site
+              {sourceLabel ? "Continue to original posting" : "Apply on External Site"}
             </a>
             <Link
               href={`/jobs/${jobId}`}

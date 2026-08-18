@@ -13,6 +13,8 @@ import {
 } from "react-icons/hi2";
 import { useToaster } from "@/components/ui/Toaster";
 import { useUserProfile } from "@/hooks/useUserProfile";
+import { useMyCompanies } from "@/hooks/useCompanies";
+import { canPostJobsFor } from "@/lib/api";
 import {
   createEmployerJob as createEmployerJobApi,
   getEmployerJobById,
@@ -921,6 +923,18 @@ const CreateJobPosting = () => {
     }
   }, [currentStep]);
 
+  // Empty means posting as the individual employer, which is the default and
+  // the only option for anyone without an approved Company Page.
+  const [postAsCompanyId, setPostAsCompanyId] = useState("");
+  const { approvedCompanies } = useMyCompanies();
+
+  // Companies this user may post under: approved, and they're an owner/admin.
+  // Recruiters can review applicants but not create postings, matching the
+  // server's check — so the control simply won't list those companies.
+  const postableCompanies = approvedCompanies.filter((company) =>
+    canPostJobsFor(company, userProfile?.id),
+  );
+
   const buildPayload = useCallback(
     (status: "draft" | "published") => ({
       role: formData.job_title,
@@ -954,6 +968,8 @@ const CreateJobPosting = () => {
       status,
       company_name: userProfile?.employer_profile?.company_name,
       company_logo: userProfile?.employer_profile?.logo_url,
+      // When set, the server sources name and logo from the company instead.
+      company_id: postAsCompanyId || undefined,
       draft_payload: {
         job_title: formData.job_title,
         job_category: formData.job_category,
@@ -1177,6 +1193,42 @@ const CreateJobPosting = () => {
 
         {/* Step Content */}
         <div className="bg-white rounded-xl border border-gray-200 p-6 mb-6">
+          {/* Only shown when there's genuinely a choice to make — solo
+              employers see the form exactly as before. */}
+          {postableCompanies.length > 0 && (
+            <div className="mb-6 pb-6 border-b border-gray-100">
+              <label
+                htmlFor="post_as"
+                className="block text-sm font-medium text-gray-700 mb-1.5"
+              >
+                Post as
+              </label>
+              <select
+                id="post_as"
+                value={postAsCompanyId}
+                onChange={(e) => setPostAsCompanyId(e.target.value)}
+                className="w-full px-3 py-2 md:px-4 md:py-3 border border-gray-200 rounded-lg text-sm md:text-base focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent bg-white"
+              >
+                <option value="">
+                  {userProfile?.employer_profile?.company_name ||
+                    userProfile?.full_name ||
+                    "Myself"}{" "}
+                  (individual)
+                </option>
+                {postableCompanies.map((company) => (
+                  <option key={company._id} value={company._id}>
+                    {company.name}
+                  </option>
+                ))}
+              </select>
+              <p className="text-xs text-gray-500 mt-1.5">
+                {postAsCompanyId
+                  ? "This posting and its applicants belong to the company, and your teammates can manage them."
+                  : "This posting belongs to you personally."}
+              </p>
+            </div>
+          )}
+
           {isDraftLoading ? (
             <div className="text-sm text-gray-500">Loading draft...</div>
           ) : (

@@ -2,6 +2,7 @@
 
 import React from "react";
 import { Job } from "@/types/job";
+import { formatJobSalary } from "@/lib/job-display";
 import { JobResultCard } from "./JobResultCard";
 import { Skeleton } from "./Skeleton";
 import { HiOutlineMagnifyingGlass } from "react-icons/hi2";
@@ -92,20 +93,10 @@ const ErrorState = ({
   </div>
 );
 
-// Helper function to format salary for display
-const formatSalary = (job: Job): string => {
-  if (job.salary) {
-    return `${job.salary.symbol}${job.salary.number.toLocaleString()} ${job.salary.currency}`;
-  }
-  if (job.salary_range) {
-    const start = job.salary_range.start_salary;
-    const end = job.salary_range.end_salary;
-    if (start.number && end.number) {
-      return `${start.symbol}${start.number.toLocaleString()} - ${end.symbol}${end.number.toLocaleString()} ${end.currency}`;
-    }
-  }
-  return "";
-};
+// Salary rules live in lib/job-display so the list, the detail page and the
+// recommendations panel can't drift apart again. Returns "" rather than null
+// because JobResultCard hides the row on an empty string.
+const formatSalary = (job: Job): string => formatJobSalary(job, "full") ?? "";
 
 // Helper function to get job type from tags
 const getJobType = (job: Job): string => {

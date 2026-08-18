@@ -27,6 +27,13 @@ export interface CreateEmployerJobInput {
   status?: "draft" | "published";
   company_name?: string;
   company_logo?: string;
+  /**
+   * Post under a vetted Company Page rather than the employer's own profile.
+   * The server verifies active owner/admin membership of an approved company
+   * and overrides company_name/company_logo from it, so those are ignored when
+   * this is set. Omit to post as an individual.
+   */
+  company_id?: string;
   draft_payload?: EmployerDraftPayload;
 }
 

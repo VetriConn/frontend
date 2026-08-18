@@ -117,6 +117,12 @@ export interface UserAttachment {
 
 // Complete User Profile Interface (matches backend IUser)
 export interface UserProfile {
+  /**
+   * The user's own id. The profile endpoint has always returned this
+   * (`id: user._id.toString()`); it just wasn't declared here. Needed to work
+   * out the viewer's role on a company from its members list.
+   */
+  id?: string;
   full_name: string;
   role: string;
   email: string;
@@ -306,6 +312,20 @@ export interface JobsResponse {
   applicationLink?: string;
   description?: string;
   application_count?: number;
+
+  // Aggregated listings. Scraped jobs have no employer behind them — the real
+  // posting lives at external_url and applications must go there, not through
+  // our application flow.
+  source?: "user" | "scraped";
+  source_name?: string;
+  external_url?: string;
+  /** Free-text salary straight from the source, e.g. "$18.50 hourly". */
+  salary_text?: string;
+
+  // Company-posted jobs (vetted Company Pages).
+  posted_as?: "individual" | "company";
+  company_id?: string;
+
   createdAt: string;
   updatedAt: string;
 }

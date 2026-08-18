@@ -43,6 +43,12 @@ export function useJobs(options?: UseJobsOptions) {
           responsibilities: job.responsibilities || [],
           qualifications: job.qualifications || [],
           applicationLink: job.applicationLink,
+          source: job.source,
+          source_name: job.source_name,
+          external_url: job.external_url,
+          salary_text: job.salary_text,
+          posted_as: job.posted_as,
+          company_id: job.company_id,
         }))
       : [];
 

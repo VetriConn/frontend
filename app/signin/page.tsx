@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import { SignIn } from "@/components/pages/auth/SignIn";
 import { generateMetadata as generateSeoMetadata, METADATA_TEMPLATES } from "@/lib/seo";
 
@@ -9,5 +10,11 @@ export const metadata: Metadata = generateSeoMetadata({
 });
 
 export default function SignInPage() {
-  return <SignIn />
+  // SignIn reads the `redirect` param via useSearchParams, which needs a
+  // Suspense boundary to keep this route statically rendered.
+  return (
+    <Suspense>
+      <SignIn />
+    </Suspense>
+  );
 }

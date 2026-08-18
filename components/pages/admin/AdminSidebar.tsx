@@ -48,6 +48,16 @@ const NAV_ITEMS: NavItem[] = [
     ],
   },
   {
+    label: "Companies",
+    href: "/admin/companies",
+    icon: HiOutlineBuildingOffice2,
+    children: [
+      { label: "Pending Review", href: "/admin/companies" },
+      { label: "Approved", href: "/admin/companies/approved" },
+      { label: "Rejected", href: "/admin/companies/rejected" },
+    ],
+  },
+  {
     label: "Employers",
     href: "/admin/employers",
     icon: HiOutlineBuildingOffice2,

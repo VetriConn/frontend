@@ -118,3 +118,35 @@ export {
   uploadDirectToCloudinary,
 } from "./upload";
 export type { CloudinaryUploadResponse, SignatureData } from "./upload";
+
+// Job scraper (admin)
+export { triggerJobScrape } from "./jobs";
+export type { ScraperSourceSummary } from "./jobs";
+
+// Company Pages
+export {
+  applyForCompany,
+  getMyCompanies,
+  getCompanyById,
+  updateCompany,
+  uploadCompanyLogo,
+  uploadCompanyBanner,
+  inviteMember,
+  acceptInvite,
+  removeMember,
+  getCompanyJobs,
+  adminListCompanies,
+  adminApproveCompany,
+  adminRejectCompany,
+  getMyRole,
+  canPostJobsFor,
+} from "./companies";
+export type {
+  Company,
+  CompanyMember,
+  CompanyRole,
+  CompanyMemberStatus,
+  CompanyStatus,
+  CompanyProfileInput,
+  ApplyForCompanyInput,
+} from "./companies";

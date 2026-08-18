@@ -124,7 +124,9 @@ export const JobResultCard = ({
           {/* Salary */}
           {salary && (
             <div className="inline-flex items-center gap-1.5 min-h-6">
-              <dt className="sr-only">Salary</dt>
+              {/* "Pay" rather than "Salary" — aggregated listings often quote
+                  an hourly rate here, not an annual figure. */}
+              <dt className="sr-only">Pay</dt>
               <HiOutlineCurrencyDollar
                 className="w-4 h-4 md:w-5 md:h-5 text-primary flex-shrink-0"
                 aria-hidden="true"

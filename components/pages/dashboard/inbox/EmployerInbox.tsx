@@ -245,7 +245,7 @@ export default function EmployerInbox() {
                     messages={messages}
                     messagesEndRef={messagesEndRef}
                     userName={userProfile?.full_name || "Employer"}
-                    userAvatar={userProfile?.employer_profile?.logo_url || userProfile?.picture}
+                    userAvatar={userProfile?.picture}
                     themName={selectedConvo.name}
                     themAvatar={selectedConvo.avatar}
                   />

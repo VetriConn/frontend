@@ -5,7 +5,7 @@
  */
 
 import * as fc from "fast-check";
-import { step1Schema, step2Schema, step3Schema } from "@/lib/validation";
+import { step2Schema, step3Schema } from "@/lib/validation";
 
 describe("Feature: multi-step-signup - Property-Based Tests", () => {
   /**
@@ -14,60 +14,6 @@ describe("Feature: multi-step-signup - Property-Based Tests", () => {
    * Validates: Requirements 1.2, 1.3
    */
   describe("Property 1: Step Indicator Accuracy", () => {
-    it("should calculate correct progress percentage for any step 1-6", () => {
-      fc.assert(
-        fc.property(fc.integer({ min: 1, max: 6 }), (step) => {
-          const expectedProgress = (step / 6) * 100;
-          const calculatedProgress = (step / 6) * 100;
-
-          expect(calculatedProgress).toBe(expectedProgress);
-          expect(calculatedProgress).toBeGreaterThan(0);
-          expect(calculatedProgress).toBeLessThanOrEqual(100);
-        }),
-        { numRuns: 100 },
-      );
-    });
-
-    it("should show step X of 6 for any valid step", () => {
-      fc.assert(
-        fc.property(fc.integer({ min: 1, max: 6 }), (step) => {
-          const stepText = `Step ${step} of 6`;
-          expect(stepText).toMatch(/^Step [1-6] of 6$/);
-        }),
-        { numRuns: 100 },
-      );
-    });
-  });
-
-  /**
-   * Property 2: Role Selection Controls Button State
-   * For any role state, Continue button should be disabled when null
-   * Validates: Requirements 2.7, 2.8
-   */
-  describe("Property 2: Role Selection Controls Button State", () => {
-    it("should disable Continue when role is null or undefined", () => {
-      fc.assert(
-        fc.property(fc.constantFrom(null, undefined), (role) => {
-          const isDisabled = !role;
-          expect(isDisabled).toBe(true);
-        }),
-        { numRuns: 100 },
-      );
-    });
-
-    it("should enable Continue when role is jobseeker or employer", () => {
-      fc.assert(
-        fc.property(fc.constantFrom("job_seeker", "employer"), (role) => {
-          const isDisabled = !role;
-          expect(isDisabled).toBe(false);
-
-          // Validate with schema
-          const result = step1Schema.safeParse({ role });
-          expect(result.success).toBe(true);
-        }),
-        { numRuns: 100 },
-      );
-    });
   });
 
   /**

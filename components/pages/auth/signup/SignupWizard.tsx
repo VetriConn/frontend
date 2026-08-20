@@ -6,26 +6,21 @@ import {
   SignupWizardState,
   SignupAction,
   STEP_CONFIGS,
-  EMPLOYER_STEP_CONFIGS,
   INITIAL_FORM_DATA,
 } from "@/types/signup";
 import { AuthHeader } from "@/components/ui/AuthHeader";
 import { AuthFooter } from "@/components/ui/AuthFooter";
 import { StepIndicator } from "./StepIndicator";
 import {
-  AccountTypeStep,
   CreateAccountStep,
   ContactInfoStep,
   WorkBackgroundStep,
   ResumeUploadStep,
   CompletionStep,
-  CompanyInfoStep,
 } from "./steps";
 import {
-  step1Schema,
   step2Schema,
   step3Schema,
-  employerStep3Schema,
 } from "@/lib/validation";
 import { registerUser, resendVerificationEmail } from "@/lib/api/auth";
 import { useToaster } from "@/components/ui/Toaster";
@@ -260,12 +255,9 @@ export function SignupWizard() {
     saveStateToStorage(state);
   }, [state]);
 
-  // Derive step configuration based on selected role
-  const isEmployer = formData.role === "employer";
-  const totalSteps = isEmployer
-    ? EMPLOYER_STEP_CONFIGS.length
-    : STEP_CONFIGS.length;
-  const stepConfigs = isEmployer ? EMPLOYER_STEP_CONFIGS : STEP_CONFIGS;
+  // One flow for everyone — there is no account type to branch on.
+  const totalSteps = STEP_CONFIGS.length;
+  const stepConfigs = STEP_CONFIGS;
   const currentStepConfig = stepConfigs[currentStep - 1];
 
   /**
@@ -277,10 +269,6 @@ export function SignupWizard() {
 
     switch (currentStep) {
       case 1:
-        schema = step1Schema;
-        dataToValidate = { role: formData.role };
-        break;
-      case 2:
         schema = step2Schema;
         dataToValidate = {
           full_name: formData.full_name,
@@ -289,25 +277,16 @@ export function SignupWizard() {
           confirmPassword: formData.confirmPassword,
         };
         break;
-      case 3:
-        if (formData.role === "employer") {
-          schema = employerStep3Schema;
-          dataToValidate = {
-            company_name: formData.company_name,
-            company_industry: formData.company_industry,
-            company_location: formData.company_location,
-          };
-        } else {
-          schema = step3Schema;
-          dataToValidate = {
-            phone_number: formData.phone_number,
-            city: formData.city,
-            country: formData.country,
-          };
-        }
+      case 2:
+        schema = step3Schema;
+        dataToValidate = {
+          phone_number: formData.phone_number,
+          city: formData.city,
+          country: formData.country,
+        };
         break;
       default:
-        // Steps 4, 5, 6 don't require validation to proceed
+        // The remaining steps are optional and need no gate.
         return true;
     }
 
@@ -511,33 +490,16 @@ export function SignupWizard() {
       isBusy: state.isSubmitting || isActionLocked,
     };
 
-    // Steps 1-2 are shared between job seekers and employers
-    if (currentStep === 1) return <AccountTypeStep {...stepProps} />;
-    if (currentStep === 2) return <CreateAccountStep {...stepProps} />;
-
-    // Employer flow: step 3 = Company Info, step 4 = Completion
-    if (isEmployer) {
-      if (currentStep === 3) return <CompanyInfoStep {...stepProps} />;
-      if (currentStep === 4) {
-        return (
-          <CompletionStep
-            formData={formData}
-            onResendEmail={handleResendEmail}
-          />
-        );
-      }
-      return null;
-    }
-
-    // Job seeker flow: steps 3-6
     switch (currentStep) {
-      case 3:
+      case 1:
+        return <CreateAccountStep {...stepProps} />;
+      case 2:
         return <ContactInfoStep {...stepProps} />;
-      case 4:
+      case 3:
         return <WorkBackgroundStep {...stepProps} />;
-      case 5:
+      case 4:
         return <ResumeUploadStep {...stepProps} />;
-      case 6:
+      case 5:
         return (
           <CompletionStep
             formData={formData}

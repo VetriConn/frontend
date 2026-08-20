@@ -10,9 +10,16 @@ import {
 import { CheckCircleIcon } from "@/components/ui/CheckCircleIcon";
 import { Avatar } from "@/components/ui/Avatar";
 
+/**
+ * Mirrors the backend enum on Profile.job_seeking_settings.status exactly.
+ * Two frontend copies had drifted, each dropping a different value, so a
+ * profile set to the missing one rendered against a config entry that was
+ * not there.
+ */
 export type JobSeekingStatus =
   | "none"
   | "actively_looking"
+  | "open_to_opportunities"
   | "open_to_offers"
   | "not_looking";
 
@@ -28,6 +35,11 @@ const JOB_SEEKING_STATUS_CONFIG: Record<
   actively_looking: {
     label: "Open to Work",
     badge: "bg-emerald-50 text-emerald-700 border border-emerald-200",
+    icon: "🟢",
+  },
+  open_to_opportunities: {
+    label: "Open to Opportunities",
+    badge: "bg-teal-50 text-teal-700 border border-teal-200",
     icon: "🟢",
   },
   open_to_offers: {

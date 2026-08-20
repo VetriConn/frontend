@@ -64,7 +64,6 @@ export {
   updateEmployerJob,
   deleteEmployerJob,
   updateEmployerApplicationStatus,
-  uploadEmployerCompanyAsset,
   getEmployerMessageThreads,
   getEmployerThreadMessages,
   sendEmployerMessage,

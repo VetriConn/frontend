@@ -966,9 +966,8 @@ const CreateJobPosting = () => {
         } : undefined,
       } : undefined,
       status,
-      company_name: userProfile?.employer_profile?.company_name,
-      company_logo: userProfile?.employer_profile?.logo_url,
-      // When set, the server sources name and logo from the company instead.
+      // Name and logo are always derived server-side — from the company when
+      // company_id is set, otherwise from the poster's own account.
       company_id: postAsCompanyId || undefined,
       draft_payload: {
         job_title: formData.job_title,
@@ -1210,9 +1209,7 @@ const CreateJobPosting = () => {
                 className="w-full px-3 py-2 md:px-4 md:py-3 border border-gray-200 rounded-lg text-sm md:text-base focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent bg-white"
               >
                 <option value="">
-                  {userProfile?.employer_profile?.company_name ||
-                    userProfile?.full_name ||
-                    "Myself"}{" "}
+                  {userProfile?.full_name || "Myself"}{" "}
                   (individual)
                 </option>
                 {postableCompanies.map((company) => (

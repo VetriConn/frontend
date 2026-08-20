@@ -19,8 +19,8 @@ interface AvatarProps {
  * Falls back to initials if no image is provided
  * 
  * Usage:
- * - Job Seeker: <Avatar src={userProfile.picture} name={userProfile.full_name} />
- * - Employer: <Avatar src={userProfile.employer_profile?.logo_url} name={userProfile.employer_profile?.company_name} />
+ * - <Avatar src={userProfile.picture} name={userProfile.full_name} />
+ * - Company: <Avatar src={company.logo_url} name={company.name} />
  */
 export function Avatar({ src, name, size = 40, className = "", alt }: AvatarProps) {
   const hasValidSrc = src && src.trim() !== "";
@@ -63,16 +63,8 @@ export function Avatar({ src, name, size = 40, className = "", alt }: AvatarProp
  * @param userProfile - The user profile object
  * @returns The avatar URL (picture for job seekers, logo for employers)
  */
-export function useAvatarUrl(userProfile: {
-  role?: string;
-  picture?: string;
-  employer_profile?: { logo_url?: string };
-} | null | undefined): string | null {
-  if (!userProfile) return null;
-  
-  if (userProfile.role === "employer") {
-    return userProfile.employer_profile?.logo_url || null;
-  }
-  
-  return userProfile.picture || null;
+export function useAvatarUrl(
+  userProfile: { picture?: string } | null | undefined,
+): string | null {
+  return userProfile?.picture || null;
 }

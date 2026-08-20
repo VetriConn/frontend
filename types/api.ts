@@ -1,3 +1,4 @@
+import type { JobSeekingStatus } from "@/components/pages/profile/ProfileHeader";
 /**
  * API Response Types
  * Types for API request/response data structures
@@ -153,40 +154,8 @@ export interface UserProfile {
   saved_jobs?: string[];
   applied_jobs_count?: number;
   skills?: string[];
-  employer_profile?: {
-    company_name: string;
-    industry: string;
-    city: string;
-    country: string;
-    phone_number?: string;
-    company_email?: string;
-    website?: string;
-    company_size?: string;
-    hiring_frequency?: string;
-    about_company?: string;
-    logo_url?: string;
-    banner_url?: string;
-    notification_preferences: {
-      email_notifications: boolean;
-      job_approved_rejected: boolean;
-      new_applications: boolean;
-      application_alerts?: boolean;
-      messages: boolean;
-      platform_updates?: boolean;
-    };
-    company_preferences: {
-      public_company_profile: boolean;
-      show_contact_information: boolean;
-      company_profile_visibility?: string;
-    };
-  };
 
   // Job-seeking status
-  job_seeking_status?:
-    | "none"
-    | "actively_looking"
-    | "open_to_offers"
-    | "not_looking";
 
   // Email verification fields
   emailVerified?: boolean;
@@ -198,10 +167,17 @@ export interface UserProfile {
   two_factor_enabled?: boolean;
 
   // Job seeker settings
+  /**
+   * One set for the whole account. The keys describe the person rather than a
+   * role: application_updates is news about applications you sent,
+   * posting_updates and new_applications are about jobs you posted.
+   */
   notification_preferences?: {
     email_notifications: boolean;
     job_alerts: boolean;
-    application_approved_rejected: boolean;
+    application_updates: boolean;
+    posting_updates: boolean;
+    new_applications: boolean;
     messages: boolean;
     community_updates: boolean;
   };
@@ -209,7 +185,7 @@ export interface UserProfile {
     profile_visibility: "everyone" | "employers-only" | "private";
   };
   job_seeking_settings?: {
-    status: "none" | "actively_looking" | "open_to_opportunities" | "not_looking";
+    status: JobSeekingStatus;
     preferred_work_type: "remote" | "on-site" | "hybrid" | "no-preference";
     preferred_location: "within-10" | "within-25" | "within-50" | "anywhere";
     experience_level: "entry" | "mid" | "senior" | "executive";
@@ -242,38 +218,6 @@ export interface UserProfileResponse {
       saved_jobs?: string[];
       applied_jobs_count?: number;
       skills?: string[];
-      employer_profile?: {
-        company_name: string;
-        industry: string;
-        city: string;
-        country: string;
-        phone_number?: string;
-        company_email?: string;
-        website?: string;
-        company_size?: string;
-        hiring_frequency?: string;
-        about_company?: string;
-        logo_url?: string;
-        banner_url?: string;
-        notification_preferences: {
-          email_notifications: boolean;
-          job_approved_rejected: boolean;
-          new_applications: boolean;
-          application_alerts?: boolean;
-          messages: boolean;
-          platform_updates?: boolean;
-        };
-        company_preferences: {
-          public_company_profile: boolean;
-          show_contact_information: boolean;
-          company_profile_visibility?: string;
-        };
-      };
-      job_seeking_status?:
-        | "none"
-        | "actively_looking"
-        | "open_to_offers"
-        | "not_looking";
       attachments?: UserAttachment[];
       documents?: UserDocument[];
     };

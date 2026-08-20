@@ -779,7 +779,7 @@ export default function ProfilePage() {
                 location={displayLocation}
                 bio={userProfile.bio || undefined}
                 jobTitle={userProfile.job_title || undefined}
-                jobSeekingStatus={userProfile.job_seeking_status}
+                jobSeekingStatus={userProfile.job_seeking_settings?.status}
                 completionPercentage={profileCompletion.percentage}
                 onEditProfile={handleEditPublicProfile}
                 onPreview={() => setShowPreview(true)}
@@ -1172,7 +1172,7 @@ export default function ProfilePage() {
             bio: userProfile.bio || undefined,
             job_title: userProfile.job_title || undefined,
             location: displayLocation,
-            job_seeking_status: userProfile.job_seeking_status,
+            job_seeking_status: userProfile.job_seeking_settings?.status,
             skills: localSkills,
             work_experience: localExperiences,
             education: localEducation,

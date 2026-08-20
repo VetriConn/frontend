@@ -123,9 +123,11 @@ export async function updateCompany(
 // ── Branding ────────────────────────────────────────────────────────────────
 
 /**
- * Upload a company logo or banner. Multipart — the field name must match the
- * route (`logo` or `banner`), and Content-Type is left to the browser so the
- * boundary is set correctly.
+ * Upload a company logo or banner. Multipart under the field name `asset`;
+ * Content-Type is left to the browser so the boundary is set correctly.
+ *
+ * The server validates the file in memory — magic bytes and a malware scan —
+ * before anything reaches Cloudinary, so a rejected upload is never hosted.
  */
 async function uploadCompanyAsset(
   companyId: string,
@@ -133,17 +135,16 @@ async function uploadCompanyAsset(
   file: File,
 ): Promise<string> {
   const formData = new FormData();
-  formData.append(asset, file);
+  formData.append("asset", file);
 
   const response = await apiFetch<
-    ApiEnvelope<{ logo_url?: string; banner_url?: string }>
-  >(`${COMPANIES_URL}/${companyId}/${asset}`, {
+    ApiEnvelope<{ asset_url: string; asset_type: "logo" | "banner" }>
+  >(`${COMPANIES_URL}/${companyId}/assets/${asset}`, {
     method: "POST",
     body: formData,
   });
 
-  const url =
-    asset === "logo" ? response.data?.logo_url : response.data?.banner_url;
+  const url = response.data?.asset_url;
   if (!url) throw new Error(`Upload succeeded but no ${asset} URL was returned`);
   return url;
 }

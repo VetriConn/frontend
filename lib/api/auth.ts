@@ -37,33 +37,18 @@ export async function registerUser(
       email: formData.email,
       password: formData.password,
       confirmPassword: formData.confirmPassword,
-      role: formData.role,
       promotional_emails: false,
     };
 
-    // Add role-specific optional fields
-    if (formData.role === "employer") {
-      const [cityPart = "", countryPart = ""] = formData.company_location
-        .split(",")
-        .map((value) => value.trim());
-
-      requestData.employer_profile = {
-        company_name: formData.company_name,
-        industry: formData.company_industry,
-        city: cityPart,
-        country: countryPart,
-      };
-    } else {
-      // Job seeker-specific fields
-      if (formData.phone_number)
-        requestData.phone_number = formData.phone_number;
-      if (formData.city) requestData.city = formData.city;
-      if (formData.country) requestData.country = formData.country;
-      if (formData.job_title) requestData.job_title = formData.job_title;
-      if (formData.industry) requestData.industry = formData.industry;
-      if (formData.years_of_experience)
-        requestData.years_of_experience = formData.years_of_experience;
-    }
+    // One signup. There is no account type to choose and no company to name —
+    // a company is a separate vetted entity you create or are invited to later.
+    if (formData.phone_number) requestData.phone_number = formData.phone_number;
+    if (formData.city) requestData.city = formData.city;
+    if (formData.country) requestData.country = formData.country;
+    if (formData.job_title) requestData.job_title = formData.job_title;
+    if (formData.industry) requestData.industry = formData.industry;
+    if (formData.years_of_experience)
+      requestData.years_of_experience = formData.years_of_experience;
 
     return await apiFetch<ApiResponse<RegisterResponse>>(
       getApiUrl(API_CONFIG.ENDPOINTS.AUTH.REGISTER),

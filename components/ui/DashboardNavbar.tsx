@@ -258,9 +258,6 @@ const DashboardNavbar = () => {
   // Get the appropriate avatar/logo based on user role
   const getAvatarUrl = () => {
     if (!userProfile) return null;
-    if (isEmployer) {
-      return userProfile.employer_profile?.logo_url || null;
-    }
     return userProfile.picture || null;
   };
 

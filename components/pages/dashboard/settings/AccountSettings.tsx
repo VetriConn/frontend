@@ -45,7 +45,9 @@ interface SettingsState {
   // Notifications
   emailNotifications: boolean;
   jobAlerts: boolean;
-  applicationApprovedRejected: boolean;
+  applicationUpdates: boolean;
+  postingUpdates: boolean;
+  newApplications: boolean;
   messages: boolean;
   communityUpdates: boolean;
 
@@ -190,21 +192,23 @@ function SelectField({
 
 // ─── Page ───────────────────────────────────────────────────────────────────────
 
-export default function JobSeekerSettings() {
+export default function AccountSettings() {
   // ─── Fetch user profile from DB ───────────────────────────────────────────
   const { userProfile, isLoading: profileLoading, mutateProfile } =
     useUserProfile();
   const { showToast } = useToaster();
 
   const [settings, setSettings] = useState<SettingsState>({
-    jobSeekingStatus: userProfile?.job_seeking_settings?.status || userProfile?.job_seeking_status || "none",
+    jobSeekingStatus: userProfile?.job_seeking_settings?.status || "none",
     preferredWorkType: userProfile?.job_seeking_settings?.preferred_work_type || "no-preference",
     preferredLocation: userProfile?.job_seeking_settings?.preferred_location || "anywhere",
     experienceLevel: userProfile?.job_seeking_settings?.experience_level || "entry",
 
     emailNotifications: userProfile?.notification_preferences?.email_notifications ?? true,
     jobAlerts: userProfile?.notification_preferences?.job_alerts ?? true,
-    applicationApprovedRejected: userProfile?.notification_preferences?.application_approved_rejected ?? true,
+    applicationUpdates: userProfile?.notification_preferences?.application_updates ?? true,
+    postingUpdates: userProfile?.notification_preferences?.posting_updates ?? true,
+    newApplications: userProfile?.notification_preferences?.new_applications ?? true,
     messages: userProfile?.notification_preferences?.messages ?? true,
     communityUpdates: userProfile?.notification_preferences?.community_updates ?? false,
 
@@ -215,13 +219,15 @@ export default function JobSeekerSettings() {
   React.useEffect(() => {
     if (userProfile) {
       setSettings({
-        jobSeekingStatus: userProfile.job_seeking_settings?.status || userProfile.job_seeking_status || "none",
+        jobSeekingStatus: userProfile.job_seeking_settings?.status || "none",
         preferredWorkType: userProfile.job_seeking_settings?.preferred_work_type || "no-preference",
         preferredLocation: userProfile.job_seeking_settings?.preferred_location || "anywhere",
         experienceLevel: userProfile.job_seeking_settings?.experience_level || "entry",
         emailNotifications: userProfile.notification_preferences?.email_notifications ?? true,
         jobAlerts: userProfile.notification_preferences?.job_alerts ?? true,
-        applicationApprovedRejected: userProfile.notification_preferences?.application_approved_rejected ?? true,
+        applicationUpdates: userProfile.notification_preferences?.application_updates ?? true,
+        postingUpdates: userProfile.notification_preferences?.posting_updates ?? true,
+        newApplications: userProfile.notification_preferences?.new_applications ?? true,
         messages: userProfile.notification_preferences?.messages ?? true,
         communityUpdates: userProfile.notification_preferences?.community_updates ?? false,
         profileVisibility: userProfile.privacy_preferences?.profile_visibility || "everyone",
@@ -252,43 +258,20 @@ export default function JobSeekerSettings() {
     const newSettings = { ...settings, [key]: value };
     setSettings(newSettings);
 
-    // `jobSeekingStatus` lives on the user profile (not in generic settings).
-    // Persist it through `patchUserProfile` and revalidate the SWR cache so
-    // the badge on the profile page updates immediately.
-    if (key === "jobSeekingStatus") {
-      patchUserProfile({
-        job_seeking_status:
-          value as SettingsState["jobSeekingStatus"] as
-            | "none"
-            | "actively_looking"
-            | "open_to_offers"
-            | "not_looking",
-      })
-        .then(() => mutateProfile())
-        .catch((error: unknown) => {
-          showToast({
-            type: "error",
-            title: "Couldn't update your status",
-            description:
-              error instanceof Error
-                ? error.message
-                : "Please try again in a moment.",
-          });
+    // Every preference, including jobSeekingStatus, is saved through the
+    // settings endpoint, which maps it onto job_seeking_settings.status.
+    updateUserSettings(newSettings)
+      .then(() => mutateProfile())
+      .catch((error: unknown) => {
+        showToast({
+          type: "error",
+          title: "Couldn't save your changes",
+          description:
+            error instanceof Error
+              ? error.message
+              : "Please try again in a moment.",
         });
-      return;
-    }
-
-    // Everything else is a generic preference — save through `updateUserSettings`.
-    updateUserSettings(newSettings).catch((error: unknown) => {
-      showToast({
-        type: "error",
-        title: "Couldn't save your changes",
-        description:
-          error instanceof Error
-            ? error.message
-            : "Please try again in a moment.",
       });
-    });
   };
 
   // ─── Accessibility ────────────────────────────────────────────────────────
@@ -699,12 +682,59 @@ export default function JobSeekerSettings() {
               </div>
               <div className="shrink-0 pt-1">
                 <Toggle
-                  enabled={settings.applicationApprovedRejected}
+                  enabled={settings.applicationUpdates}
                   onToggle={() =>
-                    update(
-                      "applicationApprovedRejected",
-                      !settings.applicationApprovedRejected,
-                    )
+                    update("applicationUpdates", !settings.applicationUpdates)
+                  }
+                />
+              </div>
+            </div>
+
+            {/* Your job posts */}
+            <div className="flex items-start justify-between gap-4">
+              <div className="flex items-start gap-3.5">
+                <div className="w-10 h-10 rounded-full bg-red-50 flex items-center justify-center shrink-0 mt-0.5">
+                  <HiOutlineBriefcase className="w-5 h-5 text-primary" />
+                </div>
+                <div>
+                  <h4 className="text-sm font-semibold text-gray-900 mb-0.5">
+                    Your job posts
+                  </h4>
+                  <p className="text-sm text-gray-500">
+                    Get notified when a job you posted is approved or rejected.
+                  </p>
+                </div>
+              </div>
+              <div className="shrink-0 pt-1">
+                <Toggle
+                  enabled={settings.postingUpdates}
+                  onToggle={() =>
+                    update("postingUpdates", !settings.postingUpdates)
+                  }
+                />
+              </div>
+            </div>
+
+            {/* New applicants */}
+            <div className="flex items-start justify-between gap-4">
+              <div className="flex items-start gap-3.5">
+                <div className="w-10 h-10 rounded-full bg-red-50 flex items-center justify-center shrink-0 mt-0.5">
+                  <HiOutlineUserGroup className="w-5 h-5 text-primary" />
+                </div>
+                <div>
+                  <h4 className="text-sm font-semibold text-gray-900 mb-0.5">
+                    New applicants
+                  </h4>
+                  <p className="text-sm text-gray-500">
+                    Get notified when someone applies to a job you posted.
+                  </p>
+                </div>
+              </div>
+              <div className="shrink-0 pt-1">
+                <Toggle
+                  enabled={settings.newApplications}
+                  onToggle={() =>
+                    update("newApplications", !settings.newApplications)
                   }
                 />
               </div>

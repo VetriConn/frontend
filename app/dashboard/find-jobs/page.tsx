@@ -1,6 +1,13 @@
 "use client";
 
-import React, { Suspense, useState, useCallback, useMemo } from "react";
+import React, {
+  Suspense,
+  useState,
+  useCallback,
+  useMemo,
+  useRef,
+  useEffect,
+} from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import {
@@ -203,10 +210,43 @@ const SearchResultsPage = () => {
   }, [appliedSearchQuery, updateUrlParams]);
 
   // Handle page change
+  const resultsRef = useRef<HTMLDivElement>(null);
+  const shellRef = useRef<HTMLDivElement>(null);
+
+  /**
+   * Fill exactly the space the dashboard layout leaves, no more.
+   *
+   * The shared layout puts a navbar, breadcrumbs and its own padding above
+   * this page, so a plain h-screen here overflows the window by precisely that
+   * chrome — which is what made the whole page scroll instead of just the
+   * list. Measured rather than hardcoded because the chrome differs by
+   * breakpoint, and the layout is shared with pages that still scroll the
+   * window, so it cannot be reshaped from here.
+   */
+  const [shellHeight, setShellHeight] = useState<string>("100vh");
+
+  useEffect(() => {
+    const measure = () => {
+      const shell = shellRef.current;
+      if (!shell) return;
+      const top = shell.getBoundingClientRect().top + window.scrollY;
+      const layoutMain = shell.closest("main");
+      const bottomPad = layoutMain
+        ? parseFloat(getComputedStyle(layoutMain).paddingBottom) || 0
+        : 0;
+      setShellHeight(`${Math.max(320, window.innerHeight - top - bottomPad)}px`);
+    };
+
+    measure();
+    window.addEventListener("resize", measure);
+    return () => window.removeEventListener("resize", measure);
+  }, []);
+
   const handlePageChange = useCallback((nextPage: number) => {
     setCurrentPage(nextPage);
-    // Land at the top of the results rather than mid-list on the new page.
-    window.scrollTo({ top: 0, behavior: "smooth" });
+    // The results column scrolls now, not the window — scrolling the window
+    // would do nothing and leave the reader partway down the new page.
+    resultsRef.current?.scrollTo({ top: 0, behavior: "smooth" });
   }, []);
 
   // Handle retry on error
@@ -249,32 +289,39 @@ const SearchResultsPage = () => {
     });
   }, [currentSearchFilters, addSearch, showToast]);
 
+  // The page itself no longer grows with the results. The header and the
+  // filters hold their place and only the list scrolls, so the controls stay
+  // reachable however far down the list you are.
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div
+      ref={shellRef}
+      style={{ height: shellHeight }}
+      className="flex flex-col bg-gray-50 overflow-hidden"
+    >
       {/* Main Content */}
-      <main id="main-content" className="flex-1" tabIndex={-1}>
-        <div className="max-w-screen-xl mx-auto">
+      <main id="main-content" className="flex-1 min-h-0 flex flex-col" tabIndex={-1}>
+        <div className="max-w-screen-xl mx-auto w-full flex-1 min-h-0 flex flex-col px-4 md:px-6 pt-4">
           <Link
             href="/dashboard"
-            className="inline-flex items-center gap-2 text-gray-500 hover:text-gray-900 font-medium transition-colors no-underline mb-6"
+            className="inline-flex items-center gap-2 text-sm text-gray-500 hover:text-gray-900 font-medium transition-colors no-underline mb-3"
           >
             <HiOutlineArrowLeft className="w-4 h-4 md:w-5 md:h-5" />
             Back to Dashboard
           </Link>
 
           {/* Page Header */}
-          <header className="mb-6 sm:mb-8">
-            <h1 className="text-xl sm:text-2xl font-bold text-gray-900 mb-2">
+          <header className="mb-4">
+            <h1 className="text-xl sm:text-2xl font-bold text-gray-900 leading-tight tracking-tight mb-1">
               Find Your Next Opportunity
             </h1>
-            <p className="text-gray-500 text-sm sm:text-base">
+            <p className="text-gray-500 text-sm">
               Browse flexible positions designed for experienced professionals
               like you.
             </p>
           </header>
 
           {/* Search Bar */}
-          <div className="mb-6 sm:mb-8">
+          <div className="mb-4">
             <SearchBar
               value={searchQuery}
               onChange={setSearchQuery}
@@ -283,7 +330,7 @@ const SearchResultsPage = () => {
 
             {/* Save Search Button */}
             {hasActiveFilters && (
-              <div className="flex items-center gap-3 mt-3">
+              <div className="flex items-center gap-3 mt-2">
                 {isCurrentSearchSaved ? (
                   <span className="inline-flex items-center gap-1.5 text-sm text-emerald-600 font-medium">
                     <HiOutlineBookmarkSquare className="w-4 h-4" />
@@ -309,9 +356,13 @@ const SearchResultsPage = () => {
           </div>
 
           {/* Main Content Grid */}
-          <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 md:gap-6">
-            {/* Filter Panel - Left Sidebar on desktop, toggle button on mobile */}
-            <aside className="lg:col-span-1" aria-label="Job filters">
+          <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 md:gap-6 flex-1 min-h-0">
+            {/* Sticky on desktop so the filters never scroll away, with its own
+                overflow in case the filter list outgrows the viewport. */}
+            <aside
+              className="lg:col-span-1 lg:self-start lg:sticky lg:top-0 lg:max-h-full lg:overflow-y-auto"
+              aria-label="Job filters"
+            >
               <FilterPanel
                 filters={filters}
                 onFilterChange={handleFilterChange}
@@ -320,8 +371,12 @@ const SearchResultsPage = () => {
               />
             </aside>
 
-            {/* Job Results - Right Content */}
-            <div className="lg:col-span-3">
+            {/* The one scrolling region on the page. pb-6 so the last card and
+                the pagination are not flush against the viewport edge. */}
+            <div
+              ref={resultsRef}
+              className="lg:col-span-3 min-h-0 overflow-y-auto pb-6"
+            >
               {/* A thin result is not necessarily the final answer: the
                   server may be fetching more from its sources right now. Say
                   so, rather than letting an empty list read as "nothing

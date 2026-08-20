@@ -115,6 +115,54 @@ const navItemsForEveryone: NavItem[] = [
   },
 ];
 
+/** The account's own things — always visible, at the top. */
+const PROFILE_LINKS: NavLink[] = [
+  {
+    name: "View Profile",
+    href: "/dashboard/profile",
+    icon: <HiOutlineUser className="w-5 h-5 text-gray-400" />,
+  },
+  {
+    name: "Applied Jobs",
+    href: "/dashboard/applied-jobs",
+    icon: <HiOutlineBriefcase className="w-5 h-5 text-gray-400" />,
+  },
+  {
+    name: "Application Drafts",
+    href: "/dashboard/application-drafts",
+    icon: <HiOutlineClipboardDocument className="w-5 h-5 text-gray-400" />,
+  },
+  {
+    name: "Saved Jobs",
+    href: "/dashboard/saved-jobs",
+    icon: <HiOutlineBookmark className="w-5 h-5 text-gray-400" />,
+  },
+  {
+    name: "Saved Searches",
+    href: "/dashboard/saved-searches",
+    icon: <HiOutlineMagnifyingGlass className="w-5 h-5 text-gray-400" />,
+  },
+  {
+    name: "Account Settings",
+    href: "/dashboard/settings",
+    icon: <HiOutlineCog6Tooth className="w-5 h-5 text-gray-400" />,
+  },
+];
+
+/** Company things, folded away — an account only has these if it joined one. */
+const COMPANY_LINKS: NavLink[] = [
+  {
+    name: "View Public Company Page",
+    href: "/dashboard/companies",
+    icon: <HiOutlineGlobeAlt className="w-5 h-5 text-gray-400" />,
+  },
+  {
+    name: "Billing / Subscription",
+    href: "/dashboard/billing",
+    icon: <HiOutlineCreditCard className="w-5 h-5 text-gray-400" />,
+  },
+];
+
 /** Account-level destinations, listed once each. */
 const ACCOUNT_LINKS: NavLink[] = [
   {
@@ -166,6 +214,7 @@ const DashboardNavbar = () => {
   // Which menu is open, by item name — null when none is. A single boolean
   // meant both triggers drove the same panel.
   const [openDropdown, setOpenDropdown] = useState<string | null>(null);
+  const [isCompanySectionOpen, setIsCompanySectionOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const profileDropdownRef = useRef<HTMLDivElement>(null);
   const jobsDropdownRef = useRef<HTMLDivElement>(null);
@@ -180,6 +229,7 @@ const DashboardNavbar = () => {
         profileDropdownRef.current &&
         !profileDropdownRef.current.contains(event.target as Node)
       ) {
+        setIsCompanySectionOpen(false);
         setIsProfileDropdownOpen(false);
       }
       // One ref around the whole nav: with a menu per item, a single shared
@@ -293,9 +343,11 @@ const DashboardNavbar = () => {
       showToast({
         type: "success",
         title: "Logged out successfully",
-        description: "Redirecting to homepage...",
+        description: "Taking you to sign in...",
       });
-      setTimeout(() => router.push("/"), 1500);
+      // replace, not push: the dashboard is behind auth now, so Back should
+      // not return to a page that will only bounce them out again.
+      router.replace("/signin");
     } catch {
       showToast({
         type: "error",
@@ -478,96 +530,64 @@ const DashboardNavbar = () => {
                 className="absolute top-full right-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg py-1 z-50"
                 style={{ minWidth: "200px" }}
               >
-                  <>
-                    <Link
-                      href="/dashboard/companies"
-                      className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50"
-                      onClick={() => setIsProfileDropdownOpen(false)}
-                    >
-                      <HiOutlineGlobeAlt className="w-5 h-5 text-gray-400" />
-                      View Public Company Page
-                    </Link>
-                    <Link
-                      href="/dashboard/settings"
-                      className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50"
-                      onClick={() => setIsProfileDropdownOpen(false)}
-                    >
-                      <HiOutlineCog6Tooth className="w-5 h-5 text-gray-400" />
-                      Settings
-                    </Link>
-                    <Link
-                      href="/dashboard/billing"
-                      className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50"
-                      onClick={() => setIsProfileDropdownOpen(false)}
-                    >
-                      <HiOutlineCreditCard className="w-5 h-5 text-gray-400" />
-                      Billing / Subscription
-                    </Link>
-                    <hr className="my-1 border-gray-100" />
-                    <button
-                      onClick={handleLogout}
-                      className="flex items-center gap-3 px-4 py-2.5 text-sm text-primary hover:bg-gray-50 w-full text-left"
-                    >
-                      <HiOutlineArrowRightOnRectangle className="w-5 h-5 text-primary" />
-                      Sign Out
-                    </button>
-                    <Link
-                      href="/dashboard/profile"
-                      className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50"
-                      onClick={() => setIsProfileDropdownOpen(false)}
-                    >
-                      <HiOutlineUser className="w-5 h-5 text-gray-400" />
-                      View Profile
-                    </Link>
-                    <Link
-                      href="/dashboard/applied-jobs"
-                      className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50"
-                      onClick={() => setIsProfileDropdownOpen(false)}
-                    >
-                      <HiOutlineBriefcase className="w-5 h-5 text-gray-400" />
-                      Applied Jobs
-                    </Link>
-                    <Link
-                      href="/dashboard/application-drafts"
-                      className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50"
-                      onClick={() => setIsProfileDropdownOpen(false)}
-                    >
-                      <HiOutlineClipboardDocument className="w-5 h-5 text-gray-400" />
-                      Application Drafts
-                    </Link>
-                    <Link
-                      href="/dashboard/saved-jobs"
-                      className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50"
-                      onClick={() => setIsProfileDropdownOpen(false)}
-                    >
-                      <HiOutlineBookmark className="w-5 h-5 text-gray-400" />
-                      Saved Jobs
-                    </Link>
-                    <Link
-                      href="/dashboard/saved-searches"
-                      className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50"
-                      onClick={() => setIsProfileDropdownOpen(false)}
-                    >
-                      <HiOutlineMagnifyingGlass className="w-5 h-5 text-gray-400" />
-                      Saved Searches
-                    </Link>
-                    <Link
-                      href="/dashboard/settings"
-                      className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50"
-                      onClick={() => setIsProfileDropdownOpen(false)}
-                    >
-                      <HiOutlineCog6Tooth className="w-5 h-5 text-gray-400" />
-                      Account Settings
-                    </Link>
-                    <hr className="my-1 border-gray-100" />
-                    <button
-                      onClick={handleLogout}
-                      className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 w-full text-left"
-                    >
-                      <HiOutlineArrowRightOnRectangle className="w-5 h-5 text-gray-400" />
-                      Logout
-                    </button>
-                  </>
+                    <>
+                      <p className="px-4 pt-2 pb-1 text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                        Profile
+                      </p>
+                      {PROFILE_LINKS.map((link) => (
+                        <Link
+                          key={link.href}
+                          href={link.href}
+                          className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50"
+                          onClick={() => setIsProfileDropdownOpen(false)}
+                        >
+                          {link.icon}
+                          {link.name}
+                        </Link>
+                      ))}
+
+                      <hr className="my-1 border-gray-100" />
+
+                      {/* Folded away by default: most accounts never join a
+                          company, and this is their own profile menu. */}
+                      <button
+                        type="button"
+                        onClick={() => setIsCompanySectionOpen((open) => !open)}
+                        aria-expanded={isCompanySectionOpen}
+                        className="flex items-center justify-between gap-3 w-full px-4 py-2.5 text-xs font-semibold text-gray-400 uppercase tracking-wider hover:bg-gray-50"
+                      >
+                        For companies
+                        <HiOutlineChevronDown
+                          className={clsx(
+                            "w-4 h-4 transition-transform",
+                            isCompanySectionOpen && "rotate-180",
+                          )}
+                        />
+                      </button>
+
+                      {isCompanySectionOpen &&
+                        COMPANY_LINKS.map((link) => (
+                          <Link
+                            key={link.href}
+                            href={link.href}
+                            className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50"
+                            onClick={() => setIsProfileDropdownOpen(false)}
+                          >
+                            {link.icon}
+                            {link.name}
+                          </Link>
+                        ))}
+
+                      <hr className="my-1 border-gray-100" />
+
+                      <button
+                        onClick={handleLogout}
+                        className="flex items-center gap-3 px-4 py-2.5 text-sm text-primary hover:bg-red-50 w-full text-left font-medium"
+                      >
+                        <HiOutlineArrowRightOnRectangle className="w-5 h-5" />
+                        Sign Out
+                      </button>
+                    </>
               </div>
             )}
           </div>

@@ -64,18 +64,10 @@ export {
   updateEmployerJob,
   deleteEmployerJob,
   updateEmployerApplicationStatus,
-  getEmployerMessageThreads,
-  getEmployerThreadMessages,
-  sendEmployerMessage,
-  sendEmployerAttachmentMessage,
 } from "./employer";
 
 // Job Seeker Messaging
 export {
-  getJobSeekerMessageThreads,
-  getJobSeekerThreadMessages,
-  sendJobSeekerMessage,
-  sendJobSeekerAttachmentMessage,
 } from "./jobseeker";
 
 // Job Seeker Drafts
@@ -149,3 +141,5 @@ export type {
   CompanyProfileInput,
   ApplyForCompanyInput,
 } from "./companies";
+
+export * from "./messages";

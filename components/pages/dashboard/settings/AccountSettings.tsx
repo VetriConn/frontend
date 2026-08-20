@@ -22,7 +22,7 @@ import {
 import { useAccessibility, type TextSize } from "@/hooks/useAccessibility";
 import { useToaster } from "@/components/ui/Toaster";
 import { useUserProfile } from "@/hooks/useUserProfile";
-import { RoleGuard } from "@/components/auth/RoleGuard";
+import { AuthGuard } from "@/components/auth/AuthGuard";
 import {
   changePassword as changePasswordApi,
   requestDataExport,
@@ -412,7 +412,7 @@ export default function AccountSettings() {
   };
 
   return (
-    <RoleGuard allowedRoles={["job_seeker"]}>
+    <AuthGuard>
       <div className="max-w-3xl mx-auto">
         {/* Page Header */}
         <div className="mb-8">
@@ -1349,6 +1349,6 @@ export default function AccountSettings() {
           onDisabled={handleTwoFactorChange}
         />
       </div>
-    </RoleGuard>
+    </AuthGuard>
   );
 }

@@ -9,7 +9,7 @@ import {
   updateEmployerJob,
 } from "@/lib/api";
 import { useToaster } from "@/components/ui/Toaster";
-import { RoleGuard } from "@/components/auth/RoleGuard";
+import { AuthGuard } from "@/components/auth/AuthGuard";
 import {
   HiOutlineBriefcase,
   HiOutlineCalendar,
@@ -104,7 +104,7 @@ export default function ManageJobsPage() {
   };
 
   return (
-    <RoleGuard allowedRoles={["employer"]}>
+    <AuthGuard>
       <div className="max-w-7xl mx-auto">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
           <div>
@@ -304,6 +304,6 @@ export default function ManageJobsPage() {
           </div>
         )}
       </div>
-    </RoleGuard>
+    </AuthGuard>
   );
 }

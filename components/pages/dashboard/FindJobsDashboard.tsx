@@ -44,7 +44,7 @@ const RecommendedJobs = dynamic(
   },
 );
 
-const JobSeekerDashboard = () => {
+const FindJobsDashboard = () => {
   const { profileCompletion, isLoading } = useUserProfile();
 
   // Search and filter state
@@ -219,4 +219,4 @@ const JobSeekerDashboard = () => {
   );
 };
 
-export default JobSeekerDashboard;
+export default FindJobsDashboard;

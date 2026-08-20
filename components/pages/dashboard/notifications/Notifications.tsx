@@ -3,11 +3,11 @@
 import React, { useState } from "react";
 import { HiOutlineCheck, HiOutlineTrash } from "react-icons/hi2";
 import { useNotifications } from "@/hooks/useNotifications";
-import { RoleGuard } from "@/components/auth/RoleGuard";
+import { AuthGuard } from "@/components/auth/AuthGuard";
 import { NotificationItem } from "@/components/dashboard/notifications/NotificationItem";
 import { NotificationsEmptyState } from "@/components/dashboard/notifications/NotificationsEmptyState";
 
-export default function JobSeekerNotifications() {
+export default function Notifications() {
   const {
     notifications,
     unreadCount,
@@ -44,7 +44,7 @@ export default function JobSeekerNotifications() {
   // ─── Render ─────────────────────────────────────────────────────────────────
 
   return (
-    <RoleGuard allowedRoles={["job_seeker"]}>
+    <AuthGuard>
       <div className="max-w-200 mx-auto">
         {/* Page Header */}
         <div className="mb-8">
@@ -172,6 +172,6 @@ export default function JobSeekerNotifications() {
           </div>
         )}
       </div>
-    </RoleGuard>
+    </AuthGuard>
   );
 }

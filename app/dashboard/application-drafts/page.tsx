@@ -15,7 +15,7 @@ import {
   type ApplicationDraftRecord,
 } from "@/lib/applicationDrafts";
 import { useToaster } from "@/components/ui/Toaster";
-import { RoleGuard } from "@/components/auth/RoleGuard";
+import { AuthGuard } from "@/components/auth/AuthGuard";
 import { formatFullDateTime } from "@/lib/date-utils";
 
 export default function ApplicationDraftsPage() {
@@ -64,7 +64,7 @@ export default function ApplicationDraftsPage() {
 
   if (isLoading) {
     return (
-      <RoleGuard allowedRoles={["job_seeker"]}>
+      <AuthGuard>
         <div className="max-w-4xl mx-auto py-8 px-4 md:px-6">
           <div className="animate-pulse space-y-4">
             <div className="h-8 bg-gray-200 rounded w-1/3" />
@@ -73,12 +73,12 @@ export default function ApplicationDraftsPage() {
             <div className="h-24 bg-gray-200 rounded-xl" />
           </div>
         </div>
-      </RoleGuard>
+      </AuthGuard>
     );
   }
 
   return (
-    <RoleGuard allowedRoles={["job_seeker"]}>
+    <AuthGuard>
       <div className="max-w-4xl mx-auto py-8 px-4 md:px-6">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
           <div>
@@ -166,6 +166,6 @@ export default function ApplicationDraftsPage() {
           </div>
         )}
       </div>
-    </RoleGuard>
+    </AuthGuard>
   );
 }

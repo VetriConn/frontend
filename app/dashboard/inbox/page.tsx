@@ -1,24 +1,12 @@
 "use client";
 
-import { useUserProfile } from "@/hooks/useUserProfile";
-import { DashboardSkeleton } from "@/components/ui/Skeleton";
-import EmployerInbox from "@/components/pages/dashboard/inbox/EmployerInbox";
-import JobSeekerInbox from "@/components/pages/dashboard/inbox/JobSeekerInbox";
+import Inbox from "@/components/pages/dashboard/inbox/Inbox";
 
 /**
- * The inbox is one destination for everyone — the employer and job seeker
- * views are the same feature over different data, so they share a URL and
- * this picks the right one. Each view keeps its own RoleGuard, so this
- * choice is presentation only and not the authorisation boundary.
+ * One inbox for one account. There used to be an employer view and a job-seeker
+ * view chosen by role; the same person can now be applying in one thread and
+ * hiring in another, so both live in a single list.
  */
 export default function InboxPage() {
-  const { userProfile, isLoading } = useUserProfile();
-
-  if (isLoading) return <DashboardSkeleton />;
-
-  return userProfile?.role === "employer" || userProfile?.role === "admin" ? (
-    <EmployerInbox />
-  ) : (
-    <JobSeekerInbox />
-  );
+  return <Inbox />;
 }

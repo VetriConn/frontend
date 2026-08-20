@@ -2,7 +2,7 @@
  * Application Drafts — Async API layer
  *
  * Previously localStorage-only; now backed by the
- * /api/v1/job-seeker/application-drafts endpoints.
+ * /api/v1/application-drafts endpoints.
  */
 
 import {

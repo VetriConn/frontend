@@ -47,11 +47,21 @@ interface NavItem {
 }
 
 // Job seeker navigation
-const jobSeekerNavItems: NavItem[] = [
+/**
+ * One nav for one account. Finding work and posting it are both things the
+ * same person does, so both are always here rather than chosen by a role.
+ */
+const navItemsForEveryone: NavItem[] = [
   {
     name: "Find Jobs",
     href: "/dashboard",
     icon: <HiOutlineBriefcase className="w-5 h-5" />,
+    hasDropdown: true,
+  },
+  {
+    name: "My Postings",
+    href: "/dashboard/postings",
+    icon: <HiOutlineBuildingOffice2 className="w-5 h-5" />,
     hasDropdown: true,
   },
   {
@@ -66,29 +76,10 @@ const jobSeekerNavItems: NavItem[] = [
   },
 ];
 
-// Employer navigation
-const employerNavItems: NavItem[] = [
-  {
-    name: "Dashboard",
-    href: "/dashboard",
-    icon: <HiOutlineBuildingOffice2 className="w-5 h-5" />,
-  },
-  {
-    name: "Jobs",
-    href: "/dashboard/postings",
-    icon: <HiOutlineBriefcase className="w-5 h-5" />,
-    hasDropdown: true,
-  },
-  {
-    name: "Companies",
-    href: "/dashboard/companies",
-    icon: <HiOutlineBuildingOffice2 className="w-5 h-5" />,
-  },
-];
-
 /**
- * Shown to employers always, and to job seekers only once they belong to a
- * company — a hiring-team invite can land on any account, regardless of role.
+ * Only shown once the account actually belongs to a company, rather than
+ * cluttering the nav for everyone who never will. A hiring-team invite goes to
+ * an email address, so any account can end up on one.
  */
 const companiesNavItem: NavItem = {
   name: "Companies",
@@ -247,13 +238,7 @@ const DashboardNavbar = () => {
   const userName = isUserProfileLoading
     ? "Loading..."
     : userProfile?.full_name || "User";
-  const isEmployer = userProfile?.role === "employer";
-  const isJobSeeker = userProfile?.role === "job_seeker";
-  const userRole = isUserProfileLoading
-    ? "Loading..."
-    : isEmployer
-      ? "Employer"
-      : "Job Seeker";
+  const userRole = isUserProfileLoading ? "Loading..." : "Member";
 
   // Get the appropriate avatar/logo based on user role
   const getAvatarUrl = () => {
@@ -263,24 +248,15 @@ const DashboardNavbar = () => {
 
   const avatarUrl = getAvatarUrl();
 
-  const notificationsHref = isEmployer
-    ? "/dashboard/notifications"
-    : "/dashboard/notifications";
+  const notificationsHref = "/dashboard/notifications";
 
-  // Don't render role-specific nav until the profile is confirmed to avoid flash
+  // Held back until the profile resolves, so the nav does not flash.
   const navItems = useMemo(() => {
     if (isUserProfileLoading) return [];
-    if (isEmployer) return employerNavItems;
-    if (!isJobSeeker) return [];
-
-    // Company invites go to an email address, so a job seeker can end up on a
-    // hiring team without ever being an employer. Surface Companies for them
-    // once they actually belong to one, rather than cluttering the nav for
-    // everyone who never will.
     return companies.length > 0
-      ? [...jobSeekerNavItems, companiesNavItem]
-      : jobSeekerNavItems;
-  }, [isUserProfileLoading, isEmployer, isJobSeeker, companies.length]);
+      ? [...navItemsForEveryone, companiesNavItem]
+      : navItemsForEveryone;
+  }, [isUserProfileLoading, companies.length]);
   const hasUnreadNotifications = unreadCount > 0;
 
   return (
@@ -346,7 +322,6 @@ const DashboardNavbar = () => {
                   className="absolute top-full left-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg py-1 z-50"
                   style={{ minWidth: "200px" }}
                 >
-                  {isEmployer ? (
                     <>
                       <div className="px-4 py-1.5 text-xs font-semibold text-primary uppercase tracking-wider">
                         Job Management
@@ -383,9 +358,6 @@ const DashboardNavbar = () => {
                         <HiOutlineUserGroup className="w-5 h-5 text-gray-400" />
                         Applications / Applicants
                       </Link>
-                    </>
-                  ) : (
-                    <>
                       <Link
                         href="/dashboard"
                         className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
@@ -429,7 +401,6 @@ const DashboardNavbar = () => {
                         Browse Jobs
                       </Link>
                     </>
-                  )}
                 </div>
               )}
             </div>
@@ -453,22 +424,6 @@ const DashboardNavbar = () => {
             </div>
             <span>Notifications</span>
           </Link>
-
-          {/* Messages - Employer only */}
-          {isEmployer && (
-            <Link
-              href="/dashboard/inbox"
-              className={clsx(
-                "inline-flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors relative",
-                pathname === "/dashboard/inbox"
-                  ? "text-primary bg-red-50"
-                  : "text-gray-600 hover:text-gray-900 hover:bg-gray-50",
-              )}
-            >
-              <HiOutlineChatBubbleLeftRight className="w-5 h-5" />
-              <span>Messages</span>
-            </Link>
-          )}
 
           {/* Profile Dropdown */}
           <div className="relative" ref={profileDropdownRef}>
@@ -517,10 +472,9 @@ const DashboardNavbar = () => {
                 className="absolute top-full right-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg py-1 z-50"
                 style={{ minWidth: "200px" }}
               >
-                {isEmployer ? (
                   <>
                     <Link
-                      href="/dashboard/company-profile"
+                      href="/dashboard/companies"
                       className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50"
                       onClick={() => setIsProfileDropdownOpen(false)}
                     >
@@ -551,9 +505,6 @@ const DashboardNavbar = () => {
                       <HiOutlineArrowRightOnRectangle className="w-5 h-5 text-primary" />
                       Sign Out
                     </button>
-                  </>
-                ) : (
-                  <>
                     <Link
                       href="/dashboard/profile"
                       className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50"
@@ -611,7 +562,6 @@ const DashboardNavbar = () => {
                       Logout
                     </button>
                   </>
-                )}
               </div>
             )}
           </div>
@@ -677,7 +627,6 @@ const DashboardNavbar = () => {
           <hr className="my-2 border-gray-100" />
 
           {/* Employer mobile menu items */}
-          {isEmployer ? (
             <>
               <Link
                 href="/dashboard/post-job"
@@ -725,7 +674,7 @@ const DashboardNavbar = () => {
                 Messages
               </Link>
               <Link
-                href="/dashboard/company-profile"
+                href="/dashboard/companies"
                 className="flex items-center gap-3 px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 min-h-[44px]"
                 onClick={closeMobileMenu}
               >
@@ -740,9 +689,6 @@ const DashboardNavbar = () => {
                 <HiOutlineCog6Tooth className="w-5 h-5 text-gray-400" />
                 Settings
               </Link>
-            </>
-          ) : (
-            <>
               <Link
                 href={notificationsHref}
                 className={clsx(
@@ -810,7 +756,6 @@ const DashboardNavbar = () => {
                 Account Settings
               </Link>
             </>
-          )}
 
           <hr className="my-2 border-gray-100" />
           <button

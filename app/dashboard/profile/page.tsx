@@ -33,7 +33,7 @@ import {
   uploadDirectToCloudinary,
 } from "@/lib/api";
 import { useToaster } from "@/components/ui/Toaster";
-import { RoleGuard } from "@/components/auth/RoleGuard";
+import { AuthGuard } from "@/components/auth/AuthGuard";
 import { WorkExperience, Education, UserDocument } from "@/types/api";
 import { HiOutlineBriefcase, HiOutlinePencilSquare } from "react-icons/hi2";
 
@@ -766,7 +766,7 @@ export default function ProfilePage() {
       : "";
 
   return (
-    <RoleGuard allowedRoles={["job_seeker"]}>
+    <AuthGuard>
       <div className="max-w-screen-xl mx-auto">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6 items-start">
           {/* Main content */}
@@ -1181,6 +1181,6 @@ export default function ProfilePage() {
           }}
         />
       </div>
-    </RoleGuard>
+    </AuthGuard>
   );
 }

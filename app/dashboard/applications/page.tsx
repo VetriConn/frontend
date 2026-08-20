@@ -7,7 +7,7 @@ import {
   updateEmployerApplicationStatus,
 } from "@/lib/api";
 import { useToaster } from "@/components/ui/Toaster";
-import { RoleGuard } from "@/components/auth/RoleGuard";
+import { AuthGuard } from "@/components/auth/AuthGuard";
 import {
   HiOutlineUserGroup,
   HiOutlineBriefcase,
@@ -157,7 +157,7 @@ export default function ApplicationsPage() {
   ];
 
   return (
-    <RoleGuard allowedRoles={["employer"]}>
+    <AuthGuard>
       <div className="max-w-7xl mx-auto">
         <div className="mb-8">
           <h1 className="text-2xl font-bold text-gray-900 mb-1">
@@ -377,6 +377,6 @@ export default function ApplicationsPage() {
           </div>
         )}
       </div>
-    </RoleGuard>
+    </AuthGuard>
   );
 }

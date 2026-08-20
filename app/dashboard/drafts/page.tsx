@@ -3,7 +3,7 @@
 import Link from "next/link";
 import useSWR from "swr";
 import { getEmployerJobs } from "@/lib/api";
-import { RoleGuard } from "@/components/auth/RoleGuard";
+import { AuthGuard } from "@/components/auth/AuthGuard";
 import {
   HiOutlineClipboardDocument,
   HiOutlineCalendar,
@@ -21,7 +21,7 @@ export default function ManageDraftsPage() {
   const drafts = jobs.filter((job) => job.status === "draft");
 
   return (
-    <RoleGuard allowedRoles={["employer"]}>
+    <AuthGuard>
       <div className="max-w-200 mx-auto">
         <div className="flex items-center justify-between mb-6">
           <h1 className="text-2xl font-bold text-gray-900">
@@ -75,6 +75,6 @@ export default function ManageDraftsPage() {
           </div>
         )}
       </div>
-    </RoleGuard>
+    </AuthGuard>
   );
 }

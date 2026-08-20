@@ -23,6 +23,7 @@ import { useSavedJobs } from "@/hooks/useSavedJobs";
 import { getInitials } from "@/lib/initials";
 import { hasApplicationDraft } from "@/lib/applicationDrafts";
 import { useUserProfile } from "@/hooks/useUserProfile";
+import { useMyCompanies } from "@/hooks/useCompanies";
 
 import {
   formatJobSalary,
@@ -92,13 +93,21 @@ const JobDescriptor: React.FC<JobDescriptorProps> = ({
   salary_text,
   posted_as,
   company_id,
+  employer_id,
 }) => {
   const [hasApplied, setHasApplied] = useState(false);
   const [hasDraft, setHasDraft] = useState(false);
   const { isSaved, isMutating, toggleSaved } = useSavedJobs();
   const { userProfile } = useUserProfile();
-  const isEmployerPreview =
-    userProfile?.role === "employer" || userProfile?.role === "admin";
+  const { companies } = useMyCompanies();
+
+  // You cannot apply to a job you posted, or one posted by a company you are
+  // on the hiring team of. This replaces a check that disabled Apply for the
+  // whole employer role — which no longer exists, and was always the wrong
+  // question: the same person applies to other people's jobs all the time.
+  const isOwnListing =
+    (!!employer_id && employer_id === userProfile?.id) ||
+    (!!company_id && companies.some((company) => company._id === company_id));
 
   useEffect(() => {
     let isMounted = true;
@@ -451,13 +460,13 @@ const JobDescriptor: React.FC<JobDescriptorProps> = ({
                 )}
 
                 {/* Apply Button */}
-                {isEmployerPreview ? (
+                {isOwnListing ? (
                   <button
                     type="button"
                     disabled
                     className="flex items-center justify-center gap-2 w-full bg-gray-200 text-gray-600 font-semibold text-sm py-3 px-4 rounded-lg cursor-not-allowed mb-3"
                   >
-                    Employer Preview Mode
+                    You posted this job
                   </button>
                 ) : externalApplyUrl ? (
                   <a

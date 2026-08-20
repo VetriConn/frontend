@@ -21,7 +21,7 @@ import {
   buildSearchUrl,
   type SavedSearch,
 } from "@/hooks/useSavedSearches";
-import { RoleGuard } from "@/components/auth/RoleGuard";
+import { AuthGuard } from "@/components/auth/AuthGuard";
 
 // ─── Empty State ────────────────────────────────────────────────────────────────
 
@@ -234,7 +234,7 @@ export default function SavedSearchesPage() {
   }
 
   return (
-    <RoleGuard allowedRoles={["job_seeker"]}>
+    <AuthGuard>
       <div className="max-w-3xl mx-auto">
         {/* Page Header */}
         <div className="flex items-start justify-between mb-2">
@@ -292,6 +292,6 @@ export default function SavedSearchesPage() {
           </>
         )}
       </div>
-    </RoleGuard>
+    </AuthGuard>
   );
 }

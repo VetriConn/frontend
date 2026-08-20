@@ -47,6 +47,8 @@ export interface Job {
   /** Whether the poster published as themselves or as a vetted Company Page. */
   posted_as?: "individual" | "company";
   company_id?: string;
+  /** The account that published it. Used to stop you applying to your own. */
+  employer_id?: string;
 }
 
 // Re-export Tag for backward compatibility

@@ -1,11 +1,11 @@
 "use client";
 
 import { HiOutlineCreditCard } from "react-icons/hi2";
-import { RoleGuard } from "@/components/auth/RoleGuard";
+import { AuthGuard } from "@/components/auth/AuthGuard";
 
 export default function BillingPage() {
   return (
-    <RoleGuard allowedRoles={["employer"]}>
+    <AuthGuard>
       <div className="max-w-[1200px] mx-auto">
         <div className="mb-8">
           <h1 className="text-2xl font-bold text-gray-900 mb-1">
@@ -30,6 +30,6 @@ export default function BillingPage() {
           </p>
         </div>
       </div>
-    </RoleGuard>
+    </AuthGuard>
   );
 }

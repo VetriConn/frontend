@@ -25,7 +25,7 @@ import {
 import { EditDialog } from "@/components/ui/EditDialog";
 import { useToaster } from "@/components/ui/Toaster";
 import { Avatar } from "@/components/ui/Avatar";
-import { RoleGuard } from "@/components/auth/RoleGuard";
+import { AuthGuard } from "@/components/auth/AuthGuard";
 
 // --- Status Badge ---
 
@@ -475,7 +475,7 @@ export default function AppliedJobsPage() {
   }
 
   return (
-    <RoleGuard allowedRoles={["job_seeker"]}>
+    <AuthGuard>
       <div className="max-w-3xl mx-auto">
         {/* Page Header */}
         <div className="flex items-start justify-between mb-2 mobile:flex-col mobile:gap-3">
@@ -818,6 +818,6 @@ export default function AppliedJobsPage() {
           </div>
         </EditDialog>
       </div>
-    </RoleGuard>
+    </AuthGuard>
   );
 }

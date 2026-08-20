@@ -1,7 +1,7 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import { RoleGuard } from "@/components/auth/RoleGuard";
+import { AuthGuard } from "@/components/auth/AuthGuard";
 
 const CreateJobPosting = dynamic(
   () => import("@/components/pages/dashboard/employer/CreateJobPosting"),
@@ -28,8 +28,8 @@ const CreateJobPosting = dynamic(
 
 export default function PostJobPage() {
   return (
-    <RoleGuard allowedRoles={["employer"]}>
+    <AuthGuard>
       <CreateJobPosting />
-    </RoleGuard>
+    </AuthGuard>
   );
 }

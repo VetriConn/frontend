@@ -15,7 +15,7 @@ import {
   HiOutlineTrash,
 } from "react-icons/hi2";
 import { useSavedJobs } from "@/hooks/useSavedJobs";
-import { RoleGuard } from "@/components/auth/RoleGuard";
+import { AuthGuard } from "@/components/auth/AuthGuard";
 
 // ─── Types ──────────────────────────────────────────────────────────────────────
 
@@ -197,7 +197,7 @@ export default function SavedJobsPage() {
   }
 
   return (
-    <RoleGuard allowedRoles={["job_seeker"]}>
+    <AuthGuard>
       <div className="max-w-200 mx-auto">
         {/* Page Header */}
         <div className="flex items-start justify-between mb-2">
@@ -324,6 +324,6 @@ export default function SavedJobsPage() {
           </>
         )}
       </div>
-    </RoleGuard>
+    </AuthGuard>
   );
 }

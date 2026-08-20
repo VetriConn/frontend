@@ -1,7 +1,6 @@
 import useSWR from "swr";
 import { getJobById } from "@/lib/api";
 import { Job } from "@/types/job";
-import { mapTagColor } from "@/lib/job-tag-colors";
 
 export function useJob(jobId: string) {
   const { data, error, mutate, isLoading } = useSWR(
@@ -20,10 +19,7 @@ export function useJob(jobId: string) {
         salary: data.salary,
         salary_range: data.salary_range,
         tags: data.tags
-          ? data.tags.map((tag) => ({
-              name: tag,
-              color: mapTagColor(tag),
-            }))
+          ? data.tags.map((tag) => ({ name: tag }))
           : [],
         full_description: data.full_description || data.description || "",
         responsibilities: data.responsibilities || [],

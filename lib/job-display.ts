@@ -197,3 +197,22 @@ export function formatTagLabel(tag: string): string {
     value.replace(/[-_]/g, " ").replace(/^./, (c) => c.toUpperCase())
   );
 }
+
+/**
+ * How a job tag looks, everywhere.
+ *
+ * There were three treatments for the same chip: the detail page cycled a
+ * five-colour rainbow keyed off a leftover map of `flutter`/`dart`/`ios`
+ * (demo data from a Flutter job board, on a Canadian veterans' site), the
+ * sidebar card used hardcoded hex fills, and the browse card used neutral
+ * grey. The rainbow is why an industry tag rendered blue — a colour that
+ * appears nowhere in the brand.
+ *
+ * One tint of the brand red instead. A tag is a category label, not a status,
+ * so it carries no colour-coded meaning worth inventing a palette for; a tint
+ * also keeps it below the solid-red Apply button in the hierarchy rather than
+ * competing with it.
+ */
+export const JOB_TAG_CLASS =
+  "px-2.5 py-1 rounded-full text-xs font-medium " +
+  "bg-primary/10 text-primary ring-1 ring-primary/20";

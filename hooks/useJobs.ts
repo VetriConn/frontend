@@ -1,7 +1,6 @@
 import useSWR from "swr";
 import { getJobs } from "@/lib/api";
 import { Job } from "@/types/job";
-import { mapTagColor } from "@/lib/job-tag-colors";
 
 interface UseJobsOptions {
   page?: number;
@@ -40,10 +39,7 @@ export function useJobs(options?: UseJobsOptions) {
           salary: job.salary,
           salary_range: job.salary_range,
           tags: job.tags
-            ? job.tags.map((tag) => ({
-                name: tag,
-                color: mapTagColor(tag),
-              }))
+            ? job.tags.map((tag) => ({ name: tag }))
             : [],
           full_description: job.full_description || job.description || "",
           responsibilities: job.responsibilities || [],

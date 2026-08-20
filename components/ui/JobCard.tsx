@@ -5,6 +5,7 @@ import { FaRegStar } from "react-icons/fa";
 import { Tag } from "@/types/tag";
 import { FaArrowRight } from "react-icons/fa6";
 import { BsBuildings } from "react-icons/bs";
+import { JOB_TAG_CLASS, formatTagLabel } from "@/lib/job-display";
 
 interface JobCardProps {
   role: string;
@@ -16,10 +17,6 @@ interface JobCardProps {
   onSelect?: () => void;
   selected?: boolean;
 }
-
-const tagColorMap: Record<string, string> = {
-  flutter: "bg-[#1fa2ff80]", mobile: "bg-[#a985ff80]", ios: "bg-[#abf7b180]", android: "bg-[#ffd70080]", react: "bg-[#6db0b8]", web: "bg-[#f88282]", dart: "bg-[#4e9ad480]",
-};
 
 const JobCard: React.FC<JobCardProps> = ({ role, name, description, tags, variant = "default", onSelect, selected = false }) => {
   const isSidebar = variant === "sidebar";
@@ -50,8 +47,7 @@ const JobCard: React.FC<JobCardProps> = ({ role, name, description, tags, varian
         <div className="flex flex-wrap gap-2 tablet:gap-1.5 sm:gap-1 xs:gap-1">
           {tags.map((tag, index) => {
             const tagName = typeof tag === "string" ? tag : tag.name;
-            const tagColor = typeof tag === "string" ? undefined : tag.color;
-            return <span key={index} className={clsx("font-open-sans py-1 px-3 rounded text-xs font-medium text-text", tagColor && tagColorMap[tagColor] ? tagColorMap[tagColor] : "bg-gray-100")}>{tagName}</span>;
+            return <span key={index} className={clsx("font-open-sans", JOB_TAG_CLASS)}>{formatTagLabel(tagName)}</span>;
           })}
         </div>
         {isSidebar && <button className="bg-transparent border-none cursor-pointer p-2 flex items-center justify-center rounded-full ml-2 transition-colors duration-200 hover:bg-gray-100 group xs:p-1.5" onClick={(e) => e.stopPropagation()} aria-label="Select job"><FaArrowRight className="text-lg text-gray-400 transition-colors duration-200 group-hover:text-primary xs:text-base" /></button>}

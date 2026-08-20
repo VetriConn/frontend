@@ -29,6 +29,8 @@ import { useRouter } from "next/navigation";
 import { useToaster } from "@/components/ui/Toaster";
 
 import {
+  JOB_TAG_CLASS,
+  formatTagLabel,
   formatJobSalary,
   getExternalApplyUrl,
   getSourceLabel,
@@ -36,24 +38,6 @@ import {
 } from "@/lib/job-display";
 
 type JobDescriptorProps = Job;
-
-const tagColorMap: Record<string, string> = {
-  flutter: "bg-blue-50 text-blue-700 border-blue-200",
-  mobile: "bg-purple-50 text-purple-700 border-purple-200",
-  ios: "bg-emerald-50 text-emerald-700 border-emerald-200",
-  android: "bg-amber-50 text-amber-700 border-amber-200",
-  dart: "bg-cyan-50 text-cyan-700 border-cyan-200",
-  react: "bg-sky-50 text-sky-700 border-sky-200",
-  web: "bg-rose-50 text-rose-700 border-rose-200",
-};
-
-const defaultTagColors = [
-  "bg-blue-50 text-blue-700 border-blue-200",
-  "bg-emerald-50 text-emerald-700 border-emerald-200",
-  "bg-purple-50 text-purple-700 border-purple-200",
-  "bg-amber-50 text-amber-700 border-amber-200",
-  "bg-rose-50 text-rose-700 border-rose-200",
-];
 
 const fitCards = [
   {
@@ -135,7 +119,10 @@ const JobDescriptor: React.FC<JobDescriptorProps> = ({
   // it is gated — including the redirect out to an external board, which would
   // otherwise send the visitor away before we ever knew who they were.
   const isSignedIn = Boolean(userProfile);
-  const signUpToApplyHref = withReturnUrl("/signup", `/jobs/${id}/apply`);
+  // Sign in, not sign up: most people hitting this already have an account,
+  // and the sign-in page carries the return URL through to sign-up for the
+  // ones who do not — so the job survives either route.
+  const signInToApplyHref = withReturnUrl("/signin", `/jobs/${id}/apply`);
   const { companies } = useMyCompanies();
 
   // You cannot apply to a job you posted, or one posted by a company you are
@@ -198,7 +185,7 @@ const JobDescriptor: React.FC<JobDescriptorProps> = ({
 
     // Saving is for your own account, so it needs one.
     if (!isSignedIn) {
-      router.push(withReturnUrl("/signup", `/jobs/${id}`));
+      router.push(withReturnUrl("/signin", `/jobs/${id}`));
       return;
     }
 
@@ -284,16 +271,8 @@ const JobDescriptor: React.FC<JobDescriptorProps> = ({
             {/* Tags */}
             <div className="flex flex-wrap gap-2 mb-5">
               {tags.map((tag, i) => (
-                <span
-                  key={i}
-                  className={clsx(
-                    "px-3 py-1 rounded-full text-xs font-semibold border",
-                    tag.color && tagColorMap[tag.color]
-                      ? tagColorMap[tag.color]
-                      : defaultTagColors[i % defaultTagColors.length],
-                  )}
-                >
-                  {tag.name}
+                <span key={i} className={JOB_TAG_CLASS}>
+                  {formatTagLabel(tag.name)}
                 </span>
               ))}
             </div>
@@ -517,10 +496,10 @@ const JobDescriptor: React.FC<JobDescriptorProps> = ({
                   />
                 ) : !isSignedIn ? (
                   <Link
-                    href={signUpToApplyHref}
+                    href={signInToApplyHref}
                     className="flex items-center justify-center gap-2 w-full bg-primary hover:bg-primary-hover text-white font-semibold text-sm py-3 px-4 rounded-lg transition-colors no-underline mb-3"
                   >
-                    Sign up to apply
+                    Sign in to apply
                     <HiOutlineArrowLeft className="w-5 h-5 md:w-6 md:h-6 rotate-180" />
                   </Link>
                 ) : isOwnListing ? (

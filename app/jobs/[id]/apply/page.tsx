@@ -47,7 +47,7 @@ export default function ApplyPage() {
    */
   useEffect(() => {
     if (profileLoading || userProfile) return;
-    router.replace(withReturnUrl("/signup", `/jobs/${jobId}/apply`));
+    router.replace(withReturnUrl("/signin", `/jobs/${jobId}/apply`));
   }, [profileLoading, userProfile, jobId, router]);
 
   if (!profileLoading && !userProfile) {
@@ -55,7 +55,7 @@ export default function ApplyPage() {
       <>
         <DashboardNavbar />
         <div className="min-h-screen bg-gray-50 flex items-center justify-center p-6">
-          <p className="text-sm text-gray-500">Taking you to sign up…</p>
+          <p className="text-sm text-gray-500">Taking you to sign in…</p>
         </div>
       </>
     );

@@ -339,7 +339,7 @@ function StepRequirements({
             onChange={(e) => onChange("experience_level", e.target.value)}
             className={selectClasses}
           >
-            <option value="">Select experience Level</option>
+            <option value="">Select experience level</option>
             {EXPERIENCE_LEVELS.map((lvl) => (
               <option key={lvl.value} value={lvl.value}>
                 {lvl.label}
@@ -374,7 +374,7 @@ function StepRequirements({
             onChange={(e) => onChange("physical_demands", e.target.value)}
             className={selectClasses}
           >
-            <option value="">Select experience Level</option>
+            <option value="">Select physical or time demands</option>
             {PHYSICAL_DEMANDS.map((d) => (
               <option key={d.value} value={d.value}>
                 {d.label}

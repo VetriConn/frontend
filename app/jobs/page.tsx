@@ -17,7 +17,11 @@ import { useJobs } from "@/hooks/useJobs";
 import { Job } from "@/types/job";
 import { formatJobSalary } from "@/lib/job-display";
 import { Skeleton } from "@/components/ui/Skeleton";
-import { splitDescriptionParts, formatTagLabel } from "@/lib/job-display";
+import {
+  splitDescriptionParts,
+  formatTagLabel,
+  JOB_TAG_CLASS,
+} from "@/lib/job-display";
 
 // ── Helpers ──────────────────────────────────────────────────────────
 
@@ -128,7 +132,7 @@ function JobCard({ job }: { job: Job }) {
           {job.tags.slice(0, 3).map((tag) => (
             <span
               key={tag.name}
-              className="text-xs font-medium px-2.5 py-1 rounded-full bg-gray-100 text-gray-600 ring-1 ring-gray-200"
+              className={JOB_TAG_CLASS}
             >
               {formatTagLabel(tag.name)}
             </span>

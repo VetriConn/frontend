@@ -12,6 +12,14 @@ import {
 } from "react-icons/hi";
 import { getRecommendedJobs } from "@/lib/api";
 import { useUserProfile } from "@/hooks/useUserProfile";
+import clsx from "clsx";
+import {
+  CARD_SURFACE,
+  CARD_FOCUS_WITHIN,
+  CARD_TITLE,
+  CARD_META_ROW,
+  CARD_META_ICON,
+} from "./cardStyles";
 
 interface RecommendedJobCardProps {
   id: string;
@@ -31,49 +39,63 @@ const RecommendedJobCard: React.FC<RecommendedJobCardProps> = ({
   salary_range,
 }) => {
   return (
-    <Link
-      href={`/jobs/${id}`}
-      className="group bg-white rounded-xl border border-gray-200 p-5 flex flex-col justify-between hover:shadow-md transition-shadow no-underline text-current"
+    <article
+      className={clsx(
+        CARD_SURFACE,
+        CARD_FOCUS_WITHIN,
+        "p-5 flex flex-col justify-between",
+      )}
     >
-      <div>
+      <Link
+        href={`/jobs/${id}`}
+        className="no-underline text-current focus:outline-none"
+      >
         {/* One step down the scale: 24px in a 274px card overwhelmed it.
             Two lines are clamped AND reserved, so a one-line title and a
             two-line title leave the rows below starting at the same height —
             it is the raggedness, more than the size, that read as off. */}
         <h3
-          className="text-lg font-semibold text-gray-900 leading-snug tracking-tight capitalize line-clamp-2 min-h-[2.75em] mb-2"
+          className={clsx(CARD_TITLE, "text-lg capitalize line-clamp-2 min-h-[2.75em] mb-2")}
           title={role}
         >
           {role}
         </h3>
 
-        <div className="flex items-center gap-2 text-gray-600 text-sm mb-2">
-          <HiOutlineBriefcase className="w-4 h-4 md:w-5 md:h-5 text-gray-400 shrink-0" />
+        <div className={clsx(CARD_META_ROW, "text-gray-600 mb-2")}>
+          <HiOutlineBriefcase className={CARD_META_ICON} />
           <span className="truncate">{company_name}</span>
         </div>
 
-        <div className="flex items-center gap-2 text-gray-600 text-sm mb-2">
-          <HiOutlineLocationMarker className="w-4 h-4 md:w-5 md:h-5 text-gray-400 shrink-0" />
+        <div className={clsx(CARD_META_ROW, "text-gray-600 mb-2")}>
+          <HiOutlineLocationMarker className={CARD_META_ICON} />
           <span>{location}</span>
         </div>
 
         {work_type && (
-          <div className="flex items-center gap-2 text-gray-600 text-sm mb-2">
-            <HiOutlineClock className="w-4 h-4 md:w-5 md:h-5 text-gray-400 shrink-0" />
+          <div className={clsx(CARD_META_ROW, "text-gray-600 mb-2")}>
+            <HiOutlineClock className={CARD_META_ICON} />
             <span>{work_type}</span>
           </div>
         )}
 
-        <div className="flex items-center gap-2 text-primary text-sm font-medium mb-4">
-          <HiCurrencyDollar className="w-4 h-4 md:w-5 md:h-5 shrink-0" />
+        <div className={clsx(CARD_META_ROW, "text-primary font-medium mb-4")}>
+          <HiCurrencyDollar className="w-4 h-4 shrink-0" />
           <span>{salary_range}</span>
         </div>
-      </div>
+      </Link>
 
-      <div className="block w-full bg-primary text-white text-center py-2.5 rounded-lg font-medium group-hover:bg-primary-hover transition-colors text-sm">
+      {/* Goes to the application, not back to the job page the card already
+          opens. It was a div reading "Apply Now" nested inside the card's own
+          link, so it neither applied nor could be reached by keyboard
+          separately. Scraped listings redirect on from here to the employer's
+          own process. */}
+      <Link
+        href={`/jobs/${id}/apply`}
+        className="block w-full bg-primary hover:bg-primary-hover text-white text-center py-2.5 rounded-lg font-medium transition-colors text-sm no-underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+      >
         Apply Now
-      </div>
-    </Link>
+      </Link>
+    </article>
   );
 };
 
@@ -186,8 +208,14 @@ export const RecommendedJobs: React.FC = () => {
 
       {!error && jobs.length > 0 && (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
-          {jobs.map((job) => (
-            <RecommendedJobCard key={job.id} {...job} />
+          {jobs.map((job, index) => (
+            <div
+              key={job.id}
+              className="reveal-on-enter"
+              style={{ "--reveal-index": index } as React.CSSProperties}
+            >
+              <RecommendedJobCard {...job} />
+            </div>
           ))}
         </div>
       )}

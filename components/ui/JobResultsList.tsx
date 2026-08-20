@@ -177,8 +177,13 @@ export const JobResultsList = ({
 
       {/* Job cards list */}
       <div className="space-y-4" role="list" aria-label="Job listings">
-        {jobs.map((job) => (
-          <div key={job.id} role="listitem">
+        {jobs.map((job, index) => (
+          <div
+            key={job.id}
+            role="listitem"
+            className="reveal-on-enter"
+            style={{ "--reveal-index": index } as React.CSSProperties}
+          >
             <JobResultCard
               id={job.id}
               title={job.role}

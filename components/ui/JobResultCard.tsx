@@ -10,6 +10,11 @@ import {
   HiOutlineCurrencyDollar,
 } from "react-icons/hi2";
 import { hasApplicationDraft } from "@/lib/applicationDrafts";
+import {
+  CARD_SURFACE,
+  CARD_FOCUS,
+  CARD_TITLE,
+} from "./cardStyles";
 
 interface JobResultCardProps {
   id: string;
@@ -70,14 +75,29 @@ export const JobResultCard = ({
     router.push(`/jobs/${id}`);
   };
 
+  /**
+   * The card was clickable with a mouse and unreachable without one — no
+   * tabindex, no key handling, no focus ring. Enter and Space now open it, as
+   * a link and a button respectively would.
+   */
+  const handleCardKeyDown = (e: React.KeyboardEvent) => {
+    if (e.target !== e.currentTarget) return;
+    if (e.key !== "Enter" && e.key !== " ") return;
+    e.preventDefault();
+    router.push(`/jobs/${id}`);
+  };
+
   return (
     <article
       className={clsx(
-        "bg-white border border-gray-200 rounded-lg md:rounded-xl p-4 md:p-6",
-        "transition-shadow duration-200 hover:shadow-md cursor-pointer",
-        "flex flex-col gap-4",
+        CARD_SURFACE,
+        CARD_FOCUS,
+        "p-4 md:p-6 cursor-pointer flex flex-col gap-4",
       )}
       onClick={handleCardClick}
+      onKeyDown={handleCardKeyDown}
+      tabIndex={0}
+      role="link"
       aria-labelledby={`job-title-${id}`}
     >
       {/* Job Info Section */}
@@ -85,7 +105,7 @@ export const JobResultCard = ({
         {/* Job Title - h3 for proper hierarchy under page h1 and section h2 */}
         <h3
           id={`job-title-${id}`}
-          className="font-semibold text-base md:text-lg text-gray-900 mb-3"
+          className={clsx(CARD_TITLE, "text-lg md:text-xl mb-3")}
         >
           {title}
         </h3>

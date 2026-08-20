@@ -448,3 +448,33 @@ html.high-contrast .text-primary {
 html.high-contrast .bg-primary {
   background-color: var(--color-primary) !important;
 }
+
+/* ─── Entry reveal ──────────────────────────────────────────────────────────
+   One primitive for lists that appear: a short rise and fade, once. Not a
+   different animation per section — if everything moves, nothing is
+   emphasised. Decelerating ease, well under the 700ms ceiling.
+
+   Stagger comes from --reveal-index set inline by the caller, capped so the
+   last item in a long list does not wait noticeably longer than the first. */
+@keyframes vetriconn-rise {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.reveal-on-enter {
+  animation: vetriconn-rise 320ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation-delay: calc(min(var(--reveal-index, 0), 6) * 40ms);
+}
+
+/* Reduced motion gets the finished state, not a faster animation. */
+@media (prefers-reduced-motion: reduce) {
+  .reveal-on-enter {
+    animation: none;
+  }
+}

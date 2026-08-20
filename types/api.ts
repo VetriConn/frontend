@@ -167,6 +167,8 @@ export interface UserProfile {
 
   // Two-factor enabled (set by /2fa/verify, cleared by /2fa/disable).
   two_factor_enabled?: boolean;
+  /** True while the account still holds a one-time bootstrap password. */
+  must_change_password?: boolean;
 
   // Job seeker settings
   /**

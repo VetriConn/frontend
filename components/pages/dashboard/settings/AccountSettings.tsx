@@ -290,6 +290,15 @@ export default function AccountSettings() {
   const [passwordSuccess, setPasswordSuccess] = useState(false);
   const [passwordError, setPasswordError] = useState("");
 
+  // An account holding a bootstrap password can do nothing else until it is
+  // replaced, so put the form in front of them rather than letting them wander
+  // into pages the API is refusing.
+  React.useEffect(() => {
+    if (userProfile?.must_change_password) setShowPasswordModal(true);
+  }, [userProfile?.must_change_password]);
+
+  const mustChangePassword = Boolean(userProfile?.must_change_password);
+
   // ─── Data Download & Account Deactivation ─────────────────────────────────
   const [isDownloading, setIsDownloading] = useState(false);
   const [downloadSuccess, setDownloadSuccess] = useState(false);
@@ -972,7 +981,7 @@ export default function AccountSettings() {
             {/* Backdrop */}
             <div
               className="absolute inset-0 bg-black/40 backdrop-blur-[2px]"
-              onClick={handleClosePasswordModal}
+              onClick={mustChangePassword ? undefined : handleClosePasswordModal}
             />
 
             {/* Modal */}
@@ -985,19 +994,25 @@ export default function AccountSettings() {
                   </div>
                   <div>
                     <h3 className="text-lg font-bold text-gray-900">
-                      Change Password
+                      {mustChangePassword
+                        ? "Set your password"
+                        : "Change Password"}
                     </h3>
                     <p className="text-xs text-gray-400">
-                      Keep your account secure
+                      {mustChangePassword
+                        ? "Your temporary password works only for this"
+                        : "Keep your account secure"}
                     </p>
                   </div>
                 </div>
-                <button
-                  onClick={handleClosePasswordModal}
-                  className="p-2 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors cursor-pointer"
-                >
-                  <HiOutlineXMark className="w-5 h-5" />
-                </button>
+                {!mustChangePassword && (
+                  <button
+                    onClick={handleClosePasswordModal}
+                    className="p-2 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors cursor-pointer"
+                  >
+                    <HiOutlineXMark className="w-5 h-5" />
+                  </button>
+                )}
               </div>
 
               {/* Success State */}

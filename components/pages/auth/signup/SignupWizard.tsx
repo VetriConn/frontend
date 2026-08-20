@@ -8,8 +8,9 @@ import {
   STEP_CONFIGS,
   INITIAL_FORM_DATA,
 } from "@/types/signup";
-import { AuthHeader } from "@/components/ui/AuthHeader";
-import { AuthFooter } from "@/components/ui/AuthFooter";
+import Link from "next/link";
+import DottedBox7 from "@/public/images/dotted_box_7.svg";
+import DottedBox9 from "@/public/images/dotted_box_9.svg";
 import { StepIndicator } from "./StepIndicator";
 import {
   CreateAccountStep,
@@ -512,32 +513,62 @@ export function SignupWizard() {
   };
 
   return (
-    <div className="min-h-screen bg-[#FBFAF9] flex flex-col">
-      {/* Header */}
-      <AuthHeader />
+    <div className="flex min-h-screen font-open-sans">
+      {/* Left — image panel, matching sign in. Fixed to the viewport so the
+          taller signup form scrolls past it rather than dragging it along.
+          Hidden below md, where the form takes the full width. */}
+      <div className="hidden md:flex md:w-1/2 lg:w-[45%] self-start sticky top-0 h-screen relative items-center justify-center p-8 text-left bg-[linear-gradient(70deg,rgba(0,0,0,0.65),rgba(0,0,0,0.45)),url('/images/Hero/1.svg')] bg-right bg-cover">
+        <DottedBox9 className="absolute top-50 right-10 w-32 h-auto z-0 opacity-60" />
+        <h1 className="font-lato text-2xl md:text-4xl mb-4 text-white font-semibold leading-tight drop-shadow-lg">
+          Join the <br />{" "}
+          <span className="text-primary drop-shadow-lg">Vetriconn</span> community
+        </h1>
+        <DottedBox7 className="absolute bottom-80 left-15 w-32 h-auto z-0 opacity-60" />
+      </div>
 
-      {/* Main Content */}
-      <main className="flex-1 flex items-center justify-center px-4 py-8">
-        <div className="w-full max-w-xl">
-          {/* Step Indicator - Hide on completion step, outside the card */}
-          {currentStep < totalSteps && (
-            <div className="mb-6">
-              <StepIndicator
-                currentStep={currentStep}
-                totalSteps={totalSteps}
-                stepName={currentStepConfig?.name || ""}
-              />
+      {/* Right — signup form */}
+      <div className="flex-1 min-w-0 flex flex-col bg-white">
+        {/* Top bar: logo home + support, carried over from AuthHeader. */}
+        <div className="flex items-center justify-between gap-4 px-6 md:px-10 py-5">
+          <Link href="/" aria-label="Go to homepage">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="/images/logo_1.svg"
+              alt="Vetriconn"
+              className="w-36 h-auto"
+            />
+          </Link>
+          <p className="text-sm text-gray-500">
+            Need help?{" "}
+            <Link href="/contact" className="text-primary hover:underline">
+              Contact support
+            </Link>
+          </p>
+        </div>
+
+        {/* Main Content */}
+        <main className="flex-1 flex items-start justify-center px-4 md:px-8 pt-2 pb-12">
+          <div className="w-full max-w-xl">
+            {/* Step Indicator - Hide on completion step, outside the card */}
+            {currentStep < totalSteps && (
+              <div className="mb-6">
+                <StepIndicator
+                  currentStep={currentStep}
+                  totalSteps={totalSteps}
+                  stepName={currentStepConfig?.name || ""}
+                />
+              </div>
+            )}
+
+            {/* Form Card. A light border in addition to the shadow, so it
+                still reads now that the column behind it is white. */}
+            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-8 mobile:p-6">
+              {/* Current Step Content */}
+              {renderStep()}
             </div>
-          )}
 
-          {/* Form Card */}
-          <div className="bg-white rounded-2xl shadow-sm p-8 mobile:p-6">
-            {/* Current Step Content */}
-            {renderStep()}
-          </div>
-
-          {/* Footer links - minimal, below card */}
-          <div className="mt-6 text-center space-y-3">
+            {/* Footer links - minimal, below card */}
+            <div className="mt-6 text-center space-y-3">
             <p className="text-sm text-gray-600">
               Already have an account?{" "}
               <a href="/signin" className="text-primary hover:underline font-medium">
@@ -564,9 +595,10 @@ export function SignupWizard() {
                 Privacy Guide
               </a>
             </p>
+            </div>
           </div>
-        </div>
-      </main>
+        </main>
+      </div>
     </div>
   );
 }

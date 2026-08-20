@@ -1,3 +1,14 @@
+import type {
+  Industry,
+  JobType,
+  WorkArrangement,
+  ExperienceLevel,
+  PhysicalDemands,
+  WorkSchedule,
+  PaymentType,
+  ProvinceCode,
+} from "@/lib/job-fields";
+
 import type { JobSeekingStatus } from "@/components/pages/profile/ProfileHeader";
 /**
  * API Response Types
@@ -259,6 +270,24 @@ export interface JobsResponse {
   qualifications?: string[];
   applicationLink?: string;
   description?: string;
+  /**
+   * The structured fields behind the Post-a-Job form, as real columns —
+   * previously laundered through tags/qualifications/responsibilities with a
+   * draft_payload blob as the round-trip source of truth. The scraper's
+   * classifier fills what it can derive; absent means the listing didn't say.
+   */
+  job_category?: Industry;
+  job_type?: JobType;
+  work_arrangement?: WorkArrangement;
+  experience_level?: ExperienceLevel;
+  /** Free text as the employer wrote it; render as a split list. */
+  skills?: string;
+  physical_demands?: PhysicalDemands;
+  work_schedule?: WorkSchedule;
+  payment_type?: PaymentType;
+  city?: string;
+  state_province?: ProvinceCode;
+  country?: string;
   application_count?: number;
 
   // Aggregated listings. Scraped jobs have no employer behind them — the real
@@ -342,25 +371,6 @@ export interface PostedJobSummary {
   updatedAt?: string;
 }
 
-export interface JobDraftPayload {
-  job_title?: string;
-  job_category?: string;
-  job_type?: string;
-  employment_type?: string;
-  description?: string;
-  experience_level?: string;
-  skills?: string;
-  physical_demands?: string;
-  salary_min?: string;
-  salary_max?: string;
-  payment_type?: string;
-  city?: string;
-  /** Province or state. ISO 3166-2 code where we enumerate them. */
-  state_province?: string;
-  country?: string;
-  work_schedule?: string;
-}
-
 export interface PostedJobDetail extends PostedJobSummary {
   description?: string;
   full_description?: string;
@@ -385,7 +395,24 @@ export interface PostedJobDetail extends PostedJobSummary {
       symbol?: string;
     };
   };
-  draft_payload?: JobDraftPayload;
+  /**
+   * The structured fields behind the Post-a-Job form, as real columns —
+   * previously laundered through tags/qualifications/responsibilities with a
+   * draft_payload blob as the round-trip source of truth. The scraper's
+   * classifier fills what it can derive; absent means the listing didn't say.
+   */
+  job_category?: Industry;
+  job_type?: JobType;
+  work_arrangement?: WorkArrangement;
+  experience_level?: ExperienceLevel;
+  /** Free text as the employer wrote it; render as a split list. */
+  skills?: string;
+  physical_demands?: PhysicalDemands;
+  work_schedule?: WorkSchedule;
+  payment_type?: PaymentType;
+  city?: string;
+  state_province?: ProvinceCode;
+  country?: string;
 }
 
 // Attachment types (matching backend schema)

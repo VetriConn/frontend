@@ -1,4 +1,14 @@
 import { Tag } from "./tag";
+import type {
+  Industry,
+  JobType,
+  WorkArrangement,
+  ExperienceLevel,
+  PhysicalDemands,
+  WorkSchedule,
+  PaymentType,
+  ProvinceCode,
+} from "@/lib/job-fields";
 
 export interface Job {
   id: string;
@@ -47,6 +57,18 @@ export interface Job {
   /** Whether the poster published as themselves or as a vetted Company Page. */
   posted_as?: "individual" | "company";
   company_id?: string;
+  /** Structured columns; absent means the listing didn't state it. */
+  job_category?: Industry;
+  job_type?: JobType;
+  work_arrangement?: WorkArrangement;
+  experience_level?: ExperienceLevel;
+  skills?: string;
+  physical_demands?: PhysicalDemands;
+  work_schedule?: WorkSchedule;
+  payment_type?: PaymentType;
+  city?: string;
+  state_province?: ProvinceCode;
+  country?: string;
   /** The account that published it. Used to stop you applying to your own. */
   poster_id?: string;
 }

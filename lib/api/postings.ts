@@ -5,37 +5,52 @@
 import { API_BASE_URL, apiFetch, ApiEnvelope } from "./client";
 import type {
   ApplicationItem,
-  JobDraftPayload,
   PostedJobDetail,
   PostedJobSummary,
 } from "@/types/api";
+import type {
+  Industry,
+  JobType,
+  WorkArrangement,
+  ExperienceLevel,
+  PhysicalDemands,
+  WorkSchedule,
+  PaymentType,
+  ProvinceCode,
+} from "@/lib/job-fields";
 
+/**
+ * The POST /jobs body, mirroring the backend's createJobSchema exactly.
+ *
+ * Vocabulary fields are typed to the shared vocabularies; the empty string is
+ * legal on every one of them and means "clear" — the form submits its whole
+ * state, so a select put back to "Select …" must be able to unset the column.
+ * company_name/company_logo are gone: the server always derives branding, and
+ * declaring them here merely hid that they were being stripped.
+ */
 export interface CreateJobInput {
   role: string;
   description: string;
   skills?: string;
-  experience_level?: string;
-  physical_demands?: string;
+  experience_level?: ExperienceLevel | "";
+  physical_demands?: PhysicalDemands | "";
   salary_min?: string;
   salary_max?: string;
-  payment_type?: string;
+  payment_type?: PaymentType | "";
   city?: string;
+  state_province?: ProvinceCode | "";
   country?: string;
-  work_schedule?: string;
-  employment_type?: string;
-  job_type?: string;
-  job_category?: string;
+  work_schedule?: WorkSchedule | "";
+  work_arrangement?: WorkArrangement | "";
+  job_type?: JobType | "";
+  job_category?: Industry | "";
   status?: "draft" | "published";
-  company_name?: string;
-  company_logo?: string;
   /**
    * Post under a vetted Company Page rather than the employer's own profile.
    * The server verifies active owner/admin membership of an approved company
-   * and overrides company_name/company_logo from it, so those are ignored when
-   * this is set. Omit to post as an individual.
+   * and derives company branding from it. Omit to post as an individual.
    */
   company_id?: string;
-  draft_payload?: JobDraftPayload;
 }
 
 export async function getMyPostings(): Promise<PostedJobSummary[]> {

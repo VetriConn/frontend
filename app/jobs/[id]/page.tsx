@@ -5,60 +5,17 @@ import { generateJobMetadata, generateJobPostingSchema } from "@/lib/seo";
 import { JsonLd } from "@/components/seo/JsonLd";
 import { Job } from "@/types/job";
 import JobDetailClient from "./JobDetailClient";
+import { mapJobsResponse } from "@/lib/job-mapper";
 
 interface JobDetailPageProps {
   params: Promise<{ id: string }>;
 }
 
 // Transform backend job data to frontend format
-function transformJob(data: JobsResponse): Job {
-  return {
-    id: data._id || data.id,
-    role: data.role,
-    company_name: data.company_name,
-    company_logo: data.company_logo || "",
-    location: data.location || "",
-    salary: data.salary,
-    salary_range: data.salary_range,
-    tags: data.tags
-      ? data.tags.map((tag, index) => ({
-          name: tag,
-          color: [
-            "flutter",
-            "dart",
-            "mobile",
-            "ios",
-            "android",
-            "react",
-            "web",
-          ][index % 7] as
-            | "flutter"
-            | "dart"
-            | "mobile"
-            | "ios"
-            | "android"
-            | "react"
-            | "web",
-        }))
-      : [],
-    full_description: data.full_description || data.description || "",
-    responsibilities: data.responsibilities || [],
-    qualifications: data.qualifications || [],
-    applicationLink: data.applicationLink,
-    source: data.source,
-    source_name: data.source_name,
-    external_url: data.external_url,
-    salary_text: data.salary_text,
-    posted_as: data.posted_as,
-    company_id: data.company_id,
-  };
-}
-
-// Fetch job data for metadata generation
 async function getJob(id: string): Promise<Job | null> {
   try {
     const data = await getJobById(id);
-    return transformJob(data);
+    return mapJobsResponse(data);
   } catch {
     return null;
   }

@@ -3,6 +3,7 @@
 import React from "react";
 import { Job } from "@/types/job";
 import { formatJobSalary } from "@/lib/job-display";
+import { fieldLabel, JOB_TYPE_LABELS } from "@/lib/job-fields";
 import { JobResultCard } from "./JobResultCard";
 import { Skeleton } from "./Skeleton";
 import { HiOutlineMagnifyingGlass } from "react-icons/hi2";
@@ -100,25 +101,13 @@ const ErrorState = ({
 // because JobResultCard hides the row on an empty string.
 const formatSalary = (job: Job): string => formatJobSalary(job, "full") ?? "";
 
-// Helper function to get job type from tags
 /**
- * The employment type a listing actually states, or null.
- *
- * This returned "Full-time" whenever nothing matched — and since scraped jobs
- * carried no tags at all, that was every listing on the board. Not one of the
- * real listings states an employment type, so the label was wrong every time
- * it was shown. The scraper derives these now; an absent one renders nothing.
+ * The employment type a listing actually states, or null — straight from the
+ * job_type column, labelled. Null renders nothing: "Full-time" would be an
+ * invented fact for any listing that stayed silent.
  */
-const getJobType = (job: Job): string | null => {
-  const employmentTypes = [
-    "full-time", "part-time", "casual", "seasonal", "contract",
-  ];
-  const found = job.tags.find((tag) =>
-    employmentTypes.includes(tag.name.toLowerCase()),
-  );
-  if (!found) return null;
-  return found.name.charAt(0).toUpperCase() + found.name.slice(1);
-};
+const getJobType = (job: Job): string | null =>
+  fieldLabel(JOB_TYPE_LABELS, job.job_type);
 
 export const JobResultsList = ({
   jobs,

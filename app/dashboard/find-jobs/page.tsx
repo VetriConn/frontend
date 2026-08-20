@@ -29,6 +29,7 @@ interface FilterState {
   location: string;
   jobType: string;
   experienceLevel: string;
+  arrangement: string;
 }
 
 // Initial filter state
@@ -36,6 +37,7 @@ const initialFilters: FilterState = {
   location: "",
   jobType: "",
   experienceLevel: "",
+  arrangement: "",
 };
 
 // URL parameter keys
@@ -44,54 +46,11 @@ const URL_PARAMS = {
   location: "location",
   jobType: "type",
   experienceLevel: "experience",
+  arrangement: "arrangement",
 } as const;
 
 // Page size for pagination
 const PAGE_SIZE = 6;
-
-// Helper function to get job type from tags
-/**
- * The employment type a listing actually states, or null.
- *
- * This returned "Full-time" whenever nothing matched — and since scraped jobs
- * carried no tags at all, that was every listing on the board. Not one of the
- * real listings states an employment type, so the label was wrong every time
- * it was shown. The scraper derives these now; an absent one renders nothing.
- */
-const getJobType = (job: Job): string | null => {
-  const employmentTypes = [
-    "full-time", "part-time", "casual", "seasonal", "contract",
-  ];
-  const found = job.tags.find((tag) =>
-    employmentTypes.includes(tag.name.toLowerCase()),
-  );
-  if (!found) return null;
-  return found.name.charAt(0).toUpperCase() + found.name.slice(1);
-};
-
-// Helper function to check if job matches experience level
-const matchesExperienceLevel = (job: Job, experienceLevel: string): boolean => {
-  if (!experienceLevel) return true;
-
-  const description = job.full_description.toLowerCase();
-  const role = job.role.toLowerCase();
-  const tags = job.tags.map((t) => t.name.toLowerCase());
-
-  const experienceKeywords: Record<string, string[]> = {
-    entry: ["entry", "junior", "graduate", "intern", "0-2 years", "1-2 years"],
-    mid: ["mid", "intermediate", "2-5 years", "3-5 years", "experienced"],
-    senior: ["senior", "lead", "5+ years", "7+ years", "principal"],
-    executive: ["executive", "director", "vp", "chief", "head of", "c-level"],
-  };
-
-  const keywords = experienceKeywords[experienceLevel] || [];
-  return keywords.some(
-    (keyword) =>
-      description.includes(keyword) ||
-      role.includes(keyword) ||
-      tags.some((tag) => tag.includes(keyword)),
-  );
-};
 
 const SearchResultsPage = () => {
   const router = useRouter();
@@ -105,6 +64,7 @@ const SearchResultsPage = () => {
       location: searchParams.get(URL_PARAMS.location) || "",
       jobType: searchParams.get(URL_PARAMS.jobType) || "",
       experienceLevel: searchParams.get(URL_PARAMS.experienceLevel) || "",
+      arrangement: searchParams.get(URL_PARAMS.arrangement) || "",
     };
   }, [searchParams]);
 
@@ -149,6 +109,9 @@ const SearchResultsPage = () => {
       if (filterState.experienceLevel) {
         params.set(URL_PARAMS.experienceLevel, filterState.experienceLevel);
       }
+      if (filterState.arrangement) {
+        params.set(URL_PARAMS.arrangement, filterState.arrangement);
+      }
 
       const queryString = params.toString();
       const newUrl = queryString ? `?${queryString}` : window.location.pathname;
@@ -173,6 +136,7 @@ const SearchResultsPage = () => {
     limit: PAGE_SIZE,
     jobType: appliedFilters.jobType || undefined,
     experience: appliedFilters.experienceLevel || undefined,
+    arrangement: appliedFilters.arrangement || undefined,
     search: appliedSearchQuery || undefined,
     location: appliedFilters.location || undefined,
   });
@@ -269,6 +233,7 @@ const SearchResultsPage = () => {
       location: appliedFilters.location || undefined,
       jobType: appliedFilters.jobType || undefined,
       experienceLevel: appliedFilters.experienceLevel || undefined,
+      arrangement: appliedFilters.arrangement || undefined,
     }),
     [appliedSearchQuery, appliedFilters],
   );
@@ -278,7 +243,8 @@ const SearchResultsPage = () => {
     !!appliedSearchQuery ||
     !!appliedFilters.location ||
     !!appliedFilters.jobType ||
-    !!appliedFilters.experienceLevel;
+    !!appliedFilters.experienceLevel ||
+    !!appliedFilters.arrangement;
 
   const handleSaveSearch = useCallback(() => {
     addSearch(currentSearchFilters);

@@ -29,7 +29,17 @@ import { useRouter } from "next/navigation";
 import { useToaster } from "@/components/ui/Toaster";
 
 import {
+  fieldLabel,
+  JOB_TYPE_LABELS,
+  INDUSTRY_LABELS,
+  EXPERIENCE_LEVEL_LABELS,
+  WORK_ARRANGEMENT_LABELS,
+  WORK_SCHEDULE_LABELS,
+  PHYSICAL_DEMAND_LABELS,
+} from "@/lib/job-fields";
+import {
   JOB_TAG_CLASS,
+  jobChipLabels,
   formatTagLabel,
   formatJobSalary,
   getExternalApplyUrl,
@@ -107,6 +117,14 @@ const JobDescriptor: React.FC<JobDescriptorProps> = ({
   posted_as,
   company_id,
   poster_id,
+  job_category,
+  job_type,
+  work_arrangement,
+  experience_level,
+  skills,
+  physical_demands,
+  work_schedule,
+  payment_type,
 }) => {
   const [hasApplied, setHasApplied] = useState(false);
   const [hasDraft, setHasDraft] = useState(false);
@@ -207,7 +225,7 @@ const JobDescriptor: React.FC<JobDescriptorProps> = ({
   // Aggregated listings carry the source's own salary wording, which is the
   // only form that can express hourly pay correctly.
   const getSalaryDisplay = () =>
-    formatJobSalary({ salary, salary_range, salary_text });
+    formatJobSalary({ salary, salary_range, salary_text, payment_type });
 
   const externalApplyUrl = getExternalApplyUrl({
     source,
@@ -217,28 +235,30 @@ const JobDescriptor: React.FC<JobDescriptorProps> = ({
   });
   const sourceLabel = getSourceLabel({ source, source_name });
 
-  // Derive job type from tags if possible
-  const jobTypeTags = [
-    "Full-Time",
-    "Part-Time",
-    "Contract",
-    "Freelance",
-    "Internship",
-  ];
-  const derivedJobType =
-    tags.find((t) =>
-      jobTypeTags.some((jt) => jt.toLowerCase() === t.name.toLowerCase()),
-    )?.name || "Full-Time";
-
-  // Derive a category from the first tag or fallback
-  const category = tags.length > 0 ? tags[0].name : "General";
+  // Straight column reads. This used to scan tags against a hardcoded list
+  // and default to "Full-Time" — inventing a fact for any listing that
+  // didn't state one. Absent renders as nothing.
+  const jobTypeLabel = fieldLabel(JOB_TYPE_LABELS, job_type);
+  const category =
+    fieldLabel(INDUSTRY_LABELS, job_category) ??
+    (tags.length > 0 ? formatTagLabel(tags[0].name) : "General");
 
   const salaryDisplay = getSalaryDisplay();
   const companyInitials = getInitials(company_name, "CO");
 
+  // Skills arrive as one free-text field; each entry gets its own line.
+  const skillItems = (skills ?? "")
+    .split(/[\n,;]+/)
+    .map((item) => item.trim())
+    .filter(Boolean);
+
+  const experienceRequirement = experience_level
+    ? `${fieldLabel(EXPERIENCE_LEVEL_LABELS, experience_level)} experience`
+    : null;
+
   const metaItems = [
     { icon: HiOutlineMapPin, label: location || "Canada" },
-    { icon: HiOutlineBriefcase, label: derivedJobType },
+    ...(jobTypeLabel ? [{ icon: HiOutlineBriefcase, label: jobTypeLabel }] : []),
     ...(salaryDisplay
       ? [{ icon: HiOutlineBanknotes, label: salaryDisplay }]
       : []),
@@ -270,11 +290,13 @@ const JobDescriptor: React.FC<JobDescriptorProps> = ({
           <div className="flex-1 min-w-0">
             {/* Tags */}
             <div className="flex flex-wrap gap-2 mb-5">
-              {tags.map((tag, i) => (
-                <span key={i} className={JOB_TAG_CLASS}>
-                  {formatTagLabel(tag.name)}
-                </span>
-              ))}
+              {jobChipLabels({ tags, job_category, job_type, work_arrangement }).map(
+                (chip) => (
+                  <span key={chip} className={JOB_TAG_CLASS}>
+                    {chip}
+                  </span>
+                ),
+              )}
             </div>
 
             {/* Title */}
@@ -367,14 +389,27 @@ const JobDescriptor: React.FC<JobDescriptorProps> = ({
               </section>
             )}
 
-            {/* What We're Looking For */}
-            {qualifications.length > 0 && (
+            {/* What We're Looking For — the structured requirements, plus
+                any free-form qualification bullets. Experience and skills
+                used to be smuggled into qualifications[] as raw slugs, so
+                this section opened with a bullet reading "mid". */}
+            {(qualifications.length > 0 ||
+              experience_level ||
+              skillItems.length > 0) && (
               <section className="mb-8">
                 <h2 className="text-xl md:text-3xl font-bold text-gray-900 mb-4">
                   What We&apos;re Looking For
                 </h2>
                 <ul className="space-y-3">
-                  {qualifications.map((item, i) => (
+                  {experienceRequirement && (
+                    <li className="flex items-start gap-3">
+                      <HiOutlineCheckCircle className="w-5 h-5 md:w-6 md:h-6 text-emerald-500 shrink-0 mt-0.5" />
+                      <span className="text-sm text-gray-600 leading-relaxed">
+                        {experienceRequirement}
+                      </span>
+                    </li>
+                  )}
+                  {[...skillItems, ...qualifications].map((item, i) => (
                     <li key={i} className="flex items-start gap-3">
                       <HiOutlineCheckCircle className="w-5 h-5 md:w-6 md:h-6 text-emerald-500 shrink-0 mt-0.5" />
                       <span className="text-sm text-gray-600 leading-relaxed">
@@ -451,15 +486,54 @@ const JobDescriptor: React.FC<JobDescriptorProps> = ({
                     </div>
                   </div>
 
-                  <div className="flex items-start gap-3">
-                    <HiOutlineCalendarDays className="w-4 h-4 md:w-5 md:h-5 text-gray-400 mt-0.5 shrink-0" />
-                    <div>
-                      <p className="text-xs text-gray-400 mb-0.5">Job Type</p>
-                      <p className="text-sm font-medium text-gray-900">
-                        {derivedJobType}
-                      </p>
+                  {jobTypeLabel && (
+                    <div className="flex items-start gap-3">
+                      <HiOutlineCalendarDays className="w-4 h-4 md:w-5 md:h-5 text-gray-400 mt-0.5 shrink-0" />
+                      <div>
+                        <p className="text-xs text-gray-400 mb-0.5">Job Type</p>
+                        <p className="text-sm font-medium text-gray-900">
+                          {jobTypeLabel}
+                        </p>
+                      </div>
                     </div>
-                  </div>
+                  )}
+
+                  {/* The structured conditions the form collects — the
+                      details this audience actually filters a job on. */}
+                  {[
+                    {
+                      label: "Work Arrangement",
+                      value: fieldLabel(
+                        WORK_ARRANGEMENT_LABELS,
+                        work_arrangement,
+                      ),
+                    },
+                    {
+                      label: "Work Schedule",
+                      value: fieldLabel(WORK_SCHEDULE_LABELS, work_schedule),
+                    },
+                    {
+                      label: "Physical Demands",
+                      value: fieldLabel(PHYSICAL_DEMAND_LABELS, physical_demands),
+                    },
+                  ]
+                    .filter(
+                      (row): row is { label: string; value: string } =>
+                        Boolean(row.value),
+                    )
+                    .map((row) => (
+                      <div key={row.label} className="flex items-start gap-3">
+                        <HiOutlineBriefcase className="w-4 h-4 md:w-5 md:h-5 text-gray-400 mt-0.5 shrink-0" />
+                        <div>
+                          <p className="text-xs text-gray-400 mb-0.5">
+                            {row.label}
+                          </p>
+                          <p className="text-sm font-medium text-gray-900">
+                            {row.value}
+                          </p>
+                        </div>
+                      </div>
+                    ))}
 
                   {salaryDisplay && (
                     <div className="flex items-start gap-3">

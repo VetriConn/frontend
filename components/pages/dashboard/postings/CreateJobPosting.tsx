@@ -20,7 +20,26 @@ import {
   getMyPosting,
   updatePosting,
 } from "@/lib/api";
-import type { JobDraftPayload, PostedJobDetail } from "@/types/api";
+import type { PostedJobDetail } from "@/types/api";
+import type { CreateJobInput } from "@/lib/api/postings";
+import {
+  INDUSTRIES,
+  INDUSTRY_LABELS,
+  JOB_TYPES as JOB_TYPE_VALUES,
+  JOB_TYPE_LABELS,
+  WORK_ARRANGEMENTS as WORK_ARRANGEMENT_VALUES,
+  WORK_ARRANGEMENT_LABELS,
+  EXPERIENCE_LEVELS as EXPERIENCE_LEVEL_VALUES,
+  EXPERIENCE_LEVEL_LABELS,
+  PHYSICAL_DEMANDS as PHYSICAL_DEMAND_VALUES,
+  PHYSICAL_DEMAND_LABELS,
+  WORK_SCHEDULES as WORK_SCHEDULE_VALUES,
+  WORK_SCHEDULE_LABELS,
+  PAYMENT_TYPES as PAYMENT_TYPE_VALUES,
+  PAYMENT_TYPE_LABELS,
+  PROVINCES,
+  toOptions,
+} from "@/lib/job-fields";
 
 // ─── Constants ───────────────────────────────────────────────────────────────
 
@@ -32,81 +51,47 @@ const WIZARD_STEPS = [
   { number: 5, label: "Review" },
 ];
 
-const JOB_CATEGORIES = [
-  { value: "engineering", label: "Engineering" },
-  { value: "design", label: "Design" },
-  { value: "marketing", label: "Marketing" },
-  { value: "sales", label: "Sales" },
-  { value: "customer-service", label: "Customer Service" },
-  { value: "finance", label: "Finance & Accounting" },
-  { value: "hr", label: "Human Resources" },
-  { value: "operations", label: "Operations" },
-  { value: "product", label: "Product Management" },
-  { value: "data", label: "Data & Analytics" },
-  { value: "healthcare", label: "Healthcare" },
-  { value: "education", label: "Education" },
-  { value: "legal", label: "Legal" },
-  { value: "admin", label: "Administrative" },
-  { value: "other", label: "Other" },
-];
+/**
+ * Dropdown options, derived from the shared vocabularies in lib/job-fields —
+ * the same values the backend validates, the scraper's classifier emits and
+ * the browse filters query. This form used to declare its own lists, which
+ * offered a tech-startup category set no filter could match, called
+ * remote/onsite/hybrid an "employment type", and mixed schedule values into
+ * the physical-demands select.
+ */
+const JOB_CATEGORIES = toOptions(INDUSTRIES, INDUSTRY_LABELS);
+const JOB_TYPES = toOptions(JOB_TYPE_VALUES, JOB_TYPE_LABELS);
+const WORK_ARRANGEMENTS = toOptions(
+  WORK_ARRANGEMENT_VALUES,
+  WORK_ARRANGEMENT_LABELS,
+);
+const EXPERIENCE_LEVELS = toOptions(
+  EXPERIENCE_LEVEL_VALUES,
+  EXPERIENCE_LEVEL_LABELS,
+);
+const PHYSICAL_DEMANDS = toOptions(
+  PHYSICAL_DEMAND_VALUES,
+  PHYSICAL_DEMAND_LABELS,
+);
+const WORK_SCHEDULES = toOptions(WORK_SCHEDULE_VALUES, WORK_SCHEDULE_LABELS);
+const PAYMENT_TYPES = toOptions(PAYMENT_TYPE_VALUES, PAYMENT_TYPE_LABELS);
 
-const JOB_TYPES = [
-  { value: "full-time", label: "Full-time" },
-  { value: "part-time", label: "Part-time" },
-  { value: "contract", label: "Contract" },
-  { value: "temporary", label: "Temporary" },
-  { value: "internship", label: "Internship" },
-];
+/** The value a select hands back is only trusted after this membership check. */
+function asVocab<V extends string>(
+  values: readonly V[],
+  value: string,
+): V | "" {
+  return (values as readonly string[]).includes(value) ? (value as V) : "";
+}
 
-const EMPLOYMENT_TYPES = [
-  { value: "remote", label: "Remote" },
-  { value: "onsite", label: "On-site" },
-  { value: "hybrid", label: "Hybrid" },
-];
-
-const EXPERIENCE_LEVELS = [
-  { value: "entry", label: "Entry Level" },
-  { value: "mid", label: "Mid Level" },
-  { value: "senior", label: "Senior Level" },
-  { value: "lead", label: "Lead" },
-  { value: "executive", label: "Executive" },
-];
-
-const PHYSICAL_DEMANDS = [
-  { value: "none", label: "No physical demands" },
-  { value: "light", label: "Light — mostly seated or standing" },
-  { value: "moderate", label: "Moderate — some lifting or movement" },
-  { value: "heavy", label: "Heavy — regular physical activity" },
-  { value: "flexible-hours", label: "Flexible hours available" },
-  { value: "shift-work", label: "Shift work required" },
-  { value: "standard-hours", label: "Standard business hours" },
-];
-
-const PAYMENT_TYPES = [
-  { value: "salary", label: "Annual Salary" },
-  { value: "hourly", label: "Hourly Rate" },
-  { value: "commission", label: "Commission-based" },
-  { value: "stipend", label: "Stipend" },
-  { value: "volunteer", label: "Volunteer / Unpaid" },
-];
-
-const WORK_SCHEDULES = [
-  { value: "full-time", label: "Full-time (40 hrs/week)" },
-  { value: "part-time", label: "Part-time" },
-  { value: "flexible", label: "Flexible hours" },
-  { value: "shift-based", label: "Shift-based" },
-  { value: "weekdays", label: "Weekdays only" },
-  { value: "weekends", label: "Includes weekends" },
-];
-
-// ─── Types ───────────────────────────────────────────────────────────────────
+const PROVINCE_CODE_VALUES = PROVINCES.map((province) => province.code);
 
 interface JobFormData {
   // Step 1 — Job Details
   job_title: string;
   job_category: string;
   job_type: string;
-  employment_type: string;
+  work_arrangement: string;
 
   // Step 2 — Description
   description: string;
@@ -121,6 +106,7 @@ interface JobFormData {
   salary_max: string;
   payment_type: string;
   city: string;
+  state_province: string;
   country: string;
   work_schedule: string;
 }
@@ -133,7 +119,7 @@ const INITIAL_FORM_DATA: JobFormData = {
   job_title: "",
   job_category: "",
   job_type: "",
-  employment_type: "",
+  work_arrangement: "",
   description: "",
   experience_level: "",
   skills: "",
@@ -142,7 +128,8 @@ const INITIAL_FORM_DATA: JobFormData = {
   salary_max: "",
   payment_type: "",
   city: "",
-  country: "",
+  state_province: "",
+  country: "Canada",
   work_schedule: "",
 };
 
@@ -261,15 +248,15 @@ function StepJobDetails({
             </select>
           </div>
           <div>
-            <FieldLabel htmlFor="employment_type">Employment Type</FieldLabel>
+            <FieldLabel htmlFor="work_arrangement">Work Arrangement</FieldLabel>
             <select
-              id="employment_type"
-              value={formData.employment_type}
-              onChange={(e) => onChange("employment_type", e.target.value)}
+              id="work_arrangement"
+              value={formData.work_arrangement}
+              onChange={(e) => onChange("work_arrangement", e.target.value)}
               className={selectClasses}
             >
-              <option value="">Select employment type</option>
-              {EMPLOYMENT_TYPES.map((t) => (
+              <option value="">Select work arrangement</option>
+              {WORK_ARRANGEMENTS.map((t) => (
                 <option key={t.value} value={t.value}>
                   {t.label}
                 </option>
@@ -462,8 +449,8 @@ function StepSalaryLocation({
           </select>
         </div>
 
-        {/* City / Country */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
+        {/* City / Province / Country */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
           <div>
             <FieldLabel htmlFor="city">City</FieldLabel>
             <input
@@ -471,9 +458,27 @@ function StepSalaryLocation({
               type="text"
               value={formData.city}
               onChange={(e) => onChange("city", e.target.value)}
-              placeholder="e.g New york"
+              placeholder="e.g. Toronto"
               className={inputClasses}
             />
+          </div>
+          <div>
+            {/* Recommendations weight province second only to city, and
+                scraped listings carry it — user postings never did. */}
+            <FieldLabel htmlFor="state_province">Province</FieldLabel>
+            <select
+              id="state_province"
+              value={formData.state_province}
+              onChange={(e) => onChange("state_province", e.target.value)}
+              className={selectClasses}
+            >
+              <option value="">Select province</option>
+              {PROVINCES.map((province) => (
+                <option key={province.code} value={province.code}>
+                  {province.name}
+                </option>
+              ))}
+            </select>
           </div>
           <div>
             <FieldLabel htmlFor="country">Country</FieldLabel>
@@ -482,7 +487,7 @@ function StepSalaryLocation({
               type="text"
               value={formData.country}
               onChange={(e) => onChange("country", e.target.value)}
-              placeholder="e.g United states"
+              placeholder="Canada"
               className={inputClasses}
             />
           </div>
@@ -521,15 +526,19 @@ function StepReview({ formData }: { formData: JobFormData }) {
     return `Up to $${Number(formData.salary_max).toLocaleString()}`;
   };
 
-  const displayLocation = [formData.city, formData.country]
+  const displayLocation = [
+    formData.city,
+    PROVINCES.find((p) => p.code === formData.state_province)?.name,
+    formData.country,
+  ]
     .filter(Boolean)
     .join(", ");
 
   const displayJobType = JOB_TYPES.find(
     (t) => t.value === formData.job_type,
   )?.label;
-  const displayEmploymentType = EMPLOYMENT_TYPES.find(
-    (t) => t.value === formData.employment_type,
+  const displayArrangement = WORK_ARRANGEMENTS.find(
+    (t) => t.value === formData.work_arrangement,
   )?.label;
   const displayCategory = JOB_CATEGORIES.find(
     (c) => c.value === formData.job_category,
@@ -603,7 +612,7 @@ function StepReview({ formData }: { formData: JobFormData }) {
             <span className="flex items-center gap-1">
               <span className="w-1 h-1 rounded-full bg-gray-300" />
               {displayJobType || "Not specified"}
-              {displayEmploymentType ? ` · ${displayEmploymentType}` : ""}
+              {displayArrangement ? ` · ${displayArrangement}` : ""}
             </span>
             <span className="flex items-center gap-1">
               <span className="w-1 h-1 rounded-full bg-gray-300" />
@@ -653,7 +662,7 @@ function StepReview({ formData }: { formData: JobFormData }) {
               {formData.physical_demands && (
                 <p className="text-sm md:text-base text-gray-500">
                   <span className="font-medium text-gray-600">
-                    Physical/Time Demands:
+                    Physical Demands:
                   </span>{" "}
                   {PHYSICAL_DEMANDS.find((d) => d.value === formData.physical_demands)?.label || formData.physical_demands}
                 </p>
@@ -727,112 +736,37 @@ const CreateJobPosting = () => {
   const totalSteps = WIZARD_STEPS.length;
   const draftId = searchParams.get("draftId");
 
-  const mapJobToFormData = useCallback((job: PostedJobDetail): JobFormData => {
-    const draft = (job.draft_payload || {}) as JobDraftPayload;
-    const tags = job.tags || [];
-    const qualifications = job.qualifications || [];
-    const responsibilities = job.responsibilities || [];
-
-    const pickFromOptions = (
-      options: Array<{ value: string }>,
-      ...candidates: Array<string | undefined>
-    ): string => {
-      for (const candidate of candidates) {
-        if (!candidate) continue;
-        if (options.some((opt) => opt.value === candidate)) {
-          return candidate;
-        }
-      }
-      return "";
-    };
-
-    const fallbackJobCategory = pickFromOptions(
-      JOB_CATEGORIES,
-      ...tags,
-      draft.job_category,
-    );
-    const fallbackJobType = pickFromOptions(JOB_TYPES, ...tags, draft.job_type);
-    const fallbackEmploymentType = pickFromOptions(
-      EMPLOYMENT_TYPES,
-      ...tags,
-      draft.employment_type,
-    );
-    const fallbackWorkSchedule = pickFromOptions(
-      WORK_SCHEDULES,
-      ...tags,
-      draft.work_schedule,
-    );
-    const fallbackExperienceLevel = pickFromOptions(
-      EXPERIENCE_LEVELS,
-      ...qualifications,
-      draft.experience_level,
-    );
-    const fallbackPhysicalDemands = pickFromOptions(
-      PHYSICAL_DEMANDS,
-      ...responsibilities,
-      draft.physical_demands,
-    );
-
-    if (Object.keys(draft).length > 0) {
-      return {
-        ...INITIAL_FORM_DATA,
-        ...draft,
-        job_title: draft.job_title || job.role || "",
-        job_category: draft.job_category || fallbackJobCategory,
-        job_type: draft.job_type || fallbackJobType,
-        employment_type: draft.employment_type || fallbackEmploymentType,
-        description: draft.description || job.description || job.full_description || "",
-        experience_level: draft.experience_level || fallbackExperienceLevel,
-        skills: draft.skills || (qualifications[1] || qualifications[0] || ""),
-        physical_demands: draft.physical_demands || fallbackPhysicalDemands,
-        salary_min:
-          draft.salary_min ||
-          (job.salary_range?.start_salary?.number !== undefined
-            ? String(job.salary_range.start_salary.number)
-            : job.salary?.number !== undefined
-              ? String(job.salary.number)
-              : ""),
-        salary_max:
-          draft.salary_max ||
-          (job.salary_range?.end_salary?.number !== undefined
-            ? String(job.salary_range.end_salary.number)
-            : ""),
-        payment_type: draft.payment_type || "",
-        city: draft.city || "",
-        country: draft.country || "",
-        work_schedule: draft.work_schedule || fallbackWorkSchedule,
-      };
-    }
-
-    const [city = "", country = ""] = (job.location || "")
-      .split(",")
-      .map((part) => part.trim());
-
-    return {
-      ...INITIAL_FORM_DATA,
+  // Straight column reads. This used to reverse-engineer the form state by
+  // scanning tags/qualifications/responsibilities against the dropdown option
+  // lists — guesswork that misfiled values whenever two lists shared a slug.
+  const mapJobToFormData = useCallback(
+    (job: PostedJobDetail): JobFormData => ({
       job_title: job.role || "",
-      job_category: fallbackJobCategory,
-      job_type: fallbackJobType,
-      employment_type: fallbackEmploymentType,
-      description: job.description || job.full_description || "",
-      experience_level: fallbackExperienceLevel,
-      city,
-      country,
-      salary_min:
-        job.salary_range?.start_salary?.number !== undefined
-          ? String(job.salary_range.start_salary.number)
-          : job.salary?.number !== undefined
-            ? String(job.salary.number)
-            : "",
-      salary_max:
-        job.salary_range?.end_salary?.number !== undefined
-          ? String(job.salary_range.end_salary.number)
+      job_category: job.job_category ?? "",
+      job_type: job.job_type ?? "",
+      work_arrangement: job.work_arrangement ?? "",
+      description: job.full_description || job.description || "",
+      experience_level: job.experience_level ?? "",
+      skills: job.skills ?? "",
+      physical_demands: job.physical_demands ?? "",
+      // Zero means "not specified" in storage, so it comes back as empty
+      // rather than as a claim the job pays nothing.
+      salary_min: job.salary_range?.start_salary?.number
+        ? String(job.salary_range.start_salary.number)
+        : job.salary?.number
+          ? String(job.salary.number)
           : "",
-      skills: qualifications.join(", "),
-      physical_demands: fallbackPhysicalDemands,
-      work_schedule: fallbackWorkSchedule,
-    };
-  }, []);
+      salary_max: job.salary_range?.end_salary?.number
+        ? String(job.salary_range.end_salary.number)
+        : "",
+      payment_type: job.payment_type ?? "",
+      city: job.city ?? "",
+      state_province: job.state_province ?? "",
+      country: job.country ?? "Canada",
+      work_schedule: job.work_schedule ?? "",
+    }),
+    [],
+  );
 
   React.useEffect(() => {
     if (!draftId) return;
@@ -935,58 +869,41 @@ const CreateJobPosting = () => {
     canPostJobsFor(company, userProfile?.id),
   );
 
+  // Typed against the wire contract. The old payload also sent tags,
+  // qualifications, responsibilities, salary_range and a draft_payload blob —
+  // all silently stripped by the backend validator; the flat fields below are
+  // what actually crosses, now as vocabulary-checked columns.
   const buildPayload = useCallback(
-    (status: "draft" | "published") => ({
+    (status: "draft" | "published"): CreateJobInput => ({
       role: formData.job_title,
       description: formData.description,
-      location: [formData.city, formData.country].filter(Boolean).join(", "),
-      tags: [
-        formData.job_category,
-        formData.job_type,
-        formData.employment_type,
-        formData.work_schedule,
-      ].filter(Boolean),
-      qualifications: [
+      skills: formData.skills,
+      experience_level: asVocab(
+        EXPERIENCE_LEVEL_VALUES,
         formData.experience_level,
-        formData.skills,
-      ].filter(Boolean),
-      responsibilities: [
+      ),
+      physical_demands: asVocab(
+        PHYSICAL_DEMAND_VALUES,
         formData.physical_demands,
-      ].filter(Boolean),
-      salary_range: formData.salary_min || formData.salary_max ? {
-        start_salary: formData.salary_min ? {
-          number: Number(formData.salary_min),
-          currency: "CAD",
-          symbol: "$",
-        } : undefined,
-        end_salary: formData.salary_max ? {
-          number: Number(formData.salary_max),
-          currency: "CAD",
-          symbol: "$",
-        } : undefined,
-      } : undefined,
+      ),
+      salary_min: formData.salary_min,
+      salary_max: formData.salary_max,
+      payment_type: asVocab(PAYMENT_TYPE_VALUES, formData.payment_type),
+      city: formData.city,
+      state_province: asVocab(PROVINCE_CODE_VALUES, formData.state_province),
+      country: formData.country,
+      work_schedule: asVocab(WORK_SCHEDULE_VALUES, formData.work_schedule),
+      work_arrangement: asVocab(
+        WORK_ARRANGEMENT_VALUES,
+        formData.work_arrangement,
+      ),
+      job_type: asVocab(JOB_TYPE_VALUES, formData.job_type),
+      job_category: asVocab(INDUSTRIES, formData.job_category),
       status,
-      // Name and logo are always derived server-side — from the company when
-      // company_id is set, otherwise from the poster's own account.
+      // Empty means posting as the individual employer.
       company_id: postAsCompanyId || undefined,
-      draft_payload: {
-        job_title: formData.job_title,
-        job_category: formData.job_category,
-        job_type: formData.job_type,
-        employment_type: formData.employment_type,
-        description: formData.description,
-        experience_level: formData.experience_level,
-        skills: formData.skills,
-        physical_demands: formData.physical_demands,
-        salary_min: formData.salary_min,
-        salary_max: formData.salary_max,
-        payment_type: formData.payment_type,
-        city: formData.city,
-        country: formData.country,
-        work_schedule: formData.work_schedule,
-      },
     }),
-    [formData, userProfile],
+    [formData, postAsCompanyId],
   );
 
   const handleSaveDraft = useCallback(async () => {

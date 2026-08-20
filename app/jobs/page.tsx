@@ -19,9 +19,10 @@ import { formatJobSalary } from "@/lib/job-display";
 import { Skeleton } from "@/components/ui/Skeleton";
 import {
   splitDescriptionParts,
-  formatTagLabel,
+  jobChipLabels,
   JOB_TAG_CLASS,
 } from "@/lib/job-display";
+import { fieldLabel, JOB_TYPE_LABELS } from "@/lib/job-fields";
 
 // ── Helpers ──────────────────────────────────────────────────────────
 
@@ -33,12 +34,10 @@ function formatSalary(job: Job): string {
   return formatJobSalary(job, "full") ?? "";
 }
 
-function getJobType(job: Job): string {
-  const types = ["Full-time", "Part-time", "Contract", "Flexible"];
-  const found = job.tags.find((t) =>
-    types.some((type) => type.toLowerCase() === t.name.toLowerCase()),
-  );
-  return found?.name || "Full-time";
+// The stored column, labelled; null when the listing does not state one, so
+// the row is omitted rather than defaulting to a fabricated "Full-time".
+function getJobType(job: Job): string | null {
+  return fieldLabel(JOB_TYPE_LABELS, job.job_type);
 }
 
 // ── Skeleton ─────────────────────────────────────────────────────────
@@ -103,13 +102,15 @@ function JobCard({ job }: { job: Job }) {
           />
           {job.location || "Canada"}
         </span>
-        <span className="inline-flex items-center gap-2">
-          <HiOutlineBriefcase
-            className="w-4 h-4 md:w-5 md:h-5 text-gray-400"
-            aria-hidden="true"
-          />
-          {type}
-        </span>
+        {type && (
+          <span className="inline-flex items-center gap-2">
+            <HiOutlineBriefcase
+              className="w-4 h-4 md:w-5 md:h-5 text-gray-400"
+              aria-hidden="true"
+            />
+            {type}
+          </span>
+        )}
         {salary && (
           <span className="inline-flex items-center gap-2">
             <HiOutlineCurrencyDollar
@@ -126,17 +127,18 @@ function JobCard({ job }: { job: Job }) {
         {splitDescriptionParts(job.full_description).join(" · ")}
       </p>
 
-      {/* Tags */}
-      {job.tags.length > 0 && (
+      {/* Chips come from the category/type/arrangement columns, not tags, so
+          gate on what actually renders — a job with a type but no category
+          has empty tags yet still has chips. */}
+      {jobChipLabels(job).length > 0 && (
         <div className="flex flex-wrap gap-2 mt-3">
-          {job.tags.slice(0, 3).map((tag) => (
-            <span
-              key={tag.name}
-              className={JOB_TAG_CLASS}
-            >
-              {formatTagLabel(tag.name)}
-            </span>
-          ))}
+          {jobChipLabels(job)
+            .slice(0, 3)
+            .map((chip) => (
+              <span key={chip} className={JOB_TAG_CLASS}>
+                {chip}
+              </span>
+            ))}
         </div>
       )}
     </article>

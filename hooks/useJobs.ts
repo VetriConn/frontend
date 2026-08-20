@@ -1,20 +1,29 @@
 import useSWR from "swr";
 import { getJobs } from "@/lib/api";
 import { Job } from "@/types/job";
+import { mapJobsResponse } from "@/lib/job-mapper";
 
 interface UseJobsOptions {
   page?: number;
   limit?: number;
   location?: string;
   search?: string;
-  /** Both narrow in the database; they used to be applied in the browser. */
+  /** All three narrow in the database; they used to be applied in the browser. */
   jobType?: string;
   experience?: string;
+  arrangement?: string;
 }
 
 export function useJobs(options?: UseJobsOptions) {
-  const { page = 1, limit = 10, location, search, jobType, experience } =
-    options || {};
+  const {
+    page = 1,
+    limit = 10,
+    location,
+    search,
+    jobType,
+    experience,
+    arrangement,
+  } = options || {};
 
   // Every input that changes the response belongs in the key, or a filter
   // change would serve the previous filter's page from cache.
@@ -22,36 +31,13 @@ export function useJobs(options?: UseJobsOptions) {
     location ? `&location=${location}` : ""
   }${search ? `&search=${search}` : ""}${jobType ? `&jobType=${jobType}` : ""}${
     experience ? `&experience=${experience}` : ""
-  }`;
+  }${arrangement ? `&arrangement=${arrangement}` : ""}`;
 
   const { data, error, mutate, isLoading } = useSWR(cacheKey, () =>
     getJobs(options),
   );
 
-  // Transform backend job data to frontend format
-  const jobs: Job[] =
-    data?.jobs?.map((job) => ({
-          id: job._id || job.id,
-          role: job.role,
-          company_name: job.company_name,
-          company_logo: job.company_logo || "",
-          location: job.location || "",
-          salary: job.salary,
-          salary_range: job.salary_range,
-          tags: job.tags
-            ? job.tags.map((tag) => ({ name: tag }))
-            : [],
-          full_description: job.full_description || job.description || "",
-          responsibilities: job.responsibilities || [],
-          qualifications: job.qualifications || [],
-          applicationLink: job.applicationLink,
-          source: job.source,
-          source_name: job.source_name,
-          external_url: job.external_url,
-          salary_text: job.salary_text,
-          posted_as: job.posted_as,
-          company_id: job.company_id,
-    })) ?? [];
+  const jobs: Job[] = data?.jobs?.map(mapJobsResponse) ?? [];
 
   const pagination = data?.pagination;
 

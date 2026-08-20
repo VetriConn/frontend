@@ -260,4 +260,83 @@ describe("formatJobSalary", () => {
       expect(formatJobSalary({ salary: money(0) }, "full")).toBeNull();
     });
   });
+
+  describe("payment type", () => {
+    it("should word an hourly range hourly, not as $0K/year", () => {
+      expect(
+        formatJobSalary({
+          payment_type: "hourly",
+          salary_range: {
+            start_salary: money(25),
+            end_salary: money(30),
+          },
+        }),
+      ).toBe("$25 – $30/hour");
+    });
+
+    it("should word an hourly single figure hourly in full variant", () => {
+      expect(
+        formatJobSalary({ payment_type: "hourly", salary: money(28) }, "full"),
+      ).toBe("$28 CAD hourly");
+    });
+
+    it("should keep annual wording for salary payment type", () => {
+      expect(
+        formatJobSalary({ payment_type: "salary", salary: money(45000) }),
+      ).toBe("$45K/year");
+    });
+
+    it("getPayBasis should trust the stored column over text inference", () => {
+      expect(
+        getPayBasis({ payment_type: "hourly", salary_text: "$45,000 a year" }),
+      ).toBe("hourly");
+      expect(getPayBasis({ payment_type: "commission" })).toBe("unspecified");
+    });
+
+    it("should keep cents on an hourly rate, but not on a round one", () => {
+      // The bug: toLocaleString() rendered 18.5 as "$18.5/hour".
+      expect(
+        formatJobSalary(
+          {
+            payment_type: "hourly",
+            salary_range: { start_salary: money(18.5), end_salary: money(24.75) },
+          },
+          "compact",
+        ),
+      ).toBe("$18.50 – $24.75/hour");
+      // A whole rate stays clean rather than "$25.00/hour".
+      expect(
+        formatJobSalary({ payment_type: "hourly", salary: money(25) }, "compact"),
+      ).toBe("$25/hour");
+    });
+  });
+
+  describe("partial ranges", () => {
+    it('renders a min-only range as "From"', () => {
+      expect(
+        formatJobSalary({
+          salary: money(50000),
+          salary_range: { start_salary: money(50000), end_salary: money(0) },
+        }),
+      ).toBe("From $50K/year");
+    });
+
+    it('renders a max-only range as "Up to"', () => {
+      expect(
+        formatJobSalary({
+          salary: money(0),
+          salary_range: { start_salary: money(0), end_salary: money(90000) },
+        }),
+      ).toBe("Up to $90K/year");
+    });
+
+    it("renders nothing when neither bound is set", () => {
+      expect(
+        formatJobSalary({
+          salary: money(0),
+          salary_range: { start_salary: money(0), end_salary: money(0) },
+        }),
+      ).toBeNull();
+    });
+  });
 });

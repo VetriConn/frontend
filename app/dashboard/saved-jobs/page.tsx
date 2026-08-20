@@ -17,6 +17,7 @@ import {
 import { useSavedJobs } from "@/hooks/useSavedJobs";
 import { formatJobSalary } from "@/lib/job-display";
 import { AuthGuard } from "@/components/auth/AuthGuard";
+import { fieldLabel, JOB_TYPE_LABELS } from "@/lib/job-fields";
 
 // ─── Types ──────────────────────────────────────────────────────────────────────
 
@@ -176,7 +177,9 @@ export default function SavedJobsPage() {
       role: job.role,
       company: job.company_name,
       location: job.location || "Canada",
-      jobType: "Flexible",
+      // The stored column, labelled; empty when the listing doesn't state
+      // one. Every saved job used to claim "Flexible" here regardless.
+      jobType: fieldLabel(JOB_TYPE_LABELS, job.job_type) ?? "",
       salary,
       savedDate: "Recently",
     };

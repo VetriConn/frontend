@@ -2,6 +2,7 @@
 import React, { useState } from "react";
 import dynamic from "next/dynamic";
 import { useUserProfile } from "@/hooks/useUserProfile";
+import { PROVINCES } from "@/lib/job-fields";
 import { DashboardSkeleton } from "@/components/ui/Skeleton";
 import { HiOutlineLocationMarker } from "react-icons/hi";
 import { HiMagnifyingGlass } from "react-icons/hi2";
@@ -59,7 +60,11 @@ const FindJobsDashboard = () => {
     const params = new URLSearchParams();
     if (searchQuery) params.set("q", searchQuery);
     if (location) params.set("location", location);
-    if (workType !== "all") params.set("type", workType);
+    // Work arrangement, under its own param. This used to go out as "type",
+    // which find-jobs forwards to the backend as jobType — so the Remote
+    // button silently filtered for a job *type* called "remote" and matched
+    // nothing.
+    if (workType !== "all") params.set("arrangement", workType);
     if (experienceLevel) params.set("experience", experienceLevel);
     window.location.href = `/dashboard/find-jobs${params.toString() ? `?${params.toString()}` : ""}`;
   };
@@ -120,16 +125,15 @@ const FindJobsDashboard = () => {
                   onChange={(e) => setLocation(e.target.value)}
                   className="w-full pl-10 pr-8 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary text-sm appearance-none bg-white cursor-pointer"
                 >
+                  {/* Province codes match the state_province column the
+                      backend filters on. Name slugs matched nothing, and
+                      "Remote" is a work arrangement, not a location. */}
                   <option value="">All Locations</option>
-                  <option value="remote">Remote</option>
-                  <option value="ontario">Ontario</option>
-                  <option value="quebec">Quebec</option>
-                  <option value="british-columbia">British Columbia</option>
-                  <option value="alberta">Alberta</option>
-                  <option value="manitoba">Manitoba</option>
-                  <option value="saskatchewan">Saskatchewan</option>
-                  <option value="nova-scotia">Nova Scotia</option>
-                  <option value="new-brunswick">New Brunswick</option>
+                  {PROVINCES.map((province) => (
+                    <option key={province.code} value={province.code}>
+                      {province.name}
+                    </option>
+                  ))}
                 </select>
               </div>
             </div>

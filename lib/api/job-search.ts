@@ -96,6 +96,7 @@ export interface SavedSearchResponse {
     location: string;
     job_type: string;
     experience_level: string;
+    work_arrangement: string;
   };
   alert_enabled: boolean;
   last_run_at?: string;
@@ -118,6 +119,7 @@ export async function createSavedSearch(
     location?: string;
     jobType?: string;
     experienceLevel?: string;
+    arrangement?: string;
   },
 ): Promise<SavedSearchResponse> {
   const response = await apiFetch<

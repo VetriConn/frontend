@@ -8,13 +8,23 @@
  */
 
 import type { Job } from "@/types/job";
+import {
+  INDUSTRY_LABELS,
+  JOB_TYPE_LABELS,
+  WORK_ARRANGEMENT_LABELS,
+  fieldLabel,
+  type Industry,
+} from "@/lib/job-fields";
 
 type SourceFields = Pick<
   Job,
   "source" | "source_name" | "external_url" | "applicationLink"
 >;
 
-type SalaryFields = Pick<Job, "salary" | "salary_range" | "salary_text">;
+type SalaryFields = Pick<
+  Job,
+  "salary" | "salary_range" | "salary_text" | "payment_type"
+>;
 
 /**
  * True for listings scraped from an external board rather than posted by an
@@ -67,6 +77,13 @@ const PERIODIC_PATTERN = /\b(week|weekly|day|daily|month|monthly)\b/i;
 
 /** Whether a job quotes pay hourly, annually, or not at all. */
 export function getPayBasis(job: SalaryFields): PayBasis {
+  // The stored column wins over any text inference — it is what the employer
+  // actually selected. Text regexes remain for scraped listings, which carry
+  // only the source board's wording.
+  if (job.payment_type === "hourly") return "hourly";
+  if (job.payment_type === "salary") return "annual";
+  if (job.payment_type) return "unspecified";
+
   const sourceText = job.salary_text?.trim();
 
   if (sourceText) {
@@ -124,16 +141,51 @@ export function formatJobSalary(
 
   const start = job.salary_range?.start_salary;
   const end = job.salary_range?.end_salary;
-  if (start?.number && end?.number) {
-    return variant === "compact"
-      ? `${formatCompact(start.symbol, start.number)} – ${formatCompact(end.symbol, end.number)}/year`
-      : `${formatFull(start.symbol, start.number, start.currency)} – ${formatFull(end.symbol, end.number, end.currency)}`;
+
+  // "/year" was hardcoded here, so an hourly range read "$25 – $30K/year".
+  // The employer's own payment type decides the wording; absent one, annual
+  // remains the compact default it always was.
+  const hourly = job.payment_type === "hourly";
+  const suffix = hourly ? "/hour" : "/year";
+
+  // Hourly is the one basis where cents are normal, so keep them — but only
+  // when present, so "$25/hour" doesn't become "$25.00/hour". A bare
+  // toLocaleString() rendered 18.5 as "$18.5".
+  const hourlyDigits = (amount: number): string =>
+    Number.isInteger(amount)
+      ? amount.toLocaleString()
+      : amount.toLocaleString(undefined, {
+          minimumFractionDigits: 2,
+          maximumFractionDigits: 2,
+        });
+
+  const amount = (symbol: string, value: number, currency: string): string => {
+    if (variant === "compact") {
+      return hourly ? `${symbol}${hourlyDigits(value)}` : formatCompact(symbol, value);
+    }
+    return hourly
+      ? `${symbol}${hourlyDigits(value)}${currency ? ` ${currency}` : ""}`
+      : formatFull(symbol, value, currency);
+  };
+  // Compact always states the basis ("/year", "/hour"); full spells hourly
+  // out as a word and leaves annual unmarked, as it always did.
+  const tail = variant === "compact" ? suffix : hourly ? " hourly" : "";
+
+  const startNum = start?.number ?? 0;
+  const endNum = end?.number ?? 0;
+  const sym = start?.symbol ?? end?.symbol ?? job.salary?.symbol ?? "$";
+  const cur = start?.currency ?? end?.currency ?? job.salary?.currency ?? "";
+
+  // A range needs both ends; one end alone is honest as "From" / "Up to"
+  // rather than a fabricated equal pair or nothing at all.
+  if (startNum && endNum) {
+    return `${amount(sym, startNum, cur)} – ${amount(sym, endNum, cur)}${tail}`;
   }
+  if (startNum) return `From ${amount(sym, startNum, cur)}${tail}`;
+  if (endNum) return `Up to ${amount(sym, endNum, cur)}${tail}`;
 
   if (job.salary?.number) {
-    return variant === "compact"
-      ? `${formatCompact(job.salary.symbol, job.salary.number)}/year`
-      : formatFull(job.salary.symbol, job.salary.number, job.salary.currency);
+    return `${amount(job.salary.symbol, job.salary.number, job.salary.currency)}${tail}`;
   }
 
   return null;
@@ -155,33 +207,15 @@ export function splitDescriptionParts(text: string): string[] {
     .filter(Boolean);
 }
 
-/** Tag slugs are internal identifiers; these are what a reader should see. */
-const TAG_LABELS: Record<string, string> = {
-  "skilled-trades": "Skilled trades",
-  healthcare: "Healthcare",
-  driving: "Driving",
-  logistics: "Logistics",
-  retail: "Retail",
-  security: "Security",
-  admin: "Admin",
-  "food-service": "Food service",
-  cleaning: "Cleaning",
-  education: "Education",
-  "full-time": "Full-time",
-  "part-time": "Part-time",
-  casual: "Casual",
-  seasonal: "Seasonal",
-  contract: "Contract",
-};
-
 /**
  * A tag as a person should read it.
  *
- * The derived tags are machine-facing — "skilled-trades", "experience:senior"
- * — and were rendering raw, so job cards showed the namespace and the hyphens
- * to the reader. Seniority is stripped of its prefix; anything unmapped is
- * de-slugged rather than dropped, so a new tag degrades to readable instead of
- * disappearing.
+ * Tags carry one vocabulary now — industries — so the labels come from the
+ * shared INDUSTRY_LABELS map. (The local map this replaces had drifted from
+ * the classifier's actual slugs: it labelled "driving" and "admin" while the
+ * classifier emits "driving-logistics" and "administration".) The
+ * "experience:" strip survives for any pre-column row; anything unmapped is
+ * de-slugged rather than dropped.
  */
 export function formatTagLabel(tag: string): string {
   const value = tag.trim();
@@ -193,9 +227,31 @@ export function formatTagLabel(tag: string): string {
   }
 
   return (
-    TAG_LABELS[value.toLowerCase()] ??
-    value.replace(/[-_]/g, " ").replace(/^./, (c) => c.toUpperCase())
+    fieldLabel<Industry>(INDUSTRY_LABELS, value.toLowerCase()) ??
+    value
   );
+}
+
+/**
+ * The chips a job card or detail page shows, from the structured columns:
+ * category, employment shape, arrangement. One rule for every surface — the
+ * detail page, browse card and sidebar card each used to assemble their own
+ * set from raw tags, which is how "Full-time" rendered twice on one job.
+ */
+export function jobChipLabels(
+  job: Pick<Job, "tags" | "job_category" | "job_type" | "work_arrangement">,
+): string[] {
+  const industryChips = job.job_category
+    ? [fieldLabel(INDUSTRY_LABELS, job.job_category)]
+    : (job.tags ?? []).map((tag) => formatTagLabel(tag.name));
+
+  const chips = [
+    ...industryChips,
+    fieldLabel(JOB_TYPE_LABELS, job.job_type),
+    fieldLabel(WORK_ARRANGEMENT_LABELS, job.work_arrangement),
+  ].filter((chip): chip is string => Boolean(chip));
+
+  return [...new Set(chips)];
 }
 
 /**

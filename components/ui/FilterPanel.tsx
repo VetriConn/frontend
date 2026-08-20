@@ -11,11 +11,23 @@ import {
   HiOutlineAdjustmentsHorizontal,
   HiOutlineXMark,
 } from "react-icons/hi2";
+import {
+  PROVINCES,
+  JOB_TYPES,
+  JOB_TYPE_LABELS,
+  EXPERIENCE_LEVELS,
+  EXPERIENCE_LEVEL_LABELS,
+  WORK_ARRANGEMENTS,
+  WORK_ARRANGEMENT_LABELS,
+  toOptions,
+} from "@/lib/job-fields";
 
 interface FilterState {
   location: string;
   jobType: string;
-  experienceLevel: string;  
+  experienceLevel: string;
+  /** Work arrangement: onsite / remote / hybrid. */
+  arrangement: string;
 }
 
 interface FilterPanelProps {
@@ -30,30 +42,37 @@ interface FilterOption {
   label: string;
 }
 
-// Filter options
+/**
+ * Options derive from the shared vocabularies — the exact values the backend
+ * filters on. The old hand-written lists offered "flexible" (a schedule, not
+ * a job type — that filter silently matched nothing), omitted lead-level
+ * jobs entirely, and listed US cities on a Canadian board. Location offers
+ * the provinces the data actually carries.
+ */
 const LOCATION_OPTIONS: FilterOption[] = [
   { value: "", label: "Any location" },
-  { value: "remote", label: "Remote" },
-  { value: "new-york", label: "New York" },
-  { value: "los-angeles", label: "Los Angeles" },
-  { value: "chicago", label: "Chicago" },
-  { value: "san-francisco", label: "San Francisco" },
+  // The value is the ISO code the backend stores in state_province; the
+  // label is the province name. Sending the name slug matched nothing,
+  // because the location column holds a city, not a province.
+  ...PROVINCES.map((province) => ({
+    value: province.code,
+    label: province.name,
+  })),
 ];
 
 const JOB_TYPE_OPTIONS: FilterOption[] = [
   { value: "", label: "Any type" },
-  { value: "full-time", label: "Full-time" },
-  { value: "part-time", label: "Part-time" },
-  { value: "contract", label: "Contract" },
-  { value: "flexible", label: "Flexible" },
+  ...toOptions(JOB_TYPES, JOB_TYPE_LABELS),
 ];
 
 const EXPERIENCE_OPTIONS: FilterOption[] = [
   { value: "", label: "Any level" },
-  { value: "entry", label: "Entry Level" },
-  { value: "mid", label: "Mid Level" },
-  { value: "senior", label: "Senior Level" },
-  { value: "executive", label: "Executive" },
+  ...toOptions(EXPERIENCE_LEVELS, EXPERIENCE_LEVEL_LABELS),
+];
+
+const ARRANGEMENT_OPTIONS: FilterOption[] = [
+  { value: "", label: "Any arrangement" },
+  ...toOptions(WORK_ARRANGEMENTS, WORK_ARRANGEMENT_LABELS),
 ];
 
 interface FilterDropdownProps {
@@ -276,6 +295,10 @@ const FilterContent = ({
     onFilterChange({ ...filters, experienceLevel: value });
   };
 
+  const handleArrangementChange = (value: string) => {
+    onFilterChange({ ...filters, arrangement: value });
+  };
+
   return (
     <>
       {/* Location Filter */}
@@ -306,6 +329,16 @@ const FilterContent = ({
         options={EXPERIENCE_OPTIONS}
         placeholder="Any level"
         icon={<HiOutlineUser className="w-4 h-4 md:w-5 md:h-5" />}
+      />
+
+      {/* Work Arrangement Filter */}
+      <FilterDropdown
+        label="Work Arrangement"
+        value={filters.arrangement}
+        onChange={handleArrangementChange}
+        options={ARRANGEMENT_OPTIONS}
+        placeholder="Any arrangement"
+        icon={<HiOutlineBriefcase className="w-4 h-4 md:w-5 md:h-5" />}
       />
 
       {/* Apply Filters Button */}
@@ -343,6 +376,7 @@ export const FilterPanel = ({
     filters.location,
     filters.jobType,
     filters.experienceLevel,
+    filters.arrangement,
   ].filter(Boolean).length;
 
   // Close mobile drawer when clicking outside or pressing escape

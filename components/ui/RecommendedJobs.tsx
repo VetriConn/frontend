@@ -13,6 +13,7 @@ import {
 import { getRecommendedJobs } from "@/lib/api";
 import { useUserProfile } from "@/hooks/useUserProfile";
 import clsx from "clsx";
+import { fieldLabel, JOB_TYPE_LABELS } from "@/lib/job-fields";
 import {
   CARD_SURFACE,
   CARD_FOCUS_WITHIN,
@@ -133,6 +134,8 @@ export const RecommendedJobs: React.FC = () => {
       // Scraped locations arrive as "Location Montréal (QC)" — the word is
       // baked into the data, and next to the pin icon it read twice.
       location: (job.location || "Canada").replace(/^location\s+/i, ""),
+      // The card has always had a clock row for this; nothing populated it.
+      work_type: fieldLabel(JOB_TYPE_LABELS, job.job_type) ?? undefined,
       salary_range: salaryRange,
     };
   });

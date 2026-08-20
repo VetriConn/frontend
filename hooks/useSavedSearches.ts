@@ -17,6 +17,7 @@ export interface SavedSearchFilters {
   location?: string;
   jobType?: string;
   experienceLevel?: string;
+  arrangement?: string;
 }
 
 export interface SavedSearch {
@@ -42,6 +43,7 @@ function mapFromBackend(raw: SavedSearchResponse): SavedSearch {
       location: raw.filters.location || undefined,
       jobType: raw.filters.job_type || undefined,
       experienceLevel: raw.filters.experience_level || undefined,
+      arrangement: raw.filters.work_arrangement || undefined,
     },
     alertEnabled: raw.alert_enabled,
     createdAt: raw.createdAt,
@@ -59,6 +61,7 @@ export function buildSearchName(filters: SavedSearchFilters): string {
   if (filters.location) parts.push(`in ${filters.location}`);
   if (filters.jobType) parts.push(filters.jobType);
   if (filters.experienceLevel) parts.push(`${filters.experienceLevel} level`);
+  if (filters.arrangement) parts.push(filters.arrangement);
 
   return parts.length > 0 ? parts.join(" · ") : "All Jobs";
 }
@@ -73,6 +76,7 @@ export function buildSearchUrl(filters: SavedSearchFilters): string {
   if (filters.jobType) params.set("type", filters.jobType);
   if (filters.experienceLevel)
     params.set("experience", filters.experienceLevel);
+  if (filters.arrangement) params.set("arrangement", filters.arrangement);
   const qs = params.toString();
   return qs ? `/dashboard/find-jobs?${qs}` : "/dashboard/find-jobs";
 }

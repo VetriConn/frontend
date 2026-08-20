@@ -336,13 +336,16 @@ export function generateJobPostingSchema(job: Job): JobPosting {
     };
   }
 
-  // Add salary information if available
+  // Salary. The unit comes from the employer's stated payment type — this
+  // hardcoded YEAR, which published every hourly listing to Google as an
+  // annual figure ($34.75 a year).
+  const salaryUnit = job.payment_type === "hourly" ? "HOUR" : "YEAR";
   if (job.salary?.number) {
     schema.baseSalary = {
       "@type": "MonetaryAmount",
       currency: job.salary.currency || "CAD",
       value: job.salary.number,
-      unitText: "YEAR",
+      unitText: salaryUnit,
     };
   } else if (
     job.salary_range?.start_salary?.number ||
@@ -353,24 +356,27 @@ export function generateJobPostingSchema(job: Job): JobPosting {
       currency: job.salary_range.start_salary?.currency || "CAD",
       minValue: job.salary_range.start_salary?.number,
       maxValue: job.salary_range.end_salary?.number,
-      unitText: "YEAR",
+      unitText: salaryUnit,
     };
   }
 
-  // Derive employment type from tags if available
-  const employmentTypeTags = job.tags
-    ?.filter((tag) =>
-      ["full-time", "part-time", "contract", "temporary", "volunteer"].includes(
-        tag.name.toLowerCase(),
-      ),
-    )
-    .map((tag) => tag.name.toUpperCase().replace("-", "_"));
-
-  if (employmentTypeTags && employmentTypeTags.length > 0) {
-    schema.employmentType =
-      employmentTypeTags.length === 1
-        ? employmentTypeTags[0]
-        : employmentTypeTags;
+  // Employment type from the stored column, in schema.org's spelling.
+  // Google's vocabulary has no CASUAL/SEASONAL/INTERNSHIP-adjacent values
+  // beyond these, so the rest map to their nearest defined term.
+  const SCHEMA_EMPLOYMENT_TYPES: Partial<Record<string, string>> = {
+    "full-time": "FULL_TIME",
+    "part-time": "PART_TIME",
+    contract: "CONTRACTOR",
+    temporary: "TEMPORARY",
+    internship: "INTERN",
+    casual: "PART_TIME",
+    seasonal: "TEMPORARY",
+  };
+  const employmentType = job.job_type
+    ? SCHEMA_EMPLOYMENT_TYPES[job.job_type]
+    : undefined;
+  if (employmentType) {
+    schema.employmentType = employmentType;
   }
 
   return schema;

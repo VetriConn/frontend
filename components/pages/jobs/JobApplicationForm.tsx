@@ -36,6 +36,7 @@ import { PhoneInputControl } from "@/components/ui/PhoneField";
 
 // Canonical profile shape subset used for pre-filling application form
 import type { UserProfile } from "@/types/api";
+import { fieldLabel, JOB_TYPE_LABELS } from "@/lib/job-fields";
 type CanonicalUserProfile = Pick<
   UserProfile,
   "full_name" | "email" | "phone_number"
@@ -174,18 +175,10 @@ export default function JobApplicationForm({
 
   const completedCount = sectionComplete.filter(Boolean).length;
 
-  // Derive a job-type label from tags
-  const jobTypeTags = [
-    "Full-Time",
-    "Part-Time",
-    "Contract",
-    "Freelance",
-    "Internship",
-  ];
-  const derivedJobType =
-    job.tags.find((t) =>
-      jobTypeTags.some((jt) => jt.toLowerCase() === t.name.toLowerCase()),
-    )?.name || "Part-time";
+  // The stored column, labelled; null renders nothing. The old tag scan here
+  // defaulted to "Part-time" while the detail page's copy defaulted to
+  // "Full-Time" — two invented answers for the same silent job.
+  const derivedJobType = fieldLabel(JOB_TYPE_LABELS, job.job_type);
 
   // ── Handlers ──────────────────────────────────────────────
 
@@ -421,10 +414,12 @@ export default function JobApplicationForm({
                     {job.location}
                   </span>
                 )}
-                <span className="inline-flex items-center gap-2">
-                  <HiOutlineClock className="w-4 h-4 md:w-5 md:h-5" />
-                  {derivedJobType}
-                </span>
+                {derivedJobType && (
+                  <span className="inline-flex items-center gap-2">
+                    <HiOutlineClock className="w-4 h-4 md:w-5 md:h-5" />
+                    {derivedJobType}
+                  </span>
+                )}
               </div>
             </div>
           </div>

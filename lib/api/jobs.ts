@@ -63,9 +63,17 @@ export async function getJobs(options?: {
   search?: string;
   jobType?: string;
   experience?: string;
+  arrangement?: string;
 }): Promise<JobsPage> {
-  const { page = 1, limit = 10, location, search, jobType, experience } =
-    options || {};
+  const {
+    page = 1,
+    limit = 10,
+    location,
+    search,
+    jobType,
+    experience,
+    arrangement,
+  } = options || {};
 
   // Build query parameters
   const queryParams = new URLSearchParams({
@@ -89,6 +97,10 @@ export async function getJobs(options?: {
 
   if (experience) {
     queryParams.append("experience", experience);
+  }
+
+  if (arrangement) {
+    queryParams.append("arrangement", arrangement);
   }
 
   const data = await apiFetch<

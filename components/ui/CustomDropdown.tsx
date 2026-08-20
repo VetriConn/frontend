@@ -3,6 +3,15 @@
 import { useState, useRef, useEffect } from "react";
 import { createPortal } from "react-dom";
 import clsx from "clsx";
+import {
+  FIELD_BASE,
+  fieldBorder,
+  FIELD_DISABLED,
+  FIELD_LABEL,
+  FIELD_HELPER,
+  FIELD_ERROR,
+  FIELD_WRAPPER,
+} from "./fieldStyles";
 
 interface DropdownOption {
   value: string;
@@ -151,10 +160,10 @@ export const CustomDropdown = ({
   );
 
   return (
-    <div className="w-full">
+    <div className={clsx("w-full", FIELD_WRAPPER)}>
       {/* Label */}
       {label && (
-        <label htmlFor={name} className="block text-sm font-medium text-gray-700 mb-2">
+        <label htmlFor={name} className={FIELD_LABEL}>
           {label}
           {required && <span className="text-red-500 ml-1">*</span>}
         </label>
@@ -171,14 +180,12 @@ export const CustomDropdown = ({
           onClick={() => setIsOpen(!isOpen)}
           onKeyDown={handleKeyDown}
           className={clsx(
-            "w-full px-3 py-1.5 text-xs text-left bg-white border rounded-lg transition-all",
-            "flex items-center justify-between gap-2",
-            "focus:outline-none focus:ring-1 focus:ring-primary focus:border-transparent",
-            disabled
-              ? "opacity-60 cursor-not-allowed bg-gray-50 border-gray-200"
-              : error
-                ? "border-red-500 focus:ring-red-500"
-                : "border-gray-200 hover:border-gray-300",
+            // Same box as a text input — see fieldStyles.
+            FIELD_BASE,
+            "text-left flex items-center justify-between gap-2",
+            disabled ? FIELD_DISABLED : fieldBorder(!!error),
+            !disabled && !error && "hover:border-gray-400",
+            error && "focus:ring-red-500",
             !selectedOption && "text-gray-400"
           )}
           aria-haspopup="listbox"
@@ -196,12 +203,12 @@ export const CustomDropdown = ({
 
       {/* Helper Text */}
       {helperText && !error && (
-        <p className="mt-1 text-xs text-gray-500">{helperText}</p>
+        <p className={FIELD_HELPER}>{helperText}</p>
       )}
 
       {/* Error Message */}
       {error && (
-        <p className="mt-1 text-xs text-red-500" role="alert">
+        <p className={FIELD_ERROR} role="alert">
           {error}
         </p>
       )}

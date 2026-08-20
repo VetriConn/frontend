@@ -182,7 +182,7 @@ export const SignIn = () => {
             </div>
             <button
               type="submit"
-              className="bg-primary text-white py-3 px-7 border-none rounded-10 text-sm cursor-pointer transition-colors ml-auto mt-2 inline-block hover:bg-red-700 disabled:bg-gray-300 disabled:text-text-muted disabled:cursor-not-allowed w-full"
+              className="bg-primary text-white py-3 px-7 border-none rounded-lg text-sm cursor-pointer transition-colors ml-auto mt-2 inline-block hover:bg-red-700 disabled:bg-gray-300 disabled:text-text-muted disabled:cursor-not-allowed w-full"
               disabled={isButtonDisabled}
             >
               {isSubmitting ? "Signing In..." : "Sign In to your account"}

@@ -44,6 +44,8 @@ export async function registerUser(
     // a company is a separate vetted entity you create or are invited to later.
     if (formData.phone_number) requestData.phone_number = formData.phone_number;
     if (formData.city) requestData.city = formData.city;
+    if (formData.state_province)
+      requestData.state_province = formData.state_province;
     if (formData.country) requestData.country = formData.country;
     if (formData.job_title) requestData.job_title = formData.job_title;
     if (formData.industry) requestData.industry = formData.industry;

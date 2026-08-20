@@ -6,6 +6,14 @@ const withBundleAnalyzer = bundleAnalyzer({
 });
 
 const nextConfig: NextConfig = {
+  /**
+   * Verification builds write somewhere else.
+   *
+   * `next build` and `next dev` share .next by default, so building while the
+   * dev server is running replaces the chunks it is serving and the browser
+   * fails to load them mid-session. Setting NEXT_DIST_DIR keeps the two apart.
+   */
+  distDir: process.env.NEXT_DIST_DIR || ".next",
   /* config options here */
   /**
    * The dashboard dropped its role segments for routes whose names don't

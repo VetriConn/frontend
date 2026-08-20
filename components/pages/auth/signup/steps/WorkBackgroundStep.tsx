@@ -42,30 +42,26 @@ export const WorkBackgroundStep = ({
           error={errors.job_title}
         />
 
-        <div className="mb-4">
-          <CustomDropdown
-            label="Skill Area or Industry"
-            name="industry"
-            placeholder="Select your industry"
-            helperText="What area do you have the most experience in?"
-            value={formData.industry}
-            onChange={(value) => onFieldChange("industry", value)}
-            options={INDUSTRY_OPTIONS}
-            error={errors.industry}
-          />
-        </div>
+        <CustomDropdown
+          label="Skill Area or Industry"
+          name="industry"
+          placeholder="Select your industry"
+          helperText="What area do you have the most experience in?"
+          value={formData.industry}
+          onChange={(value) => onFieldChange("industry", value)}
+          options={INDUSTRY_OPTIONS}
+          error={errors.industry}
+        />
 
-        <div className="mb-4">
-          <CustomDropdown
-            label="Years of Experience"
-            name="years_of_experience"
-            placeholder="Select your experience level"
-            value={formData.years_of_experience}
-            onChange={(value) => onFieldChange("years_of_experience", value)}
-            options={EXPERIENCE_LEVELS}
-            error={errors.years_of_experience}
-          />
-        </div>
+        <CustomDropdown
+          label="Years of Experience"
+          name="years_of_experience"
+          placeholder="Select your experience level"
+          value={formData.years_of_experience}
+          onChange={(value) => onFieldChange("years_of_experience", value)}
+          options={EXPERIENCE_LEVELS}
+          error={errors.years_of_experience}
+        />
       </div>
 
       {/* Navigation Buttons */}
@@ -73,14 +69,14 @@ export const WorkBackgroundStep = ({
         <button
           type="button"
           onClick={onBack}
-          className="flex-1 py-3 px-6 border border-gray-300 text-gray-700 font-medium rounded-10 transition-all hover:bg-gray-50"
+          className="flex-1 py-3 px-6 border border-gray-300 text-gray-700 font-medium rounded-lg transition-all hover:bg-gray-50"
         >
           Back
         </button>
         <button
           type="button"
           onClick={onNext}
-          className="flex-1 py-3 px-6 bg-primary text-white font-medium rounded-10 transition-all hover:bg-primary/90"
+          className="flex-1 py-3 px-6 bg-primary text-white font-medium rounded-lg transition-all hover:bg-primary/90"
         >
           Continue
         </button>

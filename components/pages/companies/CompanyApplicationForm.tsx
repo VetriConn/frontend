@@ -179,16 +179,14 @@ export const CompanyApplicationForm = () => {
           required
         />
 
-        <div className="mb-4">
-          <CustomDropdown
-            label="Industry"
-            name="industry"
-            placeholder="Select an industry"
-            value={form.industry}
-            onChange={(value) => setField("industry", value)}
-            options={INDUSTRY_OPTIONS}
-          />
-        </div>
+        <CustomDropdown
+          label="Industry"
+          name="industry"
+          placeholder="Select an industry"
+          value={form.industry}
+          onChange={(value) => setField("industry", value)}
+          options={INDUSTRY_OPTIONS}
+        />
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-x-4">
           <FormField
@@ -241,16 +239,14 @@ export const CompanyApplicationForm = () => {
           optional
         />
 
-        <div className="mb-4">
-          <CustomDropdown
-            label="Company size"
-            name="size"
-            placeholder="Select a size"
-            value={form.size}
-            onChange={(value) => setField("size", value)}
-            options={COMPANY_SIZE_OPTIONS}
-          />
-        </div>
+        <CustomDropdown
+          label="Company size"
+          name="size"
+          placeholder="Select a size"
+          value={form.size}
+          onChange={(value) => setField("size", value)}
+          options={COMPANY_SIZE_OPTIONS}
+        />
 
         <div className="flex flex-col gap-1 mb-4">
           <label
@@ -267,7 +263,7 @@ export const CompanyApplicationForm = () => {
             value={form.about_company}
             onChange={(event) => setField("about_company", event.target.value)}
             placeholder="What does your company do, and who do you usually hire?"
-            className="block w-full px-3 py-2 md:px-4 md:py-3 border border-gray-300 rounded-10 text-sm md:text-base outline-none transition-colors focus:ring-2 focus:ring-primary focus:border-transparent bg-white"
+            className="block w-full px-3 py-2 md:px-4 md:py-3 border border-gray-300 rounded-lg text-sm md:text-base outline-none transition-colors focus:ring-2 focus:ring-primary focus:border-transparent bg-white"
             aria-describedby="about_company-count"
           />
           <p id="about_company-count" className="text-xs text-gray-500 mt-1">

@@ -134,7 +134,7 @@ export function ResetPassword() {
                   disabled={
                     isSubmitting || !token || !newPassword || !confirmPassword
                   }
-                  className="w-full py-3 px-6 bg-primary text-white font-medium rounded-10 transition-all hover:bg-primary-hover disabled:opacity-60 disabled:cursor-not-allowed"
+                  className="w-full py-3 px-6 bg-primary text-white font-medium rounded-lg transition-all hover:bg-primary-hover disabled:opacity-60 disabled:cursor-not-allowed"
                 >
                   {isSubmitting ? "Resetting..." : "Reset password"}
                 </button>

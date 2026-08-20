@@ -314,7 +314,7 @@ export const CompanyProfileEditor = ({
               rows={5}
               value={form.about_company}
               onChange={(e) => setField("about_company", e.target.value)}
-              className="block w-full px-3 py-2 md:px-4 md:py-3 border border-gray-300 rounded-10 text-sm md:text-base outline-none transition-colors focus:ring-2 focus:ring-primary focus:border-transparent bg-white disabled:bg-gray-100"
+              className="block w-full px-3 py-2 md:px-4 md:py-3 border border-gray-300 rounded-lg text-sm md:text-base outline-none transition-colors focus:ring-2 focus:ring-primary focus:border-transparent bg-white disabled:bg-gray-100"
             />
           </div>
 

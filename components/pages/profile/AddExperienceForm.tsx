@@ -95,7 +95,7 @@ export const AddExperienceForm: React.FC<AddExperienceFormProps> = ({
                 e.target.value ? `${e.target.value}-01` : "",
               )
             }
-            className={`block w-full px-3 py-2 md:px-4 md:py-3 border rounded-10 text-sm md:text-base outline-none transition-colors focus:ring-2 focus:ring-primary focus:border-transparent bg-white ${
+            className={`block w-full px-3 py-2 md:px-4 md:py-3 border rounded-lg text-sm md:text-base outline-none transition-colors focus:ring-2 focus:ring-primary focus:border-transparent bg-white ${
               errors.start_date ? "border-red-500" : "border-gray-300"
             }`}
           />
@@ -124,7 +124,7 @@ export const AddExperienceForm: React.FC<AddExperienceFormProps> = ({
               )
             }
             disabled={isCurrentRole}
-            className={`block w-full px-3 py-2 md:px-4 md:py-3 border rounded-10 text-sm md:text-base outline-none transition-colors focus:ring-2 focus:ring-primary focus:border-transparent bg-white ${
+            className={`block w-full px-3 py-2 md:px-4 md:py-3 border rounded-lg text-sm md:text-base outline-none transition-colors focus:ring-2 focus:ring-primary focus:border-transparent bg-white ${
               isCurrentRole
                 ? "bg-gray-100 cursor-not-allowed border-gray-300"
                 : "border-gray-300"
@@ -157,7 +157,7 @@ export const AddExperienceForm: React.FC<AddExperienceFormProps> = ({
           placeholder="Describe your responsibilities, accomplishments, etc."
           value={formData.description || ""}
           onChange={(e) => handleChange("description", e.target.value)}
-          className="block w-full px-3 py-2 md:px-4 md:py-3 border border-gray-300 rounded-10 text-sm md:text-base outline-none transition-colors focus:ring-2 focus:ring-primary focus:border-transparent bg-white resize-none"
+          className="block w-full px-3 py-2 md:px-4 md:py-3 border border-gray-300 rounded-lg text-sm md:text-base outline-none transition-colors focus:ring-2 focus:ring-primary focus:border-transparent bg-white resize-none"
         />
       </div>
     </div>

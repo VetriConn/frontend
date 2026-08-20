@@ -14,6 +14,7 @@ export interface SignupFormData {
   // Step 3 - Contact Info
   phone_number: string;
   city: string;
+  state_province: string;
   country: string;
 
   // Step 4 - Work Background (optional)
@@ -89,7 +90,7 @@ export const STEP_CONFIGS: SignupStepConfig[] = [
     id: 2,
     name: "Contact Info",
     isOptional: false,
-    fields: ["phone_number", "city", "country"],
+    fields: ["phone_number", "city", "state_province", "country"],
   },
   {
     id: 3,
@@ -123,6 +124,7 @@ export const INITIAL_FORM_DATA: SignupFormData = {
   confirmPassword: "",
   phone_number: "",
   city: "",
+  state_province: "",
   country: "",
   job_title: "",
   industry: "",

@@ -64,7 +64,7 @@ export const PasswordField = ({
   const toggleVisibility = () => setIsVisible(!isVisible);
 
   const inputClasses = clsx(
-    "block w-full px-3 py-2 md:px-4 md:py-3 pr-12 border rounded-10 text-sm md:text-base outline-none transition-colors focus:ring-2 focus:ring-primary focus:border-transparent bg-white",
+    "block w-full px-3 py-2 md:px-4 md:py-3 pr-12 border rounded-lg text-sm md:text-base outline-none transition-colors focus:ring-2 focus:ring-primary focus:border-transparent bg-white",
     error ? "border-red-500" : "border-gray-300",
     disabled && "bg-gray-100 cursor-not-allowed"
   );

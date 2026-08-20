@@ -37,7 +37,7 @@ export const DEFAULT_PHONE_COUNTRY = "CA" as const;
 
 /** Box styling used when a caller doesn't supply its own. Mirrors FormField. */
 const DEFAULT_BOX_CLASSES =
-  "w-full rounded-10 border border-gray-300 bg-white px-3 py-2 md:px-4 md:py-3";
+  "w-full rounded-lg border border-gray-300 bg-white px-3 py-2 md:px-4 md:py-3";
 
 const MENU_WIDTH = 288;
 const MENU_MAX_HEIGHT = 288;

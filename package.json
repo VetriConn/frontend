@@ -11,7 +11,8 @@
     "test:ci": "jest --ci",
     "test:coverage": "jest --coverage",
     "analyze": "ANALYZE=true next build --webpack",
-    "analyze:turbo": "next experimental-analyze"
+    "analyze:turbo": "next experimental-analyze",
+    "build:check": "NEXT_DIST_DIR=.next-check next build"
   },
   "dependencies": {
     "@svgr/webpack": "^8.1.0",

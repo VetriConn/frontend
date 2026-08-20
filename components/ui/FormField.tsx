@@ -1,6 +1,15 @@
 "use client";
 
 import clsx from "clsx";
+import {
+  FIELD_BASE,
+  fieldBorder,
+  FIELD_DISABLED,
+  FIELD_LABEL,
+  FIELD_HELPER,
+  FIELD_ERROR,
+  FIELD_WRAPPER,
+} from "./fieldStyles";
 
 interface FormFieldProps {
   label: string;
@@ -35,20 +44,17 @@ export const FormField = ({
   const helperId = helperText ? `${inputId}-helper` : undefined;
   const errorId = error ? `${inputId}-error` : undefined;
 
-  const baseInputClasses =
-    "block w-full px-3 py-2 md:px-4 md:py-3 border rounded-10 text-sm md:text-base outline-none transition-colors focus:ring-2 focus:ring-primary focus:border-transparent bg-white";
-
   const inputClasses = clsx(
-    baseInputClasses,
-    error ? "border-red-500" : "border-gray-300",
-    disabled && "bg-gray-100 cursor-not-allowed"
+    FIELD_BASE,
+    fieldBorder(!!error),
+    disabled && FIELD_DISABLED
   );
 
   return (
-    <div className="flex flex-col gap-1 mb-4">
+    <div className={FIELD_WRAPPER}>
       <label
         htmlFor={inputId}
-        className="block text-sm text-text-muted mb-1.5 md:mb-2 font-medium"
+        className={FIELD_LABEL}
       >
         {label}
         {optional && (
@@ -97,7 +103,7 @@ export const FormField = ({
       )}
 
       {helperText && !error && (
-        <p id={helperId} className="text-xs text-gray-500 mt-1">
+        <p id={helperId} className={FIELD_HELPER}>
           {helperText}
         </p>
       )}
@@ -105,7 +111,7 @@ export const FormField = ({
       {error && (
         <p
           id={errorId}
-          className="text-xs text-red-500 mt-1"
+          className={FIELD_ERROR}
           role="alert"
           aria-live="polite"
         >

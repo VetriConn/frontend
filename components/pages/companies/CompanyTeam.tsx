@@ -200,16 +200,14 @@ export const CompanyTeam = ({
             required
           />
 
-          <div className="mb-4">
-            <CustomDropdown
-              label="Role"
-              name="invite_role"
-              placeholder="Select a role"
-              value={role}
-              onChange={setRole}
-              options={ROLE_OPTIONS}
-            />
-          </div>
+          <CustomDropdown
+            label="Role"
+            name="invite_role"
+            placeholder="Select a role"
+            value={role}
+            onChange={setRole}
+            options={ROLE_OPTIONS}
+          />
 
           <div className="flex gap-3">
             <button

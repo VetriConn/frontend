@@ -10,7 +10,7 @@ const Advert = () => {
   if (!isOpen) return null;
 
   return (
-    <div className={clsx("flex bg-[#DD342E1F] text-[#DD342E] rounded-10 py-0.5 px-6 items-center justify-between gap-4 mobile:px-3 mobile:py-2 mobile:gap-2")}>
+    <div className={clsx("flex bg-[#DD342E1F] text-[#DD342E] rounded-lg py-0.5 px-6 items-center justify-between gap-4 mobile:px-3 mobile:py-2 mobile:gap-2")}>
       <p className="flex items-center gap-1 mobile:flex-1 mobile:text-center mobile:flex-col mobile:gap-0">
         <span className="font-lato font-semibold text-sm md:text-base">We are conducting Product Research,</span>
         <Link href="https://forms.gle/Bdwab4EUHJ2eAUu88" target="_blank" rel="noopener noreferrer" className="font-lato text-sm md:text-base font-normal text-primary underline hover:text-primary-hover">Take the survey to help us launch better</Link>

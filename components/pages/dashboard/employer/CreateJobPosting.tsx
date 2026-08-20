@@ -1057,7 +1057,7 @@ const CreateJobPosting = () => {
         title: "Job published",
         description: "Your job is now live",
       });
-      router.push("/dashboard/employer/jobs");
+      router.push("/dashboard/postings");
     } catch (err) {
       const message = err instanceof Error ? err.message : "Failed to publish";
       showToast({

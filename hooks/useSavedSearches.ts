@@ -74,7 +74,7 @@ export function buildSearchUrl(filters: SavedSearchFilters): string {
   if (filters.experienceLevel)
     params.set("experience", filters.experienceLevel);
   const qs = params.toString();
-  return qs ? `/dashboard/job-seeker/jobs?${qs}` : "/dashboard/job-seeker/jobs";
+  return qs ? `/dashboard/find-jobs?${qs}` : "/dashboard/find-jobs";
 }
 
 // ─── Hook ───────────────────────────────────────────────────────────────────────

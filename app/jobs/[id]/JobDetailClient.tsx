@@ -35,7 +35,7 @@ export default function JobDetailClient({
             removed.
           </p>
           <Link
-            href="/dashboard/job-seeker/jobs"
+            href="/dashboard/find-jobs"
             className="text-primary font-medium hover:underline no-underline"
           >
             ← Back to Jobs

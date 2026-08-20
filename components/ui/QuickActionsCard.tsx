@@ -39,7 +39,7 @@ export const QuickActionsCard: React.FC<QuickActionsCardProps> = ({
     {
       label: "Account settings",
       subtitle: "Update your information",
-      href: "/dashboard/job-seeker/settings",
+      href: "/dashboard/settings",
       icon: (
         <HiOutlineCog6Tooth className="w-5 h-5 md:w-6 md:h-6 text-red-500" />
       ),

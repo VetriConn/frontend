@@ -37,9 +37,9 @@ export function RoleGuard({
         } else {
           // Default redirects based on role
           if (userRole === "employer") {
-            router.replace("/dashboard/employer/notifications");
+            router.replace("/dashboard/notifications");
           } else if (userRole === "job_seeker") {
-            router.replace("/dashboard/job-seeker/notifications");
+            router.replace("/dashboard/notifications");
           } else {
             router.replace("/dashboard");
           }

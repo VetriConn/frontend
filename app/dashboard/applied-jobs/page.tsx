@@ -160,7 +160,7 @@ function EmptyState({ onAdd }: { onAdd: () => void }) {
       </p>
       <div className="flex flex-col sm:flex-row gap-3">
         <Link
-          href="/dashboard/job-seeker/jobs"
+          href="/dashboard/find-jobs"
           className="inline-flex items-center gap-2 px-6 py-3 bg-primary hover:bg-primary-hover text-white font-semibold text-sm rounded-lg transition-colors no-underline"
         >
           <HiOutlineMagnifyingGlass className="w-4 h-4 md:w-5 md:h-5" />

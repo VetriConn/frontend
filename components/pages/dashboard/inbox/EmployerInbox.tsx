@@ -17,7 +17,7 @@ import { ChatInput } from "@/components/dashboard/inbox/ChatInput";
 import type { Conversation, Message } from "@/types/inbox";
 import type { EmployerThreadMessage } from "@/types/api";
 
-export default function EmployerMessagesPage() {
+export default function EmployerInbox() {
   const { userProfile } = useUserProfile();
 
   // ─── Threads ──────────────────────────────────────────────────────────────

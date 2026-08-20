@@ -7,7 +7,7 @@ import { RoleGuard } from "@/components/auth/RoleGuard";
 import { NotificationItem } from "@/components/dashboard/notifications/NotificationItem";
 import { NotificationsEmptyState } from "@/components/dashboard/notifications/NotificationsEmptyState";
 
-export default function NotificationsPage() {
+export default function JobSeekerNotifications() {
   const {
     notifications,
     unreadCount,

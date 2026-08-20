@@ -39,7 +39,7 @@ function EmptyState() {
         alerts to get notified about new matches.
       </p>
       <Link
-        href="/dashboard/job-seeker/jobs"
+        href="/dashboard/find-jobs"
         className="inline-flex items-center gap-2 px-8 py-3 bg-primary hover:bg-primary-hover text-white font-semibold text-sm rounded-lg transition-colors no-underline"
       >
         <HiOutlineMagnifyingGlass className="w-4 h-4 md:w-5 md:h-5" />

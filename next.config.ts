@@ -9,27 +9,45 @@ const nextConfig: NextConfig = {
   /* config options here */
   /**
    * The dashboard dropped its role segments for routes whose names don't
-   * collide across roles (inbox/jobs/notifications/settings still do, and
-   * keep the old shape for now). The old URLs live in already-delivered
-   * emails and in backend notification links, so these redirects are
-   * permanent and should not be removed.
+   * collide across roles. The four that did (inbox, jobs, notifications,
+   * settings) either merged behind one role-aware route or were renamed to
+   * what they actually are. Old URLs live in already-delivered emails and in
+   * backend notification links, so these redirects must not be removed.
    */
   async redirects() {
-    const moved = [
-      ["employer", "applications"],
-      ["employer", "billing"],
-      ["employer", "company-profile"],
-      ["employer", "drafts"],
-      ["employer", "post-job"],
-      ["job-seeker", "application-drafts"],
-      ["job-seeker", "applied-jobs"],
-      ["job-seeker", "profile"],
-      ["job-seeker", "saved-jobs"],
-      ["job-seeker", "saved-searches"],
+    // Same-named pages that merged behind one role-aware route.
+    const merged = ["inbox", "notifications", "settings"];
+    // Pages that were genuinely different features sharing a name.
+    const renamed: Array<[string, string]> = [
+      ["employer/jobs", "postings"],
+      ["job-seeker/jobs", "find-jobs"],
+      // Role segment dropped; name unchanged.
+      ["employer/applications", "applications"],
+      ["employer/billing", "billing"],
+      ["employer/company-profile", "company-profile"],
+      ["employer/drafts", "drafts"],
+      ["employer/post-job", "post-job"],
+      ["job-seeker/application-drafts", "application-drafts"],
+      ["job-seeker/applied-jobs", "applied-jobs"],
+      ["job-seeker/profile", "profile"],
+      ["job-seeker/saved-jobs", "saved-jobs"],
+      ["job-seeker/saved-searches", "saved-searches"],
     ];
-    return moved.map(([role, page]) => ({
-      source: `/dashboard/${role}/${page}`,
-      destination: `/dashboard/${page}`,
+
+    const pairs: Array<[string, string]> = [
+      ...merged.flatMap(
+        (page) =>
+          [
+            [`employer/${page}`, page],
+            [`job-seeker/${page}`, page],
+          ] as Array<[string, string]>,
+      ),
+      ...renamed,
+    ];
+
+    return pairs.map(([from, to]) => ({
+      source: `/dashboard/${from}`,
+      destination: `/dashboard/${to}`,
       permanent: true,
     }));
   },

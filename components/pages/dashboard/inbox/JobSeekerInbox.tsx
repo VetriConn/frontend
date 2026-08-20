@@ -16,7 +16,7 @@ import { MessageList } from "@/components/dashboard/inbox/MessageList";
 import { ChatInput } from "@/components/dashboard/inbox/ChatInput";
 import type { Conversation, Message } from "@/types/inbox";
 
-export default function JobSeekerInboxPage() {
+export default function JobSeekerInbox() {
   const { userProfile } = useUserProfile();
 
   // ─── Threads (left rail) ──────────────────────────────────────────────────

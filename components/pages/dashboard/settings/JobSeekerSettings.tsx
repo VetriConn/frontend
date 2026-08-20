@@ -5,7 +5,7 @@ import {
   HiOutlineKey,
   HiOutlineShieldCheck,
   HiOutlineEnvelope,
-  HiOutlineBuildingOffice2,
+  HiOutlineBriefcase,
   HiOutlineUserGroup,
   HiOutlineEyeSlash,
   HiOutlineEye,
@@ -15,8 +15,7 @@ import {
   HiOutlineCheckCircle,
   HiOutlineLockClosed,
   HiOutlineArrowTopRightOnSquare,
-  HiOutlineBell,
-  HiOutlineCreditCard,
+  HiOutlineChevronDown,
   HiOutlineChatBubbleLeftRight,
   HiOutlineClipboardDocumentCheck,
 } from "react-icons/hi2";
@@ -29,72 +28,203 @@ import {
   requestDataExport,
   deactivateAccount as deactivateAccountApi,
   updateUserSettings,
+  patchUserProfile,
 } from "@/lib/api";
-import { Toggle, SectionCard, SelectField } from "@/components/ui/settings";
 import TwoFactorSetupDialog from "@/components/security/TwoFactorSetupDialog";
 import DisableTwoFactorDialog from "@/components/security/DisableTwoFactorDialog";
 
 // ─── Types ──────────────────────────────────────────────────────────────────────
 
-interface EmployerSettingsState {
-  // Company Preferences
-  companySize: string;
-  industry: string;
-  hiringFrequency: string;
-  publicCompanyProfile: boolean;
-  showContactInformation: boolean;
+interface SettingsState {
+  // Job Preferences
+  jobSeekingStatus: string;
+  preferredWorkType: string;
+  preferredLocation: string;
+  experienceLevel: string;
 
   // Notifications
   emailNotifications: boolean;
-  applicationAlerts: boolean;
-  jobApprovedRejected: boolean;
+  jobAlerts: boolean;
+  applicationApprovedRejected: boolean;
   messages: boolean;
-  platformUpdates: boolean;
+  communityUpdates: boolean;
 
   // Privacy
-  companyProfileVisibility: string;
+  profileVisibility: string;
+}
+
+// ─── Toggle Component ───────────────────────────────────────────────────────────
+
+function Toggle({
+  enabled,
+  onToggle,
+}: {
+  enabled: boolean;
+  onToggle: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      role="switch"
+      aria-checked={enabled}
+      onClick={onToggle}
+      className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
+        enabled ? "bg-primary" : "bg-gray-200"
+      }`}
+    >
+      <span
+        className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
+          enabled ? "translate-x-5" : "translate-x-0"
+        }`}
+      />
+    </button>
+  );
+}
+
+// ─── Section Card ───────────────────────────────────────────────────────────────
+
+function SectionCard({
+  title,
+  subtitle,
+  children,
+}: {
+  title: string;
+  subtitle: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="bg-white rounded-xl border border-gray-200 p-6 mobile:p-5 mb-5">
+      <h2 className="font-lato text-lg font-bold text-gray-900 mb-1">
+        {title}
+      </h2>
+      <p className="text-sm text-gray-500 mb-6">{subtitle}</p>
+      {children}
+    </div>
+  );
+}
+
+// ─── Select Dropdown ────────────────────────────────────────────────────────────
+
+function SelectField({
+  label,
+  hint,
+  value,
+  onChange,
+  options,
+}: {
+  label: string;
+  hint: string;
+  value: string;
+  onChange: (val: string) => void;
+  options: { value: string; label: string }[];
+}) {
+  const [isOpen, setIsOpen] = React.useState(false);
+  const containerRef = React.useRef<HTMLDivElement>(null);
+  const selectedOption = options.find((o) => o.value === value);
+
+  // Close on outside click
+  React.useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (
+        containerRef.current &&
+        !containerRef.current.contains(e.target as Node)
+      ) {
+        setIsOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, []);
+
+  return (
+    <div>
+      <label className="block text-sm font-semibold text-gray-900 mb-1.5 md:mb-2">
+        {label}
+      </label>
+      <div ref={containerRef} className="relative">
+        <button
+          type="button"
+          onClick={() => setIsOpen(!isOpen)}
+          className="form-input w-full text-left flex items-center justify-between gap-2 cursor-pointer"
+          aria-haspopup="listbox"
+          aria-expanded={isOpen}
+        >
+          <span className="truncate text-gray-900">
+            {selectedOption?.label || "Select..."}
+          </span>
+          <HiOutlineChevronDown
+            className={`w-4 h-4 text-gray-400 shrink-0 transition-transform ${isOpen ? "rotate-180" : ""}`}
+          />
+        </button>
+
+        {isOpen && (
+          <ul
+            role="listbox"
+            className="absolute z-50 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-[240px] overflow-y-auto py-1"
+          >
+            {options.map((opt) => (
+              <li
+                key={opt.value}
+                role="option"
+                aria-selected={opt.value === value}
+                className={`px-4 py-2.5 text-sm cursor-pointer transition-colors ${
+                  opt.value === value
+                    ? "bg-red-50 text-red-700 font-medium"
+                    : "text-gray-700 hover:bg-gray-50"
+                }`}
+                onClick={() => {
+                  onChange(opt.value);
+                  setIsOpen(false);
+                }}
+              >
+                {opt.label}
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
+      <p className="text-xs text-gray-400 mt-1.5">{hint}</p>
+    </div>
+  );
 }
 
 // ─── Page ───────────────────────────────────────────────────────────────────────
 
-export default function EmployerSettingsPage() {
+export default function JobSeekerSettings() {
   // ─── Fetch user profile from DB ───────────────────────────────────────────
   const { userProfile, isLoading: profileLoading, mutateProfile } =
     useUserProfile();
   const { showToast } = useToaster();
 
-  const [settings, setSettings] = useState<EmployerSettingsState>({
-    companySize: userProfile?.employer_profile?.company_size || "1-10",
-    industry: userProfile?.employer_profile?.industry || "technology",
-    hiringFrequency: userProfile?.employer_profile?.hiring_frequency || "monthly",
-    publicCompanyProfile: userProfile?.employer_profile?.company_preferences?.public_company_profile ?? true,
-    showContactInformation: userProfile?.employer_profile?.company_preferences?.show_contact_information ?? true,
+  const [settings, setSettings] = useState<SettingsState>({
+    jobSeekingStatus: userProfile?.job_seeking_settings?.status || userProfile?.job_seeking_status || "none",
+    preferredWorkType: userProfile?.job_seeking_settings?.preferred_work_type || "no-preference",
+    preferredLocation: userProfile?.job_seeking_settings?.preferred_location || "anywhere",
+    experienceLevel: userProfile?.job_seeking_settings?.experience_level || "entry",
 
-    emailNotifications: userProfile?.employer_profile?.notification_preferences?.email_notifications ?? true,
-    applicationAlerts: userProfile?.employer_profile?.notification_preferences?.application_alerts ?? userProfile?.employer_profile?.notification_preferences?.new_applications ?? true,
-    jobApprovedRejected: userProfile?.employer_profile?.notification_preferences?.job_approved_rejected ?? true,
-    messages: userProfile?.employer_profile?.notification_preferences?.messages ?? true,
-    platformUpdates: userProfile?.employer_profile?.notification_preferences?.platform_updates ?? false,
+    emailNotifications: userProfile?.notification_preferences?.email_notifications ?? true,
+    jobAlerts: userProfile?.notification_preferences?.job_alerts ?? true,
+    applicationApprovedRejected: userProfile?.notification_preferences?.application_approved_rejected ?? true,
+    messages: userProfile?.notification_preferences?.messages ?? true,
+    communityUpdates: userProfile?.notification_preferences?.community_updates ?? false,
 
-    companyProfileVisibility: userProfile?.employer_profile?.company_preferences?.company_profile_visibility || "public",
+    profileVisibility: userProfile?.privacy_preferences?.profile_visibility || "everyone",
   });
 
   // Synchronize state with userProfile when fetched
   React.useEffect(() => {
-    if (userProfile && userProfile.employer_profile) {
-      const ep = userProfile.employer_profile;
+    if (userProfile) {
       setSettings({
-        companySize: ep.company_size || "1-10",
-        industry: ep.industry || "technology",
-        hiringFrequency: ep.hiring_frequency || "monthly",
-        publicCompanyProfile: ep.company_preferences?.public_company_profile ?? true,
-        showContactInformation: ep.company_preferences?.show_contact_information ?? true,
-        emailNotifications: ep.notification_preferences?.email_notifications ?? true,
-        applicationAlerts: ep.notification_preferences?.application_alerts ?? ep.notification_preferences?.new_applications ?? true,
-        jobApprovedRejected: ep.notification_preferences?.job_approved_rejected ?? true,
-        messages: ep.notification_preferences?.messages ?? true,
-        platformUpdates: ep.notification_preferences?.platform_updates ?? false,
-        companyProfileVisibility: ep.company_preferences?.company_profile_visibility || "public",
+        jobSeekingStatus: userProfile.job_seeking_settings?.status || userProfile.job_seeking_status || "none",
+        preferredWorkType: userProfile.job_seeking_settings?.preferred_work_type || "no-preference",
+        preferredLocation: userProfile.job_seeking_settings?.preferred_location || "anywhere",
+        experienceLevel: userProfile.job_seeking_settings?.experience_level || "entry",
+        emailNotifications: userProfile.notification_preferences?.email_notifications ?? true,
+        jobAlerts: userProfile.notification_preferences?.job_alerts ?? true,
+        applicationApprovedRejected: userProfile.notification_preferences?.application_approved_rejected ?? true,
+        messages: userProfile.notification_preferences?.messages ?? true,
+        communityUpdates: userProfile.notification_preferences?.community_updates ?? false,
+        profileVisibility: userProfile.privacy_preferences?.profile_visibility || "everyone",
       });
     }
   }, [userProfile]);
@@ -111,16 +241,44 @@ export default function EmployerSettingsPage() {
     }
   };
   const handleTwoFactorChange = () => {
+    // Re-fetch the profile so the derived flag flips.
     mutateProfile();
   };
 
-  const update = <K extends keyof EmployerSettingsState>(
+  const update = <K extends keyof SettingsState>(
     key: K,
-    value: EmployerSettingsState[K],
+    value: SettingsState[K],
   ) => {
     const newSettings = { ...settings, [key]: value };
     setSettings(newSettings);
-    // Persist to backend (fire-and-forget but surface failures)
+
+    // `jobSeekingStatus` lives on the user profile (not in generic settings).
+    // Persist it through `patchUserProfile` and revalidate the SWR cache so
+    // the badge on the profile page updates immediately.
+    if (key === "jobSeekingStatus") {
+      patchUserProfile({
+        job_seeking_status:
+          value as SettingsState["jobSeekingStatus"] as
+            | "none"
+            | "actively_looking"
+            | "open_to_offers"
+            | "not_looking",
+      })
+        .then(() => mutateProfile())
+        .catch((error: unknown) => {
+          showToast({
+            type: "error",
+            title: "Couldn't update your status",
+            description:
+              error instanceof Error
+                ? error.message
+                : "Please try again in a moment.",
+          });
+        });
+      return;
+    }
+
+    // Everything else is a generic preference — save through `updateUserSettings`.
     updateUserSettings(newSettings).catch((error: unknown) => {
       showToast({
         type: "error",
@@ -271,23 +429,22 @@ export default function EmployerSettingsPage() {
   };
 
   return (
-    <RoleGuard allowedRoles={["employer"]}>
-      <div className="max-w-3xl mx-auto px-4 md:px-6 py-8">
+    <RoleGuard allowedRoles={["job_seeker"]}>
+      <div className="max-w-3xl mx-auto">
         {/* Page Header */}
         <div className="mb-8">
           <h1 className="font-lato text-xl md:text-3xl font-bold text-gray-900 mb-1">
-            Employer Settings
+            Account settings
           </h1>
           <p className="text-gray-500 text-sm leading-relaxed">
-            Manage your company account preferences, security, and hiring
-            settings.
+            Manage your account preferences, security, and privacy settings.
           </p>
         </div>
 
         {/* ─── 1. Account Information (read-only) ─── */}
         <SectionCard
           title="Account Information"
-          subtitle="Your sign-in email and company profile link."
+          subtitle="Your sign-in email and profile link."
         >
           {profileLoading ? (
             <div className="space-y-4 animate-pulse">
@@ -313,15 +470,16 @@ export default function EmployerSettingsPage() {
                 </p>
               </div>
 
-              {/* Link to company profile */}
-              <a
-                href="/dashboard/company-profile"
-                className="inline-flex items-center gap-2 text-sm text-primary hover:text-primary-hover font-medium transition-colors"
-              >
-                <HiOutlineArrowTopRightOnSquare className="w-4 h-4 md:w-5 md:h-5" />
-                Edit your company name, logo, and details on your Company
-                Profile page
-              </a>
+              {/* Link to profile */}
+              <div className="pt-2">
+                <a
+                  href="/dashboard/profile"
+                  className="inline-flex items-center gap-2 text-sm font-medium text-primary hover:text-red-700 transition-colors"
+                >
+                  Edit Public Profile
+                  <HiOutlineArrowTopRightOnSquare className="w-4 h-4" />
+                </a>
+              </div>
             </div>
           )}
         </SectionCard>
@@ -386,116 +544,89 @@ export default function EmployerSettingsPage() {
           </div>
         </SectionCard>
 
-        {/* ─── 3. Hiring Profile ─── */}
+        {/* ─── 3. Job Preferences ─── */}
         <SectionCard
-          title="Hiring Profile"
-          subtitle="Help us understand your hiring needs and company profile."
+          title="Job Preferences"
+          subtitle="Help us find jobs that match what you're looking for."
         >
           <div className="space-y-5">
             <SelectField
-              label="Company Size"
-              hint="How many employees does your company have?"
-              value={settings.companySize}
-              onChange={(val) => update("companySize", val)}
+              label="Job-Seeking Status"
+              hint="Let employers know your availability. This badge is shown on your profile."
+              value={settings.jobSeekingStatus}
+              onChange={(val) => update("jobSeekingStatus", val)}
               options={[
-                { value: "1-10", label: "1-10 employees" },
-                { value: "11-50", label: "11-50 employees" },
-                { value: "51-200", label: "51-200 employees" },
-                { value: "201-500", label: "201-500 employees" },
-                { value: "501-1000", label: "501-1000 employees" },
-                { value: "1000+", label: "1000+ employees" },
+                {
+                  value: "none",
+                  label: "No status — don't show a badge on my profile",
+                },
+                {
+                  value: "actively_looking",
+                  label: "🟢 Actively Looking — ready for new opportunities",
+                },
+                {
+                  value: "open_to_offers",
+                  label:
+                    "🔵 Open to Offers — not actively searching but interested",
+                },
+                {
+                  value: "not_looking",
+                  label: "⚫ Not Looking — not seeking opportunities right now",
+                },
               ]}
             />
 
             <SelectField
-              label="Industry"
-              hint="What industry does your company operate in?"
-              value={settings.industry}
-              onChange={(val) => update("industry", val)}
+              label="Preferred Work Type"
+              hint="Choose how you'd prefer to work."
+              value={settings.preferredWorkType}
+              onChange={(val) => update("preferredWorkType", val)}
               options={[
-                { value: "technology", label: "Technology" },
-                { value: "healthcare", label: "Healthcare" },
-                { value: "finance", label: "Finance" },
-                { value: "retail", label: "Retail" },
-                { value: "manufacturing", label: "Manufacturing" },
-                { value: "education", label: "Education" },
-                { value: "hospitality", label: "Hospitality" },
-                { value: "construction", label: "Construction" },
-                { value: "other", label: "Other" },
+                { value: "remote", label: "Remote (work from home)" },
+                { value: "on-site", label: "On-site (in person)" },
+                { value: "hybrid", label: "Hybrid (mix of both)" },
+                { value: "no-preference", label: "No preference" },
               ]}
             />
 
             <SelectField
-              label="Hiring Frequency"
-              hint="How often do you typically post new job openings?"
-              value={settings.hiringFrequency}
-              onChange={(val) => update("hiringFrequency", val)}
+              label="Preferred Location"
+              hint="Where are you willing to work or travel to?"
+              value={settings.preferredLocation}
+              onChange={(val) => update("preferredLocation", val)}
               options={[
-                { value: "weekly", label: "Weekly" },
-                { value: "monthly", label: "Monthly" },
-                { value: "quarterly", label: "Quarterly" },
-                { value: "annually", label: "Annually" },
-                { value: "as-needed", label: "As needed" },
+                { value: "within-10", label: "Within 10 miles of my home" },
+                { value: "within-25", label: "Within 25 miles of my home" },
+                { value: "within-50", label: "Within 50 miles of my home" },
+                { value: "anywhere", label: "Anywhere / Willing to relocate" },
+              ]}
+            />
+
+            <SelectField
+              label="Experience Level"
+              hint="This helps match you with appropriate positions."
+              value={settings.experienceLevel}
+              onChange={(val) => update("experienceLevel", val)}
+              options={[
+                { value: "entry", label: "Entry Level (0–2 years)" },
+                {
+                  value: "mid",
+                  label: "Mid Level (3–7 years)",
+                },
+                {
+                  value: "senior",
+                  label: "Senior Level (extensive experience)",
+                },
+                {
+                  value: "executive",
+                  label: "Executive / Leadership",
+                },
               ]}
             />
           </div>
         </SectionCard>
 
-        {/* ─── 4. Company Preferences ─── */}
-        <SectionCard
-          title="Company Preferences"
-          subtitle="Manage how your company is presented to job seekers."
-        >
-          <div className="space-y-6">
-            {/* Public Company Profile */}
-            <div className="flex items-start justify-between gap-4">
-              <div>
-                <h4 className="text-sm font-semibold text-gray-900 mb-0.5">
-                  Public Company Profile
-                </h4>
-                <p className="text-sm text-gray-500">
-                  Allow job seekers to view your company page
-                </p>
-              </div>
-              <div className="shrink-0 pt-1">
-                <Toggle
-                  enabled={settings.publicCompanyProfile}
-                  onToggle={() =>
-                    update(
-                      "publicCompanyProfile",
-                      !settings.publicCompanyProfile,
-                    )
-                  }
-                />
-              </div>
-            </div>
-
-            {/* Show Contact Information */}
-            <div className="flex items-start justify-between gap-4">
-              <div>
-                <h4 className="text-sm font-semibold text-gray-900 mb-0.5">
-                  Show Contact Information
-                </h4>
-                <p className="text-sm text-gray-500">
-                  Display email and phone on your profile
-                </p>
-              </div>
-              <div className="shrink-0 pt-1">
-                <Toggle
-                  enabled={settings.showContactInformation}
-                  onToggle={() =>
-                    update(
-                      "showContactInformation",
-                      !settings.showContactInformation,
-                    )
-                  }
-                />
-              </div>
-            </div>
-          </div>
-        </SectionCard>
-
-        {/* ─── 5. Notification Preferences ─── */}
+        {/* ─── 4. Notification Preferences ─── */}
         <SectionCard
           title="Notification Preferences"
           subtitle="Choose which emails and alerts you'd like to receive."
@@ -512,8 +643,8 @@ export default function EmployerSettingsPage() {
                     Email Notifications
                   </h4>
                   <p className="text-sm text-gray-500">
-                    Receive important updates about your account and job
-                    postings.
+                    Receive important updates about your account and
+                    applications.
                   </p>
                 </div>
               </div>
@@ -527,32 +658,30 @@ export default function EmployerSettingsPage() {
               </div>
             </div>
 
-            {/* Application Alerts */}
+            {/* Job Alerts */}
             <div className="flex items-start justify-between gap-4">
               <div className="flex items-start gap-3.5">
                 <div className="w-10 h-10 rounded-full bg-red-50 flex items-center justify-center shrink-0 mt-0.5">
-                  <HiOutlineBell className="w-5 h-5 text-primary" />
+                  <HiOutlineBriefcase className="w-5 h-5 text-primary" />
                 </div>
                 <div>
                   <h4 className="text-sm font-semibold text-gray-900 mb-0.5">
-                    Application Alerts
+                    Job Alerts
                   </h4>
                   <p className="text-sm text-gray-500">
-                    Get notified when candidates apply to your job postings.
+                    Get notified when new jobs match your preferences.
                   </p>
                 </div>
               </div>
               <div className="shrink-0 pt-1">
                 <Toggle
-                  enabled={settings.applicationAlerts}
-                  onToggle={() =>
-                    update("applicationAlerts", !settings.applicationAlerts)
-                  }
+                  enabled={settings.jobAlerts}
+                  onToggle={() => update("jobAlerts", !settings.jobAlerts)}
                 />
               </div>
             </div>
 
-            {/* Job Approved/Rejected */}
+            {/* Application Approved/Rejected */}
             <div className="flex items-start justify-between gap-4">
               <div className="flex items-start gap-3.5">
                 <div className="w-10 h-10 rounded-full bg-red-50 flex items-center justify-center shrink-0 mt-0.5">
@@ -560,19 +689,22 @@ export default function EmployerSettingsPage() {
                 </div>
                 <div>
                   <h4 className="text-sm font-semibold text-gray-900 mb-0.5">
-                    Job Approved/Rejected
+                    Application Approved/Rejected
                   </h4>
                   <p className="text-sm text-gray-500">
-                    Get notified when your job postings are reviewed and their
+                    Get notified when your applications are reviewed and their
                     status changes.
                   </p>
                 </div>
               </div>
               <div className="shrink-0 pt-1">
                 <Toggle
-                  enabled={settings.jobApprovedRejected}
+                  enabled={settings.applicationApprovedRejected}
                   onToggle={() =>
-                    update("jobApprovedRejected", !settings.jobApprovedRejected)
+                    update(
+                      "applicationApprovedRejected",
+                      !settings.applicationApprovedRejected,
+                    )
                   }
                 />
               </div>
@@ -589,8 +721,8 @@ export default function EmployerSettingsPage() {
                     Messages
                   </h4>
                   <p className="text-sm text-gray-500">
-                    Get notified when you receive a new message from a
-                    candidate.
+                    Get notified when you receive a new message from an
+                    employer.
                   </p>
                 </div>
               </div>
@@ -602,7 +734,7 @@ export default function EmployerSettingsPage() {
               </div>
             </div>
 
-            {/* Platform Updates */}
+            {/* Community Updates */}
             <div className="flex items-start justify-between gap-4">
               <div className="flex items-start gap-3.5">
                 <div className="w-10 h-10 rounded-full bg-red-50 flex items-center justify-center shrink-0 mt-0.5">
@@ -610,18 +742,18 @@ export default function EmployerSettingsPage() {
                 </div>
                 <div>
                   <h4 className="text-sm font-semibold text-gray-900 mb-0.5">
-                    Platform Updates
+                    Community Updates
                   </h4>
                   <p className="text-sm text-gray-500">
-                    Stay informed about new features and platform improvements.
+                    Stay informed about community events and discussions.
                   </p>
                 </div>
               </div>
               <div className="shrink-0 pt-1">
                 <Toggle
-                  enabled={settings.platformUpdates}
+                  enabled={settings.communityUpdates}
                   onToggle={() =>
-                    update("platformUpdates", !settings.platformUpdates)
+                    update("communityUpdates", !settings.communityUpdates)
                   }
                 />
               </div>
@@ -629,7 +761,7 @@ export default function EmployerSettingsPage() {
           </div>
         </SectionCard>
 
-        {/* ─── 6. Accessibility Preferences ─── */}
+        {/* ─── 5. Accessibility Preferences ─── */}
         <SectionCard
           title="Accessibility Preferences"
           subtitle="Customize how the platform looks and feels to make it easier for you to use."
@@ -641,7 +773,7 @@ export default function EmployerSettingsPage() {
                 Text Size
               </label>
               <p className="text-xs text-gray-400 mb-4">
-                Choose a text size that's comfortable for you to read.
+                Choose a text size that&apos;s comfortable for you to read.
               </p>
               <div className="grid grid-cols-3 gap-3">
                 {[
@@ -713,32 +845,31 @@ export default function EmployerSettingsPage() {
           </div>
         </SectionCard>
 
-        {/* ─── 7. Privacy & Data ─── */}
+        {/* ─── 6. Privacy & Data ─── */}
         <SectionCard
           title="Privacy & Data"
-          subtitle="Control your company profile visibility and manage your data."
+          subtitle="Control who can see your profile and manage your personal data."
         >
           <div className="space-y-6">
-            {/* Company Profile Visibility */}
+            {/* Profile Visibility */}
             <SelectField
-              label="Company Profile Visibility"
-              hint="Choose who can see your company profile and job postings."
-              value={settings.companyProfileVisibility}
-              onChange={(val) => update("companyProfileVisibility", val)}
+              label="Profile Visibility"
+              hint="Choose who can see your profile information."
+              value={settings.profileVisibility}
+              onChange={(val) => update("profileVisibility", val)}
               options={[
                 {
-                  value: "public",
-                  label:
-                    "Public - Anyone can see your company profile and jobs",
+                  value: "everyone",
+                  label: "Everyone - Anyone on the platform can see my profile",
                 },
                 {
-                  value: "registered-only",
+                  value: "employers-only",
                   label:
-                    "Registered Users Only - Only logged-in users can see your profile",
+                    "Employers Only - Only verified employers can see my profile",
                 },
                 {
                   value: "private",
-                  label: "Private - Only you can see your company profile",
+                  label: "Private - Only I can see my profile",
                 },
               ]}
             />
@@ -753,8 +884,8 @@ export default function EmployerSettingsPage() {
                   Download Your Data
                 </h4>
                 <p className="text-sm text-gray-500 leading-relaxed mb-3">
-                  Get a copy of all the information you've shared with us,
-                  including job postings and applicant data.
+                  Get a copy of all the information you&apos;ve shared with us.
+                  This may take a few minutes to prepare.
                 </p>
                 <button
                   onClick={handleDataDownload}
@@ -807,55 +938,66 @@ export default function EmployerSettingsPage() {
 
         {/* Change Password Modal */}
         {showPasswordModal && (
-          <div className="fixed inset-0 z-[200] flex items-center justify-center p-4">
+          <div className="fixed inset-0 z-[200] flex items-center justify-center">
             {/* Backdrop */}
             <div
-              className="absolute inset-0 bg-black/50"
+              className="absolute inset-0 bg-black/40 backdrop-blur-[2px]"
               onClick={handleClosePasswordModal}
             />
 
             {/* Modal */}
-            <div className="relative bg-white rounded-xl w-full max-w-md max-h-[90vh] overflow-y-auto shadow-2xl">
+            <div className="relative bg-white rounded-2xl shadow-xl max-w-md w-full mx-4 overflow-hidden">
               {/* Header */}
-              <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between rounded-t-xl">
-                <h3 className="font-lato text-lg font-bold text-gray-900">
-                  Change Password
-                </h3>
+              <div className="flex items-center justify-between px-6 py-5 border-b border-gray-100">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-full bg-red-50 flex items-center justify-center">
+                    <HiOutlineLockClosed className="w-5 h-5 text-primary" />
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-bold text-gray-900">
+                      Change Password
+                    </h3>
+                    <p className="text-xs text-gray-400">
+                      Keep your account secure
+                    </p>
+                  </div>
+                </div>
                 <button
                   onClick={handleClosePasswordModal}
-                  className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-                  aria-label="Close modal"
+                  className="p-2 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors cursor-pointer"
                 >
-                  <HiOutlineXMark className="w-5 h-5 text-gray-400" />
+                  <HiOutlineXMark className="w-5 h-5" />
                 </button>
               </div>
 
-              {/* Body */}
-              <div className="p-6 space-y-5">
-                {passwordSuccess ? (
-                  <div className="flex flex-col items-center justify-center py-8">
-                    <div className="w-16 h-16 rounded-full bg-emerald-50 flex items-center justify-center mb-4">
-                      <HiOutlineCheckCircle className="w-10 h-10 text-emerald-500" />
-                    </div>
-                    <h4 className="font-lato text-lg font-bold text-gray-900 mb-2">
-                      Password Changed!
-                    </h4>
-                    <p className="text-sm text-gray-500 text-center">
-                      Your password has been updated successfully.
-                    </p>
+              {/* Success State */}
+              {passwordSuccess ? (
+                <div className="px-6 py-12 text-center">
+                  <div className="w-14 h-14 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <HiOutlineCheckCircle className="w-7 h-7 text-emerald-500" />
                   </div>
-                ) : (
-                  <>
+                  <h4 className="text-lg font-bold text-gray-900 mb-1">
+                    Password Updated
+                  </h4>
+                  <p className="text-sm text-gray-500">
+                    Your password has been changed successfully.
+                  </p>
+                </div>
+              ) : (
+                <>
+                  {/* Body */}
+                  <div className="px-6 py-6 space-y-5">
+                    {/* Error message */}
                     {passwordError && (
-                      <div className="bg-red-50 border border-red-200 rounded-lg p-4 flex items-start gap-3">
-                        <HiOutlineExclamationTriangle className="w-5 h-5 text-red-500 shrink-0 mt-0.5" />
-                        <p className="text-sm text-red-700">{passwordError}</p>
+                      <div className="flex items-center gap-2 px-4 py-3 bg-red-50 border border-red-100 rounded-lg">
+                        <HiOutlineExclamationTriangle className="w-4 h-4 text-red-500 shrink-0" />
+                        <p className="text-sm text-red-600">{passwordError}</p>
                       </div>
                     )}
 
                     {/* Current Password */}
                     <div>
-                      <label className="block text-sm font-semibold text-gray-900 mb-1.5">
+                      <label className="block text-sm font-semibold text-gray-900 mb-1.5 md:mb-2">
                         Current Password
                       </label>
                       <div className="relative">
@@ -863,15 +1005,15 @@ export default function EmployerSettingsPage() {
                           type={showCurrentPassword ? "text" : "password"}
                           value={currentPassword}
                           onChange={(e) => setCurrentPassword(e.target.value)}
-                          className="form-input pr-12"
-                          placeholder="Enter current password"
+                          placeholder="Enter your current password"
+                          className="form-input pr-11"
                         />
                         <button
                           type="button"
                           onClick={() =>
                             setShowCurrentPassword(!showCurrentPassword)
                           }
-                          className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                          className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 cursor-pointer"
                         >
                           {showCurrentPassword ? (
                             <HiOutlineEyeSlash className="w-5 h-5" />
@@ -884,7 +1026,7 @@ export default function EmployerSettingsPage() {
 
                     {/* New Password */}
                     <div>
-                      <label className="block text-sm font-semibold text-gray-900 mb-1.5">
+                      <label className="block text-sm font-semibold text-gray-900 mb-1.5 md:mb-2">
                         New Password
                       </label>
                       <div className="relative">
@@ -892,13 +1034,13 @@ export default function EmployerSettingsPage() {
                           type={showNewPassword ? "text" : "password"}
                           value={newPassword}
                           onChange={(e) => setNewPassword(e.target.value)}
-                          className="form-input pr-12"
-                          placeholder="Enter new password"
+                          placeholder="Enter your new password"
+                          className="form-input pr-11"
                         />
                         <button
                           type="button"
                           onClick={() => setShowNewPassword(!showNewPassword)}
-                          className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                          className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 cursor-pointer"
                         >
                           {showNewPassword ? (
                             <HiOutlineEyeSlash className="w-5 h-5" />
@@ -910,33 +1052,49 @@ export default function EmployerSettingsPage() {
 
                       {/* Password Requirements */}
                       {newPassword.length > 0 && (
-                        <ul className="mt-3 space-y-1.5">
-                          {passwordRequirements.map((req, idx) => (
-                            <li
-                              key={idx}
-                              className="flex items-center gap-2 text-xs"
+                        <div className="mt-3 space-y-1.5">
+                          {passwordRequirements.map((req) => (
+                            <div
+                              key={req.label}
+                              className="flex items-center gap-2"
                             >
-                              {req.met ? (
-                                <HiOutlineCheckCircle className="w-4 h-4 text-emerald-500 shrink-0" />
-                              ) : (
-                                <div className="w-4 h-4 rounded-full border-2 border-gray-300 shrink-0" />
-                              )}
+                              <div
+                                className={`w-4 h-4 rounded-full flex items-center justify-center ${
+                                  req.met
+                                    ? "bg-emerald-100 text-emerald-600"
+                                    : "bg-gray-100 text-gray-400"
+                                }`}
+                              >
+                                <svg
+                                  className="w-2.5 h-2.5"
+                                  fill="none"
+                                  viewBox="0 0 24 24"
+                                  stroke="currentColor"
+                                  strokeWidth={3}
+                                >
+                                  <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    d="M4.5 12.75l6 6 9-13.5"
+                                  />
+                                </svg>
+                              </div>
                               <span
-                                className={
-                                  req.met ? "text-emerald-700" : "text-gray-500"
-                                }
+                                className={`text-xs ${
+                                  req.met ? "text-emerald-600" : "text-gray-400"
+                                }`}
                               >
                                 {req.label}
                               </span>
-                            </li>
+                            </div>
                           ))}
-                        </ul>
+                        </div>
                       )}
                     </div>
 
                     {/* Confirm Password */}
                     <div>
-                      <label className="block text-sm font-semibold text-gray-900 mb-1.5">
+                      <label className="block text-sm font-semibold text-gray-900 mb-1.5 md:mb-2">
                         Confirm New Password
                       </label>
                       <div className="relative">
@@ -944,15 +1102,19 @@ export default function EmployerSettingsPage() {
                           type={showConfirmPassword ? "text" : "password"}
                           value={confirmPassword}
                           onChange={(e) => setConfirmPassword(e.target.value)}
-                          className="form-input pr-12"
-                          placeholder="Confirm new password"
+                          placeholder="Re-enter your new password"
+                          className={`form-input pr-11 ${
+                            confirmPassword.length > 0 && !passwordsMatch
+                              ? "border-red-400 focus:border-red-400"
+                              : ""
+                          }`}
                         />
                         <button
                           type="button"
                           onClick={() =>
                             setShowConfirmPassword(!showConfirmPassword)
                           }
-                          className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                          className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 cursor-pointer"
                         >
                           {showConfirmPassword ? (
                             <HiOutlineEyeSlash className="w-5 h-5" />
@@ -961,126 +1123,127 @@ export default function EmployerSettingsPage() {
                           )}
                         </button>
                       </div>
-
-                      {/* Password Match Indicator */}
-                      {confirmPassword.length > 0 && (
-                        <p
-                          className={`mt-2 text-xs flex items-center gap-1.5 ${
-                            passwordsMatch ? "text-emerald-700" : "text-red-600"
-                          }`}
-                        >
-                          {passwordsMatch ? (
-                            <>
-                              <HiOutlineCheckCircle className="w-4 h-4" />
-                              Passwords match
-                            </>
-                          ) : (
-                            <>
-                              <HiOutlineExclamationTriangle className="w-4 h-4" />
-                              Passwords do not match
-                            </>
-                          )}
+                      {confirmPassword.length > 0 && !passwordsMatch && (
+                        <p className="text-xs text-red-500 mt-1.5">
+                          Passwords do not match.
+                        </p>
+                      )}
+                      {passwordsMatch && (
+                        <p className="text-xs text-emerald-500 mt-1.5 flex items-center gap-1">
+                          <HiOutlineCheckCircle className="w-3.5 h-3.5" />
+                          Passwords match
                         </p>
                       )}
                     </div>
+                  </div>
 
-                    {/* Submit Button */}
+                  {/* Footer */}
+                  <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-gray-100 bg-gray-50/50">
+                    <button
+                      onClick={handleClosePasswordModal}
+                      className="px-5 py-2.5 bg-white border border-gray-200 text-gray-700 font-semibold text-sm rounded-lg hover:bg-gray-50 transition-colors cursor-pointer"
+                    >
+                      Cancel
+                    </button>
                     <button
                       onClick={handleChangePassword}
                       disabled={!canSubmitPassword || passwordSaving}
-                      className="w-full bg-primary text-white py-3 rounded-lg font-semibold hover:bg-primary-hover transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="inline-flex items-center gap-2 px-5 py-2.5 bg-primary hover:bg-primary-hover disabled:opacity-50 disabled:cursor-not-allowed text-white font-semibold text-sm rounded-lg transition-colors cursor-pointer"
                     >
-                      {passwordSaving
-                        ? "Changing Password..."
-                        : "Change Password"}
+                      {passwordSaving ? (
+                        <>
+                          <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                          Updating...
+                        </>
+                      ) : (
+                        "Update Password"
+                      )}
                     </button>
-                  </>
-                )}
-              </div>
+                  </div>
+                </>
+              )}
             </div>
           </div>
         )}
 
-        {/* Deactivate Account Modal */}
+        {/* ─── Deactivate Account Modal ─── */}
         {showDeactivateModal && (
-          <div className="fixed inset-0 z-[200] flex items-center justify-center p-4">
+          <div className="fixed inset-0 z-[200] flex items-center justify-center">
             {/* Backdrop */}
             <div
-              className="absolute inset-0 bg-black/50"
+              className="absolute inset-0 bg-black/40 backdrop-blur-[2px]"
               onClick={handleCloseDeactivateModal}
             />
 
             {/* Modal */}
-            <div className="relative bg-white rounded-xl w-full max-w-md max-h-[90vh] overflow-y-auto shadow-2xl">
+            <div className="relative bg-white rounded-2xl shadow-xl max-w-md w-full mx-4 overflow-hidden">
               {/* Header */}
-              <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between rounded-t-xl">
-                <h3 className="font-lato text-lg font-bold text-gray-900">
-                  Deactivate Account
-                </h3>
+              <div className="flex items-center justify-between px-6 py-5 border-b border-gray-100">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center">
+                    <HiOutlineExclamationTriangle className="w-5 h-5 text-red-500" />
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-bold text-gray-900">
+                      Deactivate Account
+                    </h3>
+                    <p className="text-xs text-gray-400">
+                      This action cannot be easily undone
+                    </p>
+                  </div>
+                </div>
                 <button
                   onClick={handleCloseDeactivateModal}
-                  className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-                  aria-label="Close modal"
+                  className="p-2 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors cursor-pointer"
                 >
-                  <HiOutlineXMark className="w-5 h-5 text-gray-400" />
+                  <HiOutlineXMark className="w-5 h-5" />
                 </button>
               </div>
 
               {/* Body */}
-              <div className="p-6 space-y-5">
-                {/* Warning */}
-                <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-                  <div className="flex items-start gap-3">
-                    <HiOutlineExclamationTriangle className="w-6 h-6 text-red-500 shrink-0 mt-0.5" />
-                    <div>
-                      <h4 className="font-semibold text-red-900 mb-1">
-                        This action is serious
-                      </h4>
-                      <p className="text-sm text-red-700 leading-relaxed">
-                        Deactivating your account will:
-                      </p>
-                      <ul className="mt-2 space-y-1 text-sm text-red-700">
-                        <li>
-                          • Remove your company profile from job seeker searches
-                        </li>
-                        <li>• Unpublish all active job postings</li>
-                        <li>• Delete pending applications</li>
-                        <li>• Remove access to applicant data</li>
-                      </ul>
-                      <p className="text-sm text-red-700 mt-3">
-                        Your data will be saved for 30 days in case you change
-                        your mind. After that, it will be permanently deleted.
-                      </p>
-                    </div>
-                  </div>
+              <div className="px-6 py-6 space-y-5">
+                <div className="bg-red-50 border border-red-100 rounded-lg p-4">
+                  <p className="text-sm text-red-700 leading-relaxed">
+                    <strong>Warning:</strong> Deactivating your account will:
+                  </p>
+                  <ul className="mt-2 space-y-1 text-sm text-red-600">
+                    <li>• Remove your profile from employer searches</li>
+                    <li>• Cancel all active job applications</li>
+                    <li>• Delete your saved jobs and searches</li>
+                  </ul>
+                  <p className="text-sm text-red-600 mt-2">
+                    Your data will be retained for 30 days, after which it will
+                    be permanently deleted.
+                  </p>
                 </div>
 
+                {/* Error message */}
                 {deactivateError && (
-                  <div className="bg-red-50 border border-red-200 rounded-lg p-4 flex items-start gap-3">
-                    <HiOutlineExclamationTriangle className="w-5 h-5 text-red-500 shrink-0 mt-0.5" />
-                    <p className="text-sm text-red-700">{deactivateError}</p>
+                  <div className="flex items-center gap-2 px-4 py-3 bg-red-50 border border-red-100 rounded-lg">
+                    <HiOutlineExclamationTriangle className="w-4 h-4 text-red-500 shrink-0" />
+                    <p className="text-sm text-red-600">{deactivateError}</p>
                   </div>
                 )}
 
-                {/* Password Confirmation */}
+                {/* Password */}
                 <div>
-                  <label className="block text-sm font-semibold text-gray-900 mb-1.5">
-                    Enter Your Password
+                  <label className="block text-sm font-semibold text-gray-900 mb-1.5 md:mb-2">
+                    Confirm your password
                   </label>
                   <div className="relative">
                     <input
                       type={showDeactivatePassword ? "text" : "password"}
                       value={deactivatePassword}
                       onChange={(e) => setDeactivatePassword(e.target.value)}
-                      className="form-input pr-12"
-                      placeholder="Enter your password to confirm"
+                      placeholder="Enter your current password"
+                      className="form-input pr-11"
                     />
                     <button
                       type="button"
                       onClick={() =>
                         setShowDeactivatePassword(!showDeactivatePassword)
                       }
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 cursor-pointer"
                     >
                       {showDeactivatePassword ? (
                         <HiOutlineEyeSlash className="w-5 h-5" />
@@ -1091,44 +1254,54 @@ export default function EmployerSettingsPage() {
                   </div>
                 </div>
 
-                {/* Type DEACTIVATE Confirmation */}
+                {/* Type DEACTIVATE to confirm */}
                 <div>
-                  <label className="block text-sm font-semibold text-gray-900 mb-1.5">
-                    Type <span className="text-red-600">DEACTIVATE</span> to
-                    confirm
+                  <label className="block text-sm font-semibold text-gray-900 mb-1.5 md:mb-2">
+                    Type{" "}
+                    <span className="text-red-600 font-bold">DEACTIVATE</span>{" "}
+                    to confirm
                   </label>
                   <input
                     type="text"
                     value={deactivateConfirmText}
-                    onChange={(e) =>
-                      setDeactivateConfirmText(e.target.value.toUpperCase())
-                    }
-                    className="form-input"
-                    placeholder="Type DEACTIVATE"
+                    onChange={(e) => setDeactivateConfirmText(e.target.value)}
+                    placeholder="DEACTIVATE"
+                    className={`form-input ${
+                      deactivateConfirmText.length > 0 &&
+                      deactivateConfirmText !== "DEACTIVATE"
+                        ? "border-red-400 focus:border-red-400"
+                        : ""
+                    }`}
                   />
                 </div>
+              </div>
 
-                {/* Action Buttons */}
-                <div className="flex gap-3">
-                  <button
-                    onClick={handleCloseDeactivateModal}
-                    disabled={isDeactivating}
-                    className="flex-1 bg-white border border-gray-200 text-gray-700 py-3 rounded-lg font-semibold hover:bg-gray-50 transition-colors disabled:opacity-50"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    onClick={handleDeactivateAccount}
-                    disabled={
-                      deactivateConfirmText !== "DEACTIVATE" ||
-                      !deactivatePassword ||
-                      isDeactivating
-                    }
-                    className="flex-1 bg-red-600 text-white py-3 rounded-lg font-semibold hover:bg-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    {isDeactivating ? "Deactivating..." : "Deactivate Account"}
-                  </button>
-                </div>
+              {/* Footer */}
+              <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-gray-100 bg-gray-50/50">
+                <button
+                  onClick={handleCloseDeactivateModal}
+                  className="px-5 py-2.5 bg-white border border-gray-200 text-gray-700 font-semibold text-sm rounded-lg hover:bg-gray-50 transition-colors cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleDeactivateAccount}
+                  disabled={
+                    deactivateConfirmText !== "DEACTIVATE" ||
+                    !deactivatePassword ||
+                    isDeactivating
+                  }
+                  className="inline-flex items-center gap-2 px-5 py-2.5 bg-red-600 hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed text-white font-semibold text-sm rounded-lg transition-colors cursor-pointer"
+                >
+                  {isDeactivating ? (
+                    <>
+                      <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                      Deactivating...
+                    </>
+                  ) : (
+                    "Deactivate Account"
+                  )}
+                </button>
               </div>
             </div>
           </div>

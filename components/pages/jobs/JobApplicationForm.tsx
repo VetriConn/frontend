@@ -341,7 +341,7 @@ export default function JobApplicationForm({
             </p>
             <div className="flex flex-col md:flex-row items-center justify-center gap-3 md:gap-4">
               <Link
-                href="/dashboard/job-seeker/jobs"
+                href="/dashboard/find-jobs"
                 className="inline-flex items-center gap-2 px-5 py-2.5 mobile:px-4 mobile:py-2 bg-primary hover:bg-primary-hover text-white font-semibold text-sm mobile:text-xs rounded-lg transition-colors no-underline"
               >
                 Browse More Jobs

@@ -61,7 +61,7 @@ const jobSeekerNavItems: NavItem[] = [
   },
   {
     name: "Inbox",
-    href: "/dashboard/job-seeker/inbox",
+    href: "/dashboard/inbox",
     icon: <HiOutlineInbox className="w-5 h-5" />,
   },
 ];
@@ -75,7 +75,7 @@ const employerNavItems: NavItem[] = [
   },
   {
     name: "Jobs",
-    href: "/dashboard/employer/jobs",
+    href: "/dashboard/postings",
     icon: <HiOutlineBriefcase className="w-5 h-5" />,
     hasDropdown: true,
   },
@@ -267,8 +267,8 @@ const DashboardNavbar = () => {
   const avatarUrl = getAvatarUrl();
 
   const notificationsHref = isEmployer
-    ? "/dashboard/employer/notifications"
-    : "/dashboard/job-seeker/notifications";
+    ? "/dashboard/notifications"
+    : "/dashboard/notifications";
 
   // Don't render role-specific nav until the profile is confirmed to avoid flash
   const navItems = useMemo(() => {
@@ -363,7 +363,7 @@ const DashboardNavbar = () => {
                         Post New Job
                       </Link>
                       <Link
-                        href="/dashboard/employer/jobs"
+                        href="/dashboard/postings"
                         className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
                         onClick={() => setIsJobsDropdownOpen(false)}
                       >
@@ -425,7 +425,7 @@ const DashboardNavbar = () => {
                         Application Drafts
                       </Link>
                       <Link
-                        href="/dashboard/job-seeker/jobs"
+                        href="/dashboard/find-jobs"
                         className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
                         onClick={() => setIsJobsDropdownOpen(false)}
                       >
@@ -460,10 +460,10 @@ const DashboardNavbar = () => {
           {/* Messages - Employer only */}
           {isEmployer && (
             <Link
-              href="/dashboard/employer/inbox"
+              href="/dashboard/inbox"
               className={clsx(
                 "inline-flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors relative",
-                pathname === "/dashboard/employer/inbox"
+                pathname === "/dashboard/inbox"
                   ? "text-primary bg-red-50"
                   : "text-gray-600 hover:text-gray-900 hover:bg-gray-50",
               )}
@@ -531,7 +531,7 @@ const DashboardNavbar = () => {
                       View Public Company Page
                     </Link>
                     <Link
-                      href="/dashboard/employer/settings"
+                      href="/dashboard/settings"
                       className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50"
                       onClick={() => setIsProfileDropdownOpen(false)}
                     >
@@ -598,7 +598,7 @@ const DashboardNavbar = () => {
                       Saved Searches
                     </Link>
                     <Link
-                      href="/dashboard/job-seeker/settings"
+                      href="/dashboard/settings"
                       className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50"
                       onClick={() => setIsProfileDropdownOpen(false)}
                     >
@@ -720,7 +720,7 @@ const DashboardNavbar = () => {
                 Notifications
               </Link>
               <Link
-                href="/dashboard/employer/inbox"
+                href="/dashboard/inbox"
                 className="flex items-center gap-3 px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 min-h-[44px]"
                 onClick={closeMobileMenu}
               >
@@ -736,7 +736,7 @@ const DashboardNavbar = () => {
                 Company Profile
               </Link>
               <Link
-                href="/dashboard/employer/settings"
+                href="/dashboard/settings"
                 className="flex items-center gap-3 px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 min-h-[44px]"
                 onClick={closeMobileMenu}
               >
@@ -805,7 +805,7 @@ const DashboardNavbar = () => {
                 Saved Searches
               </Link>
               <Link
-                href="/dashboard/job-seeker/settings"
+                href="/dashboard/settings"
                 className="flex items-center gap-3 px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 min-h-[44px]"
                 onClick={closeMobileMenu}
               >

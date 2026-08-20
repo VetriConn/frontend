@@ -88,7 +88,7 @@ export const ReadyToApplyCard: React.FC = () => {
           </p>
 
           <Link
-            href="/dashboard/job-seeker/jobs"
+            href="/dashboard/find-jobs"
             className="inline-flex items-center gap-2 border border-primary text-primary px-4 py-2 md:px-5 md:py-2.5 rounded-lg font-medium hover:bg-red-50 transition-colors text-sm min-h-[44px]"
           >
             View all jobs

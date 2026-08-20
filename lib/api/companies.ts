@@ -190,6 +190,25 @@ export async function removeMember(
   return response.data;
 }
 
+/**
+ * Hand the company to another active member. Owner only, and the outgoing
+ * owner stays on as an admin rather than being dropped.
+ */
+export async function transferOwnership(
+  companyId: string,
+  userId: string,
+): Promise<Company> {
+  const response = await apiFetch<ApiEnvelope<Company>>(
+    `${COMPANIES_URL}/${companyId}/owner`,
+    {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ userId }),
+    },
+  );
+  return response.data;
+}
+
 // ── Jobs ────────────────────────────────────────────────────────────────────
 
 export async function getCompanyJobs(

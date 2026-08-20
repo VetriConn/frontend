@@ -5,12 +5,14 @@ import clsx from "clsx";
 import {
   HiOutlineUserPlus,
   HiOutlineTrash,
+  HiOutlineKey,
   HiOutlineClock,
   HiOutlineCheckCircle,
 } from "react-icons/hi2";
 import {
   inviteMember,
   removeMember,
+  transferOwnership,
   type Company,
   type CompanyMember,
   type CompanyRole,
@@ -63,9 +65,13 @@ export const CompanyTeam = ({
   const [inviteError, setInviteError] = useState<string | null>(null);
   const [isInviting, setIsInviting] = useState(false);
   const [removingId, setRemovingId] = useState<string | null>(null);
+  const [transferringId, setTransferringId] = useState<string | null>(null);
 
   const canInvite = myRole === "owner" || myRole === "admin";
   const canRemove = myRole === "owner";
+  // A company has exactly one owner and the owner cannot be removed, so
+  // handing it over is the only way for one to step back.
+  const canTransfer = myRole === "owner";
 
   const handleInvite = async (event: React.FormEvent) => {
     event.preventDefault();
@@ -98,6 +104,38 @@ export const CompanyTeam = ({
       );
     } finally {
       setIsInviting(false);
+    }
+  };
+
+  const handleTransfer = async (member: CompanyMember) => {
+    if (!member.user_id) return;
+
+    const who = member.invited_email || "this teammate";
+    const confirmed = window.confirm(
+      `Make ${who} the owner of ${company.name}?\n\n` +
+        "They will be able to manage the company, its jobs and its team. " +
+        "You will stay on as an admin.",
+    );
+    if (!confirmed) return;
+
+    setTransferringId(member.user_id);
+    try {
+      await transferOwnership(company._id, member.user_id);
+      showToast({
+        type: "success",
+        title: "Ownership transferred",
+        description: `${who} now owns ${company.name}. You are an admin.`,
+      });
+      onChanged();
+    } catch (err) {
+      showToast({
+        type: "error",
+        title: "Couldn't transfer ownership",
+        description:
+          err instanceof Error ? err.message : "Please try again in a moment.",
+      });
+    } finally {
+      setTransferringId(null);
     }
   };
 
@@ -242,6 +280,19 @@ export const CompanyTeam = ({
                   </>
                 )}
               </span>
+
+              {canTransfer && !isOwner && !isInvited && member.user_id && (
+                <button
+                  type="button"
+                  onClick={() => handleTransfer(member)}
+                  disabled={transferringId === member.user_id}
+                  aria-label={`Make ${member.invited_email || "teammate"} the owner`}
+                  title="Make owner"
+                  className="p-2 text-gray-400 hover:text-primary hover:bg-red-50 rounded-lg transition-colors disabled:opacity-50 min-h-[44px] min-w-[44px] flex items-center justify-center"
+                >
+                  <HiOutlineKey className="w-4 h-4" />
+                </button>
+              )}
 
               {canRemove && !isOwner && member.user_id && (
                 <button

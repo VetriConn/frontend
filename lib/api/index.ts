@@ -125,6 +125,7 @@ export {
   inviteMember,
   acceptInvite,
   removeMember,
+  transferOwnership,
   getCompanyJobs,
   adminListCompanies,
   adminApproveCompany,

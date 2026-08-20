@@ -17,7 +17,8 @@ import {
 
 const baseData: ContactInfoFormData = {
   phone_number: "+16135550178",
-  city: "Ottawa",
+  state_province: "ON",
+    city: "Ottawa",
   country: "Canada",
 };
 
@@ -125,7 +126,8 @@ describe("ContactInfoEditForm", () => {
     });
 
     it("should fail and surface an error when the city is empty", () => {
-      render(<ContactInfoEditForm initialData={{ ...baseData, city: "" }} />);
+      render(<ContactInfoEditForm initialData={{ ...baseData, state_province: "ON",
+    city: "" }} />);
 
       expect(runValidate()).toBe(false);
       expect(screen.getByText("City is required")).toBeInTheDocument();
@@ -143,7 +145,8 @@ describe("ContactInfoEditForm", () => {
     it("should report every invalid field at once", () => {
       render(
         <ContactInfoEditForm
-          initialData={{ phone_number: "", city: "", country: "" }}
+          initialData={{ phone_number: "", state_province: "ON",
+    city: "", country: "" }}
         />,
       );
 
@@ -168,7 +171,8 @@ describe("ContactInfoEditForm", () => {
       await user.clear(screen.getByLabelText(/City/));
       await user.type(screen.getByLabelText(/City/), "Toronto");
 
-      expect(formHandle()?.getData?.()).toMatchObject({ city: "Toronto" });
+      expect(formHandle()?.getData?.()).toMatchObject({ state_province: "ON",
+    city: "Toronto" });
     });
   });
 
@@ -187,7 +191,8 @@ describe("ContactInfoEditForm", () => {
 
       expect(onDataChange).toHaveBeenCalled();
       expect(onDataChange.mock.calls.at(-1)?.[0]).toMatchObject({
-        city: "Ottawa!",
+        state_province: "ON",
+    city: "Ottawa!",
       });
     });
 

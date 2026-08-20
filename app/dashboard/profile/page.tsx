@@ -92,6 +92,7 @@ export default function ProfilePage() {
   const [contactFormData, setContactFormData] = useState<ContactInfoFormData>({
     phone_number: "",
     city: "",
+    state_province: "",
     country: "",
   });
 
@@ -156,6 +157,7 @@ export default function ProfilePage() {
       setContactFormData({
         phone_number: userProfile.phone_number || "",
         city: userProfile.city || "",
+        state_province: userProfile.state_province || "",
         country: userProfile.country || "",
       });
     }
@@ -168,6 +170,7 @@ export default function ProfilePage() {
       await patchProfile({
         phone_number: contactFormData.phone_number,
         city: contactFormData.city,
+        state_province: contactFormData.state_province,
         country: contactFormData.country,
       });
       setEditSection(null);
@@ -759,11 +762,15 @@ export default function ProfilePage() {
   // Build the API user profile from our mapped profile
   const email = userProfile.email || "";
 
-  // Format location for display
-  const displayLocation =
-    userProfile.city && userProfile.country
-      ? `${userProfile.city}, ${userProfile.country}`
-      : "";
+  // "Toronto, ON, Canada" — the province is what distinguishes the several
+  // Londons and Hamiltons a Canadian board actually has to deal with.
+  const displayLocation = [
+    userProfile.city,
+    userProfile.state_province,
+    userProfile.country,
+  ]
+    .filter((part): part is string => Boolean(part?.trim()))
+    .join(", ");
 
   return (
     <AuthGuard>

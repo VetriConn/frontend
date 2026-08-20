@@ -134,6 +134,8 @@ export interface UserProfile {
   phone_number?: string;
   location?: string;
   city?: string;
+  /** Province or state. ISO 3166-2 code where we enumerate them. */
+  state_province?: string;
   country?: string;
 
   // Work Background
@@ -435,6 +437,8 @@ export interface EmployerDraftPayload {
   salary_max?: string;
   payment_type?: string;
   city?: string;
+  /** Province or state. ISO 3166-2 code where we enumerate them. */
+  state_province?: string;
   country?: string;
   work_schedule?: string;
 }

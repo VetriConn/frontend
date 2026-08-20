@@ -3,7 +3,11 @@
 import React, { Suspense, useState, useCallback, useMemo } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { HiOutlineArrowLeft, HiOutlineBookmarkSquare } from "react-icons/hi2";
+import {
+  HiOutlineArrowLeft,
+  HiOutlineBookmarkSquare,
+  HiOutlineMagnifyingGlass,
+} from "react-icons/hi2";
 import { SearchBar } from "@/components/ui/SearchBar";
 import { FilterPanel } from "@/components/ui/FilterPanel";
 import { JobResultsList } from "@/components/ui/JobResultsList";
@@ -156,6 +160,7 @@ const SearchResultsPage = () => {
     mutate,
     total: totalJobs,
     totalPages,
+    searchingMore,
   } = useJobs({
     page: currentPage,
     limit: PAGE_SIZE,
@@ -317,6 +322,27 @@ const SearchResultsPage = () => {
 
             {/* Job Results - Right Content */}
             <div className="lg:col-span-3">
+              {/* A thin result is not necessarily the final answer: the
+                  server may be fetching more from its sources right now. Say
+                  so, rather than letting an empty list read as "nothing
+                  exists". */}
+              {searchingMore && !isLoading && (
+                <div className="bg-red-50 border border-red-100 rounded-xl p-4 mb-4 flex items-start gap-3">
+                  <HiOutlineMagnifyingGlass className="w-5 h-5 text-primary shrink-0 mt-0.5" />
+                  <div>
+                    <p className="text-sm font-medium text-gray-900">
+                      Still looking for more matches
+                    </p>
+                    <p className="text-sm text-gray-500">
+                      We&apos;re searching further afield for
+                      {appliedSearchQuery ? ` “${appliedSearchQuery}”` : " this"}
+                      . Check back in a moment — new listings are added as we
+                      find them.
+                    </p>
+                  </div>
+                </div>
+              )}
+
               <JobResultsList
                 jobs={effectiveJobs}
                 totalCount={totalJobs}

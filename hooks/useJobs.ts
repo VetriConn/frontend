@@ -70,6 +70,8 @@ export function useJobs(options?: UseJobsOptions) {
     // and page controls had nothing to count against.
     total: pagination?.totalItems ?? jobs.length,
     totalPages: pagination?.totalPages ?? 1,
+    /** More results are being fetched from source for this search. */
+    searchingMore: data?.searchingMore === true,
     page: pagination?.currentPage ?? page,
     limit,
   };

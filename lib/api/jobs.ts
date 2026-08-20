@@ -42,6 +42,11 @@ export interface JobsPage {
   jobs: JobsResponse[];
   /** Absent when the response carried no envelope. */
   pagination?: PaginationMeta;
+  /**
+   * The server found little for this search and is fetching more from its
+   * sources in the background. The results shown are not the final answer.
+   */
+  searchingMore?: boolean;
 }
 
 export interface PaginationMeta {
@@ -105,6 +110,8 @@ export async function getJobs(options?: {
       return {
         jobs: payload,
         pagination: (data as PaginatedApiEnvelope<JobsResponse[]>).pagination,
+        searchingMore:
+          (data as { searching_more?: boolean }).searching_more === true,
       };
     }
   }

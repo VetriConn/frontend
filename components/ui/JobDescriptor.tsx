@@ -24,6 +24,7 @@ import { getInitials } from "@/lib/initials";
 import { hasApplicationDraft } from "@/lib/applicationDrafts";
 import { useUserProfile } from "@/hooks/useUserProfile";
 import { useMyCompanies } from "@/hooks/useCompanies";
+import { withReturnUrl } from "@/lib/auth-redirect";
 
 import {
   formatJobSalary,
@@ -124,7 +125,13 @@ const JobDescriptor: React.FC<JobDescriptorProps> = ({
   const [hasApplied, setHasApplied] = useState(false);
   const [hasDraft, setHasDraft] = useState(false);
   const { isSaved, isMutating, toggleSaved } = useSavedJobs();
-  const { userProfile } = useUserProfile();
+  const { userProfile, isLoading: profileLoading } = useUserProfile();
+
+  // Applying is where an anonymous visitor becomes a member, so every route to
+  // it is gated — including the redirect out to an external board, which would
+  // otherwise send the visitor away before we ever knew who they were.
+  const isSignedIn = Boolean(userProfile);
+  const signUpToApplyHref = withReturnUrl("/signup", `/jobs/${id}/apply`);
   const { companies } = useMyCompanies();
 
   // You cannot apply to a job you posted, or one posted by a company you are
@@ -482,7 +489,22 @@ const JobDescriptor: React.FC<JobDescriptorProps> = ({
                 )}
 
                 {/* Apply Button */}
-                {isOwnListing ? (
+                {profileLoading ? (
+                  // Held rather than guessed: rendering the signed-out label
+                  // first and swapping it a moment later reads as a glitch.
+                  <div
+                    className="w-full h-11 rounded-lg bg-gray-100 animate-pulse mb-3"
+                    aria-hidden="true"
+                  />
+                ) : !isSignedIn ? (
+                  <Link
+                    href={signUpToApplyHref}
+                    className="flex items-center justify-center gap-2 w-full bg-primary hover:bg-primary-hover text-white font-semibold text-sm py-3 px-4 rounded-lg transition-colors no-underline mb-3"
+                  >
+                    Sign up to apply
+                    <HiOutlineArrowLeft className="w-5 h-5 md:w-6 md:h-6 rotate-180" />
+                  </Link>
+                ) : isOwnListing ? (
                   <button
                     type="button"
                     disabled

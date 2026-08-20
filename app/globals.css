@@ -55,6 +55,18 @@
 @custom-variant tablet (@media (max-width: 768px));
 
 @layer base {
+  /* Tailwind v4's preflight leaves buttons on the default arrow cursor, so
+     every control in the app lost its click affordance on upgrade. Restore it
+     for anything interactive, while leaving disabled controls alone — those
+     set their own cursor (usually not-allowed) and should not look clickable. */
+  button:not(:disabled),
+  select:not(:disabled),
+  summary,
+  [role="button"]:not([aria-disabled="true"]),
+  [role="option"]:not([aria-disabled="true"]) {
+    cursor: pointer;
+  }
+
   *,
   *::before,
   *::after {

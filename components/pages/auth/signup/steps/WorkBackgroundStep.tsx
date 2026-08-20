@@ -31,7 +31,7 @@ export const WorkBackgroundStep = ({
       </p>
 
       {/* Form Fields */}
-      <div className="space-y-1">
+      <div className="space-y-2">
         <FormField
           label="Most Recent Job Title"
           name="job_title"
@@ -42,26 +42,30 @@ export const WorkBackgroundStep = ({
           error={errors.job_title}
         />
 
-        <CustomDropdown
-          label="Skill Area or Industry"
-          name="industry"
-          placeholder="Select your industry"
-          helperText="What area do you have the most experience in?"
-          value={formData.industry}
-          onChange={(value) => onFieldChange("industry", value)}
-          options={INDUSTRY_OPTIONS}
-          error={errors.industry}
-        />
+        <div className="mb-4">
+          <CustomDropdown
+            label="Skill Area or Industry"
+            name="industry"
+            placeholder="Select your industry"
+            helperText="What area do you have the most experience in?"
+            value={formData.industry}
+            onChange={(value) => onFieldChange("industry", value)}
+            options={INDUSTRY_OPTIONS}
+            error={errors.industry}
+          />
+        </div>
 
-        <CustomDropdown
-          label="Years of Experience"
-          name="years_of_experience"
-          placeholder="Select your experience level"
-          value={formData.years_of_experience}
-          onChange={(value) => onFieldChange("years_of_experience", value)}
-          options={EXPERIENCE_LEVELS}
-          error={errors.years_of_experience}
-        />
+        <div className="mb-4">
+          <CustomDropdown
+            label="Years of Experience"
+            name="years_of_experience"
+            placeholder="Select your experience level"
+            value={formData.years_of_experience}
+            onChange={(value) => onFieldChange("years_of_experience", value)}
+            options={EXPERIENCE_LEVELS}
+            error={errors.years_of_experience}
+          />
+        </div>
       </div>
 
       {/* Navigation Buttons */}

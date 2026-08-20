@@ -25,7 +25,7 @@ export const CompanyInfoStep = ({
         This helps job seekers learn about your organization.
       </p>
 
-      <div className="space-y-1">
+      <div className="space-y-2">
         <FormField
           label="Company Name"
           name="company_name"
@@ -37,16 +37,18 @@ export const CompanyInfoStep = ({
           required
         />
 
-        <CustomDropdown
-          label="Industry"
-          name="company_industry"
-          placeholder="Select your company's industry"
-          helperText="What type of work does your company do?"
-          value={formData.company_industry}
-          onChange={(value) => onFieldChange("company_industry", value)}
-          options={COMPANY_INDUSTRY_OPTIONS}
-          error={errors.company_industry}
-        />
+        <div className="mb-4">
+          <CustomDropdown
+            label="Industry"
+            name="company_industry"
+            placeholder="Select your company's industry"
+            helperText="What type of work does your company do?"
+            value={formData.company_industry}
+            onChange={(value) => onFieldChange("company_industry", value)}
+            options={COMPANY_INDUSTRY_OPTIONS}
+            error={errors.company_industry}
+          />
+        </div>
 
         <FormField
           label="Company Location"

@@ -423,7 +423,13 @@ export interface EmployerThreadDetail {
 }
 
 // Job Seeker Messaging Types
-export type JobSeekerMessageSender = "job_seeker" | "employer";
+/**
+ * Mirrors the server's Message.sender enum, which stores "applicant" —
+ * NOT "job_seeker". Declared per-side here because the two repos share no
+ * package; keep it identical to MessageSender in backend/src/types/Message.ts.
+ * Getting this wrong renders a seeker's own messages as the employer's.
+ */
+export type JobSeekerMessageSender = "employer" | "applicant";
 
 export interface JobSeekerThreadMessage {
   _id: string;

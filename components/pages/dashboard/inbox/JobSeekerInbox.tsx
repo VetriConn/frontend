@@ -94,7 +94,7 @@ export default function JobSeekerInbox() {
     if (!threadData) return [];
     return threadData.messages.map((msg) => ({
       id: msg._id,
-      sender: msg.sender === "job_seeker" ? "me" : "them",
+      sender: msg.sender === "applicant" ? "me" : "them",
       text: msg.content,
       attachmentUrl: msg.attachment_url,
       attachmentName: msg.attachment_name,

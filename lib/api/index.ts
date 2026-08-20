@@ -55,20 +55,20 @@ export {
   clearNotifications,
 } from "./notifications";
 
-// Employer
+// Postings
 export {
-  getEmployerJobs,
-  getEmployerJobById,
-  getEmployerApplications,
-  createEmployerJob,
-  updateEmployerJob,
-  deleteEmployerJob,
-  updateEmployerApplicationStatus,
-} from "./employer";
+  getMyPostings,
+  getMyPosting,
+  getReceivedApplications,
+  createPosting,
+  updatePosting,
+  deletePosting,
+  updateApplicationStatus,
+} from "./postings";
 
 // Job Seeker Messaging
 export {
-} from "./jobseeker";
+} from "./job-search";
 
 // Job Seeker Drafts
 export {
@@ -76,7 +76,7 @@ export {
   getDraft,
   upsertDraft,
   deleteDraft,
-} from "./jobseeker";
+} from "./job-search";
 
 // Job Seeker Saved Searches
 export {
@@ -85,7 +85,7 @@ export {
   updateSavedSearch,
   deleteSavedSearch,
   runSavedSearch,
-} from "./jobseeker";
+} from "./job-search";
 
 // Job Seeker Application Tracker
 export {
@@ -93,7 +93,7 @@ export {
   createTrackerEntry,
   updateTrackerEntry,
   deleteTrackerEntry,
-} from "./jobseeker";
+} from "./job-search";
 
 // Attachments
 export {

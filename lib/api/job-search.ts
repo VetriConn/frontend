@@ -1,39 +1,12 @@
 /**
- * Job Seeker API Service
+ * The job-seeking side of an account: application drafts, saved searches and
+ * the application tracker.
  *
- * Messaging, Application Drafts, Saved Searches, and Application Tracker.
+ * Messaging used to live here too, split from an employer twin. Both sides are
+ * one surface now — see ./messages.
  */
 
 import { API_BASE_URL, apiFetch, ApiEnvelope, PaginatedApiEnvelope } from "./client";
-import type { JobSeekerThreadMessage } from "@/types/api";
-
-export interface JobSeekerThreadSummary {
-  application_id: string;
-  employer: {
-    user_id?: string;
-    company_name: string;
-    contact_name?: string;
-    email?: string;
-    phone?: string;
-  };
-  job: {
-    role: string;
-    company_name: string;
-  };
-  applied_at?: string;
-  last_message?: {
-    _id: string;
-    sender: "job_seeker" | "employer";
-    content: string;
-    attachment_url?: string;
-    attachment_name?: string;
-    createdAt: string;
-  } | null;
-}
-
-export type JobSeekerThreadDetail = JobSeekerThreadSummary;
-
-export type { JobSeekerThreadMessage };
 
 export interface ApplicationDraftResponse {
   _id: string;

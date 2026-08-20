@@ -26,7 +26,7 @@ import type { Conversation, Message } from "@/types/inbox";
 const counterpartName = (thread: ThreadSummary): string =>
   thread.side === "employer"
     ? thread.counterpart.full_name || "Applicant"
-    : thread.job.company_name || thread.counterpart.full_name || "Employer";
+    : thread.job.company_name || thread.counterpart.full_name || "Hiring team";
 
 export default function Inbox() {
   const { userProfile } = useUserProfile();

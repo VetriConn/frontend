@@ -13,7 +13,7 @@ import {
   type ApiEnvelope,
   type PaginatedApiEnvelope,
 } from "./client";
-import type { EmployerJobSummary } from "@/types/api";
+import type { PostedJobSummary } from "@/types/api";
 
 export type CompanyRole = "owner" | "admin" | "recruiter";
 export type CompanyMemberStatus = "invited" | "active";
@@ -213,8 +213,8 @@ export async function transferOwnership(
 
 export async function getCompanyJobs(
   companyId: string,
-): Promise<EmployerJobSummary[]> {
-  const response = await apiFetch<PaginatedApiEnvelope<EmployerJobSummary[]>>(
+): Promise<PostedJobSummary[]> {
+  const response = await apiFetch<PaginatedApiEnvelope<PostedJobSummary[]>>(
     `${COMPANIES_URL}/${companyId}/jobs`,
     { method: "GET" },
   );

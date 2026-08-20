@@ -8,7 +8,7 @@ import {
   deleteSavedSearch,
   runSavedSearch as runSavedSearchApi,
   type SavedSearchResponse,
-} from "@/lib/api/jobseeker";
+} from "@/lib/api/job-search";
 
 // ─── Types ──────────────────────────────────────────────────────────────────────
 

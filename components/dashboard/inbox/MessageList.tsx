@@ -22,7 +22,7 @@ export function MessageList({
   userAvatar,
   userName = "You",
   themAvatar,
-  themName = "Employer",
+  themName = "Them",
 }: MessageListProps) {
   return (
     <div className="flex-1 overflow-y-auto px-4 md:px-6 py-6 space-y-4 bg-gray-50 custom-scrollbar">

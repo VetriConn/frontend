@@ -4,7 +4,7 @@ import dynamic from "next/dynamic";
 import { AuthGuard } from "@/components/auth/AuthGuard";
 
 const CreateJobPosting = dynamic(
-  () => import("@/components/pages/dashboard/employer/CreateJobPosting"),
+  () => import("@/components/pages/dashboard/postings/CreateJobPosting"),
   {
     ssr: false,
     loading: () => (

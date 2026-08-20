@@ -3,8 +3,8 @@
 import { useState, useMemo } from "react";
 import useSWR from "swr";
 import {
-  getEmployerApplications,
-  updateEmployerApplicationStatus,
+  getReceivedApplications,
+  updateApplicationStatus,
 } from "@/lib/api";
 import { useToaster } from "@/components/ui/Toaster";
 import { AuthGuard } from "@/components/auth/AuthGuard";
@@ -79,7 +79,7 @@ export default function ApplicationsPage() {
     data: applications = [],
     isLoading,
     mutate,
-  } = useSWR("employer-applications", getEmployerApplications);
+  } = useSWR("employer-applications", getReceivedApplications);
 
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedStatus, setSelectedStatus] = useState<string>("all");
@@ -127,7 +127,7 @@ export default function ApplicationsPage() {
   ) => {
     setBusyApplicationId(applicationId);
     try {
-      await updateEmployerApplicationStatus(applicationId, status);
+      await updateApplicationStatus(applicationId, status);
       await mutate();
       showToast({
         type: "success",

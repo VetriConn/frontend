@@ -16,11 +16,11 @@ import { useUserProfile } from "@/hooks/useUserProfile";
 import { useMyCompanies } from "@/hooks/useCompanies";
 import { canPostJobsFor } from "@/lib/api";
 import {
-  createEmployerJob as createEmployerJobApi,
-  getEmployerJobById,
-  updateEmployerJob,
+  createPosting,
+  getMyPosting,
+  updatePosting,
 } from "@/lib/api";
-import type { EmployerDraftPayload, EmployerJobDetail } from "@/types/api";
+import type { JobDraftPayload, PostedJobDetail } from "@/types/api";
 
 // ─── Constants ───────────────────────────────────────────────────────────────
 
@@ -727,8 +727,8 @@ const CreateJobPosting = () => {
   const totalSteps = WIZARD_STEPS.length;
   const draftId = searchParams.get("draftId");
 
-  const mapJobToFormData = useCallback((job: EmployerJobDetail): JobFormData => {
-    const draft = (job.draft_payload || {}) as EmployerDraftPayload;
+  const mapJobToFormData = useCallback((job: PostedJobDetail): JobFormData => {
+    const draft = (job.draft_payload || {}) as JobDraftPayload;
     const tags = job.tags || [];
     const qualifications = job.qualifications || [];
     const responsibilities = job.responsibilities || [];
@@ -840,7 +840,7 @@ const CreateJobPosting = () => {
     let active = true;
     setIsDraftLoading(true);
 
-    void getEmployerJobById(draftId)
+    void getMyPosting(draftId)
       .then((job) => {
         if (!active) return;
         setEditingJobId(job._id);
@@ -1002,14 +1002,14 @@ const CreateJobPosting = () => {
     setIsSaving(true);
     try {
       if (editingJobId) {
-        await updateEmployerJob(editingJobId, buildPayload("draft"));
+        await updatePosting(editingJobId, buildPayload("draft"));
         showToast({
           type: "success",
           title: "Draft updated",
           description: "Your job draft was updated successfully",
         });
       } else {
-        const newJob = await createEmployerJobApi(buildPayload("draft"));
+        const newJob = await createPosting(buildPayload("draft"));
         // Set the editing ID so subsequent saves update instead of creating new drafts
         setEditingJobId(newJob._id);
         // Update URL to include draftId
@@ -1044,9 +1044,9 @@ const CreateJobPosting = () => {
     setIsSaving(true);
     try {
       if (editingJobId) {
-        await updateEmployerJob(editingJobId, buildPayload("published"));
+        await updatePosting(editingJobId, buildPayload("published"));
       } else {
-        await createEmployerJobApi(buildPayload("published"));
+        await createPosting(buildPayload("published"));
       }
       await mutate("employer-jobs-dashboard");
       await mutate("employer-jobs-manage");

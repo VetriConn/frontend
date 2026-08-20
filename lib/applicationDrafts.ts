@@ -11,7 +11,7 @@ import {
   upsertDraft,
   deleteDraft,
   type ApplicationDraftResponse,
-} from "@/lib/api/jobseeker";
+} from "@/lib/api/job-search";
 
 export interface ApplicationDraftRecord {
   jobId: string;

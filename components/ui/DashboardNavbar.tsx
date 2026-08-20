@@ -626,7 +626,7 @@ const DashboardNavbar = () => {
           ))}
           <hr className="my-2 border-gray-100" />
 
-          {/* Employer mobile menu items */}
+          {/* Posting and account items */}
             <>
               <Link
                 href="/dashboard/post-job"

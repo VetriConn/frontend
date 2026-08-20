@@ -18,8 +18,6 @@ const ROUTE_LABELS: Record<string, string> = {
   notifications: "Notifications",
   community: "Community",
   inbox: "Inbox",
-  // Employer routes
-  employer: "Employer",
   "companies": "Companies",
   "post-job": "Post a Job",
   applications: "Applications",

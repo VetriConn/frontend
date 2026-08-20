@@ -89,7 +89,6 @@ export const step5Schema = z.object({
   resumeFile: z.instanceof(File).nullable().optional(),
 });
 
-// Employer Step 3: Company Information
 // Experience levels for dropdown (standardized format matching profile settings)
 export const EXPERIENCE_LEVELS = [
   { value: "0-2 years", label: "0–2 years" },

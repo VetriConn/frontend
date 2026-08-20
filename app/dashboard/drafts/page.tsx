@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import useSWR from "swr";
-import { getEmployerJobs } from "@/lib/api";
+import { getMyPostings } from "@/lib/api";
 import { AuthGuard } from "@/components/auth/AuthGuard";
 import {
   HiOutlineClipboardDocument,
@@ -15,7 +15,7 @@ import { formatDate } from "@/lib/date-utils";
 export default function ManageDraftsPage() {
   const { data: jobs = [], isLoading } = useSWR(
     "employer-jobs-drafts",
-    getEmployerJobs,
+    getMyPostings,
   );
 
   const drafts = jobs.filter((job) => job.status === "draft");

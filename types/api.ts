@@ -305,91 +305,7 @@ export interface ApplicationItem {
   updatedAt?: string;
 }
 
-export type EmployerMessageSender = "employer" | "applicant";
-
-export interface EmployerThreadSummary {
-  application_id: string;
-  applicant: {
-    user_id?: string;
-    full_name: string;
-    email: string;
-    phone: string;
-  };
-  job: {
-    role: string;
-    company_name: string;
-  };
-  selected_skills?: string[];
-  additional_info?: string;
-  applied_at?: string;
-  last_message?: {
-    _id: string;
-    sender: EmployerMessageSender;
-    content: string;
-    attachment_url?: string;
-    attachment_name?: string;
-    attachment_mime_type?: string;
-    attachment_size?: number;
-    createdAt: string;
-  } | null;
-}
-
-export interface EmployerThreadMessage {
-  _id: string;
-  application_id: string;
-  poster_id: string;
-  applicant_id: string;
-  sender: EmployerMessageSender;
-  content: string;
-  attachment_url?: string;
-  attachment_name?: string;
-  attachment_mime_type?: string;
-  attachment_size?: number;
-  read_by_employer: boolean;
-  read_by_applicant: boolean;
-  createdAt: string;
-  updatedAt: string;
-}
-
-export interface EmployerThreadDetail {
-  application_id: string;
-  applicant: {
-    user_id?: string;
-    full_name: string;
-    email: string;
-    phone: string;
-  };
-  job: {
-    role: string;
-    company_name: string;
-  };
-  selected_skills?: string[];
-  additional_info?: string;
-  applied_at?: string;
-}
-
 // Job Seeker Messaging Types
-/**
- * Mirrors the server's Message.sender enum, which stores "applicant" —
- * NOT "job_seeker". Declared per-side here because the two repos share no
- * package; keep it identical to MessageSender in backend/src/types/Message.ts.
- * Getting this wrong renders a seeker's own messages as the employer's.
- */
-export type JobSeekerMessageSender = "employer" | "applicant";
-
-export interface JobSeekerThreadMessage {
-  _id: string;
-  application_id: string;
-  sender: JobSeekerMessageSender;
-  content: string;
-  attachment_url?: string;
-  attachment_name?: string;
-  attachment_mime_type?: string;
-  attachment_size?: number;
-  createdAt: string;
-  updatedAt?: string;
-}
-
 export type NotificationType =
   | "application_sent"
   | "application_received"
@@ -412,7 +328,7 @@ export interface NotificationItem {
   updatedAt?: string;
 }
 
-export interface EmployerJobSummary {
+export interface PostedJobSummary {
   _id: string;
   id: string;
   role: string;
@@ -424,7 +340,7 @@ export interface EmployerJobSummary {
   updatedAt?: string;
 }
 
-export interface EmployerDraftPayload {
+export interface JobDraftPayload {
   job_title?: string;
   job_category?: string;
   job_type?: string;
@@ -443,7 +359,7 @@ export interface EmployerDraftPayload {
   work_schedule?: string;
 }
 
-export interface EmployerJobDetail extends EmployerJobSummary {
+export interface PostedJobDetail extends PostedJobSummary {
   description?: string;
   full_description?: string;
   tags?: string[];
@@ -467,7 +383,7 @@ export interface EmployerJobDetail extends EmployerJobSummary {
       symbol?: string;
     };
   };
-  draft_payload?: EmployerDraftPayload;
+  draft_payload?: JobDraftPayload;
 }
 
 // Attachment types (matching backend schema)

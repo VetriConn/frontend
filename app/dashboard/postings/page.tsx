@@ -4,9 +4,9 @@ import Link from "next/link";
 import { useState, useMemo } from "react";
 import useSWR from "swr";
 import {
-  deleteEmployerJob,
-  getEmployerJobs,
-  updateEmployerJob,
+  deletePosting,
+  getMyPostings,
+  updatePosting,
 } from "@/lib/api";
 import { useToaster } from "@/components/ui/Toaster";
 import { AuthGuard } from "@/components/auth/AuthGuard";
@@ -38,7 +38,7 @@ export default function ManageJobsPage() {
     data: jobs = [],
     isLoading,
     mutate,
-  } = useSWR("employer-jobs-manage", getEmployerJobs);
+  } = useSWR("employer-jobs-manage", getMyPostings);
 
   // Pagination calculations
   const totalPages = Math.ceil(jobs.length / itemsPerPage);
@@ -61,7 +61,7 @@ export default function ManageJobsPage() {
   ) => {
     setBusyJobId(jobId);
     try {
-      await updateEmployerJob(jobId, { status: nextStatus });
+      await updatePosting(jobId, { status: nextStatus });
       await mutate();
       showToast({
         type: "success",
@@ -84,7 +84,7 @@ export default function ManageJobsPage() {
   const handleDelete = async (jobId: string) => {
     setBusyJobId(jobId);
     try {
-      await deleteEmployerJob(jobId);
+      await deletePosting(jobId);
       await mutate();
       showToast({
         type: "success",

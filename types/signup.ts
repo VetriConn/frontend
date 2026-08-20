@@ -23,8 +23,6 @@ export interface SignupFormData {
 
   // Step 5 - Resume Upload (optional)
   resumeFile: File | null;
-
-  // Employer Step 3 - Company Info
 }
 
 /**

@@ -43,12 +43,15 @@ const RecommendedJobCard: React.FC<RecommendedJobCardProps> = ({
       className={clsx(
         CARD_SURFACE,
         CARD_FOCUS_WITHIN,
-        "p-5 flex flex-col justify-between",
+        // h-full + the grid's default stretch makes every card in a row the
+        // same height; mt-auto on the action pins it to the bottom, so the
+        // buttons line up whatever the content above them does.
+        "p-5 flex flex-col h-full",
       )}
     >
       <Link
         href={`/jobs/${id}`}
-        className="no-underline text-current focus:outline-none"
+        className="no-underline text-current focus:outline-none block mb-4"
       >
         {/* One step down the scale: 24px in a 274px card overwhelmed it.
             Two lines are clamped AND reserved, so a one-line title and a
@@ -63,7 +66,9 @@ const RecommendedJobCard: React.FC<RecommendedJobCardProps> = ({
 
         <div className={clsx(CARD_META_ROW, "text-gray-600 mb-2")}>
           <HiOutlineBriefcase className={CARD_META_ICON} />
-          <span className="truncate">{company_name}</span>
+          <span className="truncate" title={company_name}>
+            {company_name}
+          </span>
         </div>
 
         <div className={clsx(CARD_META_ROW, "text-gray-600 mb-2")}>
@@ -78,7 +83,7 @@ const RecommendedJobCard: React.FC<RecommendedJobCardProps> = ({
           </div>
         )}
 
-        <div className={clsx(CARD_META_ROW, "text-primary font-medium mb-4")}>
+        <div className={clsx(CARD_META_ROW, "text-primary font-medium")}>
           <HiCurrencyDollar className="w-4 h-4 shrink-0" />
           <span>{salary_range}</span>
         </div>
@@ -91,7 +96,7 @@ const RecommendedJobCard: React.FC<RecommendedJobCardProps> = ({
           own process. */}
       <Link
         href={`/jobs/${id}/apply`}
-        className="block w-full bg-primary hover:bg-primary-hover text-white text-center py-2.5 rounded-lg font-medium transition-colors text-sm no-underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+        className="mt-auto block w-full bg-primary hover:bg-primary-hover text-white text-center py-2.5 rounded-lg font-medium transition-colors text-sm no-underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
       >
         Apply Now
       </Link>
@@ -211,7 +216,7 @@ export const RecommendedJobs: React.FC = () => {
           {jobs.map((job, index) => (
             <div
               key={job.id}
-              className="reveal-on-enter"
+              className="reveal-on-enter h-full"
               style={{ "--reveal-index": index } as React.CSSProperties}
             >
               <RecommendedJobCard {...job} />

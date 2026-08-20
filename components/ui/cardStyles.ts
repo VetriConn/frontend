@@ -33,8 +33,18 @@ export const CARD_FOCUS_WITHIN =
 export const CARD_TITLE =
   "font-semibold text-gray-900 leading-snug tracking-tight";
 
-/** A row of metadata — icon plus value. */
-export const CARD_META_ROW = "inline-flex items-center gap-2 text-sm";
+/**
+ * A metadata row that occupies its own line — icon plus value.
+ *
+ * Block-level on purpose. This was inline-flex, which let consecutive rows sit
+ * beside each other, so a card's location ran straight into its salary with no
+ * gap. min-w-0 lets the value inside truncate instead of pushing past the
+ * card's edge, which a long company name did.
+ */
+export const CARD_META_ROW = "flex items-center gap-2 text-sm min-w-0";
+
+/** A metadata item that shares a line with others, as on the browse card. */
+export const CARD_META_INLINE = "inline-flex items-center gap-1.5 text-sm";
 
 /** Icons sitting in a metadata row. */
 export const CARD_META_ICON = "w-4 h-4 text-gray-400 shrink-0";

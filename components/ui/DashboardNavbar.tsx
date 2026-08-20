@@ -27,7 +27,6 @@ import {
   HiOutlineClipboardDocument,
   HiOutlineDocumentText,
   HiOutlineUserGroup,
-  HiOutlineChatBubbleLeftRight,
   HiOutlineGlobeAlt,
   HiOutlineCreditCard,
 } from "react-icons/hi2";
@@ -39,11 +38,24 @@ import { useUserProfile } from "@/hooks/useUserProfile";
 import { useNotifications } from "@/hooks/useNotifications";
 import { useMyCompanies } from "@/hooks/useCompanies";
 
+interface NavLink {
+  name: string;
+  href: string;
+  icon?: React.ReactNode;
+  /** Renders as a section heading above the link, not as a link itself. */
+  heading?: string;
+}
+
 interface NavItem {
   name: string;
   href: string;
   icon: React.ReactNode;
-  hasDropdown?: boolean;
+  /**
+   * Each item owns its own menu. They used to share one open flag and one
+   * body, so opening either showed the same combined list under whichever was
+   * clicked — two triggers, one panel.
+   */
+  dropdown?: NavLink[];
 }
 
 // Job seeker navigation
@@ -56,13 +68,40 @@ const navItemsForEveryone: NavItem[] = [
     name: "Find Jobs",
     href: "/dashboard",
     icon: <HiOutlineBriefcase className="w-5 h-5" />,
-    hasDropdown: true,
+    dropdown: [
+      { name: "Browse Jobs", href: "/dashboard/find-jobs" },
+      { name: "Saved Jobs", href: "/dashboard/saved-jobs" },
+      { name: "Saved Searches", href: "/dashboard/saved-searches" },
+      { name: "Applied Jobs", href: "/dashboard/applied-jobs" },
+      { name: "Application Drafts", href: "/dashboard/application-drafts" },
+    ],
   },
   {
     name: "My Postings",
     href: "/dashboard/postings",
     icon: <HiOutlineBuildingOffice2 className="w-5 h-5" />,
-    hasDropdown: true,
+    dropdown: [
+      {
+        name: "Post New Job",
+        href: "/dashboard/post-job",
+        icon: <HiOutlinePlusCircle className="w-5 h-5 text-primary" />,
+      },
+      {
+        name: "Manage Job Postings",
+        href: "/dashboard/postings",
+        icon: <HiOutlineDocumentText className="w-5 h-5 text-gray-400" />,
+      },
+      {
+        name: "Manage Job Drafts",
+        href: "/dashboard/drafts",
+        icon: <HiOutlineClipboardDocument className="w-5 h-5 text-gray-400" />,
+      },
+      {
+        name: "Applicants",
+        href: "/dashboard/applications",
+        icon: <HiOutlineUserGroup className="w-5 h-5 text-gray-400" />,
+      },
+    ],
   },
   {
     name: "Community",
@@ -73,6 +112,35 @@ const navItemsForEveryone: NavItem[] = [
     name: "Inbox",
     href: "/dashboard/inbox",
     icon: <HiOutlineInbox className="w-5 h-5" />,
+  },
+];
+
+/** Account-level destinations, listed once each. */
+const ACCOUNT_LINKS: NavLink[] = [
+  {
+    name: "Notifications",
+    href: "/dashboard/notifications",
+    icon: <HiOutlineBell className="w-5 h-5 text-gray-400" />,
+  },
+  {
+    name: "Messages",
+    href: "/dashboard/inbox",
+    icon: <HiOutlineInbox className="w-5 h-5 text-gray-400" />,
+  },
+  {
+    name: "Companies",
+    href: "/dashboard/companies",
+    icon: <HiOutlineBuildingOffice2 className="w-5 h-5 text-gray-400" />,
+  },
+  {
+    name: "View Profile",
+    href: "/dashboard/profile",
+    icon: <HiOutlineUser className="w-5 h-5 text-gray-400" />,
+  },
+  {
+    name: "Account Settings",
+    href: "/dashboard/settings",
+    icon: <HiOutlineCog6Tooth className="w-5 h-5 text-gray-400" />,
   },
 ];
 
@@ -95,7 +163,9 @@ const DashboardNavbar = () => {
   const { unreadCount } = useNotifications();
   const { companies } = useMyCompanies();
   const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false);
-  const [isJobsDropdownOpen, setIsJobsDropdownOpen] = useState(false);
+  // Which menu is open, by item name — null when none is. A single boolean
+  // meant both triggers drove the same panel.
+  const [openDropdown, setOpenDropdown] = useState<string | null>(null);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const profileDropdownRef = useRef<HTMLDivElement>(null);
   const jobsDropdownRef = useRef<HTMLDivElement>(null);
@@ -112,11 +182,13 @@ const DashboardNavbar = () => {
       ) {
         setIsProfileDropdownOpen(false);
       }
+      // One ref around the whole nav: with a menu per item, a single shared
+      // ref only ever pointed at the last one rendered.
       if (
         jobsDropdownRef.current &&
         !jobsDropdownRef.current.contains(event.target as Node)
       ) {
-        setIsJobsDropdownOpen(false);
+        setOpenDropdown(null);
       }
       // Mobile menu backdrop click handled separately
     };
@@ -275,17 +347,18 @@ const DashboardNavbar = () => {
         </Link>
 
         {/* Right Side - All Navigation Items */}
-        <div className="hidden md:flex items-center gap-2">
+        <div className="hidden md:flex items-center gap-2" ref={jobsDropdownRef}>
           {/* Center Navigation */}
           {navItems.map((item) => (
-            <div
-              key={item.name}
-              className="relative"
-              ref={item.hasDropdown ? jobsDropdownRef : undefined}
-            >
-              {item.hasDropdown ? (
+            <div key={item.name} className="relative">
+              {item.dropdown ? (
                 <button
-                  onClick={() => setIsJobsDropdownOpen(!isJobsDropdownOpen)}
+                  onClick={() =>
+                    setOpenDropdown(
+                      openDropdown === item.name ? null : item.name,
+                    )
+                  }
+                  aria-expanded={openDropdown === item.name}
                   className={clsx(
                     "flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors",
                     pathname === item.href
@@ -298,7 +371,7 @@ const DashboardNavbar = () => {
                   <HiOutlineChevronDown
                     className={clsx(
                       "w-4 h-4 transition-transform",
-                      isJobsDropdownOpen && "rotate-180",
+                      openDropdown === item.name && "rotate-180",
                     )}
                   />
                 </button>
@@ -316,91 +389,24 @@ const DashboardNavbar = () => {
                   <span>{item.name}</span>
                 </Link>
               )}
-              {/* Dropdown menu - role aware */}
-              {item.hasDropdown && isJobsDropdownOpen && (
+              {item.dropdown && openDropdown === item.name && (
                 <div
                   className="absolute top-full left-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg py-1 z-50"
                   style={{ minWidth: "200px" }}
+                  role="menu"
                 >
-                    <>
-                      <div className="px-4 py-1.5 text-xs font-semibold text-primary uppercase tracking-wider">
-                        Job Management
-                      </div>
-                      <Link
-                        href="/dashboard/post-job"
-                        className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
-                        onClick={() => setIsJobsDropdownOpen(false)}
-                      >
-                        <HiOutlinePlusCircle className="w-5 h-5 text-primary" />
-                        Post New Job
-                      </Link>
-                      <Link
-                        href="/dashboard/postings"
-                        className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
-                        onClick={() => setIsJobsDropdownOpen(false)}
-                      >
-                        <HiOutlineDocumentText className="w-5 h-5 text-gray-400" />
-                        Manage Job Postings
-                      </Link>
-                      <Link
-                        href="/dashboard/drafts"
-                        className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
-                        onClick={() => setIsJobsDropdownOpen(false)}
-                      >
-                        <HiOutlineClipboardDocument className="w-5 h-5 text-gray-400" />
-                        Manage Job Drafts
-                      </Link>
-                      <Link
-                        href="/dashboard/applications"
-                        className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
-                        onClick={() => setIsJobsDropdownOpen(false)}
-                      >
-                        <HiOutlineUserGroup className="w-5 h-5 text-gray-400" />
-                        Applications / Applicants
-                      </Link>
-                      <Link
-                        href="/dashboard"
-                        className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
-                        onClick={() => setIsJobsDropdownOpen(false)}
-                      >
-                        All Jobs
-                      </Link>
-                      <Link
-                        href="/dashboard/saved-jobs"
-                        className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
-                        onClick={() => setIsJobsDropdownOpen(false)}
-                      >
-                        Saved Jobs
-                      </Link>
-                      <Link
-                        href="/dashboard/saved-searches"
-                        className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
-                        onClick={() => setIsJobsDropdownOpen(false)}
-                      >
-                        Saved Searches
-                      </Link>
-                      <Link
-                        href="/dashboard/applied-jobs"
-                        className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
-                        onClick={() => setIsJobsDropdownOpen(false)}
-                      >
-                        Applied Jobs
-                      </Link>
-                      <Link
-                        href="/dashboard/application-drafts"
-                        className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
-                        onClick={() => setIsJobsDropdownOpen(false)}
-                      >
-                        Application Drafts
-                      </Link>
-                      <Link
-                        href="/dashboard/find-jobs"
-                        className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
-                        onClick={() => setIsJobsDropdownOpen(false)}
-                      >
-                        Browse Jobs
-                      </Link>
-                    </>
+                  {item.dropdown.map((link) => (
+                    <Link
+                      key={link.href}
+                      href={link.href}
+                      role="menuitem"
+                      className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                      onClick={() => setOpenDropdown(null)}
+                    >
+                      {link.icon}
+                      {link.name}
+                    </Link>
+                  ))}
                 </div>
               )}
             </div>
@@ -626,136 +632,45 @@ const DashboardNavbar = () => {
           ))}
           <hr className="my-2 border-gray-100" />
 
-          {/* Posting and account items */}
-            <>
-              <Link
-                href="/dashboard/post-job"
-                className="flex items-center gap-3 px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 min-h-[44px]"
-                onClick={closeMobileMenu}
-              >
-                <HiOutlinePlusCircle className="w-5 h-5 text-primary" />
-                Post New Job
-              </Link>
-              <Link
-                href="/dashboard/applications"
-                className="flex items-center gap-3 px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 min-h-[44px]"
-                onClick={closeMobileMenu}
-              >
-                <HiOutlineUserGroup className="w-5 h-5 text-gray-400" />
-                Applications
-              </Link>
-              <Link
-                href="/dashboard/drafts"
-                className="flex items-center gap-3 px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 min-h-[44px]"
-                onClick={closeMobileMenu}
-              >
-                <HiOutlineClipboardDocument className="w-5 h-5 text-gray-400" />
-                Manage Job Drafts
-              </Link>
-              <Link
-                href={notificationsHref}
-                className="flex items-center gap-3 px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 min-h-[44px]"
-                onClick={closeMobileMenu}
-              >
-                <div className="relative">
-                  <HiOutlineBell className="w-5 h-5" />
-                  {hasUnreadNotifications && (
-                    <span className="absolute -top-1 -right-1 w-2 h-2 bg-primary rounded-full" />
-                  )}
-                </div>
-                Notifications
-              </Link>
-              <Link
-                href="/dashboard/inbox"
-                className="flex items-center gap-3 px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 min-h-[44px]"
-                onClick={closeMobileMenu}
-              >
-                <HiOutlineChatBubbleLeftRight className="w-5 h-5 text-gray-400" />
-                Messages
-              </Link>
-              <Link
-                href="/dashboard/companies"
-                className="flex items-center gap-3 px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 min-h-[44px]"
-                onClick={closeMobileMenu}
-              >
-                <HiOutlineGlobeAlt className="w-5 h-5 text-gray-400" />
-                Company Profile
-              </Link>
-              <Link
-                href="/dashboard/settings"
-                className="flex items-center gap-3 px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 min-h-[44px]"
-                onClick={closeMobileMenu}
-              >
-                <HiOutlineCog6Tooth className="w-5 h-5 text-gray-400" />
-                Settings
-              </Link>
-              <Link
-                href={notificationsHref}
-                className={clsx(
-                  "flex items-center gap-3 px-4 py-3 text-sm font-medium transition-colors min-h-[44px]",
-                  pathname === notificationsHref
-                    ? "text-primary bg-red-50"
-                    : "text-gray-700 hover:bg-gray-50",
-                )}
-                onClick={closeMobileMenu}
-              >
-                <div className="relative">
-                  <HiOutlineBell className="w-5 h-5" />
-                  {hasUnreadNotifications && (
-                    <span className="absolute -top-1 -right-1 w-2 h-2 bg-primary rounded-full" />
-                  )}
-                </div>
-                Notifications
-              </Link>
-              <Link
-                href="/dashboard/profile"
-                className="flex items-center gap-3 px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 min-h-[44px]"
-                onClick={closeMobileMenu}
-              >
-                <HiOutlineUser className="w-5 h-5 text-gray-400" />
-                View Profile
-              </Link>
-              <Link
-                href="/dashboard/applied-jobs"
-                className="flex items-center gap-3 px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 min-h-[44px]"
-                onClick={closeMobileMenu}
-              >
-                <HiOutlineBriefcase className="w-5 h-5 text-gray-400" />
-                Applied Jobs
-              </Link>
-              <Link
-                href="/dashboard/application-drafts"
-                className="flex items-center gap-3 px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 min-h-[44px]"
-                onClick={closeMobileMenu}
-              >
-                <HiOutlineClipboardDocument className="w-5 h-5 text-gray-400" />
-                Application Drafts
-              </Link>
-              <Link
-                href="/dashboard/saved-jobs"
-                className="flex items-center gap-3 px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 min-h-[44px]"
-                onClick={closeMobileMenu}
-              >
-                <HiOutlineBookmark className="w-5 h-5 text-gray-400" />
-                Saved Jobs
-              </Link>
-              <Link
-                href="/dashboard/saved-searches"
-                className="flex items-center gap-3 px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 min-h-[44px]"
-                onClick={closeMobileMenu}
-              >
-                <HiOutlineMagnifyingGlass className="w-5 h-5 text-gray-400" />
-                Saved Searches
-              </Link>
-              <Link
-                href="/dashboard/settings"
-                className="flex items-center gap-3 px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 min-h-[44px]"
-                onClick={closeMobileMenu}
-              >
-                <HiOutlineCog6Tooth className="w-5 h-5 text-gray-400" />
-                Account Settings
-              </Link>
-            </>
+          {/* Everything the desktop menus hold, flattened — rendered from the
+              same nav definition so the two cannot drift apart. This list was
+              maintained by hand and had already lost Browse Jobs, Saved Jobs,
+              Saved Searches and Application Drafts, while showing Notifications
+              twice. */}
+          {navItems
+            .filter((item) => item.dropdown)
+            .map((item) => (
+              <div key={`mobile-${item.name}`}>
+                <p className="px-4 pt-3 pb-1 text-xs font-semibold text-primary uppercase tracking-wider">
+                  {item.name}
+                </p>
+                {item.dropdown?.map((link) => (
+                  <Link
+                    key={link.href}
+                    href={link.href}
+                    className="flex items-center gap-3 px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 min-h-[44px]"
+                    onClick={closeMobileMenu}
+                  >
+                    {link.icon ?? <span className="w-5" />}
+                    {link.name}
+                  </Link>
+                ))}
+              </div>
+            ))}
+
+          <hr className="my-2 border-gray-100" />
+
+          {ACCOUNT_LINKS.map((link) => (
+            <Link
+              key={link.href}
+              href={link.href}
+              className="flex items-center gap-3 px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 min-h-[44px]"
+              onClick={closeMobileMenu}
+            >
+              {link.icon}
+              {link.name}
+            </Link>
+          ))}
 
           <hr className="my-2 border-gray-100" />
           <button

@@ -347,7 +347,7 @@ export default function JobApplicationForm({
                 Browse More Jobs
               </Link>
               <Link
-                href="/dashboard/job-seeker/applied-jobs"
+                href="/dashboard/applied-jobs"
                 className="inline-flex items-center gap-2 px-5 py-2.5 mobile:px-4 mobile:py-2 bg-white border border-gray-200 text-gray-700 font-semibold text-sm mobile:text-xs rounded-lg hover:bg-gray-50 transition-colors no-underline"
               >
                 <HiOutlineBriefcase className="w-4 h-4 md:w-5 md:h-5" />

@@ -47,7 +47,7 @@ export const QuickActionsCard: React.FC<QuickActionsCardProps> = ({
     {
       label: "View applied jobs",
       subtitle: appliedSubtitle,
-      href: "/dashboard/job-seeker/applied-jobs",
+      href: "/dashboard/applied-jobs",
       icon: (
         <HiOutlineBriefcase className="w-5 h-5 md:w-6 md:h-6 text-red-500" />
       ),
@@ -55,13 +55,13 @@ export const QuickActionsCard: React.FC<QuickActionsCardProps> = ({
     {
       label: "Saved jobs",
       subtitle: savedSubtitle,
-      href: "/dashboard/job-seeker/saved-jobs",
+      href: "/dashboard/saved-jobs",
       icon: <HiOutlineHeart className="w-5 h-5 md:w-6 md:h-6 text-red-500" />,
     },
     {
       label: "Application drafts",
       subtitle: "Continue where you left off",
-      href: "/dashboard/job-seeker/application-drafts",
+      href: "/dashboard/application-drafts",
       icon: (
         <HiOutlineClipboardDocument className="w-5 h-5 md:w-6 md:h-6 text-red-500" />
       ),

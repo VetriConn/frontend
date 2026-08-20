@@ -117,7 +117,7 @@ export default function ManageJobsPage() {
             </p>
           </div>
           <Link
-            href="/dashboard/employer/post-job"
+            href="/dashboard/post-job"
             className="inline-flex items-center justify-center gap-2 bg-primary text-white px-5 py-2.5 rounded-lg font-medium hover:bg-primary-hover transition-colors shadow-sm shadow-primary/20"
           >
             <HiOutlinePlusCircle className="w-5 h-5" />
@@ -295,7 +295,7 @@ export default function ManageJobsPage() {
               qualified candidates.
             </p>
             <Link
-              href="/dashboard/employer/post-job"
+              href="/dashboard/post-job"
               className="inline-flex items-center gap-2 bg-primary text-white px-6 py-3 rounded-lg font-medium hover:bg-primary-hover transition-colors"
             >
               <HiOutlinePlusCircle className="w-5 h-5" />

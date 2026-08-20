@@ -28,7 +28,7 @@ export default function ManageDraftsPage() {
             Manage Job Drafts
           </h1>
           <Link
-            href="/dashboard/employer/post-job"
+            href="/dashboard/post-job"
             className="inline-flex items-center gap-2 bg-primary text-white px-5 py-2.5 rounded-lg font-medium hover:bg-primary-hover transition-colors text-sm"
           >
             New Draft
@@ -65,7 +65,7 @@ export default function ManageDraftsPage() {
                   </div>
                 </div>
                 <Link
-                  href={`/dashboard/employer/post-job?draftId=${draft._id}`}
+                  href={`/dashboard/post-job?draftId=${draft._id}`}
                   className="p-2 rounded-lg text-gray-400 hover:text-primary hover:bg-red-50 transition-colors"
                 >
                   <HiOutlineArrowRight className="w-5 h-5" />

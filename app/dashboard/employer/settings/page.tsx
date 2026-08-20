@@ -315,7 +315,7 @@ export default function EmployerSettingsPage() {
 
               {/* Link to company profile */}
               <a
-                href="/dashboard/employer/company-profile"
+                href="/dashboard/company-profile"
                 className="inline-flex items-center gap-2 text-sm text-primary hover:text-primary-hover font-medium transition-colors"
               >
                 <HiOutlineArrowTopRightOnSquare className="w-4 h-4 md:w-5 md:h-5" />

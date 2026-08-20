@@ -473,7 +473,7 @@ export default function AccountSettingsPage() {
               {/* Link to profile */}
               <div className="pt-2">
                 <a
-                  href="/dashboard/job-seeker/profile"
+                  href="/dashboard/profile"
                   className="inline-flex items-center gap-2 text-sm font-medium text-primary hover:text-red-700 transition-colors"
                 >
                   Edit Public Profile

@@ -7,6 +7,32 @@ const withBundleAnalyzer = bundleAnalyzer({
 
 const nextConfig: NextConfig = {
   /* config options here */
+  /**
+   * The dashboard dropped its role segments for routes whose names don't
+   * collide across roles (inbox/jobs/notifications/settings still do, and
+   * keep the old shape for now). The old URLs live in already-delivered
+   * emails and in backend notification links, so these redirects are
+   * permanent and should not be removed.
+   */
+  async redirects() {
+    const moved = [
+      ["employer", "applications"],
+      ["employer", "billing"],
+      ["employer", "company-profile"],
+      ["employer", "drafts"],
+      ["employer", "post-job"],
+      ["job-seeker", "application-drafts"],
+      ["job-seeker", "applied-jobs"],
+      ["job-seeker", "profile"],
+      ["job-seeker", "saved-jobs"],
+      ["job-seeker", "saved-searches"],
+    ];
+    return moved.map(([role, page]) => ({
+      source: `/dashboard/${role}/${page}`,
+      destination: `/dashboard/${page}`,
+      permanent: true,
+    }));
+  },
   images: {
     remotePatterns: [
       {

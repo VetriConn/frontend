@@ -124,7 +124,7 @@ const EmployerDashboard = () => {
                 experienced professionals.
               </p>
               <Link
-                href="/dashboard/employer/post-job"
+                href="/dashboard/post-job"
                 className="inline-flex items-center gap-2 bg-primary text-white px-5 py-2.5 rounded-lg text-sm font-medium hover:bg-primary-hover transition-colors"
               >
                 <HiOutlinePlusCircle className="w-4 h-4 md:w-5 md:h-5" />
@@ -234,7 +234,7 @@ const EmployerDashboard = () => {
               {/* Post New Job Button */}
               <div className="flex justify-end mt-4">
                 <Link
-                  href="/dashboard/employer/post-job"
+                  href="/dashboard/post-job"
                   className="inline-flex items-center gap-2 bg-primary text-white px-6 py-3 rounded-lg text-sm font-semibold hover:bg-red-700 transition-all shadow-sm group"
                 >
                   <HiOutlinePlusCircle className="w-5 h-5 transition-transform group-hover:-rotate-45" />

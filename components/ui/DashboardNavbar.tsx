@@ -355,7 +355,7 @@ const DashboardNavbar = () => {
                         Job Management
                       </div>
                       <Link
-                        href="/dashboard/employer/post-job"
+                        href="/dashboard/post-job"
                         className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
                         onClick={() => setIsJobsDropdownOpen(false)}
                       >
@@ -371,7 +371,7 @@ const DashboardNavbar = () => {
                         Manage Job Postings
                       </Link>
                       <Link
-                        href="/dashboard/employer/drafts"
+                        href="/dashboard/drafts"
                         className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
                         onClick={() => setIsJobsDropdownOpen(false)}
                       >
@@ -379,7 +379,7 @@ const DashboardNavbar = () => {
                         Manage Job Drafts
                       </Link>
                       <Link
-                        href="/dashboard/employer/applications"
+                        href="/dashboard/applications"
                         className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
                         onClick={() => setIsJobsDropdownOpen(false)}
                       >
@@ -397,28 +397,28 @@ const DashboardNavbar = () => {
                         All Jobs
                       </Link>
                       <Link
-                        href="/dashboard/job-seeker/saved-jobs"
+                        href="/dashboard/saved-jobs"
                         className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
                         onClick={() => setIsJobsDropdownOpen(false)}
                       >
                         Saved Jobs
                       </Link>
                       <Link
-                        href="/dashboard/job-seeker/saved-searches"
+                        href="/dashboard/saved-searches"
                         className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
                         onClick={() => setIsJobsDropdownOpen(false)}
                       >
                         Saved Searches
                       </Link>
                       <Link
-                        href="/dashboard/job-seeker/applied-jobs"
+                        href="/dashboard/applied-jobs"
                         className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
                         onClick={() => setIsJobsDropdownOpen(false)}
                       >
                         Applied Jobs
                       </Link>
                       <Link
-                        href="/dashboard/job-seeker/application-drafts"
+                        href="/dashboard/application-drafts"
                         className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
                         onClick={() => setIsJobsDropdownOpen(false)}
                       >
@@ -523,7 +523,7 @@ const DashboardNavbar = () => {
                 {isEmployer ? (
                   <>
                     <Link
-                      href="/dashboard/employer/company-profile"
+                      href="/dashboard/company-profile"
                       className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50"
                       onClick={() => setIsProfileDropdownOpen(false)}
                     >
@@ -539,7 +539,7 @@ const DashboardNavbar = () => {
                       Settings
                     </Link>
                     <Link
-                      href="/dashboard/employer/billing"
+                      href="/dashboard/billing"
                       className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50"
                       onClick={() => setIsProfileDropdownOpen(false)}
                     >
@@ -558,7 +558,7 @@ const DashboardNavbar = () => {
                 ) : (
                   <>
                     <Link
-                      href="/dashboard/job-seeker/profile"
+                      href="/dashboard/profile"
                       className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50"
                       onClick={() => setIsProfileDropdownOpen(false)}
                     >
@@ -566,7 +566,7 @@ const DashboardNavbar = () => {
                       View Profile
                     </Link>
                     <Link
-                      href="/dashboard/job-seeker/applied-jobs"
+                      href="/dashboard/applied-jobs"
                       className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50"
                       onClick={() => setIsProfileDropdownOpen(false)}
                     >
@@ -574,7 +574,7 @@ const DashboardNavbar = () => {
                       Applied Jobs
                     </Link>
                     <Link
-                      href="/dashboard/job-seeker/application-drafts"
+                      href="/dashboard/application-drafts"
                       className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50"
                       onClick={() => setIsProfileDropdownOpen(false)}
                     >
@@ -582,7 +582,7 @@ const DashboardNavbar = () => {
                       Application Drafts
                     </Link>
                     <Link
-                      href="/dashboard/job-seeker/saved-jobs"
+                      href="/dashboard/saved-jobs"
                       className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50"
                       onClick={() => setIsProfileDropdownOpen(false)}
                     >
@@ -590,7 +590,7 @@ const DashboardNavbar = () => {
                       Saved Jobs
                     </Link>
                     <Link
-                      href="/dashboard/job-seeker/saved-searches"
+                      href="/dashboard/saved-searches"
                       className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50"
                       onClick={() => setIsProfileDropdownOpen(false)}
                     >
@@ -683,7 +683,7 @@ const DashboardNavbar = () => {
           {isEmployer ? (
             <>
               <Link
-                href="/dashboard/employer/post-job"
+                href="/dashboard/post-job"
                 className="flex items-center gap-3 px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 min-h-[44px]"
                 onClick={closeMobileMenu}
               >
@@ -691,7 +691,7 @@ const DashboardNavbar = () => {
                 Post New Job
               </Link>
               <Link
-                href="/dashboard/employer/applications"
+                href="/dashboard/applications"
                 className="flex items-center gap-3 px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 min-h-[44px]"
                 onClick={closeMobileMenu}
               >
@@ -699,7 +699,7 @@ const DashboardNavbar = () => {
                 Applications
               </Link>
               <Link
-                href="/dashboard/employer/drafts"
+                href="/dashboard/drafts"
                 className="flex items-center gap-3 px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 min-h-[44px]"
                 onClick={closeMobileMenu}
               >
@@ -728,7 +728,7 @@ const DashboardNavbar = () => {
                 Messages
               </Link>
               <Link
-                href="/dashboard/employer/company-profile"
+                href="/dashboard/company-profile"
                 className="flex items-center gap-3 px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 min-h-[44px]"
                 onClick={closeMobileMenu}
               >
@@ -765,7 +765,7 @@ const DashboardNavbar = () => {
                 Notifications
               </Link>
               <Link
-                href="/dashboard/job-seeker/profile"
+                href="/dashboard/profile"
                 className="flex items-center gap-3 px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 min-h-[44px]"
                 onClick={closeMobileMenu}
               >
@@ -773,7 +773,7 @@ const DashboardNavbar = () => {
                 View Profile
               </Link>
               <Link
-                href="/dashboard/job-seeker/applied-jobs"
+                href="/dashboard/applied-jobs"
                 className="flex items-center gap-3 px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 min-h-[44px]"
                 onClick={closeMobileMenu}
               >
@@ -781,7 +781,7 @@ const DashboardNavbar = () => {
                 Applied Jobs
               </Link>
               <Link
-                href="/dashboard/job-seeker/application-drafts"
+                href="/dashboard/application-drafts"
                 className="flex items-center gap-3 px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 min-h-[44px]"
                 onClick={closeMobileMenu}
               >
@@ -789,7 +789,7 @@ const DashboardNavbar = () => {
                 Application Drafts
               </Link>
               <Link
-                href="/dashboard/job-seeker/saved-jobs"
+                href="/dashboard/saved-jobs"
                 className="flex items-center gap-3 px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 min-h-[44px]"
                 onClick={closeMobileMenu}
               >
@@ -797,7 +797,7 @@ const DashboardNavbar = () => {
                 Saved Jobs
               </Link>
               <Link
-                href="/dashboard/job-seeker/saved-searches"
+                href="/dashboard/saved-searches"
                 className="flex items-center gap-3 px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 min-h-[44px]"
                 onClick={closeMobileMenu}
               >

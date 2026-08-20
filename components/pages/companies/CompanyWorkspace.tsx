@@ -91,7 +91,7 @@ export const CompanyWorkspace = ({ companyId }: { companyId: string }) => {
                 No jobs posted under this company yet.
               </p>
               <Link
-                href="/dashboard/employer/post-job"
+                href="/dashboard/post-job"
                 className="inline-block py-2.5 px-4 bg-primary hover:bg-primary-hover text-white font-semibold text-sm rounded-lg transition-colors no-underline"
               >
                 Post a job

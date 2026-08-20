@@ -7,7 +7,7 @@ import { HiOutlineArrowLeft, HiOutlineBookmarkSquare } from "react-icons/hi2";
 import { SearchBar } from "@/components/ui/SearchBar";
 import { FilterPanel } from "@/components/ui/FilterPanel";
 import { JobResultsList } from "@/components/ui/JobResultsList";
-import { LoadMoreButton } from "@/components/ui/LoadMoreButton";
+import { Pagination } from "@/components/ui/Pagination";
 import { useJobs } from "@/hooks/useJobs";
 import { Job } from "@/types/job";
 import { useSavedSearches } from "@/hooks/useSavedSearches";
@@ -39,12 +39,23 @@ const URL_PARAMS = {
 const PAGE_SIZE = 6;
 
 // Helper function to get job type from tags
-const getJobType = (job: Job): string => {
-  const jobTypeTags = ["full-time", "part-time", "contract", "flexible"];
-  const foundTag = job.tags.find((tag) =>
-    jobTypeTags.some((type) => type.toLowerCase() === tag.name.toLowerCase()),
+/**
+ * The employment type a listing actually states, or null.
+ *
+ * This returned "Full-time" whenever nothing matched — and since scraped jobs
+ * carried no tags at all, that was every listing on the board. Not one of the
+ * real listings states an employment type, so the label was wrong every time
+ * it was shown. The scraper derives these now; an absent one renders nothing.
+ */
+const getJobType = (job: Job): string | null => {
+  const employmentTypes = [
+    "full-time", "part-time", "casual", "seasonal", "contract",
+  ];
+  const found = job.tags.find((tag) =>
+    employmentTypes.includes(tag.name.toLowerCase()),
   );
-  return foundTag?.name.toLowerCase() || "";
+  if (!found) return null;
+  return found.name.charAt(0).toUpperCase() + found.name.slice(1);
 };
 
 // Helper function to check if job matches experience level
@@ -106,9 +117,9 @@ const SearchResultsPage = () => {
     getInitialFiltersFromUrl(),
   );
 
-  // Pagination state
-  const [displayCount, setDisplayCount] = useState(PAGE_SIZE);
-  const [isLoadingMore, setIsLoadingMore] = useState(false);
+  // Which page the server should return. This was a displayCount that revealed
+  // more of an already-fetched list; the page now asks for one page at a time.
+  const [currentPage, setCurrentPage] = useState(1);
 
   // Update URL when filters or search change
   const updateUrlParams = useCallback(
@@ -143,8 +154,13 @@ const SearchResultsPage = () => {
     isLoading,
     isError,
     mutate,
+    total: totalJobs,
+    totalPages,
   } = useJobs({
-    limit: 100, // Fetch more jobs for client-side filtering
+    page: currentPage,
+    limit: PAGE_SIZE,
+    jobType: appliedFilters.jobType || undefined,
+    experience: appliedFilters.experienceLevel || undefined,
     search: appliedSearchQuery || undefined,
     location: appliedFilters.location || undefined,
   });
@@ -153,39 +169,11 @@ const SearchResultsPage = () => {
   const effectiveError = isError;
 
   // Filter jobs based on applied filters (client-side filtering for job type and experience)
-  const filteredJobs = useMemo(() => {
-    return effectiveJobs.filter((job) => {
-      // Filter by job type
-      if (appliedFilters.jobType) {
-        const jobType = getJobType(job);
-        if (jobType !== appliedFilters.jobType.toLowerCase()) {
-          return false;
-        }
-      }
-
-      // Filter by experience level
-      if (appliedFilters.experienceLevel) {
-        if (!matchesExperienceLevel(job, appliedFilters.experienceLevel)) {
-          return false;
-        }
-      }
-
-      return true;
-    });
-  }, [effectiveJobs, appliedFilters.jobType, appliedFilters.experienceLevel]);
-
-  // Get displayed jobs based on pagination
-  const displayedJobs = useMemo(() => {
-    return filteredJobs.slice(0, displayCount);
-  }, [filteredJobs, displayCount]);
-
-  // Check if there are more jobs to load
-  const hasMore = displayCount < filteredJobs.length;
 
   // Handle search
   const handleSearch = useCallback(() => {
     setAppliedSearchQuery(searchQuery);
-    setDisplayCount(PAGE_SIZE); // Reset pagination on new search
+    setCurrentPage(1); // A new search starts at page one
     updateUrlParams(searchQuery, appliedFilters);
   }, [searchQuery, appliedFilters, updateUrlParams]);
 
@@ -197,7 +185,7 @@ const SearchResultsPage = () => {
   // Handle apply filters
   const handleApplyFilters = useCallback(() => {
     setAppliedFilters(filters);
-    setDisplayCount(PAGE_SIZE); // Reset pagination on filter change
+    setCurrentPage(1); // A new filter starts at page one
     updateUrlParams(appliedSearchQuery, filters);
   }, [filters, appliedSearchQuery, updateUrlParams]);
 
@@ -205,21 +193,16 @@ const SearchResultsPage = () => {
   const handleClearFilters = useCallback(() => {
     setFilters(initialFilters);
     setAppliedFilters(initialFilters);
-    setDisplayCount(PAGE_SIZE); // Reset pagination
+    setCurrentPage(1);
     updateUrlParams(appliedSearchQuery, initialFilters);
   }, [appliedSearchQuery, updateUrlParams]);
 
-  // Handle load more
-  const handleLoadMore = useCallback(() => {
-    setIsLoadingMore(true);
-    // Simulate a small delay for better UX
-    setTimeout(() => {
-      setDisplayCount((prev) =>
-        Math.min(prev + PAGE_SIZE, filteredJobs.length),
-      );
-      setIsLoadingMore(false);
-    }, 300);
-  }, [filteredJobs.length]);
+  // Handle page change
+  const handlePageChange = useCallback((nextPage: number) => {
+    setCurrentPage(nextPage);
+    // Land at the top of the results rather than mid-list on the new page.
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }, []);
 
   // Handle retry on error
   const handleRetry = useCallback(() => {
@@ -335,25 +318,24 @@ const SearchResultsPage = () => {
             {/* Job Results - Right Content */}
             <div className="lg:col-span-3">
               <JobResultsList
-                jobs={displayedJobs}
+                jobs={effectiveJobs}
+                totalCount={totalJobs}
                 isLoading={isLoading}
                 isError={effectiveError}
                 onRetry={handleRetry}
                 onApply={handleApply}
               />
 
-              {/* Load More Button */}
-              {!isLoading && !effectiveError && displayedJobs.length > 0 && (
-                <nav
-                  className="flex justify-center mt-6 sm:mt-8"
-                  aria-label="Pagination"
-                >
-                  <LoadMoreButton
-                    onClick={handleLoadMore}
-                    isLoading={isLoadingMore}
-                    hasMore={hasMore}
-                  />
-                </nav>
+              {!isLoading && !effectiveError && effectiveJobs.length > 0 && (
+                <Pagination
+                  page={currentPage}
+                  totalPages={totalPages}
+                  onPageChange={handlePageChange}
+                  summary={`Showing ${(currentPage - 1) * PAGE_SIZE + 1}–${Math.min(
+                    currentPage * PAGE_SIZE,
+                    totalJobs,
+                  )} of ${totalJobs}`}
+                />
               )}
             </div>
           </div>

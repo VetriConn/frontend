@@ -38,13 +38,29 @@ export async function triggerJobScrape(
 }
 
 // Fetch jobs from database
+export interface JobsPage {
+  jobs: JobsResponse[];
+  /** Absent when the response carried no envelope. */
+  pagination?: PaginationMeta;
+}
+
+export interface PaginationMeta {
+  currentPage: number;
+  totalPages: number;
+  totalItems: number;
+  itemsPerPage: number;
+}
+
 export async function getJobs(options?: {
   page?: number;
   limit?: number;
   location?: string;
   search?: string;
-}): Promise<JobsResponse[]> {
-  const { page = 1, limit = 10, location, search } = options || {};
+  jobType?: string;
+  experience?: string;
+}): Promise<JobsPage> {
+  const { page = 1, limit = 10, location, search, jobType, experience } =
+    options || {};
 
   // Build query parameters
   const queryParams = new URLSearchParams({
@@ -60,6 +76,16 @@ export async function getJobs(options?: {
     queryParams.append("search", search);
   }
 
+  // Both narrow in the database now — they used to be applied in the browser,
+  // which is why this had to fetch the whole board.
+  if (jobType) {
+    queryParams.append("jobType", jobType);
+  }
+
+  if (experience) {
+    queryParams.append("experience", experience);
+  }
+
   const data = await apiFetch<
     JobsResponse[] | PaginatedApiEnvelope<JobsResponse[]>
   >(`${API_BASE_URL}/api/v1/jobs?${queryParams}`, {
@@ -69,13 +95,20 @@ export async function getJobs(options?: {
     },
   });
 
-  // Backend wraps jobs in { success, data, pagination } — extract the array
-  if (Array.isArray(data)) return data;
+  // Backend wraps jobs in { success, data, pagination }. The pagination block
+  // was being discarded, so callers could only ever know how many rows they
+  // had received — never how many exist, which is what page controls need.
+  if (Array.isArray(data)) return { jobs: data };
   if (data && typeof data === "object" && "data" in data) {
     const payload = data.data;
-    if (Array.isArray(payload)) return payload;
+    if (Array.isArray(payload)) {
+      return {
+        jobs: payload,
+        pagination: (data as PaginatedApiEnvelope<JobsResponse[]>).pagination,
+      };
+    }
   }
-  return [];
+  return { jobs: [] };
 }
 
 // Fetch single job by ID

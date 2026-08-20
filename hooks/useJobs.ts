@@ -8,15 +8,22 @@ interface UseJobsOptions {
   limit?: number;
   location?: string;
   search?: string;
+  /** Both narrow in the database; they used to be applied in the browser. */
+  jobType?: string;
+  experience?: string;
 }
 
 export function useJobs(options?: UseJobsOptions) {
-  const { page = 1, limit = 10, location, search } = options || {};
+  const { page = 1, limit = 10, location, search, jobType, experience } =
+    options || {};
 
-  // Create a cache key from the options
+  // Every input that changes the response belongs in the key, or a filter
+  // change would serve the previous filter's page from cache.
   const cacheKey = `/jobs?page=${page}&limit=${limit}${
     location ? `&location=${location}` : ""
-  }${search ? `&search=${search}` : ""}`;
+  }${search ? `&search=${search}` : ""}${jobType ? `&jobType=${jobType}` : ""}${
+    experience ? `&experience=${experience}` : ""
+  }`;
 
   const { data, error, mutate, isLoading } = useSWR(cacheKey, () =>
     getJobs(options),
@@ -24,8 +31,7 @@ export function useJobs(options?: UseJobsOptions) {
 
   // Transform backend job data to frontend format
   const jobs: Job[] =
-    data && Array.isArray(data)
-      ? data.map((job) => ({
+    data?.jobs?.map((job) => ({
           id: job._id || job.id,
           role: job.role,
           company_name: job.company_name,
@@ -49,8 +55,9 @@ export function useJobs(options?: UseJobsOptions) {
           salary_text: job.salary_text,
           posted_as: job.posted_as,
           company_id: job.company_id,
-        }))
-      : [];
+    })) ?? [];
+
+  const pagination = data?.pagination;
 
   return {
     jobs,
@@ -58,8 +65,12 @@ export function useJobs(options?: UseJobsOptions) {
     isError: !!error,
     error,
     mutate,
-    total: jobs.length,
-    page: page,
-    limit: limit,
+    // The real total from the server. This used to report jobs.length — the
+    // size of the page in hand — so "Showing N jobs" counted the wrong thing
+    // and page controls had nothing to count against.
+    total: pagination?.totalItems ?? jobs.length,
+    totalPages: pagination?.totalPages ?? 1,
+    page: pagination?.currentPage ?? page,
+    limit,
   };
 }

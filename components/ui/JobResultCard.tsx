@@ -16,7 +16,8 @@ interface JobResultCardProps {
   title: string;
   company: string;
   location: string;
-  jobType: string;
+  /** Null when the listing does not state one — the row is then omitted. */
+  jobType: string | null;
   salary: string;
   description: string;
   onApply?: (id: string) => void;
@@ -111,15 +112,18 @@ export const JobResultCard = ({
             <dd>{location}</dd>
           </div>
 
-          {/* Job Type */}
-          <div className="inline-flex items-center gap-1.5 min-h-6">
-            <dt className="sr-only">Job Type</dt>
-            <HiOutlineBriefcase
-              className="w-4 h-4 md:w-5 md:h-5 text-gray-400 flex-shrink-0"
-              aria-hidden="true"
-            />
-            <dd>{jobType}</dd>
-          </div>
+          {/* Job Type. Rendered only when the listing states one; it used to
+              print an invented "Full-time" on every card. */}
+          {jobType && (
+            <div className="inline-flex items-center gap-1.5 min-h-6">
+              <dt className="sr-only">Job Type</dt>
+              <HiOutlineBriefcase
+                className="w-4 h-4 md:w-5 md:h-5 text-gray-400 flex-shrink-0"
+                aria-hidden="true"
+              />
+              <dd>{jobType}</dd>
+            </div>
+          )}
 
           {/* Salary */}
           {salary && (

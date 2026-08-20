@@ -10,6 +10,8 @@ import { FaExclamationTriangle, FaRedo } from "react-icons/fa";
 
 interface JobResultsListProps {
   jobs: Job[];
+  /** Total matches across all pages; falls back to the page length. */
+  totalCount?: number;
   isLoading: boolean;
   isError: boolean;
   onRetry?: () => void;
@@ -99,18 +101,28 @@ const ErrorState = ({
 const formatSalary = (job: Job): string => formatJobSalary(job, "full") ?? "";
 
 // Helper function to get job type from tags
-const getJobType = (job: Job): string => {
-  const jobTypeTags = ["Full-time", "Part-time", "Contract", "Flexible"];
-  const foundTag = job.tags.find((tag) =>
-    jobTypeTags.some(
-      (type) => type.toLowerCase() === tag.name.toLowerCase()
-    )
+/**
+ * The employment type a listing actually states, or null.
+ *
+ * This returned "Full-time" whenever nothing matched — and since scraped jobs
+ * carried no tags at all, that was every listing on the board. Not one of the
+ * real listings states an employment type, so the label was wrong every time
+ * it was shown. The scraper derives these now; an absent one renders nothing.
+ */
+const getJobType = (job: Job): string | null => {
+  const employmentTypes = [
+    "full-time", "part-time", "casual", "seasonal", "contract",
+  ];
+  const found = job.tags.find((tag) =>
+    employmentTypes.includes(tag.name.toLowerCase()),
   );
-  return foundTag?.name || "Full-time";
+  if (!found) return null;
+  return found.name.charAt(0).toUpperCase() + found.name.slice(1);
 };
 
 export const JobResultsList = ({
   jobs,
+  totalCount,
   isLoading,
   isError,
   onRetry,
@@ -157,7 +169,10 @@ export const JobResultsList = ({
         aria-atomic="true"
         className="text-sm text-gray-600 mb-4"
       >
-        Showing {jobs.length} {jobs.length === 1 ? "job" : "jobs"}
+        {/* The count of MATCHES, not of rows on screen. This read jobs.length,
+            which was the whole board back when the page fetched all of it and
+            sliced in the browser — and would now say 10 regardless. */}
+        {totalCount ?? jobs.length} {(totalCount ?? jobs.length) === 1 ? "job" : "jobs"} found
       </div>
 
       {/* Job cards list */}

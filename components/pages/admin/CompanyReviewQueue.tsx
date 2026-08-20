@@ -12,10 +12,14 @@ import {
   HiOutlineClock,
   HiOutlineCheckCircle,
   HiOutlineXCircle,
+  HiOutlinePauseCircle,
+  HiOutlinePlayCircle,
 } from "react-icons/hi2";
 import {
   adminApproveCompany,
   adminRejectCompany,
+  adminSuspendCompany,
+  adminReinstateCompany,
   type Company,
   type CompanyStatus,
 } from "@/lib/api";
@@ -66,6 +70,15 @@ const STATUS_META: Record<
     pillLabel: "Rejected",
     empty: "No companies have been rejected.",
   },
+  // Distinct from rejected: these passed vetting and then lost it.
+  suspended: {
+    title: "Suspended Companies",
+    description: "Approved companies whose standing has been withdrawn",
+    pillClass: "bg-gray-100 text-gray-600 ring-gray-200",
+    pillIcon: HiOutlinePauseCircle,
+    pillLabel: "Suspended",
+    empty: "No companies are suspended.",
+  },
 };
 
 const DetailRow = ({
@@ -108,6 +121,62 @@ export const CompanyReviewQueue = ({ status }: { status: CompanyStatus }) => {
       showToast({
         type: "error",
         title: "Couldn't approve company",
+        description:
+          err instanceof Error ? err.message : "Please try again in a moment.",
+      });
+    } finally {
+      setBusyId(null);
+    }
+  };
+
+  /**
+   * Suspending withdraws an approved company's standing. Posting rights follow
+   * approval, so the whole hiring team stops being able to publish under it —
+   * without anyone's individual account being touched.
+   */
+  const handleSuspend = async (company: Company) => {
+    const note = window.prompt(
+      `Suspend ${company.name}?\n\n` +
+        "Its hiring team will no longer be able to post or manage jobs under " +
+        "it. Existing listings stay up.\n\nReason (optional):",
+    );
+    if (note === null) return;
+
+    setBusyId(company._id);
+    try {
+      await adminSuspendCompany(company._id, note.trim() || undefined);
+      showToast({
+        type: "success",
+        title: "Company suspended",
+        description: `${company.name} can no longer post jobs.`,
+      });
+      await mutate();
+    } catch (err) {
+      showToast({
+        type: "error",
+        title: "Couldn't suspend company",
+        description:
+          err instanceof Error ? err.message : "Please try again in a moment.",
+      });
+    } finally {
+      setBusyId(null);
+    }
+  };
+
+  const handleReinstate = async (company: Company) => {
+    setBusyId(company._id);
+    try {
+      await adminReinstateCompany(company._id);
+      showToast({
+        type: "success",
+        title: "Company reinstated",
+        description: `${company.name} can post jobs again.`,
+      });
+      await mutate();
+    } catch (err) {
+      showToast({
+        type: "error",
+        title: "Couldn't reinstate company",
         description:
           err instanceof Error ? err.message : "Please try again in a moment.",
       });
@@ -293,6 +362,30 @@ export const CompanyReviewQueue = ({ status }: { status: CompanyStatus }) => {
                       Reject
                     </button>
                   </div>
+                )}
+
+                {status === "approved" && (
+                  <button
+                    type="button"
+                    onClick={() => handleSuspend(company)}
+                    disabled={busyId === company._id}
+                    className="inline-flex items-center gap-1.5 py-2 px-3.5 bg-white border border-gray-200 hover:bg-gray-50 disabled:opacity-60 text-gray-700 font-medium text-sm rounded-lg transition-colors"
+                  >
+                    <HiOutlinePauseCircle className="w-4 h-4" />
+                    Suspend
+                  </button>
+                )}
+
+                {status === "suspended" && (
+                  <button
+                    type="button"
+                    onClick={() => handleReinstate(company)}
+                    disabled={busyId === company._id}
+                    className="inline-flex items-center gap-1.5 py-2 px-3.5 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-60 text-white font-medium text-sm rounded-lg transition-colors"
+                  >
+                    <HiOutlinePlayCircle className="w-4 h-4" />
+                    Reinstate
+                  </button>
                 )}
               </div>
             </div>

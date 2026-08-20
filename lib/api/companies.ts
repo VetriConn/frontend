@@ -17,7 +17,11 @@ import type { PostedJobSummary } from "@/types/api";
 
 export type CompanyRole = "owner" | "admin" | "recruiter";
 export type CompanyMemberStatus = "invited" | "active";
-export type CompanyStatus = "pending" | "approved" | "rejected";
+export type CompanyStatus =
+  | "pending"
+  | "approved"
+  | "rejected"
+  | "suspended";
 
 export interface CompanyMember {
   user_id?: string;
@@ -263,6 +267,34 @@ export async function adminRejectCompany(
   const response = await apiFetch<ApiEnvelope<Company>>(
     `${COMPANIES_URL}/admin/${companyId}/reject`,
     jsonRequest("PATCH", { reason }),
+  );
+  return response.data;
+}
+
+/**
+ * Suspend an approved company. Posting rights follow approval, so this stops
+ * the whole hiring team publishing under it without suspending anyone's
+ * account. Its existing listings stay up — taking those down is a separate
+ * decision from taking the company's standing away.
+ */
+export async function adminSuspendCompany(
+  companyId: string,
+  reason?: string,
+): Promise<Company> {
+  const response = await apiFetch<ApiEnvelope<Company>>(
+    `${COMPANIES_URL}/admin/${companyId}/suspend`,
+    jsonRequest("PATCH", { reason }),
+  );
+  return response.data;
+}
+
+/** Restore a suspended company to approved. */
+export async function adminReinstateCompany(
+  companyId: string,
+): Promise<Company> {
+  const response = await apiFetch<ApiEnvelope<Company>>(
+    `${COMPANIES_URL}/admin/${companyId}/reinstate`,
+    { method: "PATCH" },
   );
   return response.data;
 }

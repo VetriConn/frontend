@@ -130,6 +130,8 @@ export {
   adminListCompanies,
   adminApproveCompany,
   adminRejectCompany,
+  adminSuspendCompany,
+  adminReinstateCompany,
   getMyRole,
   canPostJobsFor,
 } from "./companies";

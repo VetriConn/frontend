@@ -55,12 +55,8 @@ const NAV_ITEMS: NavItem[] = [
       { label: "Pending Review", href: "/admin/companies" },
       { label: "Approved", href: "/admin/companies/approved" },
       { label: "Rejected", href: "/admin/companies/rejected" },
+      { label: "Suspended", href: "/admin/companies/suspended" },
     ],
-  },
-  {
-    label: "Employers",
-    href: "/admin/employers",
-    icon: HiOutlineBuildingOffice2,
   },
   {
     label: "Users",

@@ -7,6 +7,7 @@ import {
   HiOutlineClock,
   HiOutlineCheckCircle,
   HiOutlineXCircle,
+  HiOutlinePauseCircle,
   HiOutlinePlus,
 } from "react-icons/hi2";
 import { useMyCompanies } from "@/hooks/useCompanies";
@@ -36,6 +37,11 @@ const STATUS_META: Record<
     label: "Not approved",
     pill: "bg-rose-50 text-rose-700 ring-1 ring-rose-200/70",
     icon: HiOutlineXCircle,
+  },
+  suspended: {
+    label: "Suspended",
+    pill: "bg-gray-100 text-gray-600 ring-1 ring-gray-200",
+    icon: HiOutlinePauseCircle,
   },
 };
 

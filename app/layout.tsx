@@ -93,7 +93,10 @@ export default function RootLayout({
   const webSiteSchema = generateWebSiteSchema();
 
   return (
-    <html lang="en">
+    // suppressHydrationWarning: the blocking script below intentionally
+    // mutates <html> before hydration (saved text size / high contrast).
+    // Suppression is attribute-level and applies to this element only.
+    <html lang="en" suppressHydrationWarning>
       <head>
         <meta charSet="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -106,7 +109,7 @@ export default function RootLayout({
         {/* Blocking script to prevent FOUC for accessibility settings */}
         <script
           dangerouslySetInnerHTML={{
-            __html: `(function(){try{var s=JSON.parse(localStorage.getItem('vetriconn-accessibility')||'{}');if(s.highContrast)document.documentElement.classList.add('high-contrast');if(s.textSize){var m={'normal':'100%','large':'112%','extra-large':'125%'};if(m[s.textSize])document.documentElement.style.fontSize=m[s.textSize]}}catch(e){}})();`,
+            __html: `(function(){try{var s=JSON.parse(localStorage.getItem('vetriconn-accessibility')||'{}');if(s.highContrast)document.documentElement.classList.add('high-contrast');if(s.textSize&&s.textSize!=='normal'){var m={'large':'112%','extra-large':'125%'};if(m[s.textSize])document.documentElement.style.fontSize=m[s.textSize]}}catch(e){}})();`,
           }}
         />
       </head>

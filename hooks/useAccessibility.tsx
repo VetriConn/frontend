@@ -74,7 +74,12 @@ export function AccessibilityProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (!mounted) return;
     const html = document.documentElement;
-    html.style.fontSize = TEXT_SIZE_MAP[state.textSize];
+    if (state.textSize === "normal") {
+      // Default size: drop the inline style so the DOM matches server output.
+      html.style.removeProperty("font-size");
+    } else {
+      html.style.fontSize = TEXT_SIZE_MAP[state.textSize];
+    }
   }, [state.textSize, mounted]);
 
   // Apply high-contrast class to <html> element

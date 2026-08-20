@@ -35,9 +35,9 @@ export interface Company {
   city?: string;
   country?: string;
   phone_number?: string;
-  company_email?: string;
+  email?: string;
   website?: string;
-  company_size?: string;
+  size?: string;
   about_company?: string;
   logo_url?: string;
   banner_url?: string;
@@ -61,9 +61,9 @@ export interface CompanyProfileInput {
   city?: string;
   country?: string;
   phone_number?: string;
-  company_email?: string;
+  email?: string;
   website?: string;
-  company_size?: string;
+  size?: string;
   about_company?: string;
 }
 

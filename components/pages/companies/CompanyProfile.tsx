@@ -104,10 +104,10 @@ export const CompanyProfile = ({ companyId }: { companyId: string }) => {
                 {location}
               </span>
             )}
-            {company.company_size && (
+            {company.size && (
               <span className="inline-flex items-center gap-1.5">
                 <HiOutlineUserGroup className="w-4 h-4" />
-                {company.company_size}
+                {company.size}
               </span>
             )}
             {company.website && (

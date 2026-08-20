@@ -93,7 +93,7 @@ const JobDescriptor: React.FC<JobDescriptorProps> = ({
   salary_text,
   posted_as,
   company_id,
-  employer_id,
+  poster_id,
 }) => {
   const [hasApplied, setHasApplied] = useState(false);
   const [hasDraft, setHasDraft] = useState(false);
@@ -106,7 +106,7 @@ const JobDescriptor: React.FC<JobDescriptorProps> = ({
   // whole employer role — which no longer exists, and was always the wrong
   // question: the same person applies to other people's jobs all the time.
   const isOwnListing =
-    (!!employer_id && employer_id === userProfile?.id) ||
+    (!!poster_id && poster_id === userProfile?.id) ||
     (!!company_id && companies.some((company) => company._id === company_id));
 
   useEffect(() => {

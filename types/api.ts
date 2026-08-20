@@ -337,7 +337,7 @@ export interface EmployerThreadSummary {
 export interface EmployerThreadMessage {
   _id: string;
   application_id: string;
-  employer_id: string;
+  poster_id: string;
   applicant_id: string;
   sender: EmployerMessageSender;
   content: string;

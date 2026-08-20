@@ -55,9 +55,9 @@ const EMPTY: FormState = {
   city: "",
   country: "",
   phone_number: "",
-  company_email: "",
+  email: "",
   website: "",
-  company_size: "",
+  size: "",
   about_company: "",
 };
 
@@ -88,10 +88,10 @@ export const CompanyApplicationForm = () => {
 
     // Mirror the server's rules so a round-trip isn't needed to learn these.
     if (
-      form.company_email &&
-      !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.company_email)
+      form.email &&
+      !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)
     ) {
-      next.company_email = "Enter a valid email address";
+      next.email = "Enter a valid email address";
     }
     if (form.website && !/^https?:\/\/.+\..+/.test(form.website)) {
       next.website = "Enter a full URL, including https://";
@@ -212,11 +212,11 @@ export const CompanyApplicationForm = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-x-4">
           <FormField
             label="Company email"
-            name="company_email"
+            name="email"
             type="email"
-            value={form.company_email}
-            onChange={(value) => setField("company_email", value)}
-            error={errors.company_email}
+            value={form.email}
+            onChange={(value) => setField("email", value)}
+            error={errors.email}
             placeholder="careers@acme.com"
             optional
           />
@@ -244,10 +244,10 @@ export const CompanyApplicationForm = () => {
         <div className="mb-4">
           <CustomDropdown
             label="Company size"
-            name="company_size"
+            name="size"
             placeholder="Select a size"
-            value={form.company_size}
-            onChange={(value) => setField("company_size", value)}
+            value={form.size}
+            onChange={(value) => setField("size", value)}
             options={COMPANY_SIZE_OPTIONS}
           />
         </div>

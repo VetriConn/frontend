@@ -232,9 +232,9 @@ export const CompanyReviewQueue = ({ status }: { status: CompanyStatus }) => {
                         .join(", ")}
                     </DetailRow>
                   )}
-                  {company.company_email && (
+                  {company.email && (
                     <DetailRow icon={HiOutlineEnvelope}>
-                      {company.company_email}
+                      {company.email}
                     </DetailRow>
                   )}
                   {company.website && (

@@ -130,6 +130,7 @@ export async function uploadResume(
 export async function loginUser(
   email: string,
   password: string,
+  rememberMe: boolean = false,
 ): Promise<LoginResponse> {
   if (!API_BASE_URL) {
     throw new Error(
@@ -151,7 +152,7 @@ export async function loginUser(
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({ email, password, rememberMe }),
       },
     );
 

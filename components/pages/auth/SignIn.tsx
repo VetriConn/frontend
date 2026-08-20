@@ -23,7 +23,7 @@ import {
 export const SignIn = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [terms, setTerms] = useState(false);
+  const [rememberMe, setRememberMe] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -64,7 +64,7 @@ export const SignIn = () => {
     setErrors({});
     try {
       signInSchema.parse({ email, password });
-      const response = await loginUser(email, password);
+      const response = await loginUser(email, password, rememberMe);
 
       // 2FA detour — open challenge dialog instead of going to dashboard.
       if (response.success && response.requires2FA) {
@@ -173,12 +173,12 @@ export const SignIn = () => {
             <div className="flex items-start gap-2 text-sm mb-6">
               <input
                 type="checkbox"
-                id="terms-desktop"
-                checked={terms}
-                onChange={(e) => setTerms(e.target.checked)}
+                id="remember-me"
+                checked={rememberMe}
+                onChange={(e) => setRememberMe(e.target.checked)}
                 className="appearance-none w-5 h-5 border-2 border-primary rounded-full cursor-pointer relative checked:before:content-[''] checked:before:absolute checked:before:top-1/2 checked:before:left-1/2 checked:before:-translate-x-1/2 checked:before:-translate-y-1/2 checked:before:w-2.5 checked:before:h-2.5 checked:before:bg-primary checked:before:rounded-full"
               />
-              <label htmlFor="terms-desktop">Remember me on this device</label>
+              <label htmlFor="remember-me">Remember me on this device</label>
             </div>
             <button
               type="submit"

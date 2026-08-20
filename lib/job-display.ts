@@ -154,3 +154,46 @@ export function splitDescriptionParts(text: string): string[] {
     .map((part) => part.trim())
     .filter(Boolean);
 }
+
+/** Tag slugs are internal identifiers; these are what a reader should see. */
+const TAG_LABELS: Record<string, string> = {
+  "skilled-trades": "Skilled trades",
+  healthcare: "Healthcare",
+  driving: "Driving",
+  logistics: "Logistics",
+  retail: "Retail",
+  security: "Security",
+  admin: "Admin",
+  "food-service": "Food service",
+  cleaning: "Cleaning",
+  education: "Education",
+  "full-time": "Full-time",
+  "part-time": "Part-time",
+  casual: "Casual",
+  seasonal: "Seasonal",
+  contract: "Contract",
+};
+
+/**
+ * A tag as a person should read it.
+ *
+ * The derived tags are machine-facing — "skilled-trades", "experience:senior"
+ * — and were rendering raw, so job cards showed the namespace and the hyphens
+ * to the reader. Seniority is stripped of its prefix; anything unmapped is
+ * de-slugged rather than dropped, so a new tag degrades to readable instead of
+ * disappearing.
+ */
+export function formatTagLabel(tag: string): string {
+  const value = tag.trim();
+  if (!value) return "";
+
+  if (value.startsWith("experience:")) {
+    const level = value.slice("experience:".length);
+    return level.charAt(0).toUpperCase() + level.slice(1);
+  }
+
+  return (
+    TAG_LABELS[value.toLowerCase()] ??
+    value.replace(/[-_]/g, " ").replace(/^./, (c) => c.toUpperCase())
+  );
+}

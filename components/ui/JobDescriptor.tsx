@@ -25,6 +25,8 @@ import { hasApplicationDraft } from "@/lib/applicationDrafts";
 import { useUserProfile } from "@/hooks/useUserProfile";
 import { useMyCompanies } from "@/hooks/useCompanies";
 import { withReturnUrl } from "@/lib/auth-redirect";
+import { useRouter } from "next/navigation";
+import { useToaster } from "@/components/ui/Toaster";
 
 import {
   formatJobSalary,
@@ -126,6 +128,8 @@ const JobDescriptor: React.FC<JobDescriptorProps> = ({
   const [hasDraft, setHasDraft] = useState(false);
   const { isSaved, isMutating, toggleSaved } = useSavedJobs();
   const { userProfile, isLoading: profileLoading } = useUserProfile();
+  const router = useRouter();
+  const { showToast } = useToaster();
 
   // Applying is where an anonymous visitor becomes a member, so every route to
   // it is gated — including the redirect out to an external board, which would
@@ -191,10 +195,25 @@ const JobDescriptor: React.FC<JobDescriptorProps> = ({
 
   const handleToggleSave = async () => {
     if (isMutating(id)) return;
+
+    // Saving is for your own account, so it needs one.
+    if (!isSignedIn) {
+      router.push(withReturnUrl("/signup", `/jobs/${id}`));
+      return;
+    }
+
     try {
       await toggleSaved(id);
-    } catch {
-      // Silently fail — button state stays as-is
+    } catch (err) {
+      // This used to swallow every failure, so a save that did not work looked
+      // exactly like one that did — which is how a real bug went unnoticed:
+      // the button did nothing and said nothing.
+      showToast({
+        type: "error",
+        title: "Couldn't save this job",
+        description:
+          err instanceof Error ? err.message : "Please try again in a moment.",
+      });
     }
   };
 

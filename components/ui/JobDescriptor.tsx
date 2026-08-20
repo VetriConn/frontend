@@ -29,6 +29,7 @@ import {
   formatJobSalary,
   getExternalApplyUrl,
   getSourceLabel,
+  splitDescriptionParts,
 } from "@/lib/job-display";
 
 type JobDescriptorProps = Job;
@@ -80,10 +81,7 @@ const fitCards = [
  * list the source meant; anything without separators stays a paragraph.
  */
 const DescriptionBody = ({ text }: { text: string }) => {
-  const parts = text
-    .split(/\s*\|\s*/)
-    .map((part) => part.trim())
-    .filter(Boolean);
+  const parts = splitDescriptionParts(text);
 
   if (parts.length > 1) {
     return (

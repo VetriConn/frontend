@@ -138,3 +138,19 @@ export function formatJobSalary(
 
   return null;
 }
+
+/**
+ * Scraped descriptions arrive as duty fragments joined with " | ", so rendered
+ * raw they read as one run-on sentence full of pipes. This splits them back
+ * into the list the source meant.
+ *
+ * Shared because two surfaces show the same text differently: the detail page
+ * renders every duty as a bulleted list, the card shows a compact preview.
+ * Both need the same parsing, and only one of them had it.
+ */
+export function splitDescriptionParts(text: string): string[] {
+  return text
+    .split(/\s*\|\s*/)
+    .map((part) => part.trim())
+    .filter(Boolean);
+}

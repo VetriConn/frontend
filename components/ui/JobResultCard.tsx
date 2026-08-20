@@ -10,11 +10,8 @@ import {
   HiOutlineCurrencyDollar,
 } from "react-icons/hi2";
 import { hasApplicationDraft } from "@/lib/applicationDrafts";
-import {
-  CARD_SURFACE,
-  CARD_FOCUS,
-  CARD_TITLE,
-} from "./cardStyles";
+import { splitDescriptionParts } from "@/lib/job-display";
+import { CARD_SURFACE, CARD_FOCUS, CARD_TITLE } from "./cardStyles";
 
 interface JobResultCardProps {
   id: string;
@@ -161,7 +158,14 @@ export const JobResultCard = ({
         </dl>
 
         {/* Description */}
-        <p className="text-xs md:text-sm text-gray-600 line-clamp-2">{description}</p>
+        {/* A preview, not the full duty list — the detail page renders every
+            duty as a bulleted list. Here the fragments are separated by a
+            middot rather than the source's raw pipes, which read as one
+            run-on sentence. A separator survives line-clamp; a <ul> does not
+            clamp predictably, and the card's fixed rhythm depends on it. */}
+        <p className="text-xs md:text-sm text-gray-600 leading-relaxed line-clamp-2">
+          {splitDescriptionParts(description).join(" · ")}
+        </p>
       </div>
 
       {/* Apply Button Section - Full width on mobile, auto width on desktop */}

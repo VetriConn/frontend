@@ -32,6 +32,8 @@ import {
 } from "@/lib/api";
 import TwoFactorSetupDialog from "@/components/security/TwoFactorSetupDialog";
 import DisableTwoFactorDialog from "@/components/security/DisableTwoFactorDialog";
+import { CustomDropdown } from "@/components/ui/CustomDropdown";
+import { JOB_SEEKING_STATUS_OPTIONS } from "@/components/ui/JobSeekingStatusBadge";
 
 // ─── Types ──────────────────────────────────────────────────────────────────────
 
@@ -105,8 +107,17 @@ function SectionCard({
   );
 }
 
-// ─── Select Dropdown ────────────────────────────────────────────────────────────
 
+// ─── Page ───────────────────────────────────────────────────────────────────────
+
+/**
+ * Thin adapter over the shared CustomDropdown.
+ *
+ * This file carried its own dropdown — a third implementation alongside
+ * CustomDropdown and FormField's native select — which is why the settings
+ * dropdowns did not look like the ones everywhere else. The markup is gone;
+ * only the call signature survives so the call sites below read the same.
+ */
 function SelectField({
   label,
   hint,
@@ -118,79 +129,20 @@ function SelectField({
   hint: string;
   value: string;
   onChange: (val: string) => void;
-  options: { value: string; label: string }[];
+  options: { value: string; label: React.ReactNode; searchText?: string }[];
 }) {
-  const [isOpen, setIsOpen] = React.useState(false);
-  const containerRef = React.useRef<HTMLDivElement>(null);
-  const selectedOption = options.find((o) => o.value === value);
-
-  // Close on outside click
-  React.useEffect(() => {
-    const handler = (e: MouseEvent) => {
-      if (
-        containerRef.current &&
-        !containerRef.current.contains(e.target as Node)
-      ) {
-        setIsOpen(false);
-      }
-    };
-    document.addEventListener("mousedown", handler);
-    return () => document.removeEventListener("mousedown", handler);
-  }, []);
-
   return (
-    <div>
-      <label className="block text-sm font-semibold text-gray-900 mb-1.5 md:mb-2">
-        {label}
-      </label>
-      <div ref={containerRef} className="relative">
-        <button
-          type="button"
-          onClick={() => setIsOpen(!isOpen)}
-          className="form-input w-full text-left flex items-center justify-between gap-2 cursor-pointer"
-          aria-haspopup="listbox"
-          aria-expanded={isOpen}
-        >
-          <span className="truncate text-gray-900">
-            {selectedOption?.label || "Select..."}
-          </span>
-          <HiOutlineChevronDown
-            className={`w-4 h-4 text-gray-400 shrink-0 transition-transform ${isOpen ? "rotate-180" : ""}`}
-          />
-        </button>
-
-        {isOpen && (
-          <ul
-            role="listbox"
-            className="absolute z-50 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-[240px] overflow-y-auto py-1"
-          >
-            {options.map((opt) => (
-              <li
-                key={opt.value}
-                role="option"
-                aria-selected={opt.value === value}
-                className={`px-4 py-2.5 text-sm cursor-pointer transition-colors ${
-                  opt.value === value
-                    ? "bg-red-50 text-red-700 font-medium"
-                    : "text-gray-700 hover:bg-gray-50"
-                }`}
-                onClick={() => {
-                  onChange(opt.value);
-                  setIsOpen(false);
-                }}
-              >
-                {opt.label}
-              </li>
-            ))}
-          </ul>
-        )}
-      </div>
-      <p className="text-xs text-gray-400 mt-1.5">{hint}</p>
-    </div>
+    <CustomDropdown
+      label={label}
+      name={label.toLowerCase().replace(/\s+/g, "-")}
+      placeholder="Select..."
+      helperText={hint}
+      value={value}
+      onChange={onChange}
+      options={options}
+    />
   );
 }
-
-// ─── Page ───────────────────────────────────────────────────────────────────────
 
 export default function AccountSettings() {
   // ─── Fetch user profile from DB ───────────────────────────────────────────
@@ -547,25 +499,7 @@ export default function AccountSettings() {
               hint="Let employers know your availability. This badge is shown on your profile."
               value={settings.jobSeekingStatus}
               onChange={(val) => update("jobSeekingStatus", val)}
-              options={[
-                {
-                  value: "none",
-                  label: "No status — don't show a badge on my profile",
-                },
-                {
-                  value: "actively_looking",
-                  label: "🟢 Actively Looking — ready for new opportunities",
-                },
-                {
-                  value: "open_to_offers",
-                  label:
-                    "🔵 Open to Offers — not actively searching but interested",
-                },
-                {
-                  value: "not_looking",
-                  label: "⚫ Not Looking — not seeking opportunities right now",
-                },
-              ]}
+              options={JOB_SEEKING_STATUS_OPTIONS}
             />
 
             <SelectField

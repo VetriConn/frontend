@@ -15,7 +15,17 @@ import {
 
 interface DropdownOption {
   value: string;
-  label: string;
+  /**
+   * A string, or a node when the option should render something the trigger
+   * cannot spell — the job-seeking statuses show the same badge here that
+   * lands on the profile, so choosing one previews the result.
+   */
+  label: React.ReactNode;
+  /**
+   * What the trigger shows and search compares against when `label` is a node.
+   * Required only in that case; a string label is its own text.
+   */
+  searchText?: string;
 }
 
 interface CustomDropdownProps {
@@ -54,7 +64,11 @@ export const CustomDropdown = ({
 
   // Get selected option label
   const selectedOption = options.find((opt) => opt.value === value);
-  const displayValue = selectedOption ? selectedOption.label : placeholder;
+  // The trigger is a single line of text, so a node label needs its plain
+  // form; a string label already is one.
+  const displayValue: React.ReactNode = selectedOption
+    ? (selectedOption.searchText ?? selectedOption.label)
+    : placeholder;
 
   // Close dropdown when clicking outside
   useEffect(() => {

@@ -101,3 +101,29 @@ export const JobSeekingStatusBadge = ({
 };
 
 export default JobSeekingStatusBadge;
+
+/**
+ * The statuses as dropdown options, generated rather than written out.
+ *
+ * The settings dropdown listed them by hand with emoji and had drifted: it was
+ * missing open_to_opportunities entirely, so one of the five was unreachable.
+ * Each option renders the badge the profile will actually show, so choosing a
+ * status previews the result rather than describing it.
+ */
+export const JOB_SEEKING_STATUS_OPTIONS = (
+  Object.keys(JOB_SEEKING_STATUS) as JobSeekingStatus[]
+).map((status) => ({
+  value: status,
+  searchText: JOB_SEEKING_STATUS[status].description,
+  label:
+    status === "none" ? (
+      JOB_SEEKING_STATUS[status].description
+    ) : (
+      <span className="inline-flex items-center gap-2">
+        <JobSeekingStatusBadge status={status} />
+        <span className="text-gray-500">
+          {JOB_SEEKING_STATUS[status].description}
+        </span>
+      </span>
+    ),
+}));

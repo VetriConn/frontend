@@ -11,42 +11,14 @@ import {
   HiOutlineEnvelope,
 } from "react-icons/hi2";
 import { PiTreeStructureLight } from "react-icons/pi";
-import { type JobSeekingStatus } from "@/components/pages/profile/ProfileHeader";
+import {
+  JobSeekingStatusBadge,
+  type JobSeekingStatus,
+} from "@/components/ui/JobSeekingStatusBadge";
 import type { WorkExperience, Education } from "@/types/api";
 import { getInitials } from "@/lib/initials";
 
 // ─── Status config (reuse from ProfileHeader) ──────────────────────────────────
-
-const STATUS_CONFIG: Record<
-  JobSeekingStatus,
-  { label: string; badge: string; icon: string }
-> = {
-  none: {
-    label: "Not Set",
-    badge: "bg-gray-100 text-gray-400 border border-gray-200",
-    icon: "⚪",
-  },
-  actively_looking: {
-    label: "Open to Work",
-    badge: "bg-emerald-50 text-emerald-700 border border-emerald-200",
-    icon: "🟢",
-  },
-  open_to_opportunities: {
-    label: "Open to Opportunities",
-    badge: "bg-teal-50 text-teal-700 border border-teal-200",
-    icon: "🟢",
-  },
-  open_to_offers: {
-    label: "Open to Offers",
-    badge: "bg-blue-50 text-blue-700 border border-blue-200",
-    icon: "🔵",
-  },
-  not_looking: {
-    label: "Not Looking",
-    badge: "bg-gray-100 text-gray-500 border border-gray-200",
-    icon: "⚫",
-  },
-};
 
 // ─── Props ──────────────────────────────────────────────────────────────────────
 
@@ -76,10 +48,6 @@ export function ProfilePreviewDialog({
   profile,
 }: ProfilePreviewDialogProps) {
   if (!isOpen) return null;
-
-  const statusConfig = profile.job_seeking_status
-    ? STATUS_CONFIG[profile.job_seeking_status]
-    : null;
 
   return (
     <>
@@ -157,14 +125,9 @@ export function ProfilePreviewDialog({
                     </span>
                   )}
 
-                  {statusConfig && (
-                    <span
-                      className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium ${statusConfig.badge}`}
-                    >
-                      <span className="text-xs">{statusConfig.icon}</span>
-                      {statusConfig.label}
-                    </span>
-                  )}
+                  <JobSeekingStatusBadge
+                    status={profile.job_seeking_status}
+                  />
                 </div>
               </div>
             </div>

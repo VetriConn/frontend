@@ -4,6 +4,7 @@ import Link from "next/link";
 import useSWR from "swr";
 import { formatJobSalary } from "@/lib/job-display";
 import {
+  HiOutlineArrowRight,
   HiOutlineBriefcase,
   HiOutlineLocationMarker,
   HiOutlineClock,
@@ -116,14 +117,28 @@ export const RecommendedJobs: React.FC = () => {
 
   return (
     <div className=" rounded-xl py-6">
-      {/* Header */}
+      {/* Header. The heading and the "See all" sit on one row, with the link
+          pushed right and baseline-aligned to the heading rather than centred
+          against the icon circle. */}
       <div className="flex items-center gap-3 mb-1">
-        <div className="w-10 h-10 bg-red-50 rounded-full flex items-center justify-center">
+        <div className="w-10 h-10 bg-red-50 rounded-full flex items-center justify-center shrink-0">
           <HiOutlineBriefcase className="w-5 h-5 md:w-6 md:h-6 text-primary" />
         </div>
-              <h2 className="text-xl md:text-3xl font-semibold text-gray-900 mb-2">
-                {hasSignals ? "Recommended for you" : "Latest jobs"}
-              </h2>
+        <h2 className="text-xl md:text-3xl font-semibold text-gray-900 mb-2">
+          {hasSignals ? "Recommended for you" : "Latest jobs"}
+        </h2>
+
+        {/* Hidden when there is nothing to see all of — a link to a fuller
+            list is a false promise while the section is failing or empty. */}
+        {!error && jobs.length > 0 && (
+          <Link
+            href="/dashboard/find-jobs"
+            className="ml-auto inline-flex items-center gap-1 text-xs md:text-sm font-semibold text-primary hover:text-primary-hover no-underline shrink-0"
+          >
+            See all
+            <HiOutlineArrowRight className="w-3.5 h-3.5 md:w-4 md:h-4" />
+          </Link>
+        )}
       </div>
       <p className="text-gray-500 text-sm mb-6 ml-13">
         {hasSignals ? (

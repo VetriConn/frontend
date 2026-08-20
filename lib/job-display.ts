@@ -117,7 +117,9 @@ export function formatJobSalary(
   job: SalaryFields,
   variant: "compact" | "full" = "compact",
 ): string | null {
-  const sourceText = job.salary_text?.trim();
+  // Scraped listings bake the word in ("Salary $34.75 hourly"); every
+  // surface renders it beside a dollar icon or label, so it read twice.
+  const sourceText = job.salary_text?.trim().replace(/^salary\s*:?\s*/i, "");
   if (sourceText) return sourceText;
 
   const start = job.salary_range?.start_salary;

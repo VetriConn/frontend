@@ -6,7 +6,7 @@ import { useJob } from "@/hooks/useJob";
 import { useUserProfile } from "@/hooks/useUserProfile";
 import { useParams } from "next/navigation";
 import DashboardNavbar from "@/components/ui/DashboardNavbar";
-import { getExternalApplyUrl, getSourceLabel } from "@/lib/job-display";
+import { getExternalApplyUrl } from "@/lib/job-display";
 
 // Lazy load the heavy job application form
 const JobApplicationForm = dynamic(
@@ -44,7 +44,6 @@ export default function ApplyPage() {
   const externalApplyUrl = displayJob
     ? getExternalApplyUrl(displayJob)
     : null;
-  const sourceLabel = displayJob ? getSourceLabel(displayJob) : null;
 
   if (externalApplyUrl) {
     return (
@@ -53,12 +52,11 @@ export default function ApplyPage() {
         <div className="min-h-screen bg-gray-50 flex items-center justify-center p-6">
           <div className="bg-white rounded-xl border border-gray-200 p-10 text-center max-w-md w-full">
             <h2 className="text-xl font-bold text-gray-900 mb-2">
-              Apply on {sourceLabel ? sourceLabel : "the employer's site"}
+              Apply on the employer&apos;s website
             </h2>
             <p className="text-sm text-gray-500 mb-6">
-              {sourceLabel
-                ? `We found this role on ${sourceLabel}. Applications are handled there, so we'll send you straight to the original posting.`
-                : "This job uses an external application process. You'll be redirected to the employer's website."}
+              This role uses the employer&apos;s own application process —
+              we&apos;ll take you there to finish applying.
             </p>
             <a
               href={externalApplyUrl}
@@ -66,7 +64,7 @@ export default function ApplyPage() {
               rel="noopener noreferrer"
               className="block w-full py-3 px-4 bg-primary hover:bg-primary-hover text-white font-semibold text-sm rounded-lg transition-colors text-center no-underline mb-3"
             >
-              {sourceLabel ? "Continue to original posting" : "Apply on External Site"}
+              Continue to Application
             </a>
             <Link
               href={`/jobs/${jobId}`}

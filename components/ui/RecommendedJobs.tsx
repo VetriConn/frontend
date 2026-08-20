@@ -35,7 +35,14 @@ const RecommendedJobCard: React.FC<RecommendedJobCardProps> = ({
       className="group bg-white rounded-xl border border-gray-200 p-5 flex flex-col justify-between hover:shadow-md transition-shadow no-underline text-current"
     >
       <div>
-        <h3 className="text-lg md:text-2xl font-semibold text-gray-900 leading-tight">
+        {/* One step down the scale: 24px in a 274px card overwhelmed it.
+            Two lines are clamped AND reserved, so a one-line title and a
+            two-line title leave the rows below starting at the same height —
+            it is the raggedness, more than the size, that read as off. */}
+        <h3
+          className="text-lg font-semibold text-gray-900 leading-snug tracking-tight capitalize line-clamp-2 min-h-[2.75em] mb-2"
+          title={role}
+        >
           {role}
         </h3>
 
@@ -95,7 +102,9 @@ export const RecommendedJobs: React.FC = () => {
       id: job.id || job._id,
       role: job.role,
       company_name: job.company_name,
-      location: job.location || "Canada",
+      // Scraped locations arrive as "Location Montréal (QC)" — the word is
+      // baked into the data, and next to the pin icon it read twice.
+      location: (job.location || "Canada").replace(/^location\s+/i, ""),
       salary_range: salaryRange,
     };
   });

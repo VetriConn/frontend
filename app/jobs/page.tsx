@@ -15,21 +15,17 @@ import Footer from "@/components/ui/Footer";
 import DottedBox from "@/public/images/dotted_box.svg";
 import { useJobs } from "@/hooks/useJobs";
 import { Job } from "@/types/job";
+import { formatJobSalary } from "@/lib/job-display";
 import { Skeleton } from "@/components/ui/Skeleton";
 
 // ── Helpers ──────────────────────────────────────────────────────────
 
+// Salary rules live in lib/job-display so every surface renders the same
+// string. This page predated that and printed the raw struct — which on a
+// scraped listing is {number: 0}, so every card read "$0 CAD" while the real
+// figure sat unused in salary_text ("$18.50 hourly").
 function formatSalary(job: Job): string {
-  if (job.salary) {
-    return `${job.salary.symbol}${job.salary.number.toLocaleString()} ${job.salary.currency}`;
-  }
-  if (job.salary_range) {
-    const { start_salary: s, end_salary: e } = job.salary_range;
-    if (s.number && e.number) {
-      return `${s.symbol}${s.number.toLocaleString()} – ${e.symbol}${e.number.toLocaleString()} ${e.currency}`;
-    }
-  }
-  return "";
+  return formatJobSalary(job, "full") ?? "";
 }
 
 function getJobType(job: Job): string {

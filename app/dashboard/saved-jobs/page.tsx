@@ -15,6 +15,7 @@ import {
   HiOutlineTrash,
 } from "react-icons/hi2";
 import { useSavedJobs } from "@/hooks/useSavedJobs";
+import { formatJobSalary } from "@/lib/job-display";
 import { AuthGuard } from "@/components/auth/AuthGuard";
 
 // ─── Types ──────────────────────────────────────────────────────────────────────
@@ -166,11 +167,9 @@ export default function SavedJobsPage() {
   const { savedJobs: data, isLoading, removeSavedJob } = useSavedJobs();
 
   const savedJobs: SavedJob[] = (data || []).map((job) => {
-    const salary = job.salary_range?.start_salary?.number
-      ? `${job.salary?.symbol || "$"}${Math.round((job.salary_range.start_salary.number || 0) / 1000)}k - ${job.salary?.symbol || "$"}${Math.round((job.salary_range.end_salary.number || 0) / 1000)}k/year`
-      : job.salary?.number
-        ? `${job.salary.symbol}${Math.round(job.salary.number / 1000)}k/year`
-        : "Competitive";
+    // Shared rules from lib/job-display: salary_text first, so a scraped
+    // listing shows its real "$18.50 hourly" instead of "Competitive".
+    const salary = formatJobSalary(job) ?? "Competitive";
 
     return {
       id: job.id || job._id,

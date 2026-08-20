@@ -74,6 +74,34 @@ const fitCards = [
   },
 ];
 
+/**
+ * Scraped descriptions arrive as bullet fragments joined with " | ", so they
+ * rendered as one run-on paragraph full of pipes. Split them back into the
+ * list the source meant; anything without separators stays a paragraph.
+ */
+const DescriptionBody = ({ text }: { text: string }) => {
+  const parts = text
+    .split(/\s*\|\s*/)
+    .map((part) => part.trim())
+    .filter(Boolean);
+
+  if (parts.length > 1) {
+    return (
+      <ul className="list-disc pl-5 space-y-1.5 text-sm text-gray-600 leading-relaxed">
+        {parts.map((item) => (
+          <li key={item}>{item}</li>
+        ))}
+      </ul>
+    );
+  }
+
+  return (
+    <p className="text-sm text-gray-600 leading-relaxed whitespace-pre-line">
+      {text}
+    </p>
+  );
+};
+
 const JobDescriptor: React.FC<JobDescriptorProps> = ({
   id,
   role,
@@ -313,9 +341,7 @@ const JobDescriptor: React.FC<JobDescriptorProps> = ({
                 <h2 className="text-xl md:text-3xl font-bold text-gray-900 mb-3">
                   About This Role
                 </h2>
-                <p className="text-sm text-gray-600 leading-relaxed whitespace-pre-line">
-                  {full_description}
-                </p>
+                <DescriptionBody text={full_description} />
               </section>
             )}
 
@@ -447,15 +473,13 @@ const JobDescriptor: React.FC<JobDescriptorProps> = ({
                   )}
                 </div>
 
-                {/* Aggregated listings apply on the source board, so say where
-                    the button leads before the reader clicks it. */}
-                {sourceLabel && (
+                {/* The application finishes on another site, so set that
+                    expectation before the click — but neutrally, without
+                    naming where the listing came from. */}
+                {externalApplyUrl && (
                   <p className="text-xs text-gray-500 mb-2.5">
-                    Sourced from{" "}
-                    <span className="font-medium text-gray-700">
-                      {sourceLabel}
-                    </span>
-                    . Applications are handled there.
+                    You&apos;ll complete your application on the
+                    employer&apos;s website.
                   </p>
                 )}
 
@@ -475,7 +499,7 @@ const JobDescriptor: React.FC<JobDescriptorProps> = ({
                     rel="noopener noreferrer"
                     className="flex items-center justify-center gap-2 w-full bg-primary hover:bg-primary-hover text-white font-semibold text-sm py-3 px-4 rounded-lg transition-colors no-underline mb-3"
                   >
-                    {sourceLabel ? "Continue to original posting" : "Apply Now"}
+                    Apply Now
                     <HiOutlineArrowLeft className="w-5 h-5 md:w-6 md:h-6 rotate-180" />
                   </a>
                 ) : hasApplied ? (

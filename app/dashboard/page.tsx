@@ -1,51 +1,51 @@
 "use client";
-import React, { useEffect } from "react";
+
+import { useEffect } from "react";
 import dynamic from "next/dynamic";
-import { useUserProfile } from "@/hooks/useUserProfile";
 import { useRouter } from "next/navigation";
+import { useUserProfile } from "@/hooks/useUserProfile";
 import { DashboardSkeleton } from "@/components/ui/Skeleton";
 
-// Lazy load dashboard components for better code splitting
-const JobSeekerDashboard = dynamic(
-  () => import("@/components/pages/dashboard/JobSeekerDashboard"),
-  {
-    loading: () => <DashboardSkeleton />,
-  }
+const FindJobsDashboard = dynamic(
+  () => import("@/components/pages/dashboard/FindJobsDashboard"),
+  { loading: () => <DashboardSkeleton /> },
 );
 
-const EmployerDashboard = dynamic(
-  () => import("@/components/pages/dashboard/EmployerDashboard"),
-  {
-    loading: () => <DashboardSkeleton />,
-  }
-);
-
+/**
+ * The dashboard home is job search, for everyone.
+ *
+ * There used to be a second dashboard chosen by role, listing the jobs you had
+ * posted — but /dashboard/postings already does that, with editing and
+ * pagination the landing page never had. So postings live there, reachable from
+ * the nav, and this stays the one thing every account arrives wanting.
+ */
 const Dashboard = () => {
   const { userProfile, isLoading, isError } = useUserProfile();
   const router = useRouter();
 
-  // Admins live under /admin — bounce them out of the seeker/employer dashboard.
+  // Admins live under /admin.
   useEffect(() => {
     if (!isLoading && userProfile?.role === "admin") {
       router.replace("/admin");
     }
-  }, [isLoading, userProfile, router]);
+  }, [isLoading, userProfile?.role, router]);
 
-  if (isLoading) {
-    return <DashboardSkeleton />;
-  }
+  if (isLoading) return <DashboardSkeleton />;
 
   if (isError || !userProfile) {
     return (
-      <div className="flex flex-col min-h-screen bg-gray-50">
-        <div className="flex flex-col items-center justify-center flex-1 p-8 text-center">
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">
-            Unable to load profile
-          </h2>
-          <p className="text-gray-500 mb-6">Please try logging in again.</p>
+      <div className="flex items-center justify-center min-h-[60vh] px-4">
+        <div className="text-center">
+          <h1 className="text-xl font-bold text-gray-900 mb-2">
+            We couldn&apos;t load your dashboard
+          </h1>
+          <p className="text-sm text-gray-500 mb-6">
+            Please sign in again to continue.
+          </p>
           <button
+            type="button"
             onClick={() => router.push("/signin")}
-            className="px-6 py-2 bg-primary text-white rounded-lg hover:bg-primary-hover transition-colors"
+            className="py-2.5 px-4 bg-primary hover:bg-primary-hover text-white font-semibold text-sm rounded-lg transition-colors"
           >
             Go to Sign In
           </button>
@@ -54,22 +54,10 @@ const Dashboard = () => {
     );
   }
 
-  // Render dashboard based on confirmed role only — never fall through to a default
-  if (userProfile.role === "employer") {
-    return <EmployerDashboard />;
-  }
+  // Redirect above is in flight.
+  if (userProfile.role === "admin") return <DashboardSkeleton />;
 
-  if (userProfile.role === "job_seeker") {
-    return <JobSeekerDashboard />;
-  }
-
-  if (userProfile.role === "admin") {
-    // Effect above redirects to /admin; render skeleton during the flip.
-    return <DashboardSkeleton />;
-  }
-
-  // Role not yet known or unrecognised — hold at skeleton
-  return <DashboardSkeleton />;
+  return <FindJobsDashboard />;
 };
 
 export default Dashboard;

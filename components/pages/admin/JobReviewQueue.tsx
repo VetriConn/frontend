@@ -24,6 +24,7 @@ import {
 } from "@/hooks/useAdminJobQueue";
 import { useToaster } from "@/components/ui/Toaster";
 import { AdminPageHeader } from "./AdminTablePanel";
+import ScrapeJobsButton from "./ScrapeJobsButton";
 
 interface JobReviewQueueProps {
   status: AdminJobStatus;
@@ -269,7 +270,11 @@ const JobReviewQueue = ({ status }: JobReviewQueueProps) => {
 
   return (
     <div className="max-w-7xl mx-auto space-y-6">
-      <AdminPageHeader title={meta.title} description={meta.description} />
+      <AdminPageHeader
+        title={meta.title}
+        description={meta.description}
+        actions={status === "pending" ? <ScrapeJobsButton /> : undefined}
+      />
 
       {/* Tabs */}
       <JobTabs

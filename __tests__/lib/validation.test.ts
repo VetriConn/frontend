@@ -4,7 +4,6 @@
  */
 
 import {
-  step1Schema,
   step2Schema,
   step3Schema,
   step4Schema,
@@ -12,33 +11,6 @@ import {
 } from "@/lib/validation";
 
 describe("Signup Validation Schemas", () => {
-  describe("Step 1: Account Type Schema", () => {
-    it("should accept valid jobseeker role", () => {
-      const result = step1Schema.safeParse({ role: "job_seeker" });
-      expect(result.success).toBe(true);
-    });
-
-    it("should accept valid employer role", () => {
-      const result = step1Schema.safeParse({ role: "employer" });
-      expect(result.success).toBe(true);
-    });
-
-    it("should reject null role", () => {
-      const result = step1Schema.safeParse({ role: null });
-      expect(result.success).toBe(false);
-    });
-
-    it("should reject invalid role", () => {
-      const result = step1Schema.safeParse({ role: "invalid" });
-      expect(result.success).toBe(false);
-    });
-
-    it("should reject missing role", () => {
-      const result = step1Schema.safeParse({});
-      expect(result.success).toBe(false);
-    });
-  });
-
   describe("Step 2: Create Account Schema", () => {
     const validData = {
       full_name: "John Doe",

@@ -37,33 +37,20 @@ export async function registerUser(
       email: formData.email,
       password: formData.password,
       confirmPassword: formData.confirmPassword,
-      role: formData.role,
       promotional_emails: false,
     };
 
-    // Add role-specific optional fields
-    if (formData.role === "employer") {
-      const [cityPart = "", countryPart = ""] = formData.company_location
-        .split(",")
-        .map((value) => value.trim());
-
-      requestData.employer_profile = {
-        company_name: formData.company_name,
-        industry: formData.company_industry,
-        city: cityPart,
-        country: countryPart,
-      };
-    } else {
-      // Job seeker-specific fields
-      if (formData.phone_number)
-        requestData.phone_number = formData.phone_number;
-      if (formData.city) requestData.city = formData.city;
-      if (formData.country) requestData.country = formData.country;
-      if (formData.job_title) requestData.job_title = formData.job_title;
-      if (formData.industry) requestData.industry = formData.industry;
-      if (formData.years_of_experience)
-        requestData.years_of_experience = formData.years_of_experience;
-    }
+    // One signup. There is no account type to choose and no company to name —
+    // a company is a separate vetted entity you create or are invited to later.
+    if (formData.phone_number) requestData.phone_number = formData.phone_number;
+    if (formData.city) requestData.city = formData.city;
+    if (formData.state_province)
+      requestData.state_province = formData.state_province;
+    if (formData.country) requestData.country = formData.country;
+    if (formData.job_title) requestData.job_title = formData.job_title;
+    if (formData.industry) requestData.industry = formData.industry;
+    if (formData.years_of_experience)
+      requestData.years_of_experience = formData.years_of_experience;
 
     return await apiFetch<ApiResponse<RegisterResponse>>(
       getApiUrl(API_CONFIG.ENDPOINTS.AUTH.REGISTER),
@@ -130,6 +117,7 @@ export async function uploadResume(
 export async function loginUser(
   email: string,
   password: string,
+  rememberMe: boolean = false,
 ): Promise<LoginResponse> {
   if (!API_BASE_URL) {
     throw new Error(
@@ -151,7 +139,7 @@ export async function loginUser(
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({ email, password, rememberMe }),
       },
     );
 
@@ -278,5 +266,22 @@ export async function resetPasswordWithToken(
           ? error.message
           : "Network error. Please try again.",
     };
+  }
+}
+
+/**
+ * Whether an email is free to register. Fails open — a network or server
+ * hiccup resolves to `true` so the inline check never blocks a legitimate
+ * signup; the backend still rejects a duplicate on submit.
+ */
+export async function checkEmailAvailable(email: string): Promise<boolean> {
+  try {
+    const res = await apiFetch<ApiResponse<{ available: boolean }>>(
+      `${API_BASE_URL}/api/v1/auth/check-email?email=${encodeURIComponent(email)}`,
+      { method: "GET" },
+    );
+    return res.data?.available ?? true;
+  } catch {
+    return true;
   }
 }

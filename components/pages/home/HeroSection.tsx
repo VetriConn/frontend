@@ -104,7 +104,7 @@ export const HeroSection = () => {
         >
           {/* Maple leaf watermark */}
           <div
-            className="absolute bottom-2 right-2 w-28 h-28 rounded-10 bg-[url('/favicon.svg')] bg-no-repeat bg-center bg-contain z-[1] opacity-80 hidden md:block"
+            className="absolute bottom-2 right-2 w-28 h-28 rounded-lg bg-[url('/favicon.svg')] bg-no-repeat bg-center bg-contain z-[1] opacity-80 hidden md:block"
             aria-hidden="true"
           />
 

@@ -7,7 +7,7 @@ import {
   updateTrackerEntry,
   deleteTrackerEntry,
   type TrackerEntryResponse,
-} from "@/lib/api/jobseeker";
+} from "@/lib/api/job-search";
 
 // ─── Types ──────────────────────────────────────────────────────────────────────
 

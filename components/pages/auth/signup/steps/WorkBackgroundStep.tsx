@@ -4,6 +4,8 @@ import { StepProps } from "@/types/signup";
 import { FormField } from "@/components/ui/FormField";
 import { CustomDropdown } from "@/components/ui/CustomDropdown";
 import { EXPERIENCE_LEVELS, INDUSTRY_OPTIONS } from "@/lib/validation";
+import { WizardNav } from "../WizardNav";
+import { StepHeader } from "../StepHeader";
 
 /**
  * Step 4: Work Background (Optional)
@@ -17,21 +19,20 @@ export const WorkBackgroundStep = ({
   onNext,
   onBack,
   onSkip,
+  currentStep,
+  totalSteps,
 }: StepProps) => {
   return (
     <div className="w-full max-w-lg mx-auto">
-      {/* Heading */}
-      <h1 className="text-2xl md:text-4xl font-semibold text-gray-900 mb-2 text-center">
-        Share your work experience
-      </h1>
-      
-      {/* Subtext */}
-      <p className="text-gray-600 mb-8 text-center">
-        This helps us find the right opportunities for you. You can always update this later.
-      </p>
+      <StepHeader
+        title="Share your work experience"
+        subtitle="This helps us find the right opportunities for you. You can always update this later."
+        currentStep={currentStep}
+        totalSteps={totalSteps}
+      />
 
       {/* Form Fields */}
-      <div className="space-y-1">
+      <div className="space-y-2">
         <FormField
           label="Most Recent Job Title"
           name="job_title"
@@ -64,34 +65,7 @@ export const WorkBackgroundStep = ({
         />
       </div>
 
-      {/* Navigation Buttons */}
-      <div className="flex flex-col md:flex-row gap-4 md:gap-6 mt-8">
-        <button
-          type="button"
-          onClick={onBack}
-          className="flex-1 py-3 px-6 border border-gray-300 text-gray-700 font-medium rounded-10 transition-all hover:bg-gray-50"
-        >
-          Back
-        </button>
-        <button
-          type="button"
-          onClick={onNext}
-          className="flex-1 py-3 px-6 bg-primary text-white font-medium rounded-10 transition-all hover:bg-primary/90"
-        >
-          Continue
-        </button>
-      </div>
-
-      {/* Skip Link */}
-      <div className="text-center mt-4">
-        <button
-          type="button"
-          onClick={onSkip}
-          className="text-gray-500 hover:text-gray-700 text-sm underline transition-colors"
-        >
-          Skip for now
-        </button>
-      </div>
+      <WizardNav onBack={onBack} onNext={onNext} onSkip={onSkip} />
     </div>
   );
 };

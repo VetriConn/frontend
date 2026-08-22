@@ -49,12 +49,6 @@ export type SignUpFormData = {
 // Multi-step signup validation schemas
 
 // Step 1: Account Type Selection
-export const step1Schema = z.object({
-  role: z.enum(["job_seeker", "employer"], {
-    message: "Please select how you want to use Vetriconn",
-  }),
-});
-
 // Step 2: Create Account
 export const step2Schema = z
   .object({
@@ -93,16 +87,6 @@ export const step4Schema = z.object({
 // Step 5: Resume Upload
 export const step5Schema = z.object({
   resumeFile: z.instanceof(File).nullable().optional(),
-});
-
-// Employer Step 3: Company Information
-export const employerStep3Schema = z.object({
-  company_name: z
-    .string()
-    .min(1, "Company name is required")
-    .max(100, "Company name must be at most 100 characters"),
-  company_industry: z.string().optional(),
-  company_location: z.string().optional(),
 });
 
 // Experience levels for dropdown (standardized format matching profile settings)

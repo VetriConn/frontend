@@ -2,11 +2,11 @@
 
 import Link from "next/link";
 import { HiOutlineUsers, HiOutlineArrowLeft } from "react-icons/hi2";
-import { RoleGuard } from "@/components/auth/RoleGuard";
+import { AuthGuard } from "@/components/auth/AuthGuard";
 
 export default function CommunityComingSoonPage() {
   return (
-    <RoleGuard allowedRoles={["job_seeker", "employer"]}>
+    <AuthGuard>
       <div className="max-w-3xl mx-auto py-10">
         <div className="bg-white rounded-2xl border border-gray-200/80 shadow-[0_1px_2px_rgba(15,23,42,0.04)] px-6 md:px-10 py-12 text-center">
           <div className="mx-auto w-14 h-14 rounded-2xl bg-primary/10 text-primary ring-1 ring-primary/15 flex items-center justify-center mb-5">
@@ -37,6 +37,6 @@ export default function CommunityComingSoonPage() {
           </div>
         </div>
       </div>
-    </RoleGuard>
+    </AuthGuard>
   );
 }

@@ -10,13 +10,16 @@ import {
   HiOutlineCurrencyDollar,
 } from "react-icons/hi2";
 import { hasApplicationDraft } from "@/lib/applicationDrafts";
+import { splitDescriptionParts } from "@/lib/job-display";
+import { CARD_SURFACE, CARD_FOCUS, CARD_TITLE } from "./cardStyles";
 
 interface JobResultCardProps {
   id: string;
   title: string;
   company: string;
   location: string;
-  jobType: string;
+  /** Null when the listing does not state one — the row is then omitted. */
+  jobType: string | null;
   salary: string;
   description: string;
   onApply?: (id: string) => void;
@@ -69,14 +72,29 @@ export const JobResultCard = ({
     router.push(`/jobs/${id}`);
   };
 
+  /**
+   * The card was clickable with a mouse and unreachable without one — no
+   * tabindex, no key handling, no focus ring. Enter and Space now open it, as
+   * a link and a button respectively would.
+   */
+  const handleCardKeyDown = (e: React.KeyboardEvent) => {
+    if (e.target !== e.currentTarget) return;
+    if (e.key !== "Enter" && e.key !== " ") return;
+    e.preventDefault();
+    router.push(`/jobs/${id}`);
+  };
+
   return (
     <article
       className={clsx(
-        "bg-white border border-gray-200 rounded-lg md:rounded-xl p-4 md:p-6",
-        "transition-shadow duration-200 hover:shadow-md cursor-pointer",
-        "flex flex-col gap-4",
+        CARD_SURFACE,
+        CARD_FOCUS,
+        "p-4 md:p-6 cursor-pointer flex flex-col gap-4",
       )}
       onClick={handleCardClick}
+      onKeyDown={handleCardKeyDown}
+      tabIndex={0}
+      role="link"
       aria-labelledby={`job-title-${id}`}
     >
       {/* Job Info Section */}
@@ -84,7 +102,7 @@ export const JobResultCard = ({
         {/* Job Title - h3 for proper hierarchy under page h1 and section h2 */}
         <h3
           id={`job-title-${id}`}
-          className="font-semibold text-base md:text-lg text-gray-900 mb-3"
+          className={clsx(CARD_TITLE, "text-lg md:text-xl mb-3")}
         >
           {title}
         </h3>
@@ -111,20 +129,25 @@ export const JobResultCard = ({
             <dd>{location}</dd>
           </div>
 
-          {/* Job Type */}
-          <div className="inline-flex items-center gap-1.5 min-h-6">
-            <dt className="sr-only">Job Type</dt>
-            <HiOutlineBriefcase
-              className="w-4 h-4 md:w-5 md:h-5 text-gray-400 flex-shrink-0"
-              aria-hidden="true"
-            />
-            <dd>{jobType}</dd>
-          </div>
+          {/* Job Type. Rendered only when the listing states one; it used to
+              print an invented "Full-time" on every card. */}
+          {jobType && (
+            <div className="inline-flex items-center gap-1.5 min-h-6">
+              <dt className="sr-only">Job Type</dt>
+              <HiOutlineBriefcase
+                className="w-4 h-4 md:w-5 md:h-5 text-gray-400 flex-shrink-0"
+                aria-hidden="true"
+              />
+              <dd>{jobType}</dd>
+            </div>
+          )}
 
           {/* Salary */}
           {salary && (
             <div className="inline-flex items-center gap-1.5 min-h-6">
-              <dt className="sr-only">Salary</dt>
+              {/* "Pay" rather than "Salary" — aggregated listings often quote
+                  an hourly rate here, not an annual figure. */}
+              <dt className="sr-only">Pay</dt>
               <HiOutlineCurrencyDollar
                 className="w-4 h-4 md:w-5 md:h-5 text-primary flex-shrink-0"
                 aria-hidden="true"
@@ -135,7 +158,14 @@ export const JobResultCard = ({
         </dl>
 
         {/* Description */}
-        <p className="text-xs md:text-sm text-gray-600 line-clamp-2">{description}</p>
+        {/* A preview, not the full duty list — the detail page renders every
+            duty as a bulleted list. Here the fragments are separated by a
+            middot rather than the source's raw pipes, which read as one
+            run-on sentence. A separator survives line-clamp; a <ul> does not
+            clamp predictably, and the card's fixed rhythm depends on it. */}
+        <p className="text-xs md:text-sm text-gray-600 leading-relaxed line-clamp-2">
+          {splitDescriptionParts(description).join(" · ")}
+        </p>
       </div>
 
       {/* Apply Button Section - Full width on mobile, auto width on desktop */}

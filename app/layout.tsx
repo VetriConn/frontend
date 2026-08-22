@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono, Lato, Open_Sans, Outfit } from "next/font/google";
+import localFont from "next/font/local";
 import "./globals.css";
 import { ToasterProvider } from "@/components/ui/Toaster";
 import { JsonLd } from "@/components/seo/JsonLd";
@@ -10,34 +10,40 @@ import {
   generateWebSiteSchema,
 } from "@/lib/seo";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-  weight: ["400", "700"],
-});
+/**
+ * Self-hosted rather than fetched from Google.
+ *
+ * next/font/google already self-hosts at runtime, but it downloads the files
+ * during the build — so a build needs network access to Google, and the family
+ * can change under you between builds. These are committed instead: the same
+ * bytes ship every time, and nothing leaves the origin.
+ *
+ * Outfit and Open Sans are variable fonts, so one file covers their whole
+ * weight range. Lato has no variable cut, so its four weights are separate.
+ * Latin subset only — around 140KB for all three.
+ */
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-  weight: ["400", "700"],
-});
-
-const lato = Lato({
-  weight: ["300", "400", "700", "900"],
-  subsets: ["latin"],
-  variable: "--font-lato",
-});
-
-const openSans = Open_Sans({
-  weight: ["300", "400", "600", "700"],
-  subsets: ["latin"],
-  variable: "--font-open-sans",
-});
-
-const outfit = Outfit({
-  weight: ["400", "500", "600", "700"],
-  subsets: ["latin"],
+const outfit = localFont({
+  src: [{ path: "./fonts/outfit-100-900.woff2", weight: "100 900", style: "normal" }],
   variable: "--font-outfit",
+  display: "swap",
+});
+
+const openSans = localFont({
+  src: [{ path: "./fonts/open-sans-300-800.woff2", weight: "300 800", style: "normal" }],
+  variable: "--font-open-sans",
+  display: "swap",
+});
+
+const lato = localFont({
+  src: [
+    { path: "./fonts/lato-300.woff2", weight: "300", style: "normal" },
+    { path: "./fonts/lato-400.woff2", weight: "400", style: "normal" },
+    { path: "./fonts/lato-700.woff2", weight: "700", style: "normal" },
+    { path: "./fonts/lato-900.woff2", weight: "900", style: "normal" },
+  ],
+  variable: "--font-lato",
+  display: "swap",
 });
 
 export const metadata: Metadata = {
@@ -93,25 +99,26 @@ export default function RootLayout({
   const webSiteSchema = generateWebSiteSchema();
 
   return (
-    <html lang="en">
+    // suppressHydrationWarning: the blocking script below intentionally
+    // mutates <html> before hydration (saved text size / high contrast).
+    // Suppression is attribute-level and applies to this element only.
+    <html lang="en" suppressHydrationWarning>
       <head>
         <meta charSet="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <meta name="theme-color" content="#e53e3e" />
         <link rel="icon" href="/logo.svg" />
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" />
         <JsonLd data={organizationSchema} />
         <JsonLd data={webSiteSchema} />
         {/* Blocking script to prevent FOUC for accessibility settings */}
         <script
           dangerouslySetInnerHTML={{
-            __html: `(function(){try{var s=JSON.parse(localStorage.getItem('vetriconn-accessibility')||'{}');if(s.highContrast)document.documentElement.classList.add('high-contrast');if(s.textSize){var m={'normal':'100%','large':'112%','extra-large':'125%'};if(m[s.textSize])document.documentElement.style.fontSize=m[s.textSize]}}catch(e){}})();`,
+            __html: `(function(){try{if(!location.pathname.startsWith('/dashboard'))return;var s=JSON.parse(localStorage.getItem('vetriconn-accessibility')||'{}');if(s.highContrast)document.documentElement.classList.add('high-contrast');if(s.textSize&&s.textSize!=='normal'){var m={'large':'112%','extra-large':'125%'};if(m[s.textSize])document.documentElement.style.fontSize=m[s.textSize]}}catch(e){}})();`,
           }}
         />
       </head>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} ${lato.variable} ${openSans.variable} ${outfit.variable}`}
+        className={`${lato.variable} ${openSans.variable} ${outfit.variable}`}
       >
         <ToasterProvider>
           <AccessibilityProvider>{children}</AccessibilityProvider>

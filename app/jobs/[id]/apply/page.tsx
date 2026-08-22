@@ -1,11 +1,13 @@
 "use client";
-import React from "react";
+import React, { useEffect } from "react";
 import Link from "next/link";
 import dynamic from "next/dynamic";
 import { useJob } from "@/hooks/useJob";
 import { useUserProfile } from "@/hooks/useUserProfile";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import DashboardNavbar from "@/components/ui/DashboardNavbar";
+import { getExternalApplyUrl } from "@/lib/job-display";
+import { withReturnUrl } from "@/lib/auth-redirect";
 
 // Lazy load the heavy job application form
 const JobApplicationForm = dynamic(
@@ -35,28 +37,58 @@ export default function ApplyPage() {
 
   const displayJob = job;
   const isLoading = jobLoading || profileLoading;
+  const router = useRouter();
 
-  // If job has an external application link, redirect them back
-  if (displayJob?.applicationLink) {
+  /**
+   * The button that leads here is gated, but the URL is public — and the
+   * external branch below redirects off-site before any of the form's own
+   * checks run. Gating the page too means the gate cannot be walked around by
+   * typing the address or following a shared link.
+   */
+  useEffect(() => {
+    if (profileLoading || userProfile) return;
+    router.replace(withReturnUrl("/signin", `/jobs/${jobId}/apply`));
+  }, [profileLoading, userProfile, jobId, router]);
+
+  if (!profileLoading && !userProfile) {
+    return (
+      <>
+        <DashboardNavbar />
+        <div className="min-h-screen bg-gray-50 flex items-center justify-center p-6">
+          <p className="text-sm text-gray-500">Taking you to sign in…</p>
+        </div>
+      </>
+    );
+  }
+
+  // Jobs that are applied for elsewhere never reach our application form:
+  // employer postings with an external process, and aggregated listings whose
+  // real posting lives on the source board. Submitting our form for an
+  // aggregated listing would save an application no employer ever receives.
+  const externalApplyUrl = displayJob
+    ? getExternalApplyUrl(displayJob)
+    : null;
+
+  if (externalApplyUrl) {
     return (
       <>
         <DashboardNavbar />
         <div className="min-h-screen bg-gray-50 flex items-center justify-center p-6">
           <div className="bg-white rounded-xl border border-gray-200 p-10 text-center max-w-md w-full">
             <h2 className="text-xl font-bold text-gray-900 mb-2">
-              External Application
+              Apply on the employer&apos;s website
             </h2>
             <p className="text-sm text-gray-500 mb-6">
-              This job uses an external application process. You&apos;ll be
-              redirected to the employer&apos;s website.
+              This role uses the employer&apos;s own application process —
+              we&apos;ll take you there to finish applying.
             </p>
             <a
-              href={displayJob.applicationLink}
+              href={externalApplyUrl}
               target="_blank"
               rel="noopener noreferrer"
               className="block w-full py-3 px-4 bg-primary hover:bg-primary-hover text-white font-semibold text-sm rounded-lg transition-colors text-center no-underline mb-3"
             >
-              Apply on External Site
+              Continue to Application
             </a>
             <Link
               href={`/jobs/${jobId}`}

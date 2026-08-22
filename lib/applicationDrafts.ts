@@ -2,7 +2,7 @@
  * Application Drafts — Async API layer
  *
  * Previously localStorage-only; now backed by the
- * /api/v1/job-seeker/application-drafts endpoints.
+ * /api/v1/application-drafts endpoints.
  */
 
 import {
@@ -11,7 +11,7 @@ import {
   upsertDraft,
   deleteDraft,
   type ApplicationDraftResponse,
-} from "@/lib/api/jobseeker";
+} from "@/lib/api/job-search";
 
 export interface ApplicationDraftRecord {
   jobId: string;

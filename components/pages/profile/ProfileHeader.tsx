@@ -9,38 +9,15 @@ import {
 } from "react-icons/hi2";
 import { CheckCircleIcon } from "@/components/ui/CheckCircleIcon";
 import { Avatar } from "@/components/ui/Avatar";
+import {
+  JobSeekingStatusBadge,
+  type JobSeekingStatus,
+} from "@/components/ui/JobSeekingStatusBadge";
 
-export type JobSeekingStatus =
-  | "none"
-  | "actively_looking"
-  | "open_to_offers"
-  | "not_looking";
-
-const JOB_SEEKING_STATUS_CONFIG: Record<
-  JobSeekingStatus,
-  { label: string; badge: string; icon: string }
-> = {
-  none: {
-    label: "",
-    badge: "",
-    icon: "",
-  },
-  actively_looking: {
-    label: "Open to Work",
-    badge: "bg-emerald-50 text-emerald-700 border border-emerald-200",
-    icon: "🟢",
-  },
-  open_to_offers: {
-    label: "Open to Offers",
-    badge: "bg-blue-50 text-blue-700 border border-blue-200",
-    icon: "🔵",
-  },
-  not_looking: {
-    label: "Not Looking",
-    badge: "bg-gray-100 text-gray-500 border border-gray-200",
-    icon: "⚫",
-  },
-};
+// The badge and its statuses live in one place now — this file and
+// ProfilePreviewDialog each carried their own copy, already disagreeing about
+// what `none` should read as, and both drew the indicator with emoji.
+export type { JobSeekingStatus };
 
 export interface ProfileHeaderProps {
   name: string;
@@ -145,14 +122,7 @@ export const ProfileHeader: React.FC<ProfileHeaderProps> = ({
             {/* Job-Seeking Status Badge */}
             {jobSeekingStatus && jobSeekingStatus !== "none" && (
               <div className="flex justify-center sm:justify-start mb-1.5">
-                <span
-                  className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium ${JOB_SEEKING_STATUS_CONFIG[jobSeekingStatus].badge}`}
-                >
-                  <span className="text-xs">
-                    {JOB_SEEKING_STATUS_CONFIG[jobSeekingStatus].icon}
-                  </span>
-                  {JOB_SEEKING_STATUS_CONFIG[jobSeekingStatus].label}
-                </span>
+                <JobSeekingStatusBadge status={jobSeekingStatus} />
               </div>
             )}
 

@@ -1,3 +1,22 @@
+import type {
+  Industry,
+  JobType,
+  WorkArrangement,
+  ExperienceLevel,
+  PhysicalDemands,
+  WorkSchedule,
+  PaymentType,
+  ProvinceCode,
+  MinQualification,
+  SecurityClearance,
+  Language,
+  Benefit,
+  Currency,
+  ScreeningQuestion,
+  JobFaq,
+} from "@/lib/job-fields";
+
+import type { JobSeekingStatus } from "@/components/pages/profile/ProfileHeader";
 /**
  * API Response Types
  * Types for API request/response data structures
@@ -117,6 +136,12 @@ export interface UserAttachment {
 
 // Complete User Profile Interface (matches backend IUser)
 export interface UserProfile {
+  /**
+   * The user's own id. The profile endpoint has always returned this
+   * (`id: user._id.toString()`); it just wasn't declared here. Needed to work
+   * out the viewer's role on a company from its members list.
+   */
+  id?: string;
   full_name: string;
   role: string;
   email: string;
@@ -127,6 +152,8 @@ export interface UserProfile {
   phone_number?: string;
   location?: string;
   city?: string;
+  /** Province or state. ISO 3166-2 code where we enumerate them. */
+  state_province?: string;
   country?: string;
 
   // Work Background
@@ -147,40 +174,8 @@ export interface UserProfile {
   saved_jobs?: string[];
   applied_jobs_count?: number;
   skills?: string[];
-  employer_profile?: {
-    company_name: string;
-    industry: string;
-    city: string;
-    country: string;
-    phone_number?: string;
-    company_email?: string;
-    website?: string;
-    company_size?: string;
-    hiring_frequency?: string;
-    about_company?: string;
-    logo_url?: string;
-    banner_url?: string;
-    notification_preferences: {
-      email_notifications: boolean;
-      job_approved_rejected: boolean;
-      new_applications: boolean;
-      application_alerts?: boolean;
-      messages: boolean;
-      platform_updates?: boolean;
-    };
-    company_preferences: {
-      public_company_profile: boolean;
-      show_contact_information: boolean;
-      company_profile_visibility?: string;
-    };
-  };
 
   // Job-seeking status
-  job_seeking_status?:
-    | "none"
-    | "actively_looking"
-    | "open_to_offers"
-    | "not_looking";
 
   // Email verification fields
   emailVerified?: boolean;
@@ -190,12 +185,21 @@ export interface UserProfile {
 
   // Two-factor enabled (set by /2fa/verify, cleared by /2fa/disable).
   two_factor_enabled?: boolean;
+  /** True while the account still holds a one-time bootstrap password. */
+  must_change_password?: boolean;
 
   // Job seeker settings
+  /**
+   * One set for the whole account. The keys describe the person rather than a
+   * role: application_updates is news about applications you sent,
+   * posting_updates and new_applications are about jobs you posted.
+   */
   notification_preferences?: {
     email_notifications: boolean;
     job_alerts: boolean;
-    application_approved_rejected: boolean;
+    application_updates: boolean;
+    posting_updates: boolean;
+    new_applications: boolean;
     messages: boolean;
     community_updates: boolean;
   };
@@ -203,7 +207,7 @@ export interface UserProfile {
     profile_visibility: "everyone" | "employers-only" | "private";
   };
   job_seeking_settings?: {
-    status: "none" | "actively_looking" | "open_to_opportunities" | "not_looking";
+    status: JobSeekingStatus;
     preferred_work_type: "remote" | "on-site" | "hybrid" | "no-preference";
     preferred_location: "within-10" | "within-25" | "within-50" | "anywhere";
     experience_level: "entry" | "mid" | "senior" | "executive";
@@ -236,38 +240,6 @@ export interface UserProfileResponse {
       saved_jobs?: string[];
       applied_jobs_count?: number;
       skills?: string[];
-      employer_profile?: {
-        company_name: string;
-        industry: string;
-        city: string;
-        country: string;
-        phone_number?: string;
-        company_email?: string;
-        website?: string;
-        company_size?: string;
-        hiring_frequency?: string;
-        about_company?: string;
-        logo_url?: string;
-        banner_url?: string;
-        notification_preferences: {
-          email_notifications: boolean;
-          job_approved_rejected: boolean;
-          new_applications: boolean;
-          application_alerts?: boolean;
-          messages: boolean;
-          platform_updates?: boolean;
-        };
-        company_preferences: {
-          public_company_profile: boolean;
-          show_contact_information: boolean;
-          company_profile_visibility?: string;
-        };
-      };
-      job_seeking_status?:
-        | "none"
-        | "actively_looking"
-        | "open_to_offers"
-        | "not_looking";
       attachments?: UserAttachment[];
       documents?: UserDocument[];
     };
@@ -305,7 +277,58 @@ export interface JobsResponse {
   qualifications?: string[];
   applicationLink?: string;
   description?: string;
+  /**
+   * The structured fields behind the Post-a-Job form, as real columns —
+   * previously laundered through tags/qualifications/responsibilities with a
+   * draft_payload blob as the round-trip source of truth. The scraper's
+   * classifier fills what it can derive; absent means the listing didn't say.
+   */
+  job_category?: Industry;
+  job_type?: JobType;
+  work_arrangement?: WorkArrangement;
+  experience_level?: ExperienceLevel;
+  /** Free text as the employer wrote it; render as a split list. */
+  skills?: string;
+  physical_demands?: PhysicalDemands;
+  work_schedule?: WorkSchedule;
+  payment_type?: PaymentType;
+  city?: string;
+  state_province?: ProvinceCode;
+  country?: string;
+  currency?: Currency;
+  min_qualification?: MinQualification;
+  security_clearance?: SecurityClearance;
+  requires_drivers_license?: boolean;
+  visa_sponsorship?: boolean;
+  languages?: Language[];
+  certifications?: string[];
+  benefits?: Benefit[];
+  openings?: number;
+  application_deadline?: string;
+  start_date?: string;
+  veteran_friendly?: boolean;
+  accommodations_offered?: boolean;
+  physically_accessible?: boolean;
+  open_to_returners?: boolean;
+  // Phase-2 job-builder fields.
+  screening_questions?: ScreeningQuestion[];
+  faqs?: JobFaq[];
+  hiring_stages?: string[];
   application_count?: number;
+
+  // Aggregated listings. Scraped jobs have no employer behind them — the real
+  // posting lives at external_url and applications must go there, not through
+  // our application flow.
+  source?: "user" | "scraped";
+  source_name?: string;
+  external_url?: string;
+  /** Free-text salary straight from the source, e.g. "$18.50 hourly". */
+  salary_text?: string;
+
+  // Company-posted jobs (vetted Company Pages).
+  posted_as?: "individual" | "company";
+  company_id?: string;
+
   createdAt: string;
   updatedAt: string;
 }
@@ -322,6 +345,9 @@ export interface ApplicationItem {
         company_name: string;
         location?: string;
         company_logo?: string;
+        screening_questions?: ScreeningQuestion[];
+        skills?: string;
+        qualifications?: string[];
       };
   status: "pending" | "reviewed" | "accepted" | "rejected";
   full_name: string;
@@ -334,90 +360,16 @@ export interface ApplicationItem {
   work_location_preference?: string;
   resume_url?: string;
   additional_info?: string;
+  // Phase-2 screening results.
+  screening_answers?: { question_id: string; answer: string[] }[];
+  screening_score?: number;
+  screening_flagged?: boolean;
   applied_at: string;
   createdAt?: string;
   updatedAt?: string;
 }
 
-export type EmployerMessageSender = "employer" | "applicant";
-
-export interface EmployerThreadSummary {
-  application_id: string;
-  applicant: {
-    user_id?: string;
-    full_name: string;
-    email: string;
-    phone: string;
-  };
-  job: {
-    role: string;
-    company_name: string;
-  };
-  selected_skills?: string[];
-  additional_info?: string;
-  applied_at?: string;
-  last_message?: {
-    _id: string;
-    sender: EmployerMessageSender;
-    content: string;
-    attachment_url?: string;
-    attachment_name?: string;
-    attachment_mime_type?: string;
-    attachment_size?: number;
-    createdAt: string;
-  } | null;
-}
-
-export interface EmployerThreadMessage {
-  _id: string;
-  application_id: string;
-  employer_id: string;
-  applicant_id: string;
-  sender: EmployerMessageSender;
-  content: string;
-  attachment_url?: string;
-  attachment_name?: string;
-  attachment_mime_type?: string;
-  attachment_size?: number;
-  read_by_employer: boolean;
-  read_by_applicant: boolean;
-  createdAt: string;
-  updatedAt: string;
-}
-
-export interface EmployerThreadDetail {
-  application_id: string;
-  applicant: {
-    user_id?: string;
-    full_name: string;
-    email: string;
-    phone: string;
-  };
-  job: {
-    role: string;
-    company_name: string;
-  };
-  selected_skills?: string[];
-  additional_info?: string;
-  applied_at?: string;
-}
-
 // Job Seeker Messaging Types
-export type JobSeekerMessageSender = "job_seeker" | "employer";
-
-export interface JobSeekerThreadMessage {
-  _id: string;
-  application_id: string;
-  sender: JobSeekerMessageSender;
-  content: string;
-  attachment_url?: string;
-  attachment_name?: string;
-  attachment_mime_type?: string;
-  attachment_size?: number;
-  createdAt: string;
-  updatedAt?: string;
-}
-
 export type NotificationType =
   | "application_sent"
   | "application_received"
@@ -440,7 +392,7 @@ export interface NotificationItem {
   updatedAt?: string;
 }
 
-export interface EmployerJobSummary {
+export interface PostedJobSummary {
   _id: string;
   id: string;
   role: string;
@@ -452,24 +404,7 @@ export interface EmployerJobSummary {
   updatedAt?: string;
 }
 
-export interface EmployerDraftPayload {
-  job_title?: string;
-  job_category?: string;
-  job_type?: string;
-  employment_type?: string;
-  description?: string;
-  experience_level?: string;
-  skills?: string;
-  physical_demands?: string;
-  salary_min?: string;
-  salary_max?: string;
-  payment_type?: string;
-  city?: string;
-  country?: string;
-  work_schedule?: string;
-}
-
-export interface EmployerJobDetail extends EmployerJobSummary {
+export interface PostedJobDetail extends PostedJobSummary {
   description?: string;
   full_description?: string;
   tags?: string[];
@@ -493,7 +428,43 @@ export interface EmployerJobDetail extends EmployerJobSummary {
       symbol?: string;
     };
   };
-  draft_payload?: EmployerDraftPayload;
+  /**
+   * The structured fields behind the Post-a-Job form, as real columns —
+   * previously laundered through tags/qualifications/responsibilities with a
+   * draft_payload blob as the round-trip source of truth. The scraper's
+   * classifier fills what it can derive; absent means the listing didn't say.
+   */
+  job_category?: Industry;
+  job_type?: JobType;
+  work_arrangement?: WorkArrangement;
+  experience_level?: ExperienceLevel;
+  /** Free text as the employer wrote it; render as a split list. */
+  skills?: string;
+  physical_demands?: PhysicalDemands;
+  work_schedule?: WorkSchedule;
+  payment_type?: PaymentType;
+  city?: string;
+  state_province?: ProvinceCode;
+  country?: string;
+  currency?: Currency;
+  min_qualification?: MinQualification;
+  security_clearance?: SecurityClearance;
+  requires_drivers_license?: boolean;
+  visa_sponsorship?: boolean;
+  languages?: Language[];
+  certifications?: string[];
+  benefits?: Benefit[];
+  openings?: number;
+  application_deadline?: string;
+  start_date?: string;
+  veteran_friendly?: boolean;
+  accommodations_offered?: boolean;
+  physically_accessible?: boolean;
+  open_to_returners?: boolean;
+  // Phase-2 job-builder fields.
+  screening_questions?: ScreeningQuestion[];
+  faqs?: JobFaq[];
+  hiring_stages?: string[];
 }
 
 // Attachment types (matching backend schema)

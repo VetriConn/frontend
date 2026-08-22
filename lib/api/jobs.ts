@@ -11,14 +11,69 @@ import {
 } from "./client";
 import type { ApplicationItem, JobsResponse } from "@/types/api";
 
+/** Per-source outcome of one scraper run. */
+export interface ScraperSourceSummary {
+  source: string;
+  found: number;
+  inserted: number;
+  updated: number;
+  skipped: number;
+}
+
+/**
+ * Run the job scraper now instead of waiting for the six-hourly cron.
+ * Admin only. `pages` caps how many result pages each source walks.
+ */
+export async function triggerJobScrape(
+  pages?: number,
+): Promise<ScraperSourceSummary[]> {
+  const query = pages ? `?pages=${pages}` : "";
+  const response = await apiFetch<
+    ApiEnvelope<ScraperSourceSummary[] | ScraperSourceSummary>
+  >(`${API_BASE_URL}/api/v1/jobs/admin/scrape${query}`, { method: "POST" });
+
+  const summary = response.data;
+  if (!summary) return [];
+  return Array.isArray(summary) ? summary : [summary];
+}
+
 // Fetch jobs from database
+export interface JobsPage {
+  jobs: JobsResponse[];
+  /** Absent when the response carried no envelope. */
+  pagination?: PaginationMeta;
+  /**
+   * The server found little for this search and is fetching more from its
+   * sources in the background. The results shown are not the final answer.
+   */
+  searchingMore?: boolean;
+}
+
+export interface PaginationMeta {
+  currentPage: number;
+  totalPages: number;
+  totalItems: number;
+  itemsPerPage: number;
+}
+
 export async function getJobs(options?: {
   page?: number;
   limit?: number;
   location?: string;
   search?: string;
-}): Promise<JobsResponse[]> {
-  const { page = 1, limit = 10, location, search } = options || {};
+  jobType?: string;
+  experience?: string;
+  arrangement?: string;
+}): Promise<JobsPage> {
+  const {
+    page = 1,
+    limit = 10,
+    location,
+    search,
+    jobType,
+    experience,
+    arrangement,
+  } = options || {};
 
   // Build query parameters
   const queryParams = new URLSearchParams({
@@ -34,6 +89,20 @@ export async function getJobs(options?: {
     queryParams.append("search", search);
   }
 
+  // Both narrow in the database now — they used to be applied in the browser,
+  // which is why this had to fetch the whole board.
+  if (jobType) {
+    queryParams.append("jobType", jobType);
+  }
+
+  if (experience) {
+    queryParams.append("experience", experience);
+  }
+
+  if (arrangement) {
+    queryParams.append("arrangement", arrangement);
+  }
+
   const data = await apiFetch<
     JobsResponse[] | PaginatedApiEnvelope<JobsResponse[]>
   >(`${API_BASE_URL}/api/v1/jobs?${queryParams}`, {
@@ -43,13 +112,22 @@ export async function getJobs(options?: {
     },
   });
 
-  // Backend wraps jobs in { success, data, pagination } — extract the array
-  if (Array.isArray(data)) return data;
+  // Backend wraps jobs in { success, data, pagination }. The pagination block
+  // was being discarded, so callers could only ever know how many rows they
+  // had received — never how many exist, which is what page controls need.
+  if (Array.isArray(data)) return { jobs: data };
   if (data && typeof data === "object" && "data" in data) {
     const payload = data.data;
-    if (Array.isArray(payload)) return payload;
+    if (Array.isArray(payload)) {
+      return {
+        jobs: payload,
+        pagination: (data as PaginatedApiEnvelope<JobsResponse[]>).pagination,
+        searchingMore:
+          (data as { searching_more?: boolean }).searching_more === true,
+      };
+    }
   }
-  return [];
+  return { jobs: [] };
 }
 
 // Fetch single job by ID

@@ -143,8 +143,8 @@ const AdminDashboard = () => {
           tone="emerald"
         />
         <StatCard
-          label="Employers Registered"
-          value={isLoading ? "—" : data.stats.employers}
+          label="Companies Registered"
+          value={isLoading ? "—" : data.stats.companies}
           delta={{ value: "+3 this week", positive: true }}
           icon={HiOutlineBuildingOffice2}
           tone="indigo"
@@ -173,11 +173,11 @@ const AdminDashboard = () => {
           )}
         </Link>
         <Link
-          href="/admin/employers"
+          href="/admin/companies"
           className="inline-flex items-center gap-2 bg-white text-gray-800 px-4 py-2.5 rounded-xl text-sm font-semibold border border-gray-200 hover:bg-gray-50 transition-colors"
         >
           <HiOutlineShieldCheck className="w-4 h-4 text-gray-500" />
-          Review Employers
+          Review Companies
         </Link>
       </div>
 

@@ -44,6 +44,14 @@ const PASSWORD_REQUIREMENTS: PasswordRequirement[] = [
   },
 ];
 
+/**
+ * Whether a password satisfies every requirement the checklist shows. Exported
+ * so a form can decide when to reveal that checklist without re-encoding the
+ * rules and letting the two drift apart.
+ */
+export const isPasswordValid = (password: string): boolean =>
+  PASSWORD_REQUIREMENTS.every((req) => req.test(password));
+
 export const PasswordField = ({
   label,
   name,
@@ -64,7 +72,7 @@ export const PasswordField = ({
   const toggleVisibility = () => setIsVisible(!isVisible);
 
   const inputClasses = clsx(
-    "block w-full px-3 py-2 md:px-4 md:py-3 pr-12 border rounded-10 text-sm md:text-base outline-none transition-colors focus:ring-2 focus:ring-primary focus:border-transparent bg-white",
+    "block w-full px-3 py-2 md:px-4 md:py-3 pr-12 border rounded-lg text-sm md:text-base outline-none transition-colors focus:ring-2 focus:ring-primary focus:border-transparent bg-white",
     error ? "border-red-500" : "border-gray-300",
     disabled && "bg-gray-100 cursor-not-allowed"
   );
@@ -126,7 +134,7 @@ export const PasswordField = ({
       )}
 
       {showRequirements && (
-        <div className="mt-2 space-y-1">
+        <div className="mt-2 grid grid-cols-1 gap-x-4 gap-y-1 sm:grid-cols-2">
           {PASSWORD_REQUIREMENTS.map((req) => {
             const isMet = req.test(value);
             return (

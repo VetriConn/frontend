@@ -1,6 +1,6 @@
 "use client";
 import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import clsx from "clsx";
 import DottedBox7 from "@/public/images/dotted_box_7.svg";
@@ -14,11 +14,16 @@ import { loginUser } from "@/lib/api";
 import { FormField } from "@/components/ui/FormField";
 import { PasswordField } from "@/components/ui/PasswordField";
 import TwoFactorChallengeDialog from "@/components/security/TwoFactorChallengeDialog";
+import {
+  RETURN_URL_PARAM,
+  resolvePostAuthPath,
+  withReturnUrl,
+} from "@/lib/auth-redirect";
 
 export const SignIn = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [terms, setTerms] = useState(false);
+  const [rememberMe, setRememberMe] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -27,16 +32,30 @@ export const SignIn = () => {
   const [partialToken, setPartialToken] = useState<string | undefined>();
 
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { showToast } = useToaster();
   const isButtonDisabled = isSubmitting || !email.trim() || !password.trim();
+
+  // Someone arriving from a company invite needs to land back on the invite,
+  // not the dashboard. Unsafe values fall back to the dashboard.
+  const rawReturnUrl = searchParams.get(RETURN_URL_PARAM);
+  const postAuthPath = resolvePostAuthPath(rawReturnUrl);
+  const isReturningSomewhere = postAuthPath !== "/dashboard";
+
+  // Carry the destination through if they need an account first.
+  const signUpHref = rawReturnUrl
+    ? withReturnUrl("/signup", rawReturnUrl)
+    : "/signup";
 
   const finishSignIn = () => {
     showToast({
       type: "success",
       title: "Login successful",
-      description: "Welcome back! Redirecting to dashboard...",
+      description: isReturningSomewhere
+        ? "Welcome back! Taking you back to where you left off..."
+        : "Welcome back! Redirecting to dashboard...",
     });
-    setTimeout(() => router.push("/dashboard"), 1200);
+    setTimeout(() => router.push(postAuthPath), 1200);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -45,7 +64,7 @@ export const SignIn = () => {
     setErrors({});
     try {
       signInSchema.parse({ email, password });
-      const response = await loginUser(email, password);
+      const response = await loginUser(email, password, rememberMe);
 
       // 2FA detour — open challenge dialog instead of going to dashboard.
       if (response.success && response.requires2FA) {
@@ -154,16 +173,16 @@ export const SignIn = () => {
             <div className="flex items-start gap-2 text-sm mb-6">
               <input
                 type="checkbox"
-                id="terms-desktop"
-                checked={terms}
-                onChange={(e) => setTerms(e.target.checked)}
+                id="remember-me"
+                checked={rememberMe}
+                onChange={(e) => setRememberMe(e.target.checked)}
                 className="appearance-none w-5 h-5 border-2 border-primary rounded-full cursor-pointer relative checked:before:content-[''] checked:before:absolute checked:before:top-1/2 checked:before:left-1/2 checked:before:-translate-x-1/2 checked:before:-translate-y-1/2 checked:before:w-2.5 checked:before:h-2.5 checked:before:bg-primary checked:before:rounded-full"
               />
-              <label htmlFor="terms-desktop">Remember me on this device</label>
+              <label htmlFor="remember-me">Remember me on this device</label>
             </div>
             <button
               type="submit"
-              className="bg-primary text-white py-3 px-7 border-none rounded-10 text-sm cursor-pointer transition-colors ml-auto mt-2 inline-block hover:bg-red-700 disabled:bg-gray-300 disabled:text-text-muted disabled:cursor-not-allowed w-full"
+              className="bg-primary text-white py-3 px-7 border-none rounded-lg text-sm cursor-pointer transition-colors ml-auto mt-2 inline-block hover:bg-red-700 disabled:bg-gray-300 disabled:text-text-muted disabled:cursor-not-allowed w-full"
               disabled={isButtonDisabled}
             >
               {isSubmitting ? "Signing In..." : "Sign In to your account"}
@@ -180,8 +199,8 @@ export const SignIn = () => {
           {/* Create account CTA */}
           <div className="text-center mb-8">
             <a
-              href="/signup"
-              className="text-primary text-2xl font-normal hover:underline"
+              href={signUpHref}
+              className="text-primary text-lg font-medium hover:underline"
             >
               Create a free account
             </a>

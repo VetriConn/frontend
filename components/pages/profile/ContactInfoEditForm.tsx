@@ -2,10 +2,16 @@
 
 import React, { useState } from "react";
 import { FormField } from "@/components/ui/FormField";
+import { PhoneField, validatePhone } from "@/components/ui/PhoneField";
+import { CustomDropdown } from "@/components/ui/CustomDropdown";
+import { CountrySelect } from "@/components/ui/CountrySelect";
+import { regionsFor, hasRegions, regionLabelFor } from "@/lib/regions";
 
 export interface ContactInfoFormData {
   phone_number: string;
   city: string;
+  /** ISO 3166-2 subdivision code where we enumerate them, else free text. */
+  state_province: string;
   country: string;
 }
 
@@ -33,28 +39,11 @@ export const ContactInfoEditForm: React.FC<ContactInfoEditFormProps> = ({
   const [formData, setFormData] = useState<ContactInfoFormData>(initialData);
   const [errors, setErrors] = useState<Partial<Record<keyof ContactInfoFormData, string>>>({});
 
-  // Phone number validation
-  const validatePhoneNumber = (phone: string): string | undefined => {
-    if (!phone || phone.trim() === "") {
-      return "Phone number is required";
-    }
-    
-    // Basic phone number validation - allows various formats
-    // Accepts: digits, spaces, dashes, parentheses, plus sign
-    const phoneRegex = /^[\d\s\-\+\(\)]+$/;
-    
-    if (!phoneRegex.test(phone)) {
-      return "Please enter a valid phone number";
-    }
-    
-    // Check for minimum length (at least 10 digits)
-    const digitsOnly = phone.replace(/\D/g, "");
-    if (digitsOnly.length < 10) {
-      return "Phone number must be at least 10 digits";
-    }
-    
-    return undefined;
-  };
+  // Phone number validation — delegates to libphonenumber metadata so that
+  // a number is checked against its country's real numbering plan rather
+  // than a digit-count heuristic.
+  const validatePhoneNumber = (phone: string): string | undefined =>
+    validatePhone(phone, { required: true });
 
   // Required field validation
   const validateRequired = (value: string, fieldName: string): string | undefined => {
@@ -67,6 +56,13 @@ export const ContactInfoEditForm: React.FC<ContactInfoEditFormProps> = ({
   // Handle field change with validation
   const handleFieldChange = (field: keyof ContactInfoFormData, value: string) => {
     const updatedData = { ...formData, [field]: value };
+
+    // Subdivision codes are only meaningful within their country, so changing
+    // the country clears the region rather than leaving "ON" under Australia.
+    if (field === "country" && value !== formData.country) {
+      updatedData.state_province = "";
+    }
+
     setFormData(updatedData);
 
     // Validate the field
@@ -74,9 +70,15 @@ export const ContactInfoEditForm: React.FC<ContactInfoEditFormProps> = ({
     if (field === "phone_number") {
       error = validatePhoneNumber(value);
     } else if (field === "city") {
-      error = validateRequired(value, "City");
+      // City tracks the region: required only where the region is (CA/US), so
+      // a country with an optional province/state doesn't demand a city.
+      error = hasRegions(updatedData.country)
+        ? validateRequired(value, "City")
+        : undefined;
     } else if (field === "country") {
       error = validateRequired(value, "Country");
+    } else if (field === "state_province" && hasRegions(updatedData.country)) {
+      error = validateRequired(value, regionLabelFor(updatedData.country));
     }
 
     // Update errors
@@ -98,11 +100,22 @@ export const ContactInfoEditForm: React.FC<ContactInfoEditFormProps> = ({
     const phoneError = validatePhoneNumber(formData.phone_number);
     if (phoneError) newErrors.phone_number = phoneError;
 
-    const cityError = validateRequired(formData.city, "City");
-    if (cityError) newErrors.city = cityError;
-
     const countryError = validateRequired(formData.country, "Country");
     if (countryError) newErrors.country = countryError;
+
+    // Province/state and city are required together, and only where the region
+    // list is authoritative (CA/US). Elsewhere both are optional — a country
+    // with a free-text region shouldn't demand a city either.
+    if (hasRegions(formData.country)) {
+      const regionError = validateRequired(
+        formData.state_province,
+        regionLabelFor(formData.country),
+      );
+      if (regionError) newErrors.state_province = regionError;
+
+      const cityError = validateRequired(formData.city, "City");
+      if (cityError) newErrors.city = cityError;
+    }
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -120,17 +133,51 @@ export const ContactInfoEditForm: React.FC<ContactInfoEditFormProps> = ({
 
   return (
     <div id="contact-info-form" className="space-y-4 md:space-y-6">
-      <FormField
+      <PhoneField
         label="Phone Number"
         name="phone_number"
-        type="tel"
-        placeholder="+1 (555) 123-4567"
         value={formData.phone_number}
         onChange={(value) => handleFieldChange("phone_number", value)}
         error={errors.phone_number}
         required
-        helperText="Enter your phone number with country code"
+        helperText="Select your country, then enter your number"
       />
+
+      {/* Location, narrowing down: country → state/province → city. */}
+      <CountrySelect
+        value={formData.country}
+        onChange={(value) => handleFieldChange("country", value)}
+        error={errors.country}
+        required
+      />
+
+      {/* A dropdown where the subdivisions are known, free text otherwise —
+          "province or state" does not mean the same thing everywhere. */}
+      {hasRegions(formData.country) ? (
+        <CustomDropdown
+          label={regionLabelFor(formData.country)}
+          name="state_province"
+          placeholder={`Select your ${regionLabelFor(formData.country).toLowerCase()}`}
+          value={formData.state_province}
+          onChange={(value) => handleFieldChange("state_province", value)}
+          options={regionsFor(formData.country).map((region) => ({
+            value: region.code,
+            label: region.name,
+          }))}
+          error={errors.state_province}
+          required
+        />
+      ) : (
+        <FormField
+          label={regionLabelFor(formData.country)}
+          name="state_province"
+          type="text"
+          placeholder="Optional"
+          value={formData.state_province}
+          onChange={(value) => handleFieldChange("state_province", value)}
+          error={errors.state_province}
+        />
+      )}
 
       <FormField
         label="City"
@@ -140,18 +187,7 @@ export const ContactInfoEditForm: React.FC<ContactInfoEditFormProps> = ({
         value={formData.city}
         onChange={(value) => handleFieldChange("city", value)}
         error={errors.city}
-        required
-      />
-
-      <FormField
-        label="Country"
-        name="country"
-        type="text"
-        placeholder="Enter your country"
-        value={formData.country}
-        onChange={(value) => handleFieldChange("country", value)}
-        error={errors.country}
-        required
+        required={hasRegions(formData.country)}
       />
 
       {/* Note: Email field is intentionally NOT included as it is immutable */}

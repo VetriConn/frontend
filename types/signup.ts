@@ -4,8 +4,6 @@
  * Form data collected across all signup steps
  */
 export interface SignupFormData {
-  // Step 1 - Account Type
-  role: "job_seeker" | "employer" | null;
 
   // Step 2 - Create Account
   full_name: string;
@@ -16,6 +14,7 @@ export interface SignupFormData {
   // Step 3 - Contact Info
   phone_number: string;
   city: string;
+  state_province: string;
   country: string;
 
   // Step 4 - Work Background (optional)
@@ -25,11 +24,6 @@ export interface SignupFormData {
 
   // Step 5 - Resume Upload (optional)
   resumeFile: File | null;
-
-  // Employer Step 3 - Company Info
-  company_name: string;
-  company_industry: string;
-  company_location: string;
 }
 
 /**
@@ -53,6 +47,9 @@ export interface StepProps {
   onBack: () => void;
   onSkip?: () => void;
   isBusy?: boolean;
+  /** For the in-step header's progress indicator. */
+  currentStep: number;
+  totalSteps: number;
 }
 
 /**
@@ -88,36 +85,30 @@ export type SignupAction =
 export const STEP_CONFIGS: SignupStepConfig[] = [
   {
     id: 1,
-    name: "Account Type",
-    isOptional: false,
-    fields: ["role"],
-  },
-  {
-    id: 2,
     name: "Create Account",
     isOptional: false,
     fields: ["full_name", "email", "password", "confirmPassword"],
   },
   {
-    id: 3,
+    id: 2,
     name: "Contact Info",
     isOptional: false,
-    fields: ["phone_number", "city", "country"],
+    fields: ["phone_number", "city", "state_province", "country"],
   },
   {
-    id: 4,
+    id: 3,
     name: "Work Background",
     isOptional: true,
     fields: ["job_title", "industry", "years_of_experience"],
   },
   {
-    id: 5,
+    id: 4,
     name: "Resume Upload",
     isOptional: true,
     fields: ["resumeFile"],
   },
   {
-    id: 6,
+    id: 5,
     name: "Complete",
     isOptional: false,
     fields: [],
@@ -125,58 +116,21 @@ export const STEP_CONFIGS: SignupStepConfig[] = [
 ];
 
 /**
- * Total number of steps in the signup wizard (job seeker default)
+ * Total number of steps in the signup wizard
  */
 export const TOTAL_STEPS = STEP_CONFIGS.length;
 
-/**
- * Step configuration for employer signup flow
- * Employer flow: Account Type → Create Account → Company Info → Complete
- */
-export const EMPLOYER_STEP_CONFIGS: SignupStepConfig[] = [
-  {
-    id: 1,
-    name: "Account Type",
-    isOptional: false,
-    fields: ["role"],
-  },
-  {
-    id: 2,
-    name: "Create Account",
-    isOptional: false,
-    fields: ["full_name", "email", "password", "confirmPassword"],
-  },
-  {
-    id: 3,
-    name: "Company Info",
-    isOptional: false,
-    fields: ["company_name", "company_industry", "company_location"],
-  },
-  {
-    id: 4,
-    name: "Complete",
-    isOptional: false,
-    fields: [],
-  },
-];
-
-/**
- * Initial form data state
- */
 export const INITIAL_FORM_DATA: SignupFormData = {
-  role: null,
   full_name: "",
   email: "",
   password: "",
   confirmPassword: "",
   phone_number: "",
   city: "",
+  state_province: "",
   country: "",
   job_title: "",
   industry: "",
   years_of_experience: "",
   resumeFile: null,
-  company_name: "",
-  company_industry: "",
-  company_location: "",
 };

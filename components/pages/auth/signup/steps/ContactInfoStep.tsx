@@ -3,6 +3,16 @@
 import { useMemo } from "react";
 import { StepProps } from "@/types/signup";
 import { FormField } from "@/components/ui/FormField";
+import { PhoneField } from "@/components/ui/PhoneField";
+import { CustomDropdown } from "@/components/ui/CustomDropdown";
+import { CountrySelect } from "@/components/ui/CountrySelect";
+import {
+  regionsFor,
+  hasRegions,
+  regionLabelFor,
+} from "@/lib/regions";
+import { WizardNav } from "../WizardNav";
+import { StepHeader } from "../StepHeader";
 
 /**
  * Step 3: Contact Information
@@ -15,35 +25,70 @@ export const ContactInfoStep = ({
   onFieldChange,
   onNext,
   onBack,
+  currentStep,
+  totalSteps,
 }: StepProps) => {
   // Step is now optional, so Continue is always enabled
   const isFormValid = true;
 
   return (
     <div className="w-full max-w-lg mx-auto">
-      {/* Heading */}
-      <h1 className="text-2xl md:text-4xl font-semibold text-gray-900 mb-2 text-center">
-        How can employers reach you?
-      </h1>
-      
-      {/* Subtext */}
-      <p className="text-gray-600 mb-8 text-center">
-        This helps us connect you with opportunities near you.
-      </p>
+      <StepHeader
+        title="How can employers reach you?"
+        subtitle="This helps us connect you with opportunities near you."
+        currentStep={currentStep}
+        totalSteps={totalSteps}
+      />
 
       {/* Form Fields */}
       <div className="space-y-1">
-        <FormField
+        <PhoneField
           label="Phone Number"
           name="phone_number"
-          type="tel"
-          placeholder="(123) 456-789"
           helperText="Employers may use this to contact you about opportunities."
           value={formData.phone_number}
           onChange={(value) => onFieldChange("phone_number", value)}
           error={errors.phone_number}
           optional
         />
+
+        {/* Location, narrowing down: country → state/province → city. */}
+        <CountrySelect
+          value={formData.country}
+          onChange={(value) => {
+            onFieldChange("country", value);
+            // Subdivision codes only mean something inside their country.
+            if (value !== formData.country) onFieldChange("state_province", "");
+          }}
+          error={errors.country}
+        />
+
+        {hasRegions(formData.country) ? (
+          <CustomDropdown
+            label={regionLabelFor(formData.country)}
+            name="state_province"
+            placeholder={`Select your ${regionLabelFor(formData.country).toLowerCase()}`}
+            value={formData.state_province}
+            onChange={(value) => onFieldChange("state_province", value)}
+            options={regionsFor(formData.country).map((region) => ({
+              value: region.code,
+              label: region.name,
+            }))}
+            error={errors.state_province}
+          />
+        ) : (
+          formData.country && (
+            <FormField
+              label={regionLabelFor(formData.country)}
+              name="state_province"
+              type="text"
+              placeholder="Optional"
+              value={formData.state_province}
+              onChange={(value) => onFieldChange("state_province", value)}
+              error={errors.state_province}
+            />
+          )
+        )}
 
         <FormField
           label="City"
@@ -54,46 +99,9 @@ export const ContactInfoStep = ({
           onChange={(value) => onFieldChange("city", value)}
           error={errors.city}
         />
-
-        <FormField
-          label="Country"
-          name="country"
-          type="text"
-          placeholder="Enter your country"
-          value={formData.country}
-          onChange={(value) => onFieldChange("country", value)}
-          error={errors.country}
-        />
       </div>
 
-      {/* Navigation Buttons */}
-      <div className="flex flex-col md:flex-row gap-4 md:gap-6 mt-8">
-        <button
-          type="button"
-          onClick={onBack}
-          className="flex-1 py-3 px-6 border border-gray-300 text-gray-700 font-medium rounded-10 transition-all hover:bg-gray-50"
-        >
-          Back
-        </button>
-        <button
-          type="button"
-          onClick={onNext}
-          className="flex-1 py-3 px-6 bg-primary text-white font-medium rounded-10 transition-all hover:bg-primary/90"
-        >
-          Continue
-        </button>
-      </div>
-
-      {/* Skip Link */}
-      <div className="text-center mt-4">
-        <button
-          type="button"
-          onClick={onNext}
-          className="text-gray-500 hover:text-gray-700 text-sm underline transition-colors"
-        >
-          Skip for now
-        </button>
-      </div>
+      <WizardNav onBack={onBack} onNext={onNext} onSkip={onNext} />
     </div>
   );
 };

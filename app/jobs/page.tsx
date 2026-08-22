@@ -7,6 +7,7 @@ import {
   HiOutlineMapPin,
   HiOutlineBuildingOffice2,
   HiOutlineCurrencyDollar,
+  HiOutlineAcademicCap,
   HiOutlineArrowRight,
   HiOutlineMagnifyingGlass,
 } from "react-icons/hi2";
@@ -15,29 +16,43 @@ import Footer from "@/components/ui/Footer";
 import DottedBox from "@/public/images/dotted_box.svg";
 import { useJobs } from "@/hooks/useJobs";
 import { Job } from "@/types/job";
+import { formatJobSalary } from "@/lib/job-display";
 import { Skeleton } from "@/components/ui/Skeleton";
+import {
+  splitDescriptionParts,
+  jobChipLabels,
+  JOB_TAG_CLASS,
+} from "@/lib/job-display";
+import { fieldLabel, EXPERIENCE_LEVEL_LABELS } from "@/lib/job-fields";
 
 // ── Helpers ──────────────────────────────────────────────────────────
 
+// Salary rules live in lib/job-display so every surface renders the same
+// string. This page predated that and printed the raw struct — which on a
+// scraped listing is {number: 0}, so every card read "$0 CAD" while the real
+// figure sat unused in salary_text ("$18.50 hourly").
 function formatSalary(job: Job): string {
-  if (job.salary) {
-    return `${job.salary.symbol}${job.salary.number.toLocaleString()} ${job.salary.currency}`;
-  }
-  if (job.salary_range) {
-    const { start_salary: s, end_salary: e } = job.salary_range;
-    if (s.number && e.number) {
-      return `${s.symbol}${s.number.toLocaleString()} – ${e.symbol}${e.number.toLocaleString()} ${e.currency}`;
-    }
-  }
-  return "";
+  return formatJobSalary(job, "full") ?? "";
 }
 
-function getJobType(job: Job): string {
-  const types = ["Full-time", "Part-time", "Contract", "Flexible"];
-  const found = job.tags.find((t) =>
-    types.some((type) => type.toLowerCase() === t.name.toLowerCase()),
-  );
-  return found?.name || "Full-time";
+// Experience level as a label; null when the listing does not state one.
+function getExperience(job: Job): string | null {
+  return fieldLabel(EXPERIENCE_LEVEL_LABELS, job.experience_level);
+}
+
+// What the card previews — the most concrete thing available about the role.
+// Real tasks tell a seeker what the job is; requirements are the next best
+// signal; the synthesized overview is the last resort. The old card always
+// showed the overview ("Permanent, full-time position…"), which only repeated
+// the chips.
+function cardPreview(job: Job): string {
+  const source =
+    job.responsibilities.length > 0
+      ? job.responsibilities
+      : job.qualifications.length > 0
+        ? job.qualifications
+        : splitDescriptionParts(job.full_description);
+  return source.slice(0, 3).join(" · ");
 }
 
 // ── Skeleton ─────────────────────────────────────────────────────────
@@ -65,7 +80,8 @@ function CardSkeleton() {
 function JobCard({ job }: { job: Job }) {
   const router = useRouter();
   const salary = formatSalary(job);
-  const type = getJobType(job);
+  const experience = getExperience(job);
+  const preview = cardPreview(job);
 
   return (
     <article
@@ -102,13 +118,6 @@ function JobCard({ job }: { job: Job }) {
           />
           {job.location || "Canada"}
         </span>
-        <span className="inline-flex items-center gap-2">
-          <HiOutlineBriefcase
-            className="w-4 h-4 md:w-5 md:h-5 text-gray-400"
-            aria-hidden="true"
-          />
-          {type}
-        </span>
         {salary && (
           <span className="inline-flex items-center gap-2">
             <HiOutlineCurrencyDollar
@@ -118,24 +127,36 @@ function JobCard({ job }: { job: Job }) {
             {salary}
           </span>
         )}
+        {experience && (
+          <span className="inline-flex items-center gap-2">
+            <HiOutlineAcademicCap
+              className="w-4 h-4 md:w-5 md:h-5 text-gray-400"
+              aria-hidden="true"
+            />
+            {experience}
+          </span>
+        )}
       </div>
 
-      {/* Description excerpt */}
-      <p className="text-sm text-gray-600 line-clamp-2 leading-relaxed">
-        {job.full_description}
-      </p>
+      {/* Preview — what the role actually involves, when the listing states it */}
+      {preview && (
+        <p className="text-sm text-gray-600 line-clamp-2 leading-relaxed">
+          {preview}
+        </p>
+      )}
 
-      {/* Tags */}
-      {job.tags.length > 0 && (
+      {/* Chips come from the category/type/arrangement columns, not tags, so
+          gate on what actually renders — a job with a type but no category
+          has empty tags yet still has chips. */}
+      {jobChipLabels(job).length > 0 && (
         <div className="flex flex-wrap gap-2 mt-3">
-          {job.tags.slice(0, 3).map((tag) => (
-            <span
-              key={tag.name}
-              className="text-xs font-medium px-2.5 py-1 rounded-full bg-red-50 text-primary"
-            >
-              {tag.name}
-            </span>
-          ))}
+          {jobChipLabels(job)
+            .slice(0, 3)
+            .map((chip) => (
+              <span key={chip} className={JOB_TAG_CLASS}>
+                {chip}
+              </span>
+            ))}
         </div>
       )}
     </article>
@@ -257,7 +278,7 @@ export default function JobsPage() {
 
             {/* Maple leaf watermark */}
             <div
-              className="absolute bottom-2 right-2 w-28 h-28 rounded-10 bg-[url('/favicon.svg')] bg-no-repeat bg-center bg-contain z-[1] opacity-80 mobile:hidden"
+              className="absolute bottom-2 right-2 w-28 h-28 rounded-lg bg-[url('/favicon.svg')] bg-no-repeat bg-center bg-contain z-[1] opacity-80 mobile:hidden"
               aria-hidden="true"
             />
 

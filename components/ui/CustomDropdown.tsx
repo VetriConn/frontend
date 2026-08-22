@@ -3,10 +3,29 @@
 import { useState, useRef, useEffect } from "react";
 import { createPortal } from "react-dom";
 import clsx from "clsx";
+import {
+  FIELD_BASE,
+  fieldBorder,
+  FIELD_DISABLED,
+  FIELD_LABEL,
+  FIELD_HELPER,
+  FIELD_ERROR,
+  FIELD_WRAPPER,
+} from "./fieldStyles";
 
 interface DropdownOption {
   value: string;
-  label: string;
+  /**
+   * A string, or a node when the option should render something the trigger
+   * cannot spell — the job-seeking statuses show the same badge here that
+   * lands on the profile, so choosing one previews the result.
+   */
+  label: React.ReactNode;
+  /**
+   * What the trigger shows and search compares against when `label` is a node.
+   * Required only in that case; a string label is its own text.
+   */
+  searchText?: string;
 }
 
 interface CustomDropdownProps {
@@ -45,7 +64,26 @@ export const CustomDropdown = ({
 
   // Get selected option label
   const selectedOption = options.find((opt) => opt.value === value);
-  const displayValue = selectedOption ? selectedOption.label : placeholder;
+  // The trigger is a single line of text, so a node label needs its plain
+  // form; a string label already is one.
+  const displayValue: React.ReactNode = selectedOption
+    ? (selectedOption.searchText ?? selectedOption.label)
+    : placeholder;
+
+  // A search box appears only for long lists (like the full country list) so
+  // short menus stay clutter-free. It compares the plain searchText, so a
+  // flag-plus-name node label still matches when you type the name.
+  const [query, setQuery] = useState("");
+  const showSearch = options.length > 8;
+  const filteredOptions =
+    showSearch && query.trim()
+      ? options.filter((opt) => {
+          const text =
+            opt.searchText ??
+            (typeof opt.label === "string" ? opt.label : opt.value);
+          return text.toLowerCase().includes(query.trim().toLowerCase());
+        })
+      : options;
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -87,6 +125,11 @@ export const CustomDropdown = ({
     };
   }, [isOpen]);
 
+  // Clear the filter each time the menu closes.
+  useEffect(() => {
+    if (!isOpen) setQuery("");
+  }, [isOpen]);
+
   const handleSelect = (optionValue: string) => {
     if (disabled) return;
     onChange(optionValue);
@@ -126,35 +169,55 @@ export const CustomDropdown = ({
         </div>
       )}
 
+      {/* Search — long lists only */}
+      {showSearch && (
+        <div className="border-b border-gray-100 p-2">
+          {/* eslint-disable-next-line jsx-a11y/no-autofocus */}
+          <input
+            type="text"
+            autoFocus
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="Search…"
+            aria-label={`Search ${label ?? "options"}`}
+            className="w-full rounded-md border border-gray-200 px-3 py-2 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+          />
+        </div>
+      )}
+
       {/* Options */}
       <div className="max-h-60 overflow-y-auto">
-        {options.map((option) => (
-          <button
-            key={option.value}
-            type="button"
-            onClick={() => handleSelect(option.value)}
-            className={clsx(
-              "w-full px-4 py-2.5 text-left text-xs transition-colors",
-              "hover:bg-gray-100 focus:bg-gray-100 focus:outline-none",
-              value === option.value
-                ? "bg-red-50 text-primary font-medium"
-                : "text-gray-700"
-            )}
-            role="option"
-            aria-selected={value === option.value}
-          >
-            {option.label}
-          </button>
-        ))}
+        {filteredOptions.length === 0 ? (
+          <p className="px-4 py-3 text-xs text-gray-400">No matches</p>
+        ) : (
+          filteredOptions.map((option) => (
+            <button
+              key={option.value}
+              type="button"
+              onClick={() => handleSelect(option.value)}
+              className={clsx(
+                "flex w-full items-center px-4 py-2.5 text-left text-xs transition-colors",
+                "hover:bg-gray-100 focus:bg-gray-100 focus:outline-none",
+                value === option.value
+                  ? "bg-red-50 text-primary font-medium"
+                  : "text-gray-700",
+              )}
+              role="option"
+              aria-selected={value === option.value}
+            >
+              {option.label}
+            </button>
+          ))
+        )}
       </div>
     </div>
   );
 
   return (
-    <div className="w-full">
+    <div className={clsx("w-full", FIELD_WRAPPER)}>
       {/* Label */}
       {label && (
-        <label htmlFor={name} className="block text-sm font-medium text-gray-700 mb-2">
+        <label htmlFor={name} className={FIELD_LABEL}>
           {label}
           {required && <span className="text-red-500 ml-1">*</span>}
         </label>
@@ -171,14 +234,12 @@ export const CustomDropdown = ({
           onClick={() => setIsOpen(!isOpen)}
           onKeyDown={handleKeyDown}
           className={clsx(
-            "w-full px-3 py-1.5 text-xs text-left bg-white border rounded-lg transition-all",
-            "flex items-center justify-between gap-2",
-            "focus:outline-none focus:ring-1 focus:ring-primary focus:border-transparent",
-            disabled
-              ? "opacity-60 cursor-not-allowed bg-gray-50 border-gray-200"
-              : error
-                ? "border-red-500 focus:ring-red-500"
-                : "border-gray-200 hover:border-gray-300",
+            // Same box as a text input — see fieldStyles.
+            FIELD_BASE,
+            "text-left flex items-center justify-between gap-2",
+            disabled ? FIELD_DISABLED : fieldBorder(!!error),
+            !disabled && !error && "hover:border-gray-400",
+            error && "focus:ring-red-500",
             !selectedOption && "text-gray-400"
           )}
           aria-haspopup="listbox"
@@ -196,12 +257,12 @@ export const CustomDropdown = ({
 
       {/* Helper Text */}
       {helperText && !error && (
-        <p className="mt-1 text-xs text-gray-500">{helperText}</p>
+        <p className={FIELD_HELPER}>{helperText}</p>
       )}
 
       {/* Error Message */}
       {error && (
-        <p className="mt-1 text-xs text-red-500" role="alert">
+        <p className={FIELD_ERROR} role="alert">
           {error}
         </p>
       )}

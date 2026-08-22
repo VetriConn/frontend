@@ -5,7 +5,7 @@ import useSWR from "swr";
 export interface AdminStats {
   jobsPending: number;
   activeJobs: number;
-  employers: number;
+  companies: number;
   users: number;
 }
 
@@ -32,7 +32,7 @@ const MOCK_OVERVIEW: AdminOverview = {
   stats: {
     jobsPending: 12,
     activeJobs: 86,
-    employers: 34,
+    companies: 34,
     users: 215,
   },
   recentActivity: [
@@ -90,7 +90,7 @@ export function useAdminOverview() {
   );
 
   return {
-    data: data ?? { stats: { jobsPending: 0, activeJobs: 0, employers: 0, users: 0 }, recentActivity: [] },
+    data: data ?? { stats: { jobsPending: 0, activeJobs: 0, companies: 0, users: 0 }, recentActivity: [] },
     isLoading,
     isError: !!error,
     mutate,

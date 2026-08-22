@@ -55,6 +55,18 @@
 @custom-variant tablet (@media (max-width: 768px));
 
 @layer base {
+  /* Tailwind v4's preflight leaves buttons on the default arrow cursor, so
+     every control in the app lost its click affordance on upgrade. Restore it
+     for anything interactive, while leaving disabled controls alone — those
+     set their own cursor (usually not-allowed) and should not look clickable. */
+  button:not(:disabled),
+  select:not(:disabled),
+  summary,
+  [role="button"]:not([aria-disabled="true"]),
+  [role="option"]:not([aria-disabled="true"]) {
+    cursor: pointer;
+  }
+
   *,
   *::before,
   *::after {
@@ -436,3 +448,43 @@ html.high-contrast .text-primary {
 html.high-contrast .bg-primary {
   background-color: var(--color-primary) !important;
 }
+
+/* ─── Entry reveal ──────────────────────────────────────────────────────────
+   One primitive for lists that appear: a short rise and fade, once. Not a
+   different animation per section — if everything moves, nothing is
+   emphasised. Decelerating ease, well under the 700ms ceiling.
+
+   Stagger comes from --reveal-index set inline by the caller, capped so the
+   last item in a long list does not wait noticeably longer than the first. */
+@keyframes vetriconn-rise {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.reveal-on-enter {
+  animation: vetriconn-rise 320ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation-delay: calc(min(var(--reveal-index, 0), 6) * 40ms);
+}
+
+/* Reduced motion gets the finished state, not a faster animation. */
+@media (prefers-reduced-motion: reduce) {
+  .reveal-on-enter {
+    animation: none;
+  }
+}
+
+/* Rich-text: the job Brief editor and its rendered output. Tailwind's preflight
+   removes list markers, so restore them for this bounded formatting subset. */
+.prose-editor:focus-visible { outline: none; }
+.prose-editor ul, .rich-text ul { list-style: disc; padding-left: 1.5rem; margin: 0.4rem 0; }
+.prose-editor ol, .rich-text ol { list-style: decimal; padding-left: 1.5rem; margin: 0.4rem 0; }
+.prose-editor li, .rich-text li { margin: 0.15rem 0; }
+.prose-editor a, .rich-text a { color: var(--color-primary); text-decoration: underline; }
+.prose-editor p, .rich-text p { margin: 0.4rem 0; }
+.rich-text { line-height: 1.65; }

@@ -55,29 +55,20 @@ export {
   clearNotifications,
 } from "./notifications";
 
-// Employer
+// Postings
 export {
-  getEmployerJobs,
-  getEmployerJobById,
-  getEmployerApplications,
-  createEmployerJob,
-  updateEmployerJob,
-  deleteEmployerJob,
-  updateEmployerApplicationStatus,
-  uploadEmployerCompanyAsset,
-  getEmployerMessageThreads,
-  getEmployerThreadMessages,
-  sendEmployerMessage,
-  sendEmployerAttachmentMessage,
-} from "./employer";
+  getMyPostings,
+  getMyPosting,
+  getReceivedApplications,
+  createPosting,
+  updatePosting,
+  deletePosting,
+  updateApplicationStatus,
+} from "./postings";
 
 // Job Seeker Messaging
 export {
-  getJobSeekerMessageThreads,
-  getJobSeekerThreadMessages,
-  sendJobSeekerMessage,
-  sendJobSeekerAttachmentMessage,
-} from "./jobseeker";
+} from "./job-search";
 
 // Job Seeker Drafts
 export {
@@ -85,7 +76,7 @@ export {
   getDraft,
   upsertDraft,
   deleteDraft,
-} from "./jobseeker";
+} from "./job-search";
 
 // Job Seeker Saved Searches
 export {
@@ -94,7 +85,7 @@ export {
   updateSavedSearch,
   deleteSavedSearch,
   runSavedSearch,
-} from "./jobseeker";
+} from "./job-search";
 
 // Job Seeker Application Tracker
 export {
@@ -102,7 +93,7 @@ export {
   createTrackerEntry,
   updateTrackerEntry,
   deleteTrackerEntry,
-} from "./jobseeker";
+} from "./job-search";
 
 // Attachments
 export {
@@ -118,3 +109,46 @@ export {
   uploadDirectToCloudinary,
 } from "./upload";
 export type { CloudinaryUploadResponse, SignatureData } from "./upload";
+
+// Job scraper (admin)
+export { triggerJobScrape } from "./jobs";
+export type { ScraperSourceSummary } from "./jobs";
+
+// Company Pages
+export {
+  applyForCompany,
+  getMyCompanies,
+  getCompanyById,
+  updateCompany,
+  uploadCompanyLogo,
+  uploadCompanyBanner,
+  inviteMember,
+  acceptInvite,
+  removeMember,
+  transferOwnership,
+  getCompanyJobs,
+  adminListCompanies,
+  adminApproveCompany,
+  adminRejectCompany,
+  adminSuspendCompany,
+  adminReinstateCompany,
+  getMyRole,
+  canPostJobsFor,
+} from "./companies";
+export type {
+  Company,
+  CompanyMember,
+  CompanyRole,
+  CompanyMemberStatus,
+  CompanyStatus,
+  CompanyProfileInput,
+  ApplyForCompanyInput,
+} from "./companies";
+
+export * from "./messages";
+export { getSkillSuggestions } from "./skills";
+export { getReceivedApplication } from "./postings";
+export type {
+  CandidateProfile,
+  ReceivedApplicationDetail,
+} from "./postings";

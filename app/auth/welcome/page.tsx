@@ -1,135 +1,98 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import Link from "next/link";
+import { HiArrowRight, HiCheckCircle } from "react-icons/hi2";
 import { AuthHeader } from "@/components/ui/AuthHeader";
 import GreenCheckCircle from "@/public/images/green_check_circle.svg";
 
+/**
+ * Shown once an email address has been verified.
+ *
+ * This is the first thing a new account sees, so it is doing two jobs at once:
+ * confirming that the thing they just did worked, and telling them what to do
+ * next. Everything here serves one of those two.
+ */
+
+/** What the account can do now. Deliberately modest — see the note below. */
+const NEXT_STEPS = [
+  "Browse roles matched to your experience",
+  "Message the people hiring, directly",
+  "Build a profile that speaks for you",
+];
+
 export default function WelcomePage() {
-  const router = useRouter();
-  const [userName, setUserName] = useState<string>("");
+  const [firstName, setFirstName] = useState<string>("");
 
   useEffect(() => {
-    // Try to get user name from session storage (from signup)
     const signupData = sessionStorage.getItem("vetriconn_signup_wizard_state");
-    if (signupData) {
-      try {
-        const data = JSON.parse(signupData);
-        if (data.formData?.full_name) {
-          setUserName(data.formData.full_name.split(" ")[0]); // First name only
-        }
-        // Clear signup session storage now that verification is complete
-        sessionStorage.removeItem("vetriconn_signup_wizard_state");
-      } catch {
-        // Ignore malformed session payload.
+    if (!signupData) return;
+
+    try {
+      const data = JSON.parse(signupData);
+      if (data.formData?.full_name) {
+        setFirstName(String(data.formData.full_name).trim().split(" ")[0]);
       }
+      // Verification is done, so the half-finished signup can go.
+      sessionStorage.removeItem("vetriconn_signup_wizard_state");
+    } catch {
+      // Ignore malformed session payload.
     }
   }, []);
-
-  const handleGoToSignIn = () => {
-    router.push("/signin");
-  };
 
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-br from-gray-50 to-gray-100">
       <AuthHeader />
 
-      <div className="flex-1 flex items-center justify-center px-6">
-        <div className="max-w-md w-full bg-white rounded-lg shadow-lg p-8 text-center">
-          {/* Success Icon - Green Checkmark with light green background */}
-          <div className="flex justify-center mb-6">
-            <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center">
+      <main className="flex-1 flex items-center justify-center px-4 py-10 md:px-6 md:py-16">
+        <div className="max-w-md w-full bg-white rounded-2xl border border-gray-200/80 shadow-sm p-6 md:p-8 text-center">
+          <div className="flex justify-center mb-5">
+            <div className="w-16 h-16 bg-emerald-50 rounded-full flex items-center justify-center">
               <GreenCheckCircle className="w-10 h-10" />
             </div>
           </div>
 
-          {/* Welcome Message */}
-          <h1 className="text-2xl font-bold text-gray-900 mb-2">
-            You're all set to get started!
+          <h1 className="text-2xl md:text-3xl font-bold text-gray-900 mb-2">
+            {/* The first name was already being read out of session storage and
+                then thrown away. Using it costs nothing and this is the one
+                moment the greeting is worth something. */}
+            {firstName
+              ? `You're all set, ${firstName}!`
+              : "You're all set to get started!"}
           </h1>
 
           <p className="text-gray-600 mb-6">
-            Your account is ready. Start exploring flexible job opportunities
-            that match your experience.
+            Your email is verified and your account is ready.
           </p>
 
-          {/* Benefits List - Red Background */}
-          <div className="bg-red-50 border border-red-200 rounded-lg p-6 mb-8 text-left">
-            <h2 className="font-semibold text-gray-900 mb-4">You can now:</h2>
-            <ul className="space-y-3">
-              <li className="flex items-start gap-3 md:gap-4">
-                <svg
-                  className="w-5 h-5 text-primary mt-0.5 flex-shrink-0"
-                  fill="currentColor"
-                  viewBox="0 0 20 20"
-                >
-                  <path
-                    fillRule="evenodd"
-                    d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-                    clipRule="evenodd"
-                  />
-                </svg>
-                <span className="text-sm text-gray-700">
-                  Browse thousands of job opportunities
-                </span>
-              </li>
-              <li className="flex items-start gap-3 md:gap-4">
-                <svg
-                  className="w-5 h-5 text-primary mt-0.5 flex-shrink-0"
-                  fill="currentColor"
-                  viewBox="0 0 20 20"
-                >
-                  <path
-                    fillRule="evenodd"
-                    d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-                    clipRule="evenodd"
-                  />
-                </svg>
-                <span className="text-sm text-gray-700">
-                  Connect with top employers
-                </span>
-              </li>
-              <li className="flex items-start gap-3 md:gap-4">
-                <svg
-                  className="w-5 h-5 text-primary mt-0.5 flex-shrink-0"
-                  fill="currentColor"
-                  viewBox="0 0 20 20"
-                >
-                  <path
-                    fillRule="evenodd"
-                    d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-                    clipRule="evenodd"
-                  />
-                </svg>
-                <span className="text-sm text-gray-700">
-                  Build your professional profile
-                </span>
-              </li>
+          {/* Neutral, not red. A red-tinted panel directly under a green tick
+              reads as a warning and undercuts the thing the page exists to
+              say — the brand colour is doing the wrong job here. */}
+          <div className="bg-gray-50 border border-gray-200 rounded-xl p-5 md:p-6 mb-6 text-left">
+            <h2 className="text-sm font-semibold text-gray-900 mb-3">
+              You can now
+            </h2>
+            <ul className="flex flex-col gap-2.5">
+              {NEXT_STEPS.map((step) => (
+                <li key={step} className="flex items-start gap-3">
+                  <HiCheckCircle className="w-5 h-5 text-emerald-500 mt-px shrink-0" />
+                  <span className="text-sm text-gray-700">{step}</span>
+                </li>
+              ))}
             </ul>
           </div>
 
-          {/* Sign in Button */}
-          <button
-            onClick={handleGoToSignIn}
-            className="w-full py-3 px-6 bg-primary text-white font-medium rounded-lg hover:bg-primary/90 transition-colors flex items-center justify-center gap-2"
+          {/* A link, not a button with router.push — this navigates, so it
+              should survive middle-click, open-in-new-tab and prefetch. */}
+          <Link
+            href="/signin"
+            className="w-full py-3 px-6 bg-primary hover:bg-primary-hover text-white font-semibold rounded-lg transition-colors no-underline inline-flex items-center justify-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
           >
-            Go to Sign In
-            <svg
-              className="w-5 h-5"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M14 5l7 7m0 0l-7 7m7-7H3"
-              />
-            </svg>
-          </button>
+            Sign in to your account
+            <HiArrowRight className="w-5 h-5" aria-hidden="true" />
+          </Link>
         </div>
-      </div>
+      </main>
     </div>
   );
 }

@@ -1,3 +1,5 @@
+import { API_BASE_URL, apiFetch, type ApiEnvelope } from "@/lib/api/client";
+
 // ─── Types ───────────────────────────────────────────────────────────────────
 
 export interface InvitePreview {
@@ -13,39 +15,48 @@ export interface AcceptInvitePayload {
   password: string;
 }
 
-// ─── Mock implementations ────────────────────────────────────────────────────
+// ─── Wire ────────────────────────────────────────────────────────────────────
 //
-// Two real endpoints required:
-//   GET  /api/v1/auth/admin-invites/:token   — preview
-//   POST /api/v1/auth/admin-invites/:token/accept  — finalize
+// Both endpoints are unauthenticated — the token in the URL is the only
+// credential, and accepting creates the admin account. That makes a leaked
+// link equivalent to platform admin, so the server must treat the token as a
+// secret: single use, short expiry, revocable, and with the email fixed by the
+// invite so the recipient cannot redirect it to another address.
 //
-// Both are unauthenticated; the token is the credential.
+// Neither endpoint exists yet; see the API contract handed to the backend.
 
+const INVITES_URL = `${API_BASE_URL}/api/v1/auth/admin-invites`;
+
+/**
+ * Read what an invite is for, before asking anyone to set a password.
+ * Expired, revoked and unknown tokens must be indistinguishable in the
+ * response, so the endpoint cannot be used to probe for live tokens.
+ */
 export async function fetchInvitePreview(
   token: string,
 ): Promise<InvitePreview> {
-  await new Promise((r) => setTimeout(r, 250));
-  if (token === "expired") {
-    throw new Error("This invite has expired. Ask the inviter for a new one.");
+  const response = await apiFetch<ApiEnvelope<InvitePreview>>(
+    `${INVITES_URL}/${encodeURIComponent(token)}`,
+    { method: "GET" },
+  );
+
+  if (!response.data) {
+    throw new Error("This invite link is no longer valid.");
   }
-  if (token === "revoked") {
-    throw new Error("This invite was revoked.");
-  }
-  if (token.length < 8) {
-    throw new Error("This invite link is invalid.");
-  }
-  // Mock — pretend the token decodes to:
-  return {
-    email: "rosa@vetriconn.com",
-    role: "admin",
-    invitedBy: "Admin User",
-    expiresAt: new Date(Date.now() + 6 * 86400 * 1000).toISOString(),
-  };
+  return response.data;
 }
 
+/**
+ * Redeem the invite and create the admin account. The email comes from the
+ * invite, never from this payload.
+ */
 export async function acceptAdminInvite(
   payload: AcceptInvitePayload,
 ): Promise<void> {
-  await new Promise((r) => setTimeout(r, 400));
-  console.log("[mock] accepted invite", payload);
+  const { token, ...body } = payload;
+  await apiFetch(`${INVITES_URL}/${encodeURIComponent(token)}/accept`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+  });
 }

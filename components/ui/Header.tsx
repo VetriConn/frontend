@@ -4,6 +4,28 @@ import Logo from "@/public/images/logo_1.svg";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import clsx from "clsx";
+import { useUserProfile } from "@/hooks/useUserProfile";
+
+/**
+ * The public header's one call to action.
+ *
+ * It offered "Sign In" to everybody, including people already signed in — who
+ * do not need it and whose actual destination is their dashboard. Held blank
+ * while the profile resolves so the label does not flip a moment after paint.
+ */
+function AuthCta({ className }: { className: string }) {
+  const { userProfile, isLoading } = useUserProfile();
+
+  if (isLoading) {
+    return <span className={clsx(className, "opacity-0")} aria-hidden="true" />;
+  }
+
+  return (
+    <Link href={userProfile ? "/dashboard" : "/signin"} className={className}>
+      {userProfile ? "Dashboard" : "Sign In"}
+    </Link>
+  );
+}
 
 export const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -79,12 +101,7 @@ export const Header = () => {
         </a>
       </div>
       <div className="flex items-center gap-4 mobile:hidden">
-        <Link
-          href="/signin"
-          className="font-open-sans text-sm md:text-base bg-primary text-white border-none py-2.5 px-7 rounded-full cursor-pointer transition-all hover:bg-primary-hover font-semibold inline-block text-center"
-        >
-          Sign In
-        </Link>
+        <AuthCta className="font-open-sans text-sm md:text-base bg-primary text-white border-none py-2.5 px-7 rounded-full cursor-pointer transition-all hover:bg-primary-hover font-semibold inline-block text-center no-underline" />
       </div>
       <div
         className={clsx(
@@ -181,3 +198,5 @@ export const Header = () => {
     </nav>
   );
 };
+
+export default Header;

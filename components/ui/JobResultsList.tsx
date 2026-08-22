@@ -2,6 +2,8 @@
 
 import React from "react";
 import { Job } from "@/types/job";
+import { formatJobSalary } from "@/lib/job-display";
+import { fieldLabel, JOB_TYPE_LABELS } from "@/lib/job-fields";
 import { JobResultCard } from "./JobResultCard";
 import { Skeleton } from "./Skeleton";
 import { HiOutlineMagnifyingGlass } from "react-icons/hi2";
@@ -9,6 +11,8 @@ import { FaExclamationTriangle, FaRedo } from "react-icons/fa";
 
 interface JobResultsListProps {
   jobs: Job[];
+  /** Total matches across all pages; falls back to the page length. */
+  totalCount?: number;
   isLoading: boolean;
   isError: boolean;
   onRetry?: () => void;
@@ -92,34 +96,22 @@ const ErrorState = ({
   </div>
 );
 
-// Helper function to format salary for display
-const formatSalary = (job: Job): string => {
-  if (job.salary) {
-    return `${job.salary.symbol}${job.salary.number.toLocaleString()} ${job.salary.currency}`;
-  }
-  if (job.salary_range) {
-    const start = job.salary_range.start_salary;
-    const end = job.salary_range.end_salary;
-    if (start.number && end.number) {
-      return `${start.symbol}${start.number.toLocaleString()} - ${end.symbol}${end.number.toLocaleString()} ${end.currency}`;
-    }
-  }
-  return "";
-};
+// Salary rules live in lib/job-display so the list, the detail page and the
+// recommendations panel can't drift apart again. Returns "" rather than null
+// because JobResultCard hides the row on an empty string.
+const formatSalary = (job: Job): string => formatJobSalary(job, "full") ?? "";
 
-// Helper function to get job type from tags
-const getJobType = (job: Job): string => {
-  const jobTypeTags = ["Full-time", "Part-time", "Contract", "Flexible"];
-  const foundTag = job.tags.find((tag) =>
-    jobTypeTags.some(
-      (type) => type.toLowerCase() === tag.name.toLowerCase()
-    )
-  );
-  return foundTag?.name || "Full-time";
-};
+/**
+ * The employment type a listing actually states, or null — straight from the
+ * job_type column, labelled. Null renders nothing: "Full-time" would be an
+ * invented fact for any listing that stayed silent.
+ */
+const getJobType = (job: Job): string | null =>
+  fieldLabel(JOB_TYPE_LABELS, job.job_type);
 
 export const JobResultsList = ({
   jobs,
+  totalCount,
   isLoading,
   isError,
   onRetry,
@@ -166,13 +158,21 @@ export const JobResultsList = ({
         aria-atomic="true"
         className="text-sm text-gray-600 mb-4"
       >
-        Showing {jobs.length} {jobs.length === 1 ? "job" : "jobs"}
+        {/* The count of MATCHES, not of rows on screen. This read jobs.length,
+            which was the whole board back when the page fetched all of it and
+            sliced in the browser — and would now say 10 regardless. */}
+        {totalCount ?? jobs.length} {(totalCount ?? jobs.length) === 1 ? "job" : "jobs"} found
       </div>
 
       {/* Job cards list */}
       <div className="space-y-4" role="list" aria-label="Job listings">
-        {jobs.map((job) => (
-          <div key={job.id} role="listitem">
+        {jobs.map((job, index) => (
+          <div
+            key={job.id}
+            role="listitem"
+            className="reveal-on-enter"
+            style={{ "--reveal-index": index } as React.CSSProperties}
+          >
             <JobResultCard
               id={job.id}
               title={job.role}

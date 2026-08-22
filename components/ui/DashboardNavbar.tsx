@@ -27,7 +27,6 @@ import {
   HiOutlineClipboardDocument,
   HiOutlineDocumentText,
   HiOutlineUserGroup,
-  HiOutlineChatBubbleLeftRight,
   HiOutlineGlobeAlt,
   HiOutlineCreditCard,
 } from "react-icons/hi2";
@@ -37,21 +36,72 @@ import { logoutUser } from "@/lib/api";
 import { useToaster } from "@/components/ui/Toaster";
 import { useUserProfile } from "@/hooks/useUserProfile";
 import { useNotifications } from "@/hooks/useNotifications";
+import { useMyCompanies } from "@/hooks/useCompanies";
+
+interface NavLink {
+  name: string;
+  href: string;
+  icon?: React.ReactNode;
+  /** Renders as a section heading above the link, not as a link itself. */
+  heading?: string;
+}
 
 interface NavItem {
   name: string;
   href: string;
   icon: React.ReactNode;
-  hasDropdown?: boolean;
+  /**
+   * Each item owns its own menu. They used to share one open flag and one
+   * body, so opening either showed the same combined list under whichever was
+   * clicked — two triggers, one panel.
+   */
+  dropdown?: NavLink[];
 }
 
 // Job seeker navigation
-const jobSeekerNavItems: NavItem[] = [
+/**
+ * One nav for one account. Finding work and posting it are both things the
+ * same person does, so both are always here rather than chosen by a role.
+ */
+const navItemsForEveryone: NavItem[] = [
   {
     name: "Find Jobs",
     href: "/dashboard",
     icon: <HiOutlineBriefcase className="w-5 h-5" />,
-    hasDropdown: true,
+    dropdown: [
+      { name: "Browse Jobs", href: "/dashboard/find-jobs" },
+      { name: "Saved Jobs", href: "/dashboard/saved-jobs" },
+      { name: "Saved Searches", href: "/dashboard/saved-searches" },
+      { name: "Applied Jobs", href: "/dashboard/applied-jobs" },
+      { name: "Application Drafts", href: "/dashboard/application-drafts" },
+    ],
+  },
+  {
+    name: "My Postings",
+    href: "/dashboard/postings",
+    icon: <HiOutlineBuildingOffice2 className="w-5 h-5" />,
+    dropdown: [
+      {
+        name: "Post New Job",
+        href: "/dashboard/post-job",
+        icon: <HiOutlinePlusCircle className="w-5 h-5 text-primary" />,
+      },
+      {
+        name: "Manage Job Postings",
+        href: "/dashboard/postings",
+        icon: <HiOutlineDocumentText className="w-5 h-5 text-gray-400" />,
+      },
+      {
+        name: "Manage Job Drafts",
+        href: "/dashboard/drafts",
+        icon: <HiOutlineClipboardDocument className="w-5 h-5 text-gray-400" />,
+      },
+      {
+        name: "Applicants",
+        href: "/dashboard/applications",
+        icon: <HiOutlineUserGroup className="w-5 h-5 text-gray-400" />,
+      },
+    ],
   },
   {
     name: "Community",
@@ -60,25 +110,98 @@ const jobSeekerNavItems: NavItem[] = [
   },
   {
     name: "Inbox",
-    href: "/dashboard/job-seeker/inbox",
+    href: "/dashboard/inbox",
     icon: <HiOutlineInbox className="w-5 h-5" />,
   },
 ];
 
-// Employer navigation
-const employerNavItems: NavItem[] = [
+/** The account's own things — always visible, at the top. */
+const PROFILE_LINKS: NavLink[] = [
   {
-    name: "Dashboard",
-    href: "/dashboard",
-    icon: <HiOutlineBuildingOffice2 className="w-5 h-5" />,
+    name: "View Profile",
+    href: "/dashboard/profile",
+    icon: <HiOutlineUser className="w-5 h-5 text-gray-400" />,
   },
   {
-    name: "Jobs",
-    href: "/dashboard/employer/jobs",
-    icon: <HiOutlineBriefcase className="w-5 h-5" />,
-    hasDropdown: true,
+    name: "Applied Jobs",
+    href: "/dashboard/applied-jobs",
+    icon: <HiOutlineBriefcase className="w-5 h-5 text-gray-400" />,
+  },
+  {
+    name: "Application Drafts",
+    href: "/dashboard/application-drafts",
+    icon: <HiOutlineClipboardDocument className="w-5 h-5 text-gray-400" />,
+  },
+  {
+    name: "Saved Jobs",
+    href: "/dashboard/saved-jobs",
+    icon: <HiOutlineBookmark className="w-5 h-5 text-gray-400" />,
+  },
+  {
+    name: "Saved Searches",
+    href: "/dashboard/saved-searches",
+    icon: <HiOutlineMagnifyingGlass className="w-5 h-5 text-gray-400" />,
+  },
+  {
+    name: "Account Settings",
+    href: "/dashboard/settings",
+    icon: <HiOutlineCog6Tooth className="w-5 h-5 text-gray-400" />,
   },
 ];
+
+/** Company things, folded away — an account only has these if it joined one. */
+const COMPANY_LINKS: NavLink[] = [
+  {
+    name: "View Public Company Page",
+    href: "/dashboard/companies",
+    icon: <HiOutlineGlobeAlt className="w-5 h-5 text-gray-400" />,
+  },
+  {
+    name: "Billing / Subscription",
+    href: "/dashboard/billing",
+    icon: <HiOutlineCreditCard className="w-5 h-5 text-gray-400" />,
+  },
+];
+
+/** Account-level destinations, listed once each. */
+const ACCOUNT_LINKS: NavLink[] = [
+  {
+    name: "Notifications",
+    href: "/dashboard/notifications",
+    icon: <HiOutlineBell className="w-5 h-5 text-gray-400" />,
+  },
+  {
+    name: "Messages",
+    href: "/dashboard/inbox",
+    icon: <HiOutlineInbox className="w-5 h-5 text-gray-400" />,
+  },
+  {
+    name: "Companies",
+    href: "/dashboard/companies",
+    icon: <HiOutlineBuildingOffice2 className="w-5 h-5 text-gray-400" />,
+  },
+  {
+    name: "View Profile",
+    href: "/dashboard/profile",
+    icon: <HiOutlineUser className="w-5 h-5 text-gray-400" />,
+  },
+  {
+    name: "Account Settings",
+    href: "/dashboard/settings",
+    icon: <HiOutlineCog6Tooth className="w-5 h-5 text-gray-400" />,
+  },
+];
+
+/**
+ * Only shown once the account actually belongs to a company, rather than
+ * cluttering the nav for everyone who never will. A hiring-team invite goes to
+ * an email address, so any account can end up on one.
+ */
+const companiesNavItem: NavItem = {
+  name: "Companies",
+  href: "/dashboard/companies",
+  icon: <HiOutlineBuildingOffice2 className="w-5 h-5" />,
+};
 
 const DashboardNavbar = () => {
   const pathname = usePathname();
@@ -86,8 +209,12 @@ const DashboardNavbar = () => {
   const { showToast } = useToaster();
   const { userProfile } = useUserProfile();
   const { unreadCount } = useNotifications();
+  const { companies } = useMyCompanies();
   const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false);
-  const [isJobsDropdownOpen, setIsJobsDropdownOpen] = useState(false);
+  // Which menu is open, by item name — null when none is. A single boolean
+  // meant both triggers drove the same panel.
+  const [openDropdown, setOpenDropdown] = useState<string | null>(null);
+  const [isCompanySectionOpen, setIsCompanySectionOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const profileDropdownRef = useRef<HTMLDivElement>(null);
   const jobsDropdownRef = useRef<HTMLDivElement>(null);
@@ -102,13 +229,16 @@ const DashboardNavbar = () => {
         profileDropdownRef.current &&
         !profileDropdownRef.current.contains(event.target as Node)
       ) {
+        setIsCompanySectionOpen(false);
         setIsProfileDropdownOpen(false);
       }
+      // One ref around the whole nav: with a menu per item, a single shared
+      // ref only ever pointed at the last one rendered.
       if (
         jobsDropdownRef.current &&
         !jobsDropdownRef.current.contains(event.target as Node)
       ) {
-        setIsJobsDropdownOpen(false);
+        setOpenDropdown(null);
       }
       // Mobile menu backdrop click handled separately
     };
@@ -213,9 +343,11 @@ const DashboardNavbar = () => {
       showToast({
         type: "success",
         title: "Logged out successfully",
-        description: "Redirecting to homepage...",
+        description: "Taking you to sign in...",
       });
-      setTimeout(() => router.push("/"), 1500);
+      // replace, not push: the dashboard is behind auth now, so Back should
+      // not return to a page that will only bounce them out again.
+      router.replace("/signin");
     } catch {
       showToast({
         type: "error",
@@ -230,41 +362,25 @@ const DashboardNavbar = () => {
   const userName = isUserProfileLoading
     ? "Loading..."
     : userProfile?.full_name || "User";
-  const isEmployer = userProfile?.role === "employer";
-  const isJobSeeker = userProfile?.role === "job_seeker";
-  const userRole = isUserProfileLoading
-    ? "Loading..."
-    : isEmployer
-      ? "Employer"
-      : "Job Seeker";
+  const userRole = isUserProfileLoading ? "Loading..." : "Member";
 
   // Get the appropriate avatar/logo based on user role
   const getAvatarUrl = () => {
     if (!userProfile) return null;
-    if (isEmployer) {
-      return userProfile.employer_profile?.logo_url || null;
-    }
     return userProfile.picture || null;
   };
 
   const avatarUrl = getAvatarUrl();
 
-  const notificationsHref = isEmployer
-    ? "/dashboard/employer/notifications"
-    : "/dashboard/job-seeker/notifications";
+  const notificationsHref = "/dashboard/notifications";
 
-  // Don't render role-specific nav until the profile is confirmed to avoid flash
-  const navItems = useMemo(
-    () =>
-      isUserProfileLoading
-        ? []
-        : isEmployer
-          ? employerNavItems
-          : isJobSeeker
-            ? jobSeekerNavItems
-            : [],
-    [isUserProfileLoading, isEmployer, isJobSeeker],
-  );
+  // Held back until the profile resolves, so the nav does not flash.
+  const navItems = useMemo(() => {
+    if (isUserProfileLoading) return [];
+    return companies.length > 0
+      ? [...navItemsForEveryone, companiesNavItem]
+      : navItemsForEveryone;
+  }, [isUserProfileLoading, companies.length]);
   const hasUnreadNotifications = unreadCount > 0;
 
   return (
@@ -283,17 +399,18 @@ const DashboardNavbar = () => {
         </Link>
 
         {/* Right Side - All Navigation Items */}
-        <div className="hidden md:flex items-center gap-2">
+        <div className="hidden md:flex items-center gap-2" ref={jobsDropdownRef}>
           {/* Center Navigation */}
           {navItems.map((item) => (
-            <div
-              key={item.name}
-              className="relative"
-              ref={item.hasDropdown ? jobsDropdownRef : undefined}
-            >
-              {item.hasDropdown ? (
+            <div key={item.name} className="relative">
+              {item.dropdown ? (
                 <button
-                  onClick={() => setIsJobsDropdownOpen(!isJobsDropdownOpen)}
+                  onClick={() =>
+                    setOpenDropdown(
+                      openDropdown === item.name ? null : item.name,
+                    )
+                  }
+                  aria-expanded={openDropdown === item.name}
                   className={clsx(
                     "flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors",
                     pathname === item.href
@@ -306,7 +423,7 @@ const DashboardNavbar = () => {
                   <HiOutlineChevronDown
                     className={clsx(
                       "w-4 h-4 transition-transform",
-                      isJobsDropdownOpen && "rotate-180",
+                      openDropdown === item.name && "rotate-180",
                     )}
                   />
                 </button>
@@ -324,96 +441,24 @@ const DashboardNavbar = () => {
                   <span>{item.name}</span>
                 </Link>
               )}
-              {/* Dropdown menu - role aware */}
-              {item.hasDropdown && isJobsDropdownOpen && (
+              {item.dropdown && openDropdown === item.name && (
                 <div
                   className="absolute top-full left-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg py-1 z-50"
                   style={{ minWidth: "200px" }}
+                  role="menu"
                 >
-                  {isEmployer ? (
-                    <>
-                      <div className="px-4 py-1.5 text-xs font-semibold text-primary uppercase tracking-wider">
-                        Job Management
-                      </div>
-                      <Link
-                        href="/dashboard/employer/post-job"
-                        className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
-                        onClick={() => setIsJobsDropdownOpen(false)}
-                      >
-                        <HiOutlinePlusCircle className="w-5 h-5 text-primary" />
-                        Post New Job
-                      </Link>
-                      <Link
-                        href="/dashboard/employer/jobs"
-                        className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
-                        onClick={() => setIsJobsDropdownOpen(false)}
-                      >
-                        <HiOutlineDocumentText className="w-5 h-5 text-gray-400" />
-                        Manage Job Postings
-                      </Link>
-                      <Link
-                        href="/dashboard/employer/drafts"
-                        className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
-                        onClick={() => setIsJobsDropdownOpen(false)}
-                      >
-                        <HiOutlineClipboardDocument className="w-5 h-5 text-gray-400" />
-                        Manage Job Drafts
-                      </Link>
-                      <Link
-                        href="/dashboard/employer/applications"
-                        className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
-                        onClick={() => setIsJobsDropdownOpen(false)}
-                      >
-                        <HiOutlineUserGroup className="w-5 h-5 text-gray-400" />
-                        Applications / Applicants
-                      </Link>
-                    </>
-                  ) : (
-                    <>
-                      <Link
-                        href="/dashboard"
-                        className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
-                        onClick={() => setIsJobsDropdownOpen(false)}
-                      >
-                        All Jobs
-                      </Link>
-                      <Link
-                        href="/dashboard/job-seeker/saved-jobs"
-                        className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
-                        onClick={() => setIsJobsDropdownOpen(false)}
-                      >
-                        Saved Jobs
-                      </Link>
-                      <Link
-                        href="/dashboard/job-seeker/saved-searches"
-                        className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
-                        onClick={() => setIsJobsDropdownOpen(false)}
-                      >
-                        Saved Searches
-                      </Link>
-                      <Link
-                        href="/dashboard/job-seeker/applied-jobs"
-                        className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
-                        onClick={() => setIsJobsDropdownOpen(false)}
-                      >
-                        Applied Jobs
-                      </Link>
-                      <Link
-                        href="/dashboard/job-seeker/application-drafts"
-                        className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
-                        onClick={() => setIsJobsDropdownOpen(false)}
-                      >
-                        Application Drafts
-                      </Link>
-                      <Link
-                        href="/dashboard/job-seeker/jobs"
-                        className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
-                        onClick={() => setIsJobsDropdownOpen(false)}
-                      >
-                        Browse Jobs
-                      </Link>
-                    </>
-                  )}
+                  {item.dropdown.map((link) => (
+                    <Link
+                      key={link.href}
+                      href={link.href}
+                      role="menuitem"
+                      className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                      onClick={() => setOpenDropdown(null)}
+                    >
+                      {link.icon}
+                      {link.name}
+                    </Link>
+                  ))}
                 </div>
               )}
             </div>
@@ -437,22 +482,6 @@ const DashboardNavbar = () => {
             </div>
             <span>Notifications</span>
           </Link>
-
-          {/* Messages - Employer only */}
-          {isEmployer && (
-            <Link
-              href="/dashboard/employer/inbox"
-              className={clsx(
-                "inline-flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors relative",
-                pathname === "/dashboard/employer/inbox"
-                  ? "text-primary bg-red-50"
-                  : "text-gray-600 hover:text-gray-900 hover:bg-gray-50",
-              )}
-            >
-              <HiOutlineChatBubbleLeftRight className="w-5 h-5" />
-              <span>Messages</span>
-            </Link>
-          )}
 
           {/* Profile Dropdown */}
           <div className="relative" ref={profileDropdownRef}>
@@ -501,101 +530,64 @@ const DashboardNavbar = () => {
                 className="absolute top-full right-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg py-1 z-50"
                 style={{ minWidth: "200px" }}
               >
-                {isEmployer ? (
-                  <>
-                    <Link
-                      href="/dashboard/employer/company-profile"
-                      className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50"
-                      onClick={() => setIsProfileDropdownOpen(false)}
-                    >
-                      <HiOutlineGlobeAlt className="w-5 h-5 text-gray-400" />
-                      View Public Company Page
-                    </Link>
-                    <Link
-                      href="/dashboard/employer/settings"
-                      className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50"
-                      onClick={() => setIsProfileDropdownOpen(false)}
-                    >
-                      <HiOutlineCog6Tooth className="w-5 h-5 text-gray-400" />
-                      Settings
-                    </Link>
-                    <Link
-                      href="/dashboard/employer/billing"
-                      className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50"
-                      onClick={() => setIsProfileDropdownOpen(false)}
-                    >
-                      <HiOutlineCreditCard className="w-5 h-5 text-gray-400" />
-                      Billing / Subscription
-                    </Link>
-                    <hr className="my-1 border-gray-100" />
-                    <button
-                      onClick={handleLogout}
-                      className="flex items-center gap-3 px-4 py-2.5 text-sm text-primary hover:bg-gray-50 w-full text-left"
-                    >
-                      <HiOutlineArrowRightOnRectangle className="w-5 h-5 text-primary" />
-                      Sign Out
-                    </button>
-                  </>
-                ) : (
-                  <>
-                    <Link
-                      href="/dashboard/job-seeker/profile"
-                      className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50"
-                      onClick={() => setIsProfileDropdownOpen(false)}
-                    >
-                      <HiOutlineUser className="w-5 h-5 text-gray-400" />
-                      View Profile
-                    </Link>
-                    <Link
-                      href="/dashboard/job-seeker/applied-jobs"
-                      className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50"
-                      onClick={() => setIsProfileDropdownOpen(false)}
-                    >
-                      <HiOutlineBriefcase className="w-5 h-5 text-gray-400" />
-                      Applied Jobs
-                    </Link>
-                    <Link
-                      href="/dashboard/job-seeker/application-drafts"
-                      className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50"
-                      onClick={() => setIsProfileDropdownOpen(false)}
-                    >
-                      <HiOutlineClipboardDocument className="w-5 h-5 text-gray-400" />
-                      Application Drafts
-                    </Link>
-                    <Link
-                      href="/dashboard/job-seeker/saved-jobs"
-                      className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50"
-                      onClick={() => setIsProfileDropdownOpen(false)}
-                    >
-                      <HiOutlineBookmark className="w-5 h-5 text-gray-400" />
-                      Saved Jobs
-                    </Link>
-                    <Link
-                      href="/dashboard/job-seeker/saved-searches"
-                      className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50"
-                      onClick={() => setIsProfileDropdownOpen(false)}
-                    >
-                      <HiOutlineMagnifyingGlass className="w-5 h-5 text-gray-400" />
-                      Saved Searches
-                    </Link>
-                    <Link
-                      href="/dashboard/job-seeker/settings"
-                      className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50"
-                      onClick={() => setIsProfileDropdownOpen(false)}
-                    >
-                      <HiOutlineCog6Tooth className="w-5 h-5 text-gray-400" />
-                      Account Settings
-                    </Link>
-                    <hr className="my-1 border-gray-100" />
-                    <button
-                      onClick={handleLogout}
-                      className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 w-full text-left"
-                    >
-                      <HiOutlineArrowRightOnRectangle className="w-5 h-5 text-gray-400" />
-                      Logout
-                    </button>
-                  </>
-                )}
+                    <>
+                      <p className="px-4 pt-2 pb-1 text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                        Profile
+                      </p>
+                      {PROFILE_LINKS.map((link) => (
+                        <Link
+                          key={link.href}
+                          href={link.href}
+                          className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50"
+                          onClick={() => setIsProfileDropdownOpen(false)}
+                        >
+                          {link.icon}
+                          {link.name}
+                        </Link>
+                      ))}
+
+                      <hr className="my-1 border-gray-100" />
+
+                      {/* Folded away by default: most accounts never join a
+                          company, and this is their own profile menu. */}
+                      <button
+                        type="button"
+                        onClick={() => setIsCompanySectionOpen((open) => !open)}
+                        aria-expanded={isCompanySectionOpen}
+                        className="flex items-center justify-between gap-3 w-full px-4 py-2.5 text-xs font-semibold text-gray-400 uppercase tracking-wider hover:bg-gray-50"
+                      >
+                        For companies
+                        <HiOutlineChevronDown
+                          className={clsx(
+                            "w-4 h-4 transition-transform",
+                            isCompanySectionOpen && "rotate-180",
+                          )}
+                        />
+                      </button>
+
+                      {isCompanySectionOpen &&
+                        COMPANY_LINKS.map((link) => (
+                          <Link
+                            key={link.href}
+                            href={link.href}
+                            className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50"
+                            onClick={() => setIsProfileDropdownOpen(false)}
+                          >
+                            {link.icon}
+                            {link.name}
+                          </Link>
+                        ))}
+
+                      <hr className="my-1 border-gray-100" />
+
+                      <button
+                        onClick={handleLogout}
+                        className="flex items-center gap-3 px-4 py-2.5 text-sm text-primary hover:bg-red-50 w-full text-left font-medium"
+                      >
+                        <HiOutlineArrowRightOnRectangle className="w-5 h-5" />
+                        Sign Out
+                      </button>
+                    </>
               </div>
             )}
           </div>
@@ -660,141 +652,45 @@ const DashboardNavbar = () => {
           ))}
           <hr className="my-2 border-gray-100" />
 
-          {/* Employer mobile menu items */}
-          {isEmployer ? (
-            <>
-              <Link
-                href="/dashboard/employer/post-job"
-                className="flex items-center gap-3 px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 min-h-[44px]"
-                onClick={closeMobileMenu}
-              >
-                <HiOutlinePlusCircle className="w-5 h-5 text-primary" />
-                Post New Job
-              </Link>
-              <Link
-                href="/dashboard/employer/applications"
-                className="flex items-center gap-3 px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 min-h-[44px]"
-                onClick={closeMobileMenu}
-              >
-                <HiOutlineUserGroup className="w-5 h-5 text-gray-400" />
-                Applications
-              </Link>
-              <Link
-                href="/dashboard/employer/drafts"
-                className="flex items-center gap-3 px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 min-h-[44px]"
-                onClick={closeMobileMenu}
-              >
-                <HiOutlineClipboardDocument className="w-5 h-5 text-gray-400" />
-                Manage Job Drafts
-              </Link>
-              <Link
-                href={notificationsHref}
-                className="flex items-center gap-3 px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 min-h-[44px]"
-                onClick={closeMobileMenu}
-              >
-                <div className="relative">
-                  <HiOutlineBell className="w-5 h-5" />
-                  {hasUnreadNotifications && (
-                    <span className="absolute -top-1 -right-1 w-2 h-2 bg-primary rounded-full" />
-                  )}
-                </div>
-                Notifications
-              </Link>
-              <Link
-                href="/dashboard/employer/inbox"
-                className="flex items-center gap-3 px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 min-h-[44px]"
-                onClick={closeMobileMenu}
-              >
-                <HiOutlineChatBubbleLeftRight className="w-5 h-5 text-gray-400" />
-                Messages
-              </Link>
-              <Link
-                href="/dashboard/employer/company-profile"
-                className="flex items-center gap-3 px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 min-h-[44px]"
-                onClick={closeMobileMenu}
-              >
-                <HiOutlineGlobeAlt className="w-5 h-5 text-gray-400" />
-                Company Profile
-              </Link>
-              <Link
-                href="/dashboard/employer/settings"
-                className="flex items-center gap-3 px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 min-h-[44px]"
-                onClick={closeMobileMenu}
-              >
-                <HiOutlineCog6Tooth className="w-5 h-5 text-gray-400" />
-                Settings
-              </Link>
-            </>
-          ) : (
-            <>
-              <Link
-                href={notificationsHref}
-                className={clsx(
-                  "flex items-center gap-3 px-4 py-3 text-sm font-medium transition-colors min-h-[44px]",
-                  pathname === notificationsHref
-                    ? "text-primary bg-red-50"
-                    : "text-gray-700 hover:bg-gray-50",
-                )}
-                onClick={closeMobileMenu}
-              >
-                <div className="relative">
-                  <HiOutlineBell className="w-5 h-5" />
-                  {hasUnreadNotifications && (
-                    <span className="absolute -top-1 -right-1 w-2 h-2 bg-primary rounded-full" />
-                  )}
-                </div>
-                Notifications
-              </Link>
-              <Link
-                href="/dashboard/job-seeker/profile"
-                className="flex items-center gap-3 px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 min-h-[44px]"
-                onClick={closeMobileMenu}
-              >
-                <HiOutlineUser className="w-5 h-5 text-gray-400" />
-                View Profile
-              </Link>
-              <Link
-                href="/dashboard/job-seeker/applied-jobs"
-                className="flex items-center gap-3 px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 min-h-[44px]"
-                onClick={closeMobileMenu}
-              >
-                <HiOutlineBriefcase className="w-5 h-5 text-gray-400" />
-                Applied Jobs
-              </Link>
-              <Link
-                href="/dashboard/job-seeker/application-drafts"
-                className="flex items-center gap-3 px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 min-h-[44px]"
-                onClick={closeMobileMenu}
-              >
-                <HiOutlineClipboardDocument className="w-5 h-5 text-gray-400" />
-                Application Drafts
-              </Link>
-              <Link
-                href="/dashboard/job-seeker/saved-jobs"
-                className="flex items-center gap-3 px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 min-h-[44px]"
-                onClick={closeMobileMenu}
-              >
-                <HiOutlineBookmark className="w-5 h-5 text-gray-400" />
-                Saved Jobs
-              </Link>
-              <Link
-                href="/dashboard/job-seeker/saved-searches"
-                className="flex items-center gap-3 px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 min-h-[44px]"
-                onClick={closeMobileMenu}
-              >
-                <HiOutlineMagnifyingGlass className="w-5 h-5 text-gray-400" />
-                Saved Searches
-              </Link>
-              <Link
-                href="/dashboard/job-seeker/settings"
-                className="flex items-center gap-3 px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 min-h-[44px]"
-                onClick={closeMobileMenu}
-              >
-                <HiOutlineCog6Tooth className="w-5 h-5 text-gray-400" />
-                Account Settings
-              </Link>
-            </>
-          )}
+          {/* Everything the desktop menus hold, flattened — rendered from the
+              same nav definition so the two cannot drift apart. This list was
+              maintained by hand and had already lost Browse Jobs, Saved Jobs,
+              Saved Searches and Application Drafts, while showing Notifications
+              twice. */}
+          {navItems
+            .filter((item) => item.dropdown)
+            .map((item) => (
+              <div key={`mobile-${item.name}`}>
+                <p className="px-4 pt-3 pb-1 text-xs font-semibold text-primary uppercase tracking-wider">
+                  {item.name}
+                </p>
+                {item.dropdown?.map((link) => (
+                  <Link
+                    key={link.href}
+                    href={link.href}
+                    className="flex items-center gap-3 px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 min-h-[44px]"
+                    onClick={closeMobileMenu}
+                  >
+                    {link.icon ?? <span className="w-5" />}
+                    {link.name}
+                  </Link>
+                ))}
+              </div>
+            ))}
+
+          <hr className="my-2 border-gray-100" />
+
+          {ACCOUNT_LINKS.map((link) => (
+            <Link
+              key={link.href}
+              href={link.href}
+              className="flex items-center gap-3 px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 min-h-[44px]"
+              onClick={closeMobileMenu}
+            >
+              {link.icon}
+              {link.name}
+            </Link>
+          ))}
 
           <hr className="my-2 border-gray-100" />
           <button

@@ -44,6 +44,14 @@ const PASSWORD_REQUIREMENTS: PasswordRequirement[] = [
   },
 ];
 
+/**
+ * Whether a password satisfies every requirement the checklist shows. Exported
+ * so a form can decide when to reveal that checklist without re-encoding the
+ * rules and letting the two drift apart.
+ */
+export const isPasswordValid = (password: string): boolean =>
+  PASSWORD_REQUIREMENTS.every((req) => req.test(password));
+
 export const PasswordField = ({
   label,
   name,
@@ -126,7 +134,7 @@ export const PasswordField = ({
       )}
 
       {showRequirements && (
-        <div className="mt-2 space-y-1">
+        <div className="mt-2 grid grid-cols-1 gap-x-4 gap-y-1 sm:grid-cols-2">
           {PASSWORD_REQUIREMENTS.map((req) => {
             const isMet = req.test(value);
             return (

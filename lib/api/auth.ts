@@ -268,3 +268,20 @@ export async function resetPasswordWithToken(
     };
   }
 }
+
+/**
+ * Whether an email is free to register. Fails open — a network or server
+ * hiccup resolves to `true` so the inline check never blocks a legitimate
+ * signup; the backend still rejects a duplicate on submit.
+ */
+export async function checkEmailAvailable(email: string): Promise<boolean> {
+  try {
+    const res = await apiFetch<ApiResponse<{ available: boolean }>>(
+      `${API_BASE_URL}/api/v1/auth/check-email?email=${encodeURIComponent(email)}`,
+      { method: "GET" },
+    );
+    return res.data?.available ?? true;
+  } catch {
+    return true;
+  }
+}

@@ -11,6 +11,8 @@ import {
   hasRegions,
   regionLabelFor,
 } from "@/lib/regions";
+import { WizardNav } from "../WizardNav";
+import { StepHeader } from "../StepHeader";
 
 /**
  * Step 3: Contact Information
@@ -23,21 +25,20 @@ export const ContactInfoStep = ({
   onFieldChange,
   onNext,
   onBack,
+  currentStep,
+  totalSteps,
 }: StepProps) => {
   // Step is now optional, so Continue is always enabled
   const isFormValid = true;
 
   return (
     <div className="w-full max-w-lg mx-auto">
-      {/* Heading */}
-      <h1 className="text-2xl md:text-4xl font-semibold text-gray-900 mb-2 text-center">
-        How can employers reach you?
-      </h1>
-      
-      {/* Subtext */}
-      <p className="text-gray-600 mb-8 text-center">
-        This helps us connect you with opportunities near you.
-      </p>
+      <StepHeader
+        title="How can employers reach you?"
+        subtitle="This helps us connect you with opportunities near you."
+        currentStep={currentStep}
+        totalSteps={totalSteps}
+      />
 
       {/* Form Fields */}
       <div className="space-y-1">
@@ -106,34 +107,7 @@ export const ContactInfoStep = ({
         )}
       </div>
 
-      {/* Navigation Buttons */}
-      <div className="flex flex-col md:flex-row gap-4 md:gap-6 mt-8">
-        <button
-          type="button"
-          onClick={onBack}
-          className="flex-1 py-3 px-6 border border-gray-300 text-gray-700 font-medium rounded-lg transition-all hover:bg-gray-50"
-        >
-          Back
-        </button>
-        <button
-          type="button"
-          onClick={onNext}
-          className="flex-1 py-3 px-6 bg-primary text-white font-medium rounded-lg transition-all hover:bg-primary/90"
-        >
-          Continue
-        </button>
-      </div>
-
-      {/* Skip Link */}
-      <div className="text-center mt-4">
-        <button
-          type="button"
-          onClick={onNext}
-          className="text-gray-500 hover:text-gray-700 text-sm underline transition-colors"
-        >
-          Skip for now
-        </button>
-      </div>
+      <WizardNav onBack={onBack} onNext={onNext} onSkip={onNext} />
     </div>
   );
 };

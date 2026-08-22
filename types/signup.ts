@@ -47,6 +47,9 @@ export interface StepProps {
   onBack: () => void;
   onSkip?: () => void;
   isBusy?: boolean;
+  /** For the in-step header's progress indicator. */
+  currentStep: number;
+  totalSteps: number;
 }
 
 /**

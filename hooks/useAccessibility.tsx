@@ -8,6 +8,7 @@ import React, {
   useCallback,
   type ReactNode,
 } from "react";
+import { usePathname } from "next/navigation";
 
 // ─── Types ──────────────────────────────────────────────────────────────────────
 
@@ -50,6 +51,15 @@ export function AccessibilityProvider({ children }: { children: ReactNode }) {
   const [state, setState] = useState<AccessibilityState>(defaults);
   const [mounted, setMounted] = useState(false);
 
+  // These preferences belong to the signed-in app, not the public marketing
+  // and auth pages — those have fixed, deliberately composed layouts that
+  // should look the same for everyone. The provider stays at the root so the
+  // settings screen can read and write them, but the DOM effects below only
+  // take hold inside /dashboard; elsewhere the document renders at its
+  // defaults regardless of what's stored.
+  const pathname = usePathname();
+  const inApp = pathname?.startsWith("/dashboard") ?? false;
+
   // Load persisted preferences on mount
   useEffect(() => {
     try {
@@ -70,28 +80,29 @@ export function AccessibilityProvider({ children }: { children: ReactNode }) {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
   }, [state, mounted]);
 
-  // Apply text-size to <html> element
+  // Apply text-size to <html> — but only inside the app. On public routes the
+  // style is removed, so a stored preference never reshapes a marketing or
+  // auth page.
   useEffect(() => {
     if (!mounted) return;
     const html = document.documentElement;
-    if (state.textSize === "normal") {
-      // Default size: drop the inline style so the DOM matches server output.
-      html.style.removeProperty("font-size");
-    } else {
+    if (inApp && state.textSize !== "normal") {
       html.style.fontSize = TEXT_SIZE_MAP[state.textSize];
+    } else {
+      html.style.removeProperty("font-size");
     }
-  }, [state.textSize, mounted]);
+  }, [state.textSize, mounted, inApp]);
 
-  // Apply high-contrast class to <html> element
+  // Apply high-contrast class to <html> — likewise app-only.
   useEffect(() => {
     if (!mounted) return;
     const html = document.documentElement;
-    if (state.highContrast) {
+    if (inApp && state.highContrast) {
       html.classList.add("high-contrast");
     } else {
       html.classList.remove("high-contrast");
     }
-  }, [state.highContrast, mounted]);
+  }, [state.highContrast, mounted, inApp]);
 
   const setTextSize = useCallback((size: TextSize) => {
     setState((prev) => ({ ...prev, textSize: size }));

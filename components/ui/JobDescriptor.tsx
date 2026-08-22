@@ -271,7 +271,7 @@ const JobDescriptor: React.FC<JobDescriptorProps> = ({
         {/* Breadcrumb */}
         <nav className="flex items-center gap-1.5 text-sm text-gray-500 mb-4">
           <Link
-            href="/dashboard/jobs"
+            href="/jobs"
             className="hover:text-gray-700 transition-colors no-underline text-gray-500"
           >
             Jobs

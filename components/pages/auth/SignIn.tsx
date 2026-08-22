@@ -200,7 +200,7 @@ export const SignIn = () => {
           <div className="text-center mb-8">
             <a
               href={signUpHref}
-              className="text-primary text-2xl font-normal hover:underline"
+              className="text-primary text-lg font-medium hover:underline"
             >
               Create a free account
             </a>

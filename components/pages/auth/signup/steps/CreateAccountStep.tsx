@@ -1,10 +1,14 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
+import Link from "next/link";
 import { StepProps } from "@/types/signup";
 import { FormField } from "@/components/ui/FormField";
-import { PasswordField } from "@/components/ui/PasswordField";
+import { PasswordField, isPasswordValid } from "@/components/ui/PasswordField";
 import { step2Schema } from "@/lib/validation";
+import { useEmailAvailability } from "@/hooks/useEmailAvailability";
+import { WizardNav } from "../WizardNav";
+import { StepHeader } from "../StepHeader";
 
 /**
  * Step 2: Create Account
@@ -17,8 +21,9 @@ export const CreateAccountStep = ({
   onFieldChange,
   onNext,
   onBack,
+  currentStep,
+  totalSteps,
 }: StepProps) => {
-  // Validate form to determine if Continue button should be enabled
   const isFormValid = useMemo(() => {
     const result = step2Schema.safeParse({
       full_name: formData.full_name,
@@ -29,17 +34,45 @@ export const CreateAccountStep = ({
     return result.success;
   }, [formData.full_name, formData.email, formData.password, formData.confirmPassword]);
 
+  // The password checklist stays hidden until someone tries to continue with a
+  // password that doesn't meet the rules — cleaner by default, still helpful
+  // exactly when it's needed. Once revealed it updates live and vanishes again
+  // the moment every rule is met.
+  const [passwordHelpRequested, setPasswordHelpRequested] = useState(false);
+  const passwordValid = isPasswordValid(formData.password);
+  const showPasswordReqs = passwordHelpRequested && !passwordValid;
+
+  // Debounced "is this email already registered?" — a friendly heads-up before
+  // submit. The backend still rejects a duplicate outright, so this only has to
+  // guide, never guard.
+  const emailStatus = useEmailAvailability(formData.email);
+  const emailTaken = emailStatus === "taken";
+
+  // Enabled once every field has content, so a weak password is clickable and
+  // can surface the help — rather than a dead button with no explanation. A
+  // known-taken email holds it, since that submit cannot succeed.
+  const allFilled = Boolean(
+    formData.full_name.trim() &&
+      formData.email.trim() &&
+      formData.password &&
+      formData.confirmPassword,
+  );
+
+  const handleContinue = () => {
+    if (!isFormValid && !passwordValid) setPasswordHelpRequested(true);
+    // The wizard validates and surfaces any other field errors (email format,
+    // password mismatch) and only advances when everything checks out.
+    onNext();
+  };
+
   return (
     <div className="w-full max-w-lg mx-auto">
-      {/* Heading */}
-      <h1 className="text-2xl md:text-4xl font-semibold text-gray-900 mb-2 text-center">
-        Create your account
-      </h1>
-      
-      {/* Subtext */}
-      <p className="text-gray-600 mb-8 text-center">
-        Your information is safe and secure with us
-      </p>
+      <StepHeader
+        title="Create your account"
+        subtitle="Your information is safe and secure with us"
+        currentStep={currentStep}
+        totalSteps={totalSteps}
+      />
 
       {/* Form Fields */}
       <div className="space-y-1">
@@ -54,17 +87,38 @@ export const CreateAccountStep = ({
           required
         />
 
-        <FormField
-          label="Email Address"
-          name="email"
-          type="email"
-          placeholder="Enter your email address"
-          helperText="we will use this to send you updates and job alerts"
-          value={formData.email}
-          onChange={(value) => onFieldChange("email", value)}
-          error={errors.email}
-          required
-        />
+        <div>
+          <FormField
+            label="Email Address"
+            name="email"
+            type="email"
+            placeholder="Enter your email address"
+            helperText=""
+            value={formData.email}
+            onChange={(value) => onFieldChange("email", value)}
+            error={
+              emailTaken
+                ? "An account with this email already exists"
+                : errors.email
+            }
+            required
+          />
+          {emailStatus === "checking" && (
+            <p className="-mt-2 text-xs text-gray-400">
+              Checking availability…
+            </p>
+          )}
+          {emailTaken && (
+            <p className="-mt-2 text-xs">
+              <Link
+                href="/signin"
+                className="font-medium text-primary hover:underline"
+              >
+                Sign in instead →
+              </Link>
+            </p>
+          )}
+        </div>
 
         <PasswordField
           label="Password"
@@ -72,8 +126,10 @@ export const CreateAccountStep = ({
           placeholder="create a password"
           value={formData.password}
           onChange={(value) => onFieldChange("password", value)}
-          error={errors.password}
-          showRequirements={formData.password.length > 0}
+          // The checklist is the error display once it's showing, so the raw
+          // zod message would only duplicate it.
+          error={showPasswordReqs ? undefined : errors.password}
+          showRequirements={showPasswordReqs}
         />
 
         <PasswordField
@@ -86,24 +142,11 @@ export const CreateAccountStep = ({
         />
       </div>
 
-      {/* Navigation Buttons */}
-      <div className="flex flex-col md:flex-row gap-4 md:gap-6 mt-8">
-        <button
-          type="button"
-          onClick={onBack}
-          className="flex-1 py-3 px-6 border border-gray-300 text-gray-700 font-medium rounded-lg transition-all hover:bg-gray-50"
-        >
-          Back
-        </button>
-        <button
-          type="button"
-          onClick={onNext}
-          disabled={!isFormValid}
-          className="flex-1 py-3 px-6 bg-primary text-white font-medium rounded-lg transition-all hover:bg-primary/90 disabled:bg-gray-300 disabled:cursor-not-allowed"
-        >
-          Continue
-        </button>
-      </div>
+      <WizardNav
+        onBack={onBack}
+        onNext={handleContinue}
+        nextDisabled={!allFilled || emailTaken}
+      />
     </div>
   );
 };

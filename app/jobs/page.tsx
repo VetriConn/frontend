@@ -7,6 +7,7 @@ import {
   HiOutlineMapPin,
   HiOutlineBuildingOffice2,
   HiOutlineCurrencyDollar,
+  HiOutlineAcademicCap,
   HiOutlineArrowRight,
   HiOutlineMagnifyingGlass,
 } from "react-icons/hi2";
@@ -22,7 +23,7 @@ import {
   jobChipLabels,
   JOB_TAG_CLASS,
 } from "@/lib/job-display";
-import { fieldLabel, JOB_TYPE_LABELS } from "@/lib/job-fields";
+import { fieldLabel, EXPERIENCE_LEVEL_LABELS } from "@/lib/job-fields";
 
 // ── Helpers ──────────────────────────────────────────────────────────
 
@@ -34,10 +35,24 @@ function formatSalary(job: Job): string {
   return formatJobSalary(job, "full") ?? "";
 }
 
-// The stored column, labelled; null when the listing does not state one, so
-// the row is omitted rather than defaulting to a fabricated "Full-time".
-function getJobType(job: Job): string | null {
-  return fieldLabel(JOB_TYPE_LABELS, job.job_type);
+// Experience level as a label; null when the listing does not state one.
+function getExperience(job: Job): string | null {
+  return fieldLabel(EXPERIENCE_LEVEL_LABELS, job.experience_level);
+}
+
+// What the card previews — the most concrete thing available about the role.
+// Real tasks tell a seeker what the job is; requirements are the next best
+// signal; the synthesized overview is the last resort. The old card always
+// showed the overview ("Permanent, full-time position…"), which only repeated
+// the chips.
+function cardPreview(job: Job): string {
+  const source =
+    job.responsibilities.length > 0
+      ? job.responsibilities
+      : job.qualifications.length > 0
+        ? job.qualifications
+        : splitDescriptionParts(job.full_description);
+  return source.slice(0, 3).join(" · ");
 }
 
 // ── Skeleton ─────────────────────────────────────────────────────────
@@ -65,7 +80,8 @@ function CardSkeleton() {
 function JobCard({ job }: { job: Job }) {
   const router = useRouter();
   const salary = formatSalary(job);
-  const type = getJobType(job);
+  const experience = getExperience(job);
+  const preview = cardPreview(job);
 
   return (
     <article
@@ -102,15 +118,6 @@ function JobCard({ job }: { job: Job }) {
           />
           {job.location || "Canada"}
         </span>
-        {type && (
-          <span className="inline-flex items-center gap-2">
-            <HiOutlineBriefcase
-              className="w-4 h-4 md:w-5 md:h-5 text-gray-400"
-              aria-hidden="true"
-            />
-            {type}
-          </span>
-        )}
         {salary && (
           <span className="inline-flex items-center gap-2">
             <HiOutlineCurrencyDollar
@@ -120,12 +127,23 @@ function JobCard({ job }: { job: Job }) {
             {salary}
           </span>
         )}
+        {experience && (
+          <span className="inline-flex items-center gap-2">
+            <HiOutlineAcademicCap
+              className="w-4 h-4 md:w-5 md:h-5 text-gray-400"
+              aria-hidden="true"
+            />
+            {experience}
+          </span>
+        )}
       </div>
 
-      {/* Description excerpt */}
-      <p className="text-sm text-gray-600 line-clamp-2 leading-relaxed">
-        {splitDescriptionParts(job.full_description).join(" · ")}
-      </p>
+      {/* Preview — what the role actually involves, when the listing states it */}
+      {preview && (
+        <p className="text-sm text-gray-600 line-clamp-2 leading-relaxed">
+          {preview}
+        </p>
+      )}
 
       {/* Chips come from the category/type/arrangement columns, not tags, so
           gate on what actually renders — a job with a type but no category

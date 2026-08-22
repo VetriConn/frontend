@@ -7,6 +7,13 @@ import type {
   WorkSchedule,
   PaymentType,
   ProvinceCode,
+  MinQualification,
+  SecurityClearance,
+  Language,
+  Benefit,
+  Currency,
+  ScreeningQuestion,
+  JobFaq,
 } from "@/lib/job-fields";
 
 import type { JobSeekingStatus } from "@/components/pages/profile/ProfileHeader";
@@ -288,6 +295,25 @@ export interface JobsResponse {
   city?: string;
   state_province?: ProvinceCode;
   country?: string;
+  currency?: Currency;
+  min_qualification?: MinQualification;
+  security_clearance?: SecurityClearance;
+  requires_drivers_license?: boolean;
+  visa_sponsorship?: boolean;
+  languages?: Language[];
+  certifications?: string[];
+  benefits?: Benefit[];
+  openings?: number;
+  application_deadline?: string;
+  start_date?: string;
+  veteran_friendly?: boolean;
+  accommodations_offered?: boolean;
+  physically_accessible?: boolean;
+  open_to_returners?: boolean;
+  // Phase-2 job-builder fields.
+  screening_questions?: ScreeningQuestion[];
+  faqs?: JobFaq[];
+  hiring_stages?: string[];
   application_count?: number;
 
   // Aggregated listings. Scraped jobs have no employer behind them — the real
@@ -319,6 +345,9 @@ export interface ApplicationItem {
         company_name: string;
         location?: string;
         company_logo?: string;
+        screening_questions?: ScreeningQuestion[];
+        skills?: string;
+        qualifications?: string[];
       };
   status: "pending" | "reviewed" | "accepted" | "rejected";
   full_name: string;
@@ -331,6 +360,10 @@ export interface ApplicationItem {
   work_location_preference?: string;
   resume_url?: string;
   additional_info?: string;
+  // Phase-2 screening results.
+  screening_answers?: { question_id: string; answer: string[] }[];
+  screening_score?: number;
+  screening_flagged?: boolean;
   applied_at: string;
   createdAt?: string;
   updatedAt?: string;
@@ -413,6 +446,25 @@ export interface PostedJobDetail extends PostedJobSummary {
   city?: string;
   state_province?: ProvinceCode;
   country?: string;
+  currency?: Currency;
+  min_qualification?: MinQualification;
+  security_clearance?: SecurityClearance;
+  requires_drivers_license?: boolean;
+  visa_sponsorship?: boolean;
+  languages?: Language[];
+  certifications?: string[];
+  benefits?: Benefit[];
+  openings?: number;
+  application_deadline?: string;
+  start_date?: string;
+  veteran_friendly?: boolean;
+  accommodations_offered?: boolean;
+  physically_accessible?: boolean;
+  open_to_returners?: boolean;
+  // Phase-2 job-builder fields.
+  screening_questions?: ScreeningQuestion[];
+  faqs?: JobFaq[];
+  hiring_stages?: string[];
 }
 
 // Attachment types (matching backend schema)

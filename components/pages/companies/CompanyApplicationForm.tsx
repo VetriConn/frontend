@@ -9,6 +9,7 @@ import { useMyCompanies } from "@/hooks/useCompanies";
 import { useToaster } from "@/components/ui/Toaster";
 import { FormField } from "@/components/ui/FormField";
 import { CustomDropdown } from "@/components/ui/CustomDropdown";
+import { CountrySelect } from "@/components/ui/CountrySelect";
 
 /**
  * Apply for a Company Page.
@@ -47,18 +48,24 @@ const COMPANY_SIZE_OPTIONS = [
   { value: "5001+", label: "5,001+ employees" },
 ];
 
-type FormState = Required<Omit<ApplyForCompanyInput, "name">> & { name: string };
+type FormState = Required<
+  Omit<ApplyForCompanyInput, "name" | "authorized_rep_verified">
+> & { name: string };
 
 const EMPTY: FormState = {
   name: "",
   industry: "",
   city: "",
+  state_province: "",
   country: "",
   phone_number: "",
   email: "",
   website: "",
   size: "",
   about_company: "",
+  tagline: "",
+  rc_number: "",
+  registration_authority: "",
 };
 
 export const CompanyApplicationForm = () => {
@@ -67,6 +74,7 @@ export const CompanyApplicationForm = () => {
   const { mutate } = useMyCompanies();
 
   const [form, setForm] = useState<FormState>(EMPTY);
+  const [authorizedRep, setAuthorizedRep] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
@@ -99,6 +107,10 @@ export const CompanyApplicationForm = () => {
     if (form.about_company.length > 2000) {
       next.about_company = "Keep this under 2,000 characters";
     }
+    if (!authorizedRep) {
+      next.authorized =
+        "Please confirm you're authorized to create this page";
+    }
 
     setErrors(next);
     return Object.keys(next).length === 0;
@@ -120,6 +132,7 @@ export const CompanyApplicationForm = () => {
       const payload: ApplyForCompanyInput = {
         ...optional,
         name: form.name.trim(),
+        authorized_rep_verified: true,
       };
 
       await applyForCompany(payload);
@@ -179,6 +192,15 @@ export const CompanyApplicationForm = () => {
           required
         />
 
+        <FormField
+          label="Tagline"
+          name="tagline"
+          value={form.tagline}
+          onChange={(value) => setField("tagline", value)}
+          placeholder="A short line describing what your company does"
+          optional
+        />
+
         <CustomDropdown
           label="Industry"
           name="industry"
@@ -189,20 +211,18 @@ export const CompanyApplicationForm = () => {
         />
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-x-4">
+          <CountrySelect
+            label="Country"
+            name="country"
+            value={form.country}
+            onChange={(value) => setField("country", value)}
+          />
           <FormField
             label="City"
             name="city"
             value={form.city}
             onChange={(value) => setField("city", value)}
             placeholder="Ottawa"
-            optional
-          />
-          <FormField
-            label="Country"
-            name="country"
-            value={form.country}
-            onChange={(value) => setField("country", value)}
-            placeholder="Canada"
             optional
           />
         </div>
@@ -248,6 +268,36 @@ export const CompanyApplicationForm = () => {
           options={COMPANY_SIZE_OPTIONS}
         />
 
+        {/* Business registration — helps our team vet the organisation. */}
+        <div className="mt-2 mb-4 rounded-lg border border-gray-200 bg-gray-50/60 p-4">
+          <p className="text-sm font-semibold text-gray-900">
+            Business registration{" "}
+            <span className="font-normal text-gray-400">(optional)</span>
+          </p>
+          <p className="mb-3 text-xs text-gray-500">
+            Speeds up verification. Your RC number (for CAC-registered
+            companies) or business/corporation number, and who issued it.
+          </p>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-x-4">
+            <FormField
+              label="RC / Registration number"
+              name="rc_number"
+              value={form.rc_number}
+              onChange={(value) => setField("rc_number", value)}
+              placeholder="e.g. RC 1234567"
+              optional
+            />
+            <FormField
+              label="Registration authority"
+              name="registration_authority"
+              value={form.registration_authority}
+              onChange={(value) => setField("registration_authority", value)}
+              placeholder="e.g. CAC, Corporations Canada"
+              optional
+            />
+          </div>
+        </div>
+
         <div className="flex flex-col gap-1 mb-4">
           <label
             htmlFor="about_company"
@@ -275,6 +325,37 @@ export const CompanyApplicationForm = () => {
             </p>
           )}
         </div>
+
+        {/* Authorized-representative attestation — required. */}
+        <label
+          htmlFor="authorized_rep"
+          className="flex items-start gap-3 rounded-lg border border-gray-200 p-3 mb-2 cursor-pointer"
+        >
+          <input
+            id="authorized_rep"
+            type="checkbox"
+            checked={authorizedRep}
+            onChange={(e) => {
+              setAuthorizedRep(e.target.checked);
+              setErrors((prev) => {
+                if (!prev.authorized) return prev;
+                const next = { ...prev };
+                delete next.authorized;
+                return next;
+              });
+            }}
+            className="mt-0.5 h-5 w-5 shrink-0 accent-[var(--color-primary)]"
+          />
+          <span className="text-sm text-gray-700">
+            I verify that I am an authorized representative of this organisation
+            and may act on its behalf in creating and managing this page.
+          </span>
+        </label>
+        {errors.authorized && (
+          <p className="text-xs text-red-500 mb-4" role="alert">
+            {errors.authorized}
+          </p>
+        )}
 
         {submitError && (
           <div

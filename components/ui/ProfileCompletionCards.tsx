@@ -1,58 +1,62 @@
 "use client";
 import React from "react";
 import Link from "next/link";
-import { HiOutlineUser, HiArrowRight } from "react-icons/hi";
+import { HiArrowRight, HiX } from "react-icons/hi";
 
 interface CompleteProfileCardProps {
   completed: number;
   total: number;
   percentage: number;
+  /** When provided, a dismiss control appears. */
+  onDismiss?: () => void;
 }
 
 export const CompleteProfileCard: React.FC<CompleteProfileCardProps> = ({
   completed,
   total,
   percentage,
+  onDismiss,
 }) => {
   return (
-    <div className="bg-white rounded-lg md:rounded-xl border border-gray-200 p-4 md:p-6 mb-6">
-      <div className="flex items-start gap-3 md:gap-4">
-        <div className="w-10 h-10 md:w-12 md:h-12 rounded-full bg-red-50 flex items-center justify-center flex-shrink-0">
-          <HiOutlineUser className="w-5 h-5 md:w-6 md:h-6 text-primary" />
-        </div>
-        <div className="flex-1">
-          <h3 className="text-lg md:text-2xl font-semibold text-gray-900 mb-1">
-            Complete your profile
-          </h3>
-          <p className="text-sm md:text-base text-gray-500 mb-4">
-            A complete profile helps employers find you faster and match you
-            with the right opportunities.
-          </p>
+    // A slim single-line nudge — title, inline progress, action, and a dismiss.
+    // The full reminder lives permanently on the profile page, so the dashboard
+    // only needs the lightest prompt. Wraps at narrow widths or scaled text.
+    <div className="bg-white rounded-lg md:rounded-xl border border-gray-200 px-4 py-3 mb-6">
+      <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
+        <span className="text-sm md:text-base font-semibold text-gray-900 whitespace-nowrap">
+          Complete your profile
+        </span>
 
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-sm text-gray-600">
-              {completed} of {total} steps complete
-            </span>
-            <span className="text-sm font-semibold text-primary">
-              {percentage}%
-            </span>
-          </div>
-
-          {/* Progress Bar */}
-          <div className="w-full h-2 bg-gray-100 rounded-full overflow-hidden mb-4">
+        <div className="flex flex-1 items-center gap-3 min-w-[160px]">
+          <div className="h-1.5 flex-1 rounded-full bg-gray-100 overflow-hidden">
             <div
-              className="h-full bg-primary rounded-full transition-all duration-300"
+              className="h-full rounded-full bg-primary transition-all duration-300"
               style={{ width: `${percentage}%` }}
             />
           </div>
-
-          <Link
-            href="/dashboard/profile"
-            className="inline-flex items-center bg-primary text-white px-4 py-2 md:px-5 md:py-2.5 rounded-lg font-medium hover:bg-primary-hover transition-colors text-sm min-h-[44px]"
-          >
-            Complete my profile
-          </Link>
+          <span className="text-xs md:text-sm text-gray-500 whitespace-nowrap">
+            {completed} of {total} ·{" "}
+            <span className="font-semibold text-primary">{percentage}%</span>
+          </span>
         </div>
+
+        <Link
+          href="/dashboard/profile"
+          className="min-h-[44px] inline-flex items-center whitespace-nowrap rounded-lg bg-primary px-4 text-sm font-medium text-white transition-colors hover:bg-primary-hover"
+        >
+          Complete my profile
+        </Link>
+
+        {onDismiss && (
+          <button
+            type="button"
+            onClick={onDismiss}
+            aria-label="Dismiss — finish your profile any time from your profile page"
+            className="min-h-[44px] min-w-[44px] inline-flex items-center justify-center rounded-lg text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600"
+          >
+            <HiX className="w-5 h-5" />
+          </button>
+        )}
       </div>
     </div>
   );

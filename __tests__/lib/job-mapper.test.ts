@@ -60,4 +60,58 @@ describe("mapJobsResponse", () => {
     expect(job.responsibilities).toEqual([]);
     expect(job.qualifications).toEqual([]);
   });
+
+  it("passes the Phase-1 job-builder columns through", () => {
+    const job = mapJobsResponse({
+      ...base,
+      currency: "CAD",
+      min_qualification: "college",
+      security_clearance: "secret",
+      requires_drivers_license: true,
+      visa_sponsorship: false,
+      languages: ["english", "french"],
+      certifications: ["First Aid"],
+      benefits: ["health", "pension"],
+      openings: 3,
+      application_deadline: "2026-09-01",
+      start_date: "2026-10-01",
+      veteran_friendly: true,
+      accommodations_offered: true,
+      physically_accessible: true,
+      open_to_returners: true,
+    });
+    expect(job.min_qualification).toBe("college");
+    expect(job.security_clearance).toBe("secret");
+    expect(job.requires_drivers_license).toBe(true);
+    expect(job.languages).toEqual(["english", "french"]);
+    expect(job.benefits).toEqual(["health", "pension"]);
+    expect(job.certifications).toEqual(["First Aid"]);
+    expect(job.openings).toBe(3);
+    expect(job.application_deadline).toBe("2026-09-01");
+    expect(job.veteran_friendly).toBe(true);
+    expect(job.open_to_returners).toBe(true);
+  });
+
+  it("passes the Phase-2 screening, FAQ and hiring-stage fields through", () => {
+    const job = mapJobsResponse({
+      ...base,
+      screening_questions: [
+        {
+          id: "q1",
+          question: "Do you have a Class 5 licence?",
+          type: "yes_no",
+          preferred_answers: ["yes"],
+          weight: 4,
+          required: true,
+          knockout: true,
+        },
+      ],
+      faqs: [{ question: "Parking?", answer: "Yes, free." }],
+      hiring_stages: ["Application", "Interview", "Offer"],
+    });
+    expect(job.screening_questions).toHaveLength(1);
+    expect(job.screening_questions?.[0].type).toBe("yes_no");
+    expect(job.faqs).toEqual([{ question: "Parking?", answer: "Yes, free." }]);
+    expect(job.hiring_stages).toEqual(["Application", "Interview", "Offer"]);
+  });
 });

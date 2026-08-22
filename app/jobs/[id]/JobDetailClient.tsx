@@ -2,6 +2,8 @@
 import React from "react";
 import Link from "next/link";
 import JobDescriptor from "@/components/ui/JobDescriptor";
+import { Header } from "@/components/ui/Header";
+import Footer from "@/components/ui/Footer";
 import { useJob } from "@/hooks/useJob";
 import { Job } from "@/types/job";
 import { JobDetailSkeleton } from "@/components/ui/Skeleton";
@@ -19,13 +21,12 @@ export default function JobDetailClient({
 
   const displayJob = job || initialJob;
 
+  let content: React.ReactNode = null;
   if (isLoading && !displayJob) {
-    return <JobDetailSkeleton />;
-  }
-
-  if (isError && !displayJob) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+    content = <JobDetailSkeleton />;
+  } else if (isError && !displayJob) {
+    content = (
+      <div className="min-h-[60vh] bg-gray-50 flex items-center justify-center px-6">
         <div className="bg-white rounded-xl p-12 text-center border border-gray-200 max-w-md">
           <h1 className="text-2xl font-bold text-gray-900 mb-2">
             Job Not Found
@@ -43,7 +44,18 @@ export default function JobDetailClient({
         </div>
       </div>
     );
+  } else if (displayJob) {
+    content = <JobDescriptor {...displayJob} />;
   }
 
-  return displayJob ? <JobDescriptor {...displayJob} /> : null;
+  // The branded header (Vetriconn logo + auth-aware nav) and footer wrap every
+  // state, so a job — including one opened from a shared link — is recognisably
+  // Vetriconn at a glance, matching the /jobs browse page.
+  return (
+    <>
+      <Header />
+      {content}
+      <Footer />
+    </>
+  );
 }

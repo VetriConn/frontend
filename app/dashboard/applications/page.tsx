@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { Fragment, useState, useMemo } from "react";
+import Link from "next/link";
 import useSWR from "swr";
 import {
   getReceivedApplications,
@@ -15,7 +16,12 @@ import {
   HiOutlineDocumentArrowDown,
   HiOutlineMagnifyingGlass,
   HiOutlineFunnel,
+  HiOutlineFlag,
+  HiOutlineChevronDown,
+  HiOutlineCheck,
+  HiOutlineXMark,
 } from "react-icons/hi2";
+import { screeningAnswerState } from "@/lib/candidate-match";
 import { formatDate } from "@/lib/date-utils";
 import { CustomDropdown } from "@/components/ui/CustomDropdown";
 
@@ -70,6 +76,184 @@ function ApplicationStatusBadge({ status }: { status: string }) {
   );
 }
 
+/**
+ * The screening match score, colour-coded, with a flag when a knockout question
+ * wasn't met. Ranking only — a low score or a flag never rejects anyone, so the
+ * flag reads as "worth a closer look", not "disqualified".
+ */
+function MatchCell({
+  score,
+  flagged,
+}: {
+  score?: number;
+  flagged?: boolean;
+}) {
+  if (typeof score !== "number") {
+    return <span className="text-xs text-gray-400">—</span>;
+  }
+  const tone =
+    score >= 70
+      ? "bg-green-50 text-green-700"
+      : score >= 40
+        ? "bg-yellow-50 text-yellow-700"
+        : "bg-gray-100 text-gray-600";
+  return (
+    <div className="flex items-center gap-1.5">
+      <span
+        className={`inline-flex px-2.5 py-0.5 rounded-full text-xs font-semibold ${tone}`}
+      >
+        {score}%
+      </span>
+      {flagged && (
+        <span
+          title="A knockout question wasn't met — worth a closer look"
+          className="inline-flex items-center gap-1 rounded-full bg-red-50 px-2 py-0.5 text-xs font-medium text-red-600"
+        >
+          <HiOutlineFlag className="w-3.5 h-3.5" />
+          Flag
+        </span>
+      )}
+    </div>
+  );
+}
+
+/**
+ * The expanded applicant panel: their screening answers scored against the
+ * employer's preferred answers, plus the free-text parts of the application.
+ * This is what makes the Match % explainable — never a gate, just context.
+ */
+function ApplicantDetail({ app }: { app: any }) {
+  const questions =
+    typeof app.job_id === "object" ? app.job_id?.screening_questions ?? [] : [];
+  const answersById = new Map<string, string[]>(
+    (app.screening_answers ?? []).map((a: any) => [a.question_id, a.answer]),
+  );
+
+  const details: { label: string; value?: string }[] = [
+    { label: "Earliest start", value: app.earliest_start_date },
+    { label: "Preferred schedule", value: app.preferred_schedule },
+    { label: "Location preference", value: app.work_location_preference },
+  ];
+  const shownDetails = details.filter((d) => d.value);
+
+  return (
+    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      {/* Left: screening answers */}
+      <div>
+        <h4 className="text-sm font-semibold text-gray-900 mb-3">
+          Screening answers
+        </h4>
+        {questions.length === 0 ? (
+          <p className="text-sm text-gray-400">
+            This job had no screening questions.
+          </p>
+        ) : (
+          <ul className="space-y-3">
+            {questions.map((q: any) => {
+              const answer = answersById.get(q.id) ?? [];
+              const state = screeningAnswerState(
+                q.preferred_answers ?? [],
+                answer,
+                q.type,
+              );
+              const tone =
+                state === "full"
+                  ? "text-green-600"
+                  : state === "partial"
+                    ? "text-yellow-600"
+                    : state === "none"
+                      ? "text-gray-400"
+                      : "text-gray-300";
+              return (
+                <li key={q.id} className="flex items-start gap-2.5">
+                  <span className={`mt-0.5 shrink-0 ${tone}`}>
+                    {state === "full" ? (
+                      <HiOutlineCheck className="w-5 h-5" />
+                    ) : state === "none" ? (
+                      <HiOutlineXMark className="w-5 h-5" />
+                    ) : state === "partial" ? (
+                      <HiOutlineCheck className="w-5 h-5" />
+                    ) : (
+                      <span className="block w-5 text-center">–</span>
+                    )}
+                  </span>
+                  <div className="min-w-0">
+                    <p className="text-sm font-medium text-gray-800">
+                      {q.question}
+                    </p>
+                    <p className="text-sm text-gray-600 capitalize">
+                      {answer.length ? answer.join(", ") : "No answer"}
+                    </p>
+                    {(q.preferred_answers ?? []).length > 0 && (
+                      <p className="text-xs text-gray-400 capitalize">
+                        Preferred: {(q.preferred_answers ?? []).join(", ")}
+                        {q.knockout && (
+                          <span className="ml-1 text-red-500">• knockout</span>
+                        )}
+                      </p>
+                    )}
+                  </div>
+                </li>
+              );
+            })}
+          </ul>
+        )}
+      </div>
+
+      {/* Right: the rest of the application */}
+      <div className="space-y-4">
+        {app.relevant_experience && (
+          <div>
+            <h4 className="text-sm font-semibold text-gray-900 mb-1">
+              Relevant experience
+            </h4>
+            <p className="text-sm text-gray-600 whitespace-pre-line">
+              {app.relevant_experience}
+            </p>
+          </div>
+        )}
+        {(app.selected_skills ?? []).length > 0 && (
+          <div>
+            <h4 className="text-sm font-semibold text-gray-900 mb-1.5">
+              Skills
+            </h4>
+            <div className="flex flex-wrap gap-1.5">
+              {app.selected_skills.map((skill: string) => (
+                <span
+                  key={skill}
+                  className="rounded-full bg-white border border-gray-200 px-2.5 py-0.5 text-xs text-gray-700"
+                >
+                  {skill}
+                </span>
+              ))}
+            </div>
+          </div>
+        )}
+        {shownDetails.length > 0 && (
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            {shownDetails.map((d) => (
+              <div key={d.label}>
+                <p className="text-xs text-gray-400">{d.label}</p>
+                <p className="text-sm text-gray-700">{d.value}</p>
+              </div>
+            ))}
+          </div>
+        )}
+        {app.additional_info && (
+          <div>
+            <h4 className="text-sm font-semibold text-gray-900 mb-1">
+              Additional information
+            </h4>
+            <p className="text-sm text-gray-600 whitespace-pre-line">
+              {app.additional_info}
+            </p>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
 export default function ApplicationsPage() {
   const { showToast } = useToaster();
   const [busyApplicationId, setBusyApplicationId] = useState<string | null>(
@@ -83,9 +267,12 @@ export default function ApplicationsPage() {
 
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedStatus, setSelectedStatus] = useState<string>("all");
+  const [sortBy, setSortBy] = useState<"recent" | "match">("recent");
+  // Which applicant row is expanded to show screening answers + details.
+  const [expandedId, setExpandedId] = useState<string | null>(null);
 
   const filteredApplications = useMemo(() => {
-    return applications.filter((app: any) => {
+    const filtered = applications.filter((app: any) => {
       // 1. Status Filter
       if (selectedStatus !== "all" && app.status !== selectedStatus) {
         return false;
@@ -109,7 +296,19 @@ export default function ApplicationsPage() {
 
       return true;
     });
-  }, [applications, searchQuery, selectedStatus]);
+
+    // Ranking: "Best match" sorts by screening score (unscored applicants sink
+    // to the bottom but stay listed — rank & flag, never hide). Default keeps
+    // newest first.
+    if (sortBy === "match") {
+      return [...filtered].sort((a: any, b: any) => {
+        const sa = typeof a.screening_score === "number" ? a.screening_score : -1;
+        const sb = typeof b.screening_score === "number" ? b.screening_score : -1;
+        return sb - sa;
+      });
+    }
+    return filtered;
+  }, [applications, searchQuery, selectedStatus, sortBy]);
 
   const counts = useMemo(() => {
     const res = { all: applications.length, pending: 0, reviewed: 0, accepted: 0, rejected: 0 };
@@ -226,6 +425,31 @@ export default function ApplicationsPage() {
                   );
                 })}
               </div>
+
+              {/* Sort */}
+              <div className="flex flex-wrap items-center gap-1.5">
+                <span className="text-xs font-semibold text-gray-400 mr-2 uppercase tracking-wider">
+                  Sort:
+                </span>
+                {(
+                  [
+                    { key: "recent", label: "Most recent" },
+                    { key: "match", label: "Best match" },
+                  ] as const
+                ).map((opt) => (
+                  <button
+                    key={opt.key}
+                    onClick={() => setSortBy(opt.key)}
+                    className={`inline-flex items-center px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
+                      sortBy === opt.key
+                        ? "bg-primary text-white shadow-sm"
+                        : "bg-gray-50 text-gray-600 hover:bg-gray-100 border border-gray-200/60"
+                    }`}
+                  >
+                    {opt.label}
+                  </button>
+                ))}
+              </div>
             </div>
 
             {/* Applications Table Card */}
@@ -247,6 +471,9 @@ export default function ApplicationsPage() {
                         <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">
                           Status
                         </th>
+                        <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                          Match
+                        </th>
                         <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider text-right">
                           Actions
                         </th>
@@ -254,8 +481,8 @@ export default function ApplicationsPage() {
                     </thead>
                     <tbody className="divide-y divide-gray-200">
                       {filteredApplications.map((app: any) => (
+                        <Fragment key={app._id}>
                         <tr
-                          key={app._id}
                           className="hover:bg-gray-50/50 transition-colors"
                         >
                           <td className="px-6 py-4">
@@ -272,9 +499,12 @@ export default function ApplicationsPage() {
                                 )}
                               </div>
                               <div>
-                                <p className="text-sm font-semibold text-gray-900">
+                                <Link
+                                  href={`/dashboard/applications/${app._id}`}
+                                  className="text-sm font-semibold text-gray-900 no-underline hover:text-primary"
+                                >
                                   {app.user_id?.full_name || app.full_name || "Unknown User"}
-                                </p>
+                                </Link>
                                 <p className="text-xs text-gray-500">
                                   {app.user_id?.email || app.email || "No email provided"}
                                 </p>
@@ -311,8 +541,36 @@ export default function ApplicationsPage() {
                           <td className="px-6 py-4">
                             <ApplicationStatusBadge status={app.status} />
                           </td>
+                          <td className="px-6 py-4">
+                            <MatchCell
+                              score={app.screening_score}
+                              flagged={app.screening_flagged}
+                            />
+                          </td>
                           <td className="px-6 py-4 text-right">
                             <div className="flex items-center justify-end gap-2">
+                              <button
+                                type="button"
+                                onClick={() =>
+                                  setExpandedId(
+                                    expandedId === app._id ? null : app._id,
+                                  )
+                                }
+                                aria-expanded={expandedId === app._id}
+                                aria-label={
+                                  expandedId === app._id
+                                    ? "Hide details"
+                                    : "Show details"
+                                }
+                                className="p-1.5 rounded-lg text-gray-500 hover:text-primary hover:bg-red-50 transition-colors"
+                                title="Details"
+                              >
+                                <HiOutlineChevronDown
+                                  className={`w-5 h-5 transition-transform ${
+                                    expandedId === app._id ? "rotate-180" : ""
+                                  }`}
+                                />
+                              </button>
                               {app.resume_url && (
                                 <a
                                   href={app.resume_url}
@@ -343,6 +601,17 @@ export default function ApplicationsPage() {
                             </div>
                           </td>
                         </tr>
+                        {expandedId === app._id && (
+                          <tr>
+                            <td
+                              colSpan={6}
+                              className="px-6 py-5 bg-gray-50/60 border-b border-gray-200"
+                            >
+                              <ApplicantDetail app={app} />
+                            </td>
+                          </tr>
+                        )}
+                        </Fragment>
                       ))}
                     </tbody>
                   </table>

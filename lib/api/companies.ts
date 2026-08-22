@@ -37,12 +37,17 @@ export interface Company {
   name: string;
   industry?: string;
   city?: string;
+  state_province?: string;
   country?: string;
   phone_number?: string;
   email?: string;
   website?: string;
   size?: string;
   about_company?: string;
+  tagline?: string;
+  rc_number?: string;
+  registration_authority?: string;
+  authorized_rep_verified?: boolean;
   logo_url?: string;
   banner_url?: string;
 
@@ -63,16 +68,23 @@ export interface CompanyProfileInput {
   name?: string;
   industry?: string;
   city?: string;
+  state_province?: string;
   country?: string;
   phone_number?: string;
   email?: string;
   website?: string;
   size?: string;
   about_company?: string;
+  tagline?: string;
+  // Business registration.
+  rc_number?: string;
+  registration_authority?: string;
 }
 
 export interface ApplyForCompanyInput extends CompanyProfileInput {
   name: string;
+  /** Attestation that the applicant may act for the organisation. */
+  authorized_rep_verified?: boolean;
 }
 
 const COMPANIES_URL = `${API_BASE_URL}/api/v1/companies`;

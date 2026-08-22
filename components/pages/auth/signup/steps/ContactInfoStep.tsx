@@ -5,8 +5,8 @@ import { StepProps } from "@/types/signup";
 import { FormField } from "@/components/ui/FormField";
 import { PhoneField } from "@/components/ui/PhoneField";
 import { CustomDropdown } from "@/components/ui/CustomDropdown";
+import { CountrySelect } from "@/components/ui/CountrySelect";
 import {
-  COUNTRIES,
   regionsFor,
   hasRegions,
   regionLabelFor,
@@ -52,30 +52,14 @@ export const ContactInfoStep = ({
           optional
         />
 
-        <FormField
-          label="City"
-          name="city"
-          type="text"
-          placeholder="Enter your City"
-          value={formData.city}
-          onChange={(value) => onFieldChange("city", value)}
-          error={errors.city}
-        />
-
-        <CustomDropdown
-          label="Country"
-          name="country"
-          placeholder="Select your country"
+        {/* Location, narrowing down: country → state/province → city. */}
+        <CountrySelect
           value={formData.country}
           onChange={(value) => {
             onFieldChange("country", value);
             // Subdivision codes only mean something inside their country.
             if (value !== formData.country) onFieldChange("state_province", "");
           }}
-          options={COUNTRIES.map((country) => ({
-            value: country,
-            label: country,
-          }))}
           error={errors.country}
         />
 
@@ -105,6 +89,16 @@ export const ContactInfoStep = ({
             />
           )
         )}
+
+        <FormField
+          label="City"
+          name="city"
+          type="text"
+          placeholder="Enter your City"
+          value={formData.city}
+          onChange={(value) => onFieldChange("city", value)}
+          error={errors.city}
+        />
       </div>
 
       <WizardNav onBack={onBack} onNext={onNext} onSkip={onNext} />

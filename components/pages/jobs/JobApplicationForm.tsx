@@ -32,6 +32,7 @@ import {
   saveApplicationDraft,
 } from "@/lib/applicationDrafts";
 import { useToaster } from "@/components/ui/Toaster";
+import { CustomDropdown } from "@/components/ui/CustomDropdown";
 import { PhoneInputControl } from "@/components/ui/PhoneField";
 
 // Canonical profile shape subset used for pre-filling application form
@@ -95,6 +96,8 @@ interface FormData {
   workLocationPreference: string;
   resume: File | null;
   additionalInfo: string;
+  // Phase-2 screening answers, keyed by the job's question id.
+  screeningAnswers: Record<string, string[]>;
 }
 
 export default function JobApplicationForm({
@@ -118,6 +121,7 @@ export default function JobApplicationForm({
     workLocationPreference: "",
     resume: null,
     additionalInfo: "",
+    screeningAnswers: {},
   });
 
   // Restore draft from backend on mount
@@ -198,6 +202,29 @@ export default function JobApplicationForm({
     }));
   };
 
+  // ── Screening questions ───────────────────────────────────
+  const screeningQuestions = useMemo(
+    () => job.screening_questions ?? [],
+    [job.screening_questions],
+  );
+
+  const setScreeningAnswer = (questionId: string, values: string[]) => {
+    setFormData((prev) => ({
+      ...prev,
+      screeningAnswers: { ...prev.screeningAnswers, [questionId]: values },
+    }));
+  };
+
+  const requiredScreeningMissing = useMemo(
+    () =>
+      screeningQuestions.some(
+        (q) =>
+          q.required &&
+          !(formData.screeningAnswers[q.id] ?? []).some((v) => v.trim()),
+      ),
+    [screeningQuestions, formData.screeningAnswers],
+  );
+
   // File handling
   const handleFile = useCallback((file: File) => {
     const ext = "." + file.name.split(".").pop()?.toLowerCase();
@@ -242,6 +269,15 @@ export default function JobApplicationForm({
   };
 
   const handleSubmit = async () => {
+    if (requiredScreeningMissing) {
+      showToast({
+        type: "error",
+        title: "Answer the required questions",
+        description:
+          "Some screening questions are required before you can apply.",
+      });
+      return;
+    }
     setIsSubmitting(true);
     try {
       const apiFormData = new FormData();
@@ -260,6 +296,21 @@ export default function JobApplicationForm({
         formData.workLocationPreference,
       );
       apiFormData.append("additionalInfo", formData.additionalInfo);
+      // Only answered questions are sent, shaped as the API expects.
+      const screeningPayload = screeningQuestions
+        .map((q) => ({
+          question_id: q.id,
+          answer: (formData.screeningAnswers[q.id] ?? []).filter((v) =>
+            v.trim(),
+          ),
+        }))
+        .filter((a) => a.answer.length);
+      if (screeningPayload.length) {
+        apiFormData.append(
+          "screeningAnswers",
+          JSON.stringify(screeningPayload),
+        );
+      }
       if (formData.resume) {
         apiFormData.append("resume", formData.resume);
       }
@@ -554,43 +605,25 @@ export default function JobApplicationForm({
               hint="When would you be available to begin work?"
             />
 
-            <div>
-              <label className="block text-sm font-semibold text-gray-900 mb-1.5 md:mb-2">
-                Preferred Schedule
-              </label>
-              <select
-                value={formData.preferredSchedule}
-                onChange={(e) =>
-                  updateField("preferredSchedule", e.target.value)
-                }
-                className="form-input appearance-none bg-[url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2220%22%20height%3D%2220%22%20viewBox%3D%220%200%2020%2020%22%3E%3Cpath%20fill%3D%22%236b7280%22%20d%3D%22M7%207l3%203%203-3%22%20stroke%3D%22%236b7280%22%20stroke-width%3D%221.5%22%20fill%3D%22none%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%2F%3E%3C%2Fsvg%3E')] bg-size-[20px] bg-position-[right_12px_center] bg-no-repeat pr-10"
-              >
-                {SCHEDULE_OPTIONS.map((opt) => (
-                  <option key={opt.value} value={opt.value}>
-                    {opt.label}
-                  </option>
-                ))}
-              </select>
-            </div>
+            <CustomDropdown
+              name="preferredSchedule"
+              label="Preferred Schedule"
+              value={formData.preferredSchedule}
+              onChange={(v) => updateField("preferredSchedule", v)}
+              options={SCHEDULE_OPTIONS}
+              placeholder="Select a schedule"
+              hideHeader
+            />
 
-            <div>
-              <label className="block text-sm font-semibold text-gray-900 mb-1.5 md:mb-2">
-                Work Location Preference
-              </label>
-              <select
-                value={formData.workLocationPreference}
-                onChange={(e) =>
-                  updateField("workLocationPreference", e.target.value)
-                }
-                className="form-input appearance-none bg-[url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2220%22%20height%3D%2220%22%20viewBox%3D%220%200%2020%2020%22%3E%3Cpath%20fill%3D%22%236b7280%22%20d%3D%22M7%207l3%203%203-3%22%20stroke%3D%22%236b7280%22%20stroke-width%3D%221.5%22%20fill%3D%22none%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%2F%3E%3C%2Fsvg%3E')] bg-size-[20px] bg-position-[right_12px_center] bg-no-repeat pr-10"
-              >
-                {LOCATION_OPTIONS.map((opt) => (
-                  <option key={opt.value} value={opt.value}>
-                    {opt.label}
-                  </option>
-                ))}
-              </select>
-            </div>
+            <CustomDropdown
+              name="workLocationPreference"
+              label="Work Location Preference"
+              value={formData.workLocationPreference}
+              onChange={(v) => updateField("workLocationPreference", v)}
+              options={LOCATION_OPTIONS}
+              placeholder="Select a preference"
+              hideHeader
+            />
           </div>
         </SectionCard>
 
@@ -669,9 +702,108 @@ export default function JobApplicationForm({
           )}
         </SectionCard>
 
-        {/* ─── Section 5: Additional Information ─── */}
+        {/* ─── Screening questions (only when the job has them) ─── */}
+        {screeningQuestions.length > 0 && (
+          <SectionCard
+            number={5}
+            title="Screening Questions"
+            subtitle="A few quick questions from the employer."
+            complete={!requiredScreeningMissing}
+            optional={!screeningQuestions.some((q) => q.required)}
+          >
+            <div className="space-y-6">
+              {screeningQuestions.map((q) => {
+                const value = formData.screeningAnswers[q.id] ?? [];
+                return (
+                  <div key={q.id}>
+                    <label className="block text-sm font-semibold text-gray-900 mb-2">
+                      {q.question}
+                      {q.required && (
+                        <span className="text-red-500 ml-0.5">*</span>
+                      )}
+                    </label>
+
+                    {q.type === "short_text" && (
+                      <textarea
+                        value={value[0] ?? ""}
+                        onChange={(e) =>
+                          setScreeningAnswer(
+                            q.id,
+                            e.target.value ? [e.target.value] : [],
+                          )
+                        }
+                        rows={3}
+                        className="form-input resize-none"
+                        placeholder="Type your answer..."
+                      />
+                    )}
+
+                    {(q.type === "yes_no" ||
+                      q.type === "single_choice") && (
+                      <div className="flex flex-wrap gap-2">
+                        {(q.type === "yes_no"
+                          ? ["yes", "no"]
+                          : q.options ?? []
+                        ).map((opt) => {
+                          const on = value.includes(opt);
+                          return (
+                            <button
+                              key={opt}
+                              type="button"
+                              aria-pressed={on}
+                              onClick={() => setScreeningAnswer(q.id, [opt])}
+                              className={`min-h-[44px] rounded-lg border px-4 py-2 text-sm font-medium capitalize transition-colors ${
+                                on
+                                  ? "border-primary bg-primary text-white"
+                                  : "border-gray-300 bg-white text-gray-700 hover:border-primary hover:text-primary"
+                              }`}
+                            >
+                              {opt}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    )}
+
+                    {q.type === "multi_choice" && (
+                      <div className="flex flex-wrap gap-2">
+                        {(q.options ?? []).map((opt) => {
+                          const on = value.includes(opt);
+                          return (
+                            <button
+                              key={opt}
+                              type="button"
+                              aria-pressed={on}
+                              onClick={() =>
+                                setScreeningAnswer(
+                                  q.id,
+                                  on
+                                    ? value.filter((v) => v !== opt)
+                                    : [...value, opt],
+                                )
+                              }
+                              className={`min-h-[44px] rounded-lg border px-4 py-2 text-sm font-medium transition-colors ${
+                                on
+                                  ? "border-primary bg-primary text-white"
+                                  : "border-gray-300 bg-white text-gray-700 hover:border-primary hover:text-primary"
+                              }`}
+                            >
+                              {opt}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </SectionCard>
+        )}
+
+        {/* ─── Section 6: Additional Information ─── */}
         <SectionCard
-          number={5}
+          number={6}
           title="Additional Information"
           subtitle="Optional: Share anything else you'd like us to know."
           complete={false}
@@ -717,7 +849,7 @@ export default function JobApplicationForm({
           <button
             type="button"
             onClick={handleSubmit}
-            disabled={isSubmitting}
+            disabled={isSubmitting || requiredScreeningMissing}
             className="flex items-center justify-center gap-2 px-8 py-3 bg-primary hover:bg-primary-hover disabled:opacity-60 text-white font-semibold text-sm rounded-lg transition-colors cursor-pointer disabled:cursor-not-allowed tablet:w-full"
           >
             {isSubmitting ? (

@@ -8,6 +8,13 @@ import type {
   WorkSchedule,
   PaymentType,
   ProvinceCode,
+  MinQualification,
+  SecurityClearance,
+  Language,
+  Benefit,
+  Currency,
+  ScreeningQuestion,
+  JobFaq,
 } from "@/lib/job-fields";
 
 export interface Job {
@@ -69,6 +76,25 @@ export interface Job {
   city?: string;
   state_province?: ProvinceCode;
   country?: string;
+  currency?: Currency;
+  min_qualification?: MinQualification;
+  security_clearance?: SecurityClearance;
+  requires_drivers_license?: boolean;
+  visa_sponsorship?: boolean;
+  languages?: Language[];
+  certifications?: string[];
+  benefits?: Benefit[];
+  openings?: number;
+  application_deadline?: string;
+  start_date?: string;
+  veteran_friendly?: boolean;
+  accommodations_offered?: boolean;
+  physically_accessible?: boolean;
+  open_to_returners?: boolean;
+  // Phase-2 job-builder fields.
+  screening_questions?: ScreeningQuestion[];
+  faqs?: JobFaq[];
+  hiring_stages?: string[];
   /** The account that published it. Used to stop you applying to your own. */
   poster_id?: string;
 }

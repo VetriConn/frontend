@@ -39,8 +39,28 @@ export function mapJobsResponse(job: JobsResponse): Job {
     physical_demands: job.physical_demands,
     work_schedule: job.work_schedule,
     payment_type: job.payment_type,
+    currency: job.currency,
     city: job.city,
     state_province: job.state_province,
     country: job.country,
+    // Phase-1 job-builder fields.
+    min_qualification: job.min_qualification,
+    security_clearance: job.security_clearance,
+    requires_drivers_license: job.requires_drivers_license,
+    visa_sponsorship: job.visa_sponsorship,
+    languages: job.languages,
+    certifications: job.certifications,
+    benefits: job.benefits,
+    openings: job.openings,
+    application_deadline: job.application_deadline,
+    start_date: job.start_date,
+    veteran_friendly: job.veteran_friendly,
+    accommodations_offered: job.accommodations_offered,
+    physically_accessible: job.physically_accessible,
+    open_to_returners: job.open_to_returners,
+    // Phase-2 job-builder fields.
+    screening_questions: job.screening_questions,
+    faqs: job.faqs,
+    hiring_stages: job.hiring_stages,
   };
 }

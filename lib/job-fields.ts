@@ -201,3 +201,147 @@ export function fieldLabel<V extends string>(
   if (value in labels) return labels[value as V];
   return value.replace(/[-_]/g, " ").replace(/^./, (c) => c.toUpperCase());
 }
+
+// ─── Phase-1 job-builder vocabularies ────────────────────────────────────────
+// Mirrors backend/src/constants/jobFields.ts, with reader-facing labels.
+
+export const MIN_QUALIFICATIONS = [
+  "none",
+  "high-school",
+  "apprenticeship",
+  "college",
+  "bachelor",
+  "postgrad",
+] as const;
+export type MinQualification = (typeof MIN_QUALIFICATIONS)[number];
+export const MIN_QUALIFICATION_LABELS: Record<MinQualification, string> = {
+  none: "No formal requirement",
+  "high-school": "Secondary school",
+  apprenticeship: "Registered apprenticeship / trade certificate",
+  college: "College or CEGEP diploma",
+  bachelor: "Bachelor's degree",
+  postgrad: "Master's or Doctorate",
+};
+
+export const SECURITY_CLEARANCES = [
+  "none",
+  "reliability",
+  "secret",
+  "top-secret",
+] as const;
+export type SecurityClearance = (typeof SECURITY_CLEARANCES)[number];
+export const SECURITY_CLEARANCE_LABELS: Record<SecurityClearance, string> = {
+  none: "Not required",
+  reliability: "Reliability Status",
+  secret: "Secret (Level II)",
+  "top-secret": "Top Secret (Level III)",
+};
+
+export const LANGUAGES = [
+  "english",
+  "french",
+  "spanish",
+  "mandarin",
+  "cantonese",
+  "punjabi",
+  "arabic",
+  "tagalog",
+  "other",
+] as const;
+export type Language = (typeof LANGUAGES)[number];
+export const LANGUAGE_LABELS: Record<Language, string> = {
+  english: "English",
+  french: "French",
+  spanish: "Spanish",
+  mandarin: "Mandarin",
+  cantonese: "Cantonese",
+  punjabi: "Punjabi",
+  arabic: "Arabic",
+  tagalog: "Tagalog",
+  other: "Other",
+};
+
+export const BENEFITS = [
+  "health",
+  "dental",
+  "vision",
+  "life-insurance",
+  "disability",
+  "pension",
+  "vacation",
+  "sick-leave",
+  "paid-overtime",
+  "bonus",
+  "flexible-hours",
+  "travel",
+  "discount",
+  "wellness",
+  "training",
+  "relocation",
+] as const;
+export type Benefit = (typeof BENEFITS)[number];
+export const BENEFIT_LABELS: Record<Benefit, string> = {
+  health: "Health / Medical",
+  dental: "Dental",
+  vision: "Vision",
+  "life-insurance": "Life insurance",
+  disability: "Disability insurance",
+  pension: "RRSP / pension matching",
+  vacation: "Paid vacation",
+  "sick-leave": "Paid sick leave",
+  "paid-overtime": "Paid overtime",
+  bonus: "Performance bonus",
+  "flexible-hours": "Flexible hours",
+  travel: "Travel / mileage",
+  discount: "Employee discount",
+  wellness: "Wellness / gym",
+  training: "Training & development",
+  relocation: "Relocation assistance",
+};
+
+export const CURRENCIES = ["CAD", "USD"] as const;
+export type Currency = (typeof CURRENCIES)[number];
+export const CURRENCY_LABELS: Record<Currency, string> = {
+  CAD: "CAD ($)",
+  USD: "USD ($)",
+};
+
+/**
+ * Phase-2 screening-question types. Mirrors SCREENING_QUESTION_TYPES on the
+ * backend. Each attaches to a job; candidates answer at apply time and the
+ * answers feed the rank-and-flag score (they never auto-reject).
+ */
+export const SCREENING_QUESTION_TYPES = [
+  "yes_no",
+  "single_choice",
+  "multi_choice",
+  "short_text",
+] as const;
+export type ScreeningQuestionType = (typeof SCREENING_QUESTION_TYPES)[number];
+export const SCREENING_QUESTION_TYPE_LABELS: Record<
+  ScreeningQuestionType,
+  string
+> = {
+  yes_no: "Yes / No",
+  single_choice: "Multiple choice (pick one)",
+  multi_choice: "Multiple choice (pick many)",
+  short_text: "Short answer",
+};
+
+/** A screening question and its scoring hints (mirrors the backend shape). */
+export interface ScreeningQuestion {
+  id: string;
+  question: string;
+  type: ScreeningQuestionType;
+  options?: string[];
+  preferred_answers?: string[];
+  weight?: number;
+  required?: boolean;
+  knockout?: boolean;
+}
+
+/** A public question-and-answer pair shown on the job listing. */
+export interface JobFaq {
+  question: string;
+  answer: string;
+}

@@ -143,17 +143,40 @@ describe("ContactInfoEditForm", () => {
     });
 
     it("should report every invalid field at once", () => {
+      // A region-bearing country (Canada), so phone, province and city are all
+      // required and surface together.
       render(
         <ContactInfoEditForm
-          initialData={{ phone_number: "", state_province: "ON",
-    city: "", country: "" }}
+          initialData={{
+            ...baseData,
+            phone_number: "",
+            state_province: "",
+            city: "",
+          }}
         />,
       );
 
       expect(runValidate()).toBe(false);
       expect(screen.getByText("Phone number is required")).toBeInTheDocument();
+      expect(screen.getByText("Province is required")).toBeInTheDocument();
       expect(screen.getByText("City is required")).toBeInTheDocument();
-      expect(screen.getByText("Country is required")).toBeInTheDocument();
+    });
+
+    it("makes city and province optional when the country has no region list", () => {
+      // Nigeria has a free-text (optional) province/state, so city is optional
+      // too — a country shouldn't demand a city it can't structure a region for.
+      render(
+        <ContactInfoEditForm
+          initialData={{
+            ...baseData,
+            country: "Nigeria",
+            state_province: "",
+            city: "",
+          }}
+        />,
+      );
+
+      expect(runValidate()).toBe(true);
     });
   });
 

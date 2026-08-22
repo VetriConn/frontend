@@ -15,8 +15,14 @@ import {
   HiOutlineCheckCircle,
   HiOutlineHeart,
   HiOutlineShieldCheck,
+  HiOutlineAcademicCap,
+  HiOutlineGlobeAlt,
+  HiOutlineSparkles,
+  HiOutlineClock,
+  HiOutlineUserGroup,
+  HiOutlineIdentification,
 } from "react-icons/hi2";
-import { HiBookmark } from "react-icons/hi2";
+import { HiBookmark, HiHeart } from "react-icons/hi2";
 import { Job } from "@/types/job";
 import { getMyApplications } from "@/lib/api";
 import { useSavedJobs } from "@/hooks/useSavedJobs";
@@ -36,6 +42,10 @@ import {
   WORK_ARRANGEMENT_LABELS,
   WORK_SCHEDULE_LABELS,
   PHYSICAL_DEMAND_LABELS,
+  MIN_QUALIFICATION_LABELS,
+  SECURITY_CLEARANCE_LABELS,
+  LANGUAGE_LABELS,
+  BENEFIT_LABELS,
 } from "@/lib/job-fields";
 import {
   JOB_TAG_CLASS,
@@ -49,35 +59,27 @@ import {
 
 type JobDescriptorProps = Job;
 
-const fitCards = [
-  {
-    title: "Veteran-Friendly",
-    description:
-      "This employer actively recruits and supports Canadian veterans in their transition to civilian careers.",
-  },
-  {
-    title: "Skills Match",
-    description:
-      "Your military experience and leadership skills align well with this role's requirements.",
-  },
-  {
-    title: "Growth Opportunity",
-    description:
-      "This position offers career advancement paths and professional development programs.",
-  },
-  {
-    title: "Benefits Package",
-    description:
-      "Comprehensive benefits including health, dental, pension matching, and transition support.",
-  },
-];
 
 /**
- * Scraped descriptions arrive as bullet fragments joined with " | ", so they
- * rendered as one run-on paragraph full of pipes. Split them back into the
- * list the source meant; anything without separators stays a paragraph.
+ * Two kinds of description reach this page. Jobs posted through the builder
+ * carry a rich-text Brief as HTML — the server already stripped it down to a
+ * safe formatting subset on write, so it's safe to render directly. Scraped
+ * descriptions arrive as bullet fragments joined with " | ", which rendered as
+ * one run-on paragraph full of pipes; those get split back into the list the
+ * source meant. Anything else stays a plain paragraph.
  */
 const DescriptionBody = ({ text }: { text: string }) => {
+  const looksLikeHtml = /<\/?(p|ul|ol|li|br|strong|b|em|i|u|a)\b/i.test(text);
+  if (looksLikeHtml) {
+    return (
+      <div
+        className="rich-text text-sm text-gray-600 leading-relaxed"
+        // Safe: sanitized server-side to a small formatting allowlist.
+        dangerouslySetInnerHTML={{ __html: text }}
+      />
+    );
+  }
+
   const parts = splitDescriptionParts(text);
 
   if (parts.length > 1) {
@@ -125,6 +127,23 @@ const JobDescriptor: React.FC<JobDescriptorProps> = ({
   physical_demands,
   work_schedule,
   payment_type,
+  min_qualification,
+  security_clearance,
+  requires_drivers_license,
+  visa_sponsorship,
+  languages,
+  certifications,
+  benefits,
+  openings,
+  application_deadline,
+  start_date,
+  veteran_friendly,
+  accommodations_offered,
+  physically_accessible,
+  open_to_returners,
+  screening_questions,
+  faqs,
+  hiring_stages,
 }) => {
   const [hasApplied, setHasApplied] = useState(false);
   const [hasDraft, setHasDraft] = useState(false);
@@ -256,6 +275,60 @@ const JobDescriptor: React.FC<JobDescriptorProps> = ({
     ? `${fieldLabel(EXPERIENCE_LEVEL_LABELS, experience_level)} experience`
     : null;
 
+  // Structured multi-value fields from the job builder.
+  const languageLabels = (languages ?? [])
+    .map((code) => LANGUAGE_LABELS[code])
+    .filter(Boolean);
+  const benefitLabels = (benefits ?? [])
+    .map((code) => BENEFIT_LABELS[code])
+    .filter(Boolean);
+  const certificationItems = (certifications ?? []).filter(Boolean);
+
+  // Phase-2 public content.
+  const hiringStages = (hiring_stages ?? []).filter(Boolean);
+  const faqItems = (faqs ?? []).filter((f) => f.question && f.answer);
+  const screeningCount = (screening_questions ?? []).length;
+
+  const formatDate = (value?: string) => {
+    if (!value) return "";
+    const parsed = new Date(value);
+    if (Number.isNaN(parsed.getTime())) return "";
+    return parsed.toLocaleDateString("en-CA", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+    });
+  };
+
+  // The "Is this job right for you?" cards. Each maps to a real attribute the
+  // employer set, so the heart only lights up when the job genuinely meets that
+  // criterion — no invented promises.
+  const fitCards = [
+    {
+      title: "Veteran-Friendly",
+      description:
+        "This employer welcomes and values military experience in their hiring.",
+      lit: Boolean(veteran_friendly),
+    },
+    {
+      title: "Open to Returners",
+      description:
+        "A good fit if you're re-entering the workforce after a career break.",
+      lit: Boolean(open_to_returners),
+    },
+    {
+      title: "Accessible & Accommodating",
+      description:
+        "Offers workplace accommodations and a physically accessible workplace.",
+      lit: Boolean(accommodations_offered) || Boolean(physically_accessible),
+    },
+    {
+      title: "Benefits Package",
+      description: "Comes with benefits and perks beyond the base pay.",
+      lit: (benefits?.length ?? 0) > 0,
+    },
+  ];
+
   const metaItems = [
     { icon: HiOutlineMapPin, label: location || "Canada" },
     ...(jobTypeLabel ? [{ icon: HiOutlineBriefcase, label: jobTypeLabel }] : []),
@@ -267,9 +340,10 @@ const JobDescriptor: React.FC<JobDescriptorProps> = ({
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <div className="max-w-6xl mx-auto px-6 py-8 tablet:px-4 tablet:py-6">
-        {/* Breadcrumb */}
-        <nav className="flex items-center gap-1.5 text-sm text-gray-500 mb-4">
+      <div className="max-w-7xl mx-auto px-6 py-8 tablet:px-4 tablet:py-6">
+        {/* Breadcrumb — sticks to the top so it stays while the details scroll.
+            Its background matches the page, so content slides seamlessly under. */}
+        <nav className="sticky top-0 z-20 flex items-center gap-1.5 text-sm text-gray-500 bg-gray-50 py-3 -mx-6 px-6 tablet:-mx-4 tablet:px-4 mb-4">
           <Link
             href="/jobs"
             className="hover:text-gray-700 transition-colors no-underline text-gray-500"
@@ -284,8 +358,10 @@ const JobDescriptor: React.FC<JobDescriptorProps> = ({
           </span>
         </nav>
 
-        {/* Two-column layout */}
-        <div className="flex flex-col md:flex-row gap-4 md:gap-8 items-start">
+        {/* Two-column layout. No items-start: the columns stretch to equal
+            height so the sidebar's sticky card has room to hold as you scroll —
+            only the details column actually moves. */}
+        <div className="flex flex-col md:flex-row gap-4 md:gap-8">
           {/* Main Content */}
           <div className="flex-1 min-w-0">
             {/* Tags */}
@@ -395,7 +471,8 @@ const JobDescriptor: React.FC<JobDescriptorProps> = ({
                 this section opened with a bullet reading "mid". */}
             {(qualifications.length > 0 ||
               experience_level ||
-              skillItems.length > 0) && (
+              skillItems.length > 0 ||
+              certificationItems.length > 0) && (
               <section className="mb-8">
                 <h2 className="text-xl md:text-3xl font-bold text-gray-900 mb-4">
                   What We&apos;re Looking For
@@ -409,15 +486,94 @@ const JobDescriptor: React.FC<JobDescriptorProps> = ({
                       </span>
                     </li>
                   )}
-                  {[...skillItems, ...qualifications].map((item, i) => (
-                    <li key={i} className="flex items-start gap-3">
-                      <HiOutlineCheckCircle className="w-5 h-5 md:w-6 md:h-6 text-emerald-500 shrink-0 mt-0.5" />
-                      <span className="text-sm text-gray-600 leading-relaxed">
-                        {item}
+                  {[...skillItems, ...qualifications, ...certificationItems].map(
+                    (item, i) => (
+                      <li key={i} className="flex items-start gap-3">
+                        <HiOutlineCheckCircle className="w-5 h-5 md:w-6 md:h-6 text-emerald-500 shrink-0 mt-0.5" />
+                        <span className="text-sm text-gray-600 leading-relaxed">
+                          {item}
+                        </span>
+                      </li>
+                    ),
+                  )}
+                </ul>
+              </section>
+            )}
+
+            {/* Benefits & Perks */}
+            {benefitLabels.length > 0 && (
+              <section className="mb-8">
+                <h2 className="text-xl md:text-3xl font-bold text-gray-900 mb-4">
+                  Benefits &amp; Perks
+                </h2>
+                <div className="flex flex-wrap gap-2">
+                  {benefitLabels.map((label) => (
+                    <span
+                      key={label}
+                      className="inline-flex items-center gap-1.5 rounded-full bg-red-50 border border-primary/20 px-3 py-1.5 text-sm font-medium text-primary"
+                    >
+                      <HiOutlineSparkles className="w-4 h-4" />
+                      {label}
+                    </span>
+                  ))}
+                </div>
+              </section>
+            )}
+
+            {/* Hiring Process */}
+            {hiringStages.length > 0 && (
+              <section className="mb-8">
+                <h2 className="text-xl md:text-3xl font-bold text-gray-900 mb-4">
+                  Hiring Process
+                </h2>
+                <ol className="space-y-3">
+                  {hiringStages.map((stage, i) => (
+                    <li key={i} className="flex items-center gap-3">
+                      <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary text-sm font-semibold text-white">
+                        {i + 1}
                       </span>
+                      <span className="text-sm text-gray-700">{stage}</span>
                     </li>
                   ))}
-                </ul>
+                </ol>
+              </section>
+            )}
+
+            {/* Screening note — the questions themselves are answered at apply
+                time, so here we just set the expectation. */}
+            {screeningCount > 0 && (
+              <div className="mb-8 flex items-start gap-2.5 rounded-xl border border-gray-200 bg-white p-4">
+                <HiOutlineCheckCircle className="w-5 h-5 text-primary shrink-0 mt-0.5" />
+                <p className="text-sm text-gray-600 leading-relaxed">
+                  This role has {screeningCount} quick screening{" "}
+                  {screeningCount === 1 ? "question" : "questions"} you&apos;ll
+                  answer when you apply.
+                </p>
+              </div>
+            )}
+
+            {/* FAQs */}
+            {faqItems.length > 0 && (
+              <section className="mb-8">
+                <h2 className="text-xl md:text-3xl font-bold text-gray-900 mb-4">
+                  Frequently Asked Questions
+                </h2>
+                <div className="space-y-3">
+                  {faqItems.map((faq, i) => (
+                    <details
+                      key={i}
+                      className="group rounded-xl border border-gray-200 bg-white p-4"
+                    >
+                      <summary className="flex cursor-pointer items-center justify-between gap-3 text-sm font-medium text-gray-900 list-none">
+                        {faq.question}
+                        <HiOutlineChevronRight className="w-4 h-4 text-gray-400 transition-transform group-open:rotate-90" />
+                      </summary>
+                      <p className="mt-2 text-sm text-gray-600 leading-relaxed whitespace-pre-line">
+                        {faq.answer}
+                      </p>
+                    </details>
+                  ))}
+                </div>
               </section>
             )}
 
@@ -430,15 +586,38 @@ const JobDescriptor: React.FC<JobDescriptorProps> = ({
                 {fitCards.map((card, i) => (
                   <div
                     key={i}
-                    className="bg-white border border-gray-200 rounded-xl p-5"
+                    className={`rounded-xl border p-5 transition-colors ${
+                      card.lit
+                        ? "bg-white border-primary/30"
+                        : "bg-gray-50/60 border-gray-200"
+                    }`}
                   >
-                    <div className="w-9 h-9 rounded-lg bg-red-50 flex items-center justify-center mb-3">
-                      <HiOutlineHeart className="w-5 h-5 md:w-6 md:h-6 text-red-500" />
+                    <div
+                      className={`w-9 h-9 rounded-lg flex items-center justify-center mb-3 ${
+                        card.lit ? "bg-red-50" : "bg-gray-100"
+                      }`}
+                    >
+                      {card.lit ? (
+                        <HiHeart
+                          className="w-5 h-5 md:w-6 md:h-6 text-primary"
+                          aria-label="Meets this criterion"
+                        />
+                      ) : (
+                        <HiOutlineHeart className="w-5 h-5 md:w-6 md:h-6 text-gray-300" />
+                      )}
                     </div>
-          <h3 className="text-lg md:text-2xl font-bold text-gray-900 mb-1">
-            {card.title}
-          </h3>
-                    <p className="text-xs text-gray-500 leading-relaxed">
+                    <h3
+                      className={`text-lg md:text-2xl font-bold mb-1 ${
+                        card.lit ? "text-gray-900" : "text-gray-400"
+                      }`}
+                    >
+                      {card.title}
+                    </h3>
+                    <p
+                      className={`text-xs leading-relaxed ${
+                        card.lit ? "text-gray-500" : "text-gray-400"
+                      }`}
+                    >
                       {card.description}
                     </p>
                   </div>
@@ -447,9 +626,10 @@ const JobDescriptor: React.FC<JobDescriptorProps> = ({
             </section>
           </div>
 
-          {/* Sidebar */}
+          {/* Sidebar — sticky just below the sticky breadcrumb, so the Job
+              Summary stays in view while only the details column scrolls. */}
           <div className="w-80 shrink-0 tablet:w-full">
-            <div className="sticky top-8">
+            <div className="sticky top-16">
               <div className="bg-white border border-gray-200 rounded-xl p-6">
         <h3 className="text-lg md:text-2xl font-bold text-gray-900 mb-5">
           Job Summary
@@ -500,30 +680,80 @@ const JobDescriptor: React.FC<JobDescriptorProps> = ({
 
                   {/* The structured conditions the form collects — the
                       details this audience actually filters a job on. */}
-                  {[
-                    {
-                      label: "Work Arrangement",
-                      value: fieldLabel(
-                        WORK_ARRANGEMENT_LABELS,
-                        work_arrangement,
-                      ),
-                    },
-                    {
-                      label: "Work Schedule",
-                      value: fieldLabel(WORK_SCHEDULE_LABELS, work_schedule),
-                    },
-                    {
-                      label: "Physical Demands",
-                      value: fieldLabel(PHYSICAL_DEMAND_LABELS, physical_demands),
-                    },
-                  ]
-                    .filter(
-                      (row): row is { label: string; value: string } =>
-                        Boolean(row.value),
-                    )
+                  {(
+                    [
+                      {
+                        icon: HiOutlineBriefcase,
+                        label: "Work Arrangement",
+                        value: fieldLabel(
+                          WORK_ARRANGEMENT_LABELS,
+                          work_arrangement,
+                        ),
+                      },
+                      {
+                        icon: HiOutlineCalendarDays,
+                        label: "Work Schedule",
+                        value: fieldLabel(WORK_SCHEDULE_LABELS, work_schedule),
+                      },
+                      {
+                        icon: HiOutlineBriefcase,
+                        label: "Physical Demands",
+                        value: fieldLabel(
+                          PHYSICAL_DEMAND_LABELS,
+                          physical_demands,
+                        ),
+                      },
+                      {
+                        icon: HiOutlineAcademicCap,
+                        label: "Minimum Education",
+                        value: fieldLabel(
+                          MIN_QUALIFICATION_LABELS,
+                          min_qualification,
+                        ),
+                      },
+                      {
+                        icon: HiOutlineShieldCheck,
+                        label: "Security Clearance",
+                        value: fieldLabel(
+                          SECURITY_CLEARANCE_LABELS,
+                          security_clearance,
+                        ),
+                      },
+                      {
+                        icon: HiOutlineGlobeAlt,
+                        label: "Languages",
+                        value: languageLabels.join(", "),
+                      },
+                      {
+                        icon: HiOutlineIdentification,
+                        label: "Driver's Licence",
+                        value: requires_drivers_license ? "Required" : "",
+                      },
+                      {
+                        icon: HiOutlineUserGroup,
+                        label: "Openings",
+                        value: openings ? String(openings) : "",
+                      },
+                      {
+                        icon: HiOutlineClock,
+                        label: "Application Deadline",
+                        value: formatDate(application_deadline),
+                      },
+                      {
+                        icon: HiOutlineCalendarDays,
+                        label: "Expected Start",
+                        value: formatDate(start_date),
+                      },
+                    ] as {
+                      icon: React.ComponentType<{ className?: string }>;
+                      label: string;
+                      value: string;
+                    }[]
+                  )
+                    .filter((row) => Boolean(row.value))
                     .map((row) => (
                       <div key={row.label} className="flex items-start gap-3">
-                        <HiOutlineBriefcase className="w-4 h-4 md:w-5 md:h-5 text-gray-400 mt-0.5 shrink-0" />
+                        <row.icon className="w-4 h-4 md:w-5 md:h-5 text-gray-400 mt-0.5 shrink-0" />
                         <div>
                           <p className="text-xs text-gray-400 mb-0.5">
                             {row.label}

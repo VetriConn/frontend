@@ -146,3 +146,9 @@ export type {
 } from "./companies";
 
 export * from "./messages";
+export { getSkillSuggestions } from "./skills";
+export { getReceivedApplication } from "./postings";
+export type {
+  CandidateProfile,
+  ReceivedApplicationDetail,
+} from "./postings";

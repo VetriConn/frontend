@@ -33,12 +33,16 @@ const toFormState = (company: Company): FormState => ({
   name: company.name || "",
   industry: company.industry || "",
   city: company.city || "",
+  state_province: company.state_province || "",
   country: company.country || "",
   phone_number: company.phone_number || "",
   email: company.email || "",
   website: company.website || "",
   size: company.size || "",
   about_company: company.about_company || "",
+  tagline: company.tagline || "",
+  rc_number: company.rc_number || "",
+  registration_authority: company.registration_authority || "",
 });
 
 const MAX_ASSET_BYTES = 5 * 1024 * 1024;

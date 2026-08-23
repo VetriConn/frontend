@@ -20,12 +20,12 @@ import {
   changeAdminRole,
   suspendAdminMember,
   reinstateAdminMember,
-  removeAdminMember,
   ROLE_LABEL,
   type AdminMember,
   type AdminInvite,
   type AdminMemberRole,
 } from "@/hooks/useAdminTeam";
+import type { AdminStepUp } from "@/lib/api/admin";
 import {
   AdminPageHeader,
   AdminTablePanel,
@@ -41,7 +41,8 @@ import {
   StatusPill,
 } from "./AdminTablePanel";
 import InviteAdminDialog from "./InviteAdminDialog";
-import ConfirmDialog from "./ConfirmDialog";
+import ChangeAdminRoleDialog from "./ChangeAdminRoleDialog";
+import StepUpDialog, { type StepUpCreds } from "./StepUpDialog";
 import { useToaster } from "@/components/ui/Toaster";
 import { useUserProfile } from "@/hooks/useUserProfile";
 import { isSuperAdmin } from "@/lib/admin-permissions";
@@ -69,14 +70,9 @@ const formatRelative = (iso?: string) => {
   return d.toLocaleDateString();
 };
 
-// ─── Action menu types ───────────────────────────────────────────────────────
+// ─── Step-up action (suspend/reinstate) ──────────────────────────────────────
 
-type MemberConfirm =
-  | { kind: "promote"; member: AdminMember }
-  | { kind: "demote"; member: AdminMember }
-  | { kind: "suspend"; member: AdminMember }
-  | { kind: "reinstate"; member: AdminMember }
-  | { kind: "remove"; member: AdminMember };
+type StepUpAction = { kind: "suspend" | "reinstate"; member: AdminMember };
 
 const AdminTeam = () => {
   const { userProfile } = useUserProfile();
@@ -87,8 +83,12 @@ const AdminTeam = () => {
 
   const [inviteOpen, setInviteOpen] = useState(false);
   const [inviteBusy, setInviteBusy] = useState(false);
-  const [confirm, setConfirm] = useState<MemberConfirm | null>(null);
-  const [confirmBusy, setConfirmBusy] = useState(false);
+
+  const [roleTarget, setRoleTarget] = useState<AdminMember | null>(null);
+  const [roleBusy, setRoleBusy] = useState(false);
+
+  const [stepUp, setStepUp] = useState<StepUpAction | null>(null);
+  const [stepUpBusy, setStepUpBusy] = useState(false);
 
   // ─── Stats ────────────────────────────────────────────────────────────────
 
@@ -105,16 +105,20 @@ const AdminTeam = () => {
     (m) => m.role === "super_admin",
   ).length;
 
+  const currentUserId = (userProfile as { id?: string } | null)?.id;
+
   // ─── Handlers ─────────────────────────────────────────────────────────────
 
-  const handleInvite = async (email: string, role: AdminMemberRole) => {
+  const handleInvite = async (
+    email: string,
+    fullName: string,
+    role: AdminMemberRole,
+    creds: AdminStepUp,
+  ) => {
     setInviteBusy(true);
     try {
-      const created = await inviteAdmin({ email, role });
-      await mutate(
-        { members, invites: [created, ...invites] },
-        false,
-      );
+      await inviteAdmin({ email, full_name: fullName, role }, creds);
+      await mutate();
       showToast({
         type: "success",
         title: "Invite sent",
@@ -122,7 +126,11 @@ const AdminTeam = () => {
       });
       setInviteOpen(false);
     } catch {
-      showToast({ type: "error", title: "Could not send invite" });
+      showToast({
+        type: "error",
+        title: "Could not send invite",
+        description: "Check your password/2FA code and try again.",
+      });
     } finally {
       setInviteBusy(false);
     }
@@ -144,121 +152,64 @@ const AdminTeam = () => {
   const handleRevoke = async (invite: AdminInvite) => {
     try {
       await revokeAdminInvite(invite.id);
-      await mutate(
-        {
-          members,
-          invites: invites.map((i) =>
-            i.id === invite.id ? { ...i, status: "revoked" as const } : i,
-          ),
-        },
-        false,
-      );
+      await mutate();
       showToast({ type: "success", title: "Invite revoked" });
     } catch {
       showToast({ type: "error", title: "Could not revoke invite" });
     }
   };
 
-  const handleConfirm = async (reason?: string) => {
-    if (!confirm) return;
-    setConfirmBusy(true);
+  const handleRoleConfirm = async (
+    role: AdminMemberRole,
+    creds: AdminStepUp,
+  ) => {
+    if (!roleTarget) return;
+    setRoleBusy(true);
     try {
-      const m = confirm.member;
-      let updated: AdminMember = m;
-      switch (confirm.kind) {
-        case "promote":
-          await changeAdminRole(m.id, "super_admin");
-          updated = { ...m, role: "super_admin" };
-          showToast({ type: "success", title: `${m.full_name} promoted` });
-          break;
-        case "demote":
-          await changeAdminRole(m.id, "admin");
-          updated = { ...m, role: "admin" };
-          showToast({ type: "success", title: `${m.full_name} demoted` });
-          break;
-        case "suspend":
-          await suspendAdminMember(m.id, reason ?? "");
-          updated = { ...m, status: "suspended" };
-          showToast({ type: "success", title: `${m.full_name} suspended` });
-          break;
-        case "reinstate":
-          await reinstateAdminMember(m.id);
-          updated = { ...m, status: "active" };
-          showToast({ type: "success", title: `${m.full_name} reinstated` });
-          break;
-        case "remove":
-          await removeAdminMember(m.id, reason ?? "");
-          await mutate(
-            { members: members.filter((x) => x.id !== m.id), invites },
-            false,
-          );
-          showToast({ type: "success", title: `${m.full_name} removed` });
-          setConfirm(null);
-          return;
-      }
-      await mutate(
-        {
-          members: members.map((x) => (x.id === m.id ? updated : x)),
-          invites,
-        },
-        false,
-      );
-      setConfirm(null);
+      await changeAdminRole(roleTarget.id, role, creds);
+      await mutate();
+      showToast({
+        type: "success",
+        title: `${roleTarget.full_name} is now ${ROLE_LABEL[role]}`,
+      });
+      setRoleTarget(null);
     } catch {
-      showToast({ type: "error", title: "Could not update admin" });
+      showToast({
+        type: "error",
+        title: "Could not change role",
+        description: "Check your password/2FA code and try again.",
+      });
     } finally {
-      setConfirmBusy(false);
+      setRoleBusy(false);
+    }
+  };
+
+  const handleStepUpConfirm = async (creds: StepUpCreds) => {
+    if (!stepUp) return;
+    setStepUpBusy(true);
+    const { member, kind } = stepUp;
+    try {
+      if (kind === "suspend") {
+        await suspendAdminMember(member.id, creds.reason ?? "", creds);
+        showToast({ type: "success", title: `${member.full_name} suspended` });
+      } else {
+        await reinstateAdminMember(member.id, creds);
+        showToast({ type: "success", title: `${member.full_name} reinstated` });
+      }
+      await mutate();
+      setStepUp(null);
+    } catch {
+      showToast({
+        type: "error",
+        title: "Could not update admin",
+        description: "Check your password/2FA code and try again.",
+      });
+    } finally {
+      setStepUpBusy(false);
     }
   };
 
   // ─── Render ───────────────────────────────────────────────────────────────
-
-  const confirmCopy = (() => {
-    if (!confirm) return null;
-    const name = confirm.member.full_name;
-    switch (confirm.kind) {
-      case "promote":
-        return {
-          title: "Promote to Super Admin?",
-          description: `${name} will be able to manage the team and view the audit log.`,
-          confirmLabel: "Promote",
-          tone: "neutral" as const,
-          reasonLabel: undefined,
-        };
-      case "demote":
-        return {
-          title: "Demote to Admin?",
-          description: `${name} will lose access to team management.`,
-          confirmLabel: "Demote",
-          tone: "neutral" as const,
-          reasonLabel: undefined,
-        };
-      case "suspend":
-        return {
-          title: "Suspend this admin?",
-          description: `${name} will be signed out of all sessions and unable to sign back in.`,
-          confirmLabel: "Suspend Admin",
-          tone: "danger" as const,
-          reasonLabel: "Reason",
-        };
-      case "reinstate":
-        return {
-          title: "Reinstate this admin?",
-          description: `${name} will regain admin access.`,
-          confirmLabel: "Reinstate",
-          tone: "neutral" as const,
-          reasonLabel: undefined,
-        };
-      case "remove":
-        return {
-          title: "Remove this admin?",
-          description: `${name} will lose admin access permanently. Their audit history is preserved.`,
-          confirmLabel: "Remove Admin",
-          tone: "danger" as const,
-          reasonLabel: "Reason",
-        };
-    }
-  })();
 
   return (
     <div className="max-w-7xl mx-auto space-y-6">
@@ -377,15 +328,16 @@ const AdminTeam = () => {
                           <MemberRowMenu
                             member={m}
                             isSuper={isSuper}
-                            currentUserId={
-                              (userProfile as { id?: string } | null)?.id
-                            }
+                            currentUserId={currentUserId}
                             isLastSuperAdmin={
-                              m.role === "super_admin" &&
-                              superAdminCount <= 1
+                              m.role === "super_admin" && superAdminCount <= 1
                             }
-                            onAction={(kind) =>
-                              setConfirm({ kind, member: m })
+                            onChangeRole={() => setRoleTarget(m)}
+                            onSuspend={() =>
+                              setStepUp({ kind: "suspend", member: m })
+                            }
+                            onReinstate={() =>
+                              setStepUp({ kind: "reinstate", member: m })
                             }
                           />
                         </RowActions>
@@ -445,7 +397,7 @@ const AdminTeam = () => {
                       </AdminTableTd>
                       <AdminTableTd align="right">
                         <RowActions>
-                          {isSuper && inv.status === "pending" && (
+                          {isSuper && (
                             <>
                               <button
                                 onClick={() => handleResend(inv)}
@@ -461,15 +413,6 @@ const AdminTeam = () => {
                                 Revoke
                               </button>
                             </>
-                          )}
-                          {isSuper && inv.status === "expired" && (
-                            <button
-                              onClick={() => handleResend(inv)}
-                              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-gray-200 bg-white text-xs font-semibold text-gray-700 hover:bg-gray-50"
-                            >
-                              <HiOutlineEnvelope className="w-3.5 h-3.5 text-gray-500" />
-                              Resend
-                            </button>
                           )}
                         </RowActions>
                       </AdminTableTd>
@@ -495,23 +438,39 @@ const AdminTeam = () => {
         onClose={() => (inviteBusy ? null : setInviteOpen(false))}
         onConfirm={handleInvite}
       />
-      {confirm && confirmCopy && (
-        <ConfirmDialog
+
+      {roleTarget && (
+        <ChangeAdminRoleDialog
           open
-          title={confirmCopy.title}
-          subject={confirm.member.email}
-          description={confirmCopy.description}
-          confirmLabel={confirmCopy.confirmLabel}
-          tone={confirmCopy.tone}
-          reasonLabel={confirmCopy.reasonLabel}
-          reasonPlaceholder={
-            confirmCopy.reasonLabel
-              ? "Note for the audit log"
-              : undefined
+          busy={roleBusy}
+          memberName={roleTarget.full_name}
+          currentRole={roleTarget.role}
+          onClose={() => (roleBusy ? null : setRoleTarget(null))}
+          onConfirm={handleRoleConfirm}
+        />
+      )}
+
+      {stepUp && (
+        <StepUpDialog
+          open
+          title={
+            stepUp.kind === "suspend"
+              ? "Suspend this admin?"
+              : "Reinstate this admin?"
           }
-          busy={confirmBusy}
-          onClose={() => (confirmBusy ? null : setConfirm(null))}
-          onConfirm={handleConfirm}
+          description={
+            stepUp.kind === "suspend"
+              ? `${stepUp.member.full_name} will be signed out everywhere and unable to sign back in.`
+              : `${stepUp.member.full_name} will regain admin access.`
+          }
+          confirmLabel={
+            stepUp.kind === "suspend" ? "Suspend Admin" : "Reinstate"
+          }
+          requireReason={stepUp.kind === "suspend"}
+          danger={stepUp.kind === "suspend"}
+          busy={stepUpBusy}
+          onClose={() => (stepUpBusy ? null : setStepUp(null))}
+          onConfirm={handleStepUpConfirm}
         />
       )}
     </div>
@@ -565,9 +524,9 @@ interface MemberRowMenuProps {
   currentUserId?: string;
   /** True if `member` is the only super admin in the org. */
   isLastSuperAdmin: boolean;
-  onAction: (
-    kind: "promote" | "demote" | "suspend" | "reinstate" | "remove",
-  ) => void;
+  onChangeRole: () => void;
+  onSuspend: () => void;
+  onReinstate: () => void;
 }
 
 const MemberRowMenu = ({
@@ -575,40 +534,33 @@ const MemberRowMenu = ({
   isSuper,
   currentUserId,
   isLastSuperAdmin,
-  onAction,
+  onChangeRole,
+  onSuspend,
+  onReinstate,
 }: MemberRowMenuProps) => {
   if (!isSuper) return <span className="text-xs text-gray-400">—</span>;
   const isSelf = currentUserId && member.id === currentUserId;
   if (isSelf) return <span className="text-xs text-gray-400">You</span>;
 
-  // Last super admin can't be demoted, suspended, or removed — that would
-  // lock the org out of team management.
+  // The last super admin can't be demoted or suspended — that would lock the
+  // org out of team management.
   const lockedReason = isLastSuperAdmin
     ? "Can't change the last super admin"
     : null;
 
   return (
     <div className="flex items-center gap-2 flex-wrap justify-end">
-      {member.role === "admin" ? (
-        <button
-          onClick={() => onAction("promote")}
-          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-gray-200 bg-white text-xs font-semibold text-gray-700 hover:bg-gray-50"
-        >
-          Promote
-        </button>
-      ) : (
-        <button
-          onClick={() => onAction("demote")}
-          disabled={!!lockedReason}
-          title={lockedReason ?? undefined}
-          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-gray-200 bg-white text-xs font-semibold text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          Demote
-        </button>
-      )}
+      <button
+        onClick={onChangeRole}
+        disabled={!!lockedReason}
+        title={lockedReason ?? undefined}
+        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-gray-200 bg-white text-xs font-semibold text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+      >
+        Change role
+      </button>
       {member.status === "active" ? (
         <button
-          onClick={() => onAction("suspend")}
+          onClick={onSuspend}
           disabled={!!lockedReason}
           title={lockedReason ?? undefined}
           className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-rose-200 bg-white text-xs font-semibold text-rose-600 hover:bg-rose-50 disabled:opacity-50 disabled:cursor-not-allowed"
@@ -617,20 +569,12 @@ const MemberRowMenu = ({
         </button>
       ) : (
         <button
-          onClick={() => onAction("reinstate")}
+          onClick={onReinstate}
           className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-gray-200 bg-white text-xs font-semibold text-gray-700 hover:bg-gray-50"
         >
           Reinstate
         </button>
       )}
-      <button
-        onClick={() => onAction("remove")}
-        disabled={!!lockedReason}
-        title={lockedReason ?? undefined}
-        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-rose-200 bg-white text-xs font-semibold text-rose-600 hover:bg-rose-50 disabled:opacity-50 disabled:cursor-not-allowed"
-      >
-        Remove
-      </button>
     </div>
   );
 };
@@ -641,11 +585,9 @@ const inviteStatusTone = (
   switch (status) {
     case "pending":
       return "amber";
-    case "accepted":
-      return "emerald";
-    case "revoked":
-      return "rose";
     case "expired":
+      return "gray";
+    default:
       return "gray";
   }
 };
@@ -654,12 +596,10 @@ const inviteStatusLabel = (status: AdminInvite["status"]) => {
   switch (status) {
     case "pending":
       return "Pending";
-    case "accepted":
-      return "Accepted";
-    case "revoked":
-      return "Revoked";
     case "expired":
       return "Expired";
+    default:
+      return status;
   }
 };
 

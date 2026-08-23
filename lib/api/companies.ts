@@ -289,13 +289,19 @@ export async function adminRejectCompany(
  * account. Its existing listings stay up — taking those down is a separate
  * decision from taking the company's standing away.
  */
+/** Step-up credentials required by suspend/reinstate (ADM-5). */
+export interface StepUpAuth {
+  password: string;
+  totp_code?: string;
+}
+
 export async function adminSuspendCompany(
   companyId: string,
-  reason?: string,
+  auth: StepUpAuth & { reason?: string },
 ): Promise<Company> {
   const response = await apiFetch<ApiEnvelope<Company>>(
     `${COMPANIES_URL}/admin/${companyId}/suspend`,
-    jsonRequest("PATCH", { reason }),
+    jsonRequest("PATCH", auth),
   );
   return response.data;
 }
@@ -303,10 +309,11 @@ export async function adminSuspendCompany(
 /** Restore a suspended company to approved. */
 export async function adminReinstateCompany(
   companyId: string,
+  auth: StepUpAuth,
 ): Promise<Company> {
   const response = await apiFetch<ApiEnvelope<Company>>(
     `${COMPANIES_URL}/admin/${companyId}/reinstate`,
-    { method: "PATCH" },
+    jsonRequest("PATCH", auth),
   );
   return response.data;
 }

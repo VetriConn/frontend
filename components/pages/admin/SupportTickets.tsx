@@ -288,7 +288,7 @@ const SupportTickets = () => {
               : visible.map((t) => (
                   <AdminTableRow key={t.id}>
                     <AdminTableTd className="font-semibold text-gray-700 tabular-nums">
-                      {t.id}
+                      {t.reference}
                     </AdminTableTd>
                     <AdminTableTd className="font-semibold text-gray-900 max-w-xs">
                       <span className="block truncate" title={t.subject}>

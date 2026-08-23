@@ -26,6 +26,7 @@ import {
 import { useAdminCompanies } from "@/hooks/useCompanies";
 import { useToaster } from "@/components/ui/Toaster";
 import { AdminPageHeader } from "./AdminTablePanel";
+import StepUpDialog, { type StepUpCreds } from "./StepUpDialog";
 
 /**
  * Company vetting queue.
@@ -106,6 +107,12 @@ export const CompanyReviewQueue = ({ status }: { status: CompanyStatus }) => {
   const [rejecting, setRejecting] = useState<Company | null>(null);
   const [reason, setReason] = useState("");
   const [reasonError, setReasonError] = useState<string | null>(null);
+  // Suspend/reinstate need step-up re-auth (password + TOTP).
+  const [stepUp, setStepUp] = useState<{
+    company: Company;
+    action: "suspend" | "reinstate";
+  } | null>(null);
+  const [stepUpBusy, setStepUpBusy] = useState(false);
 
   const handleApprove = async (company: Company) => {
     setBusyId(company._id);
@@ -134,54 +141,52 @@ export const CompanyReviewQueue = ({ status }: { status: CompanyStatus }) => {
    * approval, so the whole hiring team stops being able to publish under it —
    * without anyone's individual account being touched.
    */
-  const handleSuspend = async (company: Company) => {
-    const note = window.prompt(
-      `Suspend ${company.name}?\n\n` +
-        "Its hiring team will no longer be able to post or manage jobs under " +
-        "it. Existing listings stay up.\n\nReason (optional):",
-    );
-    if (note === null) return;
+  // Suspend/reinstate open the step-up dialog; the network call happens on
+  // confirm once the admin has re-authenticated.
+  const handleSuspend = (company: Company) =>
+    setStepUp({ company, action: "suspend" });
+  const handleReinstate = (company: Company) =>
+    setStepUp({ company, action: "reinstate" });
 
-    setBusyId(company._id);
+  const handleStepUpConfirm = async (creds: StepUpCreds) => {
+    if (!stepUp) return;
+    const { company, action } = stepUp;
+    setStepUpBusy(true);
     try {
-      await adminSuspendCompany(company._id, note.trim() || undefined);
+      if (action === "suspend") {
+        await adminSuspendCompany(company._id, {
+          reason: creds.reason,
+          password: creds.password,
+          totp_code: creds.totp_code,
+        });
+      } else {
+        await adminReinstateCompany(company._id, {
+          password: creds.password,
+          totp_code: creds.totp_code,
+        });
+      }
       showToast({
         type: "success",
-        title: "Company suspended",
-        description: `${company.name} can no longer post jobs.`,
+        title: action === "suspend" ? "Company suspended" : "Company reinstated",
+        description:
+          action === "suspend"
+            ? `${company.name} can no longer post jobs.`
+            : `${company.name} can post jobs again.`,
       });
+      setStepUp(null);
       await mutate();
     } catch (err) {
       showToast({
         type: "error",
-        title: "Couldn't suspend company",
+        title:
+          action === "suspend"
+            ? "Couldn't suspend company"
+            : "Couldn't reinstate company",
         description:
-          err instanceof Error ? err.message : "Please try again in a moment.",
+          err instanceof Error ? err.message : "Check your credentials and try again.",
       });
     } finally {
-      setBusyId(null);
-    }
-  };
-
-  const handleReinstate = async (company: Company) => {
-    setBusyId(company._id);
-    try {
-      await adminReinstateCompany(company._id);
-      showToast({
-        type: "success",
-        title: "Company reinstated",
-        description: `${company.name} can post jobs again.`,
-      });
-      await mutate();
-    } catch (err) {
-      showToast({
-        type: "error",
-        title: "Couldn't reinstate company",
-        description:
-          err instanceof Error ? err.message : "Please try again in a moment.",
-      });
-    } finally {
-      setBusyId(null);
+      setStepUpBusy(false);
     }
   };
 
@@ -457,6 +462,26 @@ export const CompanyReviewQueue = ({ status }: { status: CompanyStatus }) => {
           </div>
         </div>
       )}
+
+      <StepUpDialog
+        open={stepUp !== null}
+        title={
+          stepUp?.action === "suspend"
+            ? `Suspend ${stepUp.company.name}?`
+            : `Reinstate ${stepUp?.company.name ?? ""}?`
+        }
+        description={
+          stepUp?.action === "suspend"
+            ? "Its hiring team stops being able to post; existing listings stay up. Confirm it's you."
+            : "The company can post jobs again. Confirm it's you."
+        }
+        confirmLabel={stepUp?.action === "suspend" ? "Suspend" : "Reinstate"}
+        requireReason={stepUp?.action === "suspend"}
+        danger={stepUp?.action === "suspend"}
+        busy={stepUpBusy}
+        onClose={() => setStepUp(null)}
+        onConfirm={handleStepUpConfirm}
+      />
     </div>
   );
 };

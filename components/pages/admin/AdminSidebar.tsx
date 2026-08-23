@@ -15,6 +15,7 @@ import {
   HiOutlineXMark,
   HiOutlineLifebuoy,
   HiOutlineUserGroup,
+  HiOutlineFlag,
 } from "react-icons/hi2";
 import { useUserProfile } from "@/hooks/useUserProfile";
 import { isSuperAdmin } from "@/lib/admin-permissions";
@@ -62,6 +63,11 @@ const NAV_ITEMS: NavItem[] = [
     label: "Users",
     href: "/admin/users",
     icon: HiOutlineUsers,
+  },
+  {
+    label: "Reports",
+    href: "/admin/reports",
+    icon: HiOutlineFlag,
   },
   {
     label: "Community",

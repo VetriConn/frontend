@@ -85,6 +85,24 @@ interface JsonLdProps {
   data: JsonLdData;
 }
 
+// U+2028 / U+2029 are line terminators, so they can't be written as literal
+// characters in this source. Build the matchers from their code points.
+const U2028 = new RegExp(String.fromCharCode(0x2028), "g");
+const U2029 = new RegExp(String.fromCharCode(0x2029), "g");
+
+/**
+ * Serialize JSON-LD for safe embedding in a <script> tag. JSON.stringify leaves
+ * `<` intact, so a value containing `</script>` would terminate the tag and let
+ * an attacker inject markup (stored XSS via user-controlled job fields). Escape
+ * `<` and the U+2028/U+2029 line separators (which also break a JS parse).
+ */
+function serializeJsonLd(data: JsonLdData): string {
+  return JSON.stringify(data)
+    .replace(/</g, "\\u003c")
+    .replace(U2028, "\\u2028")
+    .replace(U2029, "\\u2029");
+}
+
 /**
  * JsonLd Component
  * Renders JSON-LD structured data as a script tag for SEO
@@ -94,7 +112,7 @@ export function JsonLd({ data }: JsonLdProps) {
     <script
       type="application/ld+json"
       dangerouslySetInnerHTML={{
-        __html: JSON.stringify(data),
+        __html: serializeJsonLd(data),
       }}
     />
   );

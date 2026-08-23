@@ -3,6 +3,7 @@
 import React, { useState, useCallback, useEffect } from "react";
 import { useUserProfile } from "@/hooks/useUserProfile";
 import { usePatchProfile } from "@/hooks/usePatchProfile";
+import { safeHttpUrl } from "@/lib/safe-url";
 import { ProfileHeader } from "@/components/pages/profile/ProfileHeader";
 import { ContactInfoCard } from "@/components/ui/ContactInfoCard";
 import { WorkExperienceCard } from "@/components/ui/WorkExperienceCard";
@@ -431,14 +432,16 @@ export default function ProfilePage() {
   };
 
   const handleDownloadDocument = useCallback((doc: UserDocument) => {
-    if (doc.url && doc.url !== "#") {
-      window.open(doc.url, "_blank");
+    const url = safeHttpUrl(doc.url);
+    if (url) {
+      window.open(url, "_blank", "noopener,noreferrer");
     }
   }, []);
 
   const handleViewDocument = useCallback((doc: UserDocument) => {
-    if (doc.url && doc.url !== "#") {
-      window.open(doc.url, "_blank");
+    const url = safeHttpUrl(doc.url);
+    if (url) {
+      window.open(url, "_blank", "noopener,noreferrer");
     }
   }, []);
 

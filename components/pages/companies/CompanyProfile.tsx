@@ -9,6 +9,7 @@ import {
   HiOutlineCheckBadge,
 } from "react-icons/hi2";
 import { useCompany } from "@/hooks/useCompanies";
+import { safeHttpUrl } from "@/lib/safe-url";
 
 /**
  * Public-facing company profile, linked from job listings posted under a
@@ -110,9 +111,9 @@ export const CompanyProfile = ({ companyId }: { companyId: string }) => {
                 {company.size}
               </span>
             )}
-            {company.website && (
+            {safeHttpUrl(company.website) && (
               <a
-                href={company.website}
+                href={safeHttpUrl(company.website)}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex items-center gap-1.5 hover:text-primary"

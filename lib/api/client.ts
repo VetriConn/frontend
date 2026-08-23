@@ -50,9 +50,16 @@ export async function apiFetch<T>(
   init: ApiFetchInit = {},
 ): Promise<T> {
   try {
+    // Custom header the backend requires on cookie-authenticated mutations
+    // (CSRF defense — a cross-site form/simple request cannot set it).
+    const headers = new Headers(init.headers);
+    if (!headers.has("X-Requested-With")) {
+      headers.set("X-Requested-With", "XMLHttpRequest");
+    }
     const response = await fetch(url, {
       credentials: "include",
       ...init,
+      headers,
     });
 
     const contentType = response.headers.get("content-type") || "";
@@ -96,9 +103,14 @@ export async function apiFetchBlob(
   init: RequestInit = {},
 ): Promise<Blob> {
   try {
+    const headers = new Headers(init.headers);
+    if (!headers.has("X-Requested-With")) {
+      headers.set("X-Requested-With", "XMLHttpRequest");
+    }
     const response = await fetch(url, {
       credentials: "include",
       ...init,
+      headers,
     });
 
     if (!response.ok) {

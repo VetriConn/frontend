@@ -15,6 +15,8 @@ export interface SignatureData {
   folder: string;
   resource_type: string;
   transformation?: string;
+  /** Signed format allow-list; must be sent back or the signature won't match. */
+  allowed_formats?: string;
 }
 
 /**
@@ -48,6 +50,10 @@ export async function uploadDirectToCloudinary(
 
   if (signatureData.transformation) {
     formData.append("transformation", signatureData.transformation);
+  }
+  // Must echo the signed allow-list back or Cloudinary's signature check fails.
+  if (signatureData.allowed_formats) {
+    formData.append("allowed_formats", signatureData.allowed_formats);
   }
 
   const url = `https://api.cloudinary.com/v1_1/${signatureData.cloud_name}/${signatureData.resource_type}/upload`;

@@ -328,6 +328,7 @@ export interface JobsResponse {
   // Company-posted jobs (vetted Company Pages).
   posted_as?: "individual" | "company";
   company_id?: string;
+  poster_id?: string;
 
   createdAt: string;
   updatedAt: string;
@@ -399,6 +400,10 @@ export interface PostedJobSummary {
   company_name: string;
   location?: string;
   status?: "draft" | "published";
+  /** Admin moderation state — a published job is only live once approved. */
+  moderation_status?: "pending" | "approved" | "rejected";
+  is_approved?: boolean;
+  rejected_at?: string;
   application_count?: number;
   createdAt?: string;
   updatedAt?: string;

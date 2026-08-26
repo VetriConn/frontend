@@ -3,6 +3,7 @@
 import React, { useState, useCallback, useEffect } from "react";
 import { useUserProfile } from "@/hooks/useUserProfile";
 import { usePatchProfile } from "@/hooks/usePatchProfile";
+import { safeHttpUrl } from "@/lib/safe-url";
 import { ProfileHeader } from "@/components/pages/profile/ProfileHeader";
 import { ContactInfoCard } from "@/components/ui/ContactInfoCard";
 import { WorkExperienceCard } from "@/components/ui/WorkExperienceCard";
@@ -431,14 +432,16 @@ export default function ProfilePage() {
   };
 
   const handleDownloadDocument = useCallback((doc: UserDocument) => {
-    if (doc.url && doc.url !== "#") {
-      window.open(doc.url, "_blank");
+    const url = safeHttpUrl(doc.url);
+    if (url) {
+      window.open(url, "_blank", "noopener,noreferrer");
     }
   }, []);
 
   const handleViewDocument = useCallback((doc: UserDocument) => {
-    if (doc.url && doc.url !== "#") {
-      window.open(doc.url, "_blank");
+    const url = safeHttpUrl(doc.url);
+    if (url) {
+      window.open(url, "_blank", "noopener,noreferrer");
     }
   }, []);
 
@@ -899,8 +902,10 @@ export default function ProfilePage() {
             </div>
           </div>
 
-          {/* Sidebar */}
-          <div className="space-y-4 md:space-y-6 lg:col-span-1">
+          {/* Sidebar — stays in view (below the sticky navbar) while the
+              profile sections scroll. self-start keeps the grid item at its
+              natural height so sticky can engage. */}
+          <div className="space-y-4 md:space-y-6 lg:col-span-1 lg:sticky lg:top-24 lg:self-start">
             {profileCompletion.percentage <= 75 && (
               <ProfileCompletionCard
                 completion={profileCompletion}

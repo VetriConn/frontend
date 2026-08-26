@@ -8,6 +8,7 @@
  */
 
 import type { Job } from "@/types/job";
+import { safeApplyUrl } from "@/lib/safe-url";
 import {
   INDUSTRY_LABELS,
   JOB_TYPE_LABELS,
@@ -52,7 +53,10 @@ export function getSourceLabel(
  * lives at `external_url`.
  */
 export function getExternalApplyUrl(job: SourceFields): string | null {
-  return job.external_url?.trim() || job.applicationLink?.trim() || null;
+  // Both sources are untrusted (scraped external_url / employer-supplied
+  // applicationLink); reject anything but http(s)/mailto so a "javascript:"
+  // value can't turn the Apply button into a click-XSS.
+  return safeApplyUrl(job.external_url) ?? safeApplyUrl(job.applicationLink) ?? null;
 }
 
 /**

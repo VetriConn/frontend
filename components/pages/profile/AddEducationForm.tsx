@@ -37,8 +37,21 @@ export const AddEducationForm: React.FC<AddEducationFormProps> = ({
     const updated = { ...formData, [field]: value };
     setFormData(updated);
 
-    const error = validate(field, value);
-    setErrors((prev) => ({ ...prev, [field]: error }));
+    setErrors((prev) => {
+      const next = { ...prev, [field]: validate(field, value) };
+      // Cross-field: education runs start → end, so the start year can't be
+      // after the end year. Re-checked whenever either year changes, and
+      // cleared once the range is valid again.
+      if (field === "start_year" || field === "end_year") {
+        next.end_year =
+          updated.start_year &&
+          updated.end_year &&
+          Number(updated.start_year) > Number(updated.end_year)
+            ? "End year can't be before the start year"
+            : undefined;
+      }
+      return next;
+    });
 
     onDataChange(updated);
   };
@@ -101,6 +114,7 @@ export const AddEducationForm: React.FC<AddEducationFormProps> = ({
           value={formData.end_year || ""}
           onChange={(v) => handleChange("end_year", v)}
           options={yearOptions}
+          error={errors.end_year}
           optional
         />
       </div>

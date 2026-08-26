@@ -163,7 +163,7 @@ const TicketDetailDialog = ({
           <div className="flex-1 min-w-0">
             <div className="flex flex-wrap items-center gap-2 mb-2">
               <span className="text-[11px] font-semibold text-gray-500 tracking-wider tabular-nums">
-                {ticket.id}
+                {ticket.reference}
               </span>
               <span
                 className={clsx(

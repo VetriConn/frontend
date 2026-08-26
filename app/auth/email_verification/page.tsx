@@ -46,6 +46,10 @@ function EmailVerificationContent() {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          // CSRF marker required on cookie-authenticated mutations (the SPA is
+          // often signed in when it lands here after sign-up). This page uses a
+          // raw fetch instead of apiFetch, so the header must be set explicitly.
+          "X-Requested-With": "XMLHttpRequest",
         },
         body: JSON.stringify({ token }),
         credentials: "include",

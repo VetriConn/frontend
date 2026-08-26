@@ -37,6 +37,131 @@ export async function triggerJobScrape(
   return Array.isArray(summary) ? summary : [summary];
 }
 
+// ─── Admin job moderation ────────────────────────────────────────────────────
+
+/** The raw job record the admin moderation endpoints return (lean docs). */
+export interface AdminJobRaw {
+  _id: string;
+  id?: string;
+  role: string;
+  company_name: string;
+  company_logo?: string;
+  location?: string;
+  job_type?: string;
+  salary?: { number?: number; currency?: string; symbol?: string };
+  salary_range?: {
+    start_salary?: { number?: number };
+    end_salary?: { number?: number };
+  };
+  salary_text?: string;
+  payment_type?: string;
+  description?: string;
+  full_description?: string;
+  responsibilities?: string[];
+  qualifications?: string[];
+  moderation_status?: "pending" | "approved" | "rejected";
+  is_approved?: boolean;
+  approved_at?: string;
+  rejected_at?: string;
+  rejection_reason?: string;
+  scam_flags?: string[];
+  application_count?: number;
+  createdAt?: string;
+  poster_id?: string;
+  company_id?: string;
+  posted_as?: string;
+}
+
+/** List jobs for the review queue, filtered by moderation state. */
+export interface AdminJobCounts {
+  pending: number;
+  approved: number;
+  rejected: number;
+  total: number;
+}
+
+/** Moderation totals for the review page's summary cards. */
+export async function adminJobCounts(): Promise<AdminJobCounts> {
+  const response = await apiFetch<ApiEnvelope<AdminJobCounts>>(
+    `${API_BASE_URL}/api/v1/jobs/admin/counts`,
+    { method: "GET" },
+  );
+  return response.data ?? { pending: 0, approved: 0, rejected: 0, total: 0 };
+}
+
+/**
+ * Admin job list. `approval` omitted returns every moderation state; the
+ * endpoint already scopes to Vetriconn-posted jobs.
+ */
+export async function adminListJobs(
+  approval?: "pending" | "approved" | "rejected",
+  page = 1,
+  limit = 20,
+): Promise<{
+  jobs: AdminJobRaw[];
+  pagination?: PaginatedApiEnvelope<AdminJobRaw[]>["pagination"];
+}> {
+  const qs = new URLSearchParams();
+  if (approval) qs.set("approval", approval);
+  qs.set("page", String(page));
+  qs.set("limit", String(limit));
+  const response = await apiFetch<PaginatedApiEnvelope<AdminJobRaw[]>>(
+    `${API_BASE_URL}/api/v1/jobs/admin/all?${qs.toString()}`,
+    { method: "GET" },
+  );
+  return { jobs: response.data ?? [], pagination: response.pagination };
+}
+
+/** Approve a pending job (id is the Mongo _id). */
+export async function adminApproveJob(id: string): Promise<void> {
+  await apiFetch<ApiEnvelope<unknown>>(
+    `${API_BASE_URL}/api/v1/jobs/admin/${id}/approve`,
+    { method: "PATCH" },
+  );
+}
+
+/** Reject a pending job with a reason. */
+export async function adminRejectJob(
+  id: string,
+  reason: string,
+): Promise<void> {
+  await apiFetch<ApiEnvelope<unknown>>(
+    `${API_BASE_URL}/api/v1/jobs/admin/${id}/reject`,
+    {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ reason }),
+    },
+  );
+}
+
+/** Approve several jobs at once. */
+export async function adminBulkApproveJobs(ids: string[]): Promise<void> {
+  await apiFetch<ApiEnvelope<unknown>>(
+    `${API_BASE_URL}/api/v1/jobs/admin/bulk-approve`,
+    {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ ids }),
+    },
+  );
+}
+
+/** Reject several jobs at once with a shared reason. */
+export async function adminBulkRejectJobs(
+  ids: string[],
+  reason: string,
+): Promise<void> {
+  await apiFetch<ApiEnvelope<unknown>>(
+    `${API_BASE_URL}/api/v1/jobs/admin/bulk-reject`,
+    {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ ids, reason }),
+    },
+  );
+}
+
 // Fetch jobs from database
 export interface JobsPage {
   jobs: JobsResponse[];

@@ -31,6 +31,7 @@ export function mapJobsResponse(job: JobsResponse): Job {
     salary_text: job.salary_text,
     posted_as: job.posted_as,
     company_id: job.company_id,
+    poster_id: job.poster_id,
     job_category: job.job_category,
     job_type: job.job_type,
     work_arrangement: job.work_arrangement,

@@ -1,73 +1,38 @@
 import useSWR from "swr";
-import { API_BASE_URL, apiFetch, type ApiEnvelope } from "@/lib/api/client";
+import {
+  adminGetTeam,
+  adminInvite,
+  adminResendInvite,
+  adminRevokeInvite,
+  adminChangeRole,
+  adminSuspendAdmin,
+  adminReinstateAdmin,
+  type AdminRole,
+  type AdminStepUp,
+  type AdminTeamMember,
+  type AdminTeamInvite,
+} from "@/lib/api/admin";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
-export type AdminMemberRole = "admin" | "super_admin";
+export type AdminMemberRole = AdminRole; // super_admin | reviewer | moderator | billing
 export type AdminMemberStatus = "active" | "suspended";
 export type AdminInviteStatus = "pending" | "accepted" | "revoked" | "expired";
 
-export interface AdminMember {
-  id: string;
-  full_name: string;
-  email: string;
-  picture?: string;
-  role: AdminMemberRole;
-  status: AdminMemberStatus;
-  two_factor_enabled: boolean;
-  invitedAt: string;
-  joinedAt?: string;
-  lastSignInAt?: string;
-}
+export type AdminMember = AdminTeamMember;
+export type AdminInvite = AdminTeamInvite;
 
-export interface AdminInvite {
-  id: string;
-  email: string;
-  role: AdminMemberRole;
-  status: AdminInviteStatus;
-  invitedBy: { id: string; name: string };
-  invitedAt: string;
-  expiresAt: string;
-}
-
-// ─── Wire ────────────────────────────────────────────────────────────────────
-//
-// Endpoints live under /api/v1/admin/team and do not exist yet — see the
-// API contract handed to the backend. Until they ship every call here fails
-// with a 404, which the UI surfaces as an error rather than pretending to
-// succeed. That is deliberate: the previous mock versions logged to the
-// console and returned success, so the team page looked functional while
-// changing nothing.
-
-const TEAM_URL = `${API_BASE_URL}/api/v1/admin/team`;
-
-const jsonRequest = (method: string, body?: unknown): RequestInit => ({
-  method,
-  headers: { "Content-Type": "application/json" },
-  ...(body === undefined ? {} : { body: JSON.stringify(body) }),
-});
+// ─── Hook ────────────────────────────────────────────────────────────────────
 
 interface AdminTeamPayload {
   members: AdminMember[];
   invites: AdminInvite[];
 }
 
-const fetchTeam = async (): Promise<AdminTeamPayload> => {
-  const response = await apiFetch<ApiEnvelope<AdminTeamPayload>>(TEAM_URL, {
-    method: "GET",
-  });
-  return {
-    members: response.data?.members ?? [],
-    invites: response.data?.invites ?? [],
-  };
-};
-
-// ─── Hook ────────────────────────────────────────────────────────────────────
-
 export function useAdminTeam() {
   const { data, error, isLoading, mutate } = useSWR<AdminTeamPayload>(
     "/admin/team",
-    fetchTeam,
+    async () => await adminGetTeam(),
   );
   return {
     members: data?.members ?? [],
@@ -79,69 +44,87 @@ export function useAdminTeam() {
 }
 
 // ─── Mutations ───────────────────────────────────────────────────────────────
+//
+// Every mutating call except resend/revoke requires step-up (password + a TOTP
+// code when 2FA is on). The UI collects those and passes them through here.
 
 export interface InviteAdminPayload {
   email: string;
+  full_name: string;
   role: AdminMemberRole;
 }
 
-/** Issue an admin invite. Only a super admin may invite another super admin. */
+/** Issue an admin invite. Step-up required. */
 export async function inviteAdmin(
   payload: InviteAdminPayload,
-): Promise<AdminInvite> {
-  const response = await apiFetch<ApiEnvelope<AdminInvite>>(
-    `${TEAM_URL}/invites`,
-    jsonRequest("POST", payload),
-  );
-  return response.data;
+  creds: AdminStepUp,
+): Promise<void> {
+  await adminInvite({
+    email: payload.email,
+    full_name: payload.full_name,
+    admin_role: payload.role,
+    ...creds,
+  });
 }
 
 /** Re-send a pending invite, issuing a fresh token and expiry. */
 export async function resendAdminInvite(id: string): Promise<void> {
-  await apiFetch(`${TEAM_URL}/invites/${id}/resend`, jsonRequest("POST"));
+  await adminResendInvite(id);
 }
 
 /** Invalidate a pending invite so its token can no longer be redeemed. */
 export async function revokeAdminInvite(id: string): Promise<void> {
-  await apiFetch(`${TEAM_URL}/invites/${id}/revoke`, jsonRequest("POST"));
+  await adminRevokeInvite(id);
 }
 
-/** Promote or demote an admin. The last super admin cannot be demoted. */
+/** Change an admin's tier. Step-up required. */
 export async function changeAdminRole(
   id: string,
   role: AdminMemberRole,
+  creds: AdminStepUp,
 ): Promise<void> {
-  await apiFetch(`${TEAM_URL}/members/${id}`, jsonRequest("PATCH", { role }));
+  await adminChangeRole(id, role, creds);
 }
 
-/** Suspend an admin's access without deleting the account. Reason is audited. */
+/** Suspend an admin's access without deleting the account. Step-up required. */
 export async function suspendAdminMember(
   id: string,
   reason: string,
+  creds: AdminStepUp,
 ): Promise<void> {
-  await apiFetch(
-    `${TEAM_URL}/members/${id}/suspend`,
-    jsonRequest("POST", { reason }),
-  );
+  await adminSuspendAdmin(id, reason, creds);
 }
 
-export async function reinstateAdminMember(id: string): Promise<void> {
-  await apiFetch(`${TEAM_URL}/members/${id}/reinstate`, jsonRequest("POST"));
-}
-
-/** Revoke admin rights entirely. Reason is audited. */
-export async function removeAdminMember(
+/** Reinstate a suspended admin. Step-up required. */
+export async function reinstateAdminMember(
   id: string,
-  reason: string,
+  creds: AdminStepUp,
 ): Promise<void> {
-  await apiFetch(`${TEAM_URL}/members/${id}`, jsonRequest("DELETE", { reason }));
+  await adminReinstateAdmin(id, creds);
 }
 
 // ─── Display helpers ─────────────────────────────────────────────────────────
 
+export const ADMIN_ROLES: AdminMemberRole[] = [
+  "super_admin",
+  "reviewer",
+  "moderator",
+  "billing",
+];
+
 export const ROLE_LABEL: Record<AdminMemberRole, string> = {
-  admin: "Admin",
   super_admin: "Super Admin",
+  reviewer: "Reviewer",
+  moderator: "Moderator",
+  billing: "Billing",
+};
+
+export const ROLE_DESCRIPTION: Record<AdminMemberRole, string> = {
+  super_admin:
+    "Full access, including team management and the audit log.",
+  reviewer: "Reviews and approves jobs, companies, and scraper runs.",
+  moderator: "Moderates users, company members, reports, and community posts.",
+  billing: "Manages subscriptions and billing.",
 };
 
 export const MEMBER_STATUS_LABEL: Record<AdminMemberStatus, string> = {

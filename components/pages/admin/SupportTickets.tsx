@@ -6,10 +6,14 @@ import {
   HiOutlineLifebuoy,
   HiOutlineExclamationTriangle,
   HiOutlineEnvelope,
+  HiOutlineEye,
+  HiOutlineHandRaised,
+  HiOutlineCheckCircle,
 } from "react-icons/hi2";
 import {
   useAdminSupportTickets,
   claimAdminTicket,
+  resolveAdminTicket,
   type AdminTicket,
   type TicketStatus,
   type TicketPriority,
@@ -30,8 +34,8 @@ import {
   AdminRowSkeleton,
   AdminEmptyState,
   RowActions,
-  ViewAction,
 } from "./AdminTablePanel";
+import KebabMenu, { type KebabAction } from "./KebabMenu";
 import TicketDetailDialog from "./TicketDetailDialog";
 import { useUserProfile } from "@/hooks/useUserProfile";
 import { useToaster } from "@/components/ui/Toaster";
@@ -184,6 +188,41 @@ const SupportTickets = () => {
     }
   };
 
+  const handleResolve = async (t: AdminTicket) => {
+    try {
+      await resolveAdminTicket(t.id);
+      await handleTicketChange({ ...t, status: "resolved" });
+      showToast({ type: "success", title: "Ticket resolved", description: t.subject });
+    } catch {
+      showToast({ type: "error", title: "Could not resolve ticket" });
+    }
+  };
+
+  const rowActions = (t: AdminTicket): KebabAction[] => {
+    const actions: KebabAction[] = [
+      {
+        label: "View ticket",
+        icon: HiOutlineEye,
+        onClick: () => setOpenTicketId(t.id),
+      },
+    ];
+    if (!t.assignedTo) {
+      actions.push({
+        label: "Claim",
+        icon: HiOutlineHandRaised,
+        onClick: () => handleClaim(t),
+      });
+    }
+    if (t.status !== "resolved" && t.status !== "closed") {
+      actions.push({
+        label: "Mark resolved",
+        icon: HiOutlineCheckCircle,
+        onClick: () => handleResolve(t),
+      });
+    }
+    return actions;
+  };
+
   return (
     <div className="max-w-7xl mx-auto space-y-6">
       <AdminPageHeader
@@ -288,7 +327,7 @@ const SupportTickets = () => {
               : visible.map((t) => (
                   <AdminTableRow key={t.id}>
                     <AdminTableTd className="font-semibold text-gray-700 tabular-nums">
-                      {t.id}
+                      {t.reference}
                     </AdminTableTd>
                     <AdminTableTd className="font-semibold text-gray-900 max-w-xs">
                       <span className="block truncate" title={t.subject}>
@@ -343,17 +382,7 @@ const SupportTickets = () => {
                       {formatDate(t.createdAt)}
                     </AdminTableTd>
                     <AdminTableTd align="right">
-                      <RowActions>
-                        {!t.assignedTo && (
-                          <button
-                            onClick={() => handleClaim(t)}
-                            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-gray-200 bg-white text-xs font-semibold text-gray-700 hover:bg-gray-50 hover:border-gray-300"
-                          >
-                            Claim
-                          </button>
-                        )}
-                        <ViewAction onClick={() => setOpenTicketId(t.id)} />
-                      </RowActions>
+                      <KebabMenu actions={rowActions(t)} />
                     </AdminTableTd>
                   </AdminTableRow>
                 ))}

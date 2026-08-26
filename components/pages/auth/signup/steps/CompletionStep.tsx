@@ -253,13 +253,6 @@ export function CompletionStep({
         </div>
       </div>
 
-      {formData.resumeFile && (
-        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 text-sm text-blue-800">
-          Your resume will need to be uploaded after you verify your email and
-          sign in.
-        </div>
-      )}
-
       {/* Resend Email Section */}
       <div className="text-center space-y-3">
         <p className="text-sm text-gray-600">Didn't receive the email?</p>

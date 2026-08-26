@@ -5,28 +5,26 @@ import { useSearchParams } from "next/navigation";
 import useSWR from "swr";
 import clsx from "clsx";
 import {
-  HiOutlineBuildingOffice2,
+  HiOutlineBriefcase,
   HiOutlineClock,
   HiOutlineCheckCircle,
   HiOutlineXCircle,
-  HiOutlinePauseCircle,
-  HiOutlinePlayCircle,
   HiOutlineEye,
   HiOutlineCheck,
   HiOutlineXMark,
+  HiOutlineExclamationTriangle,
   HiOutlineChevronLeft,
   HiOutlineChevronRight,
 } from "react-icons/hi2";
 import {
-  adminApproveCompany,
-  adminRejectCompany,
-  adminSuspendCompany,
-  adminReinstateCompany,
-  adminCompanyCounts,
-  type Company,
-  type CompanyStatus,
-} from "@/lib/api/companies";
-import { useAdminCompanies } from "@/hooks/useCompanies";
+  useAdminJobQueue,
+  approveAdminJob,
+  rejectAdminJob,
+  unpublishAdminJob,
+  type AdminJob,
+  type AdminJobStatus,
+} from "@/hooks/useAdminJobQueue";
+import { adminJobCounts } from "@/lib/api/jobs";
 import { useToaster } from "@/components/ui/Toaster";
 import {
   AdminPageHeader,
@@ -43,25 +41,22 @@ import {
 } from "./AdminTablePanel";
 import KebabMenu, { type KebabAction } from "./KebabMenu";
 import DetailDrawer from "./DetailDrawer";
-import CompanyDetail from "./CompanyDetail";
-import StepUpDialog, { type StepUpCreds } from "./StepUpDialog";
+import AdminJobDetail from "./AdminJobDetail";
 import ConfirmDialog from "./ConfirmDialog";
+import ScrapeJobsButton from "./ScrapeJobsButton";
 
-const FILTERS: { value: CompanyStatus | "all"; label: string }[] = [
+const FILTERS: { value: AdminJobStatus | "all"; label: string }[] = [
   { value: "all", label: "All" },
   { value: "pending", label: "Pending" },
   { value: "approved", label: "Approved" },
   { value: "rejected", label: "Rejected" },
-  { value: "suspended", label: "Suspended" },
 ];
 
-const STATUS_TONE: Record<CompanyStatus, "amber" | "emerald" | "rose" | "gray"> =
-  {
-    pending: "amber",
-    approved: "emerald",
-    rejected: "rose",
-    suspended: "gray",
-  };
+const STATUS_TONE: Record<AdminJobStatus, "amber" | "emerald" | "rose"> = {
+  pending: "amber",
+  approved: "emerald",
+  rejected: "rose",
+};
 
 const formatDate = (iso?: string) => {
   if (!iso) return "—";
@@ -75,8 +70,6 @@ const formatDate = (iso?: string) => {
       });
 };
 
-// ─── Stat card ────────────────────────────────────────────────────────────────
-
 const StatCard = ({
   icon: Icon,
   label,
@@ -86,13 +79,13 @@ const StatCard = ({
   icon: React.ComponentType<{ className?: string }>;
   label: string;
   value: number | string;
-  tone: "amber" | "emerald" | "indigo" | "gray";
+  tone: "amber" | "emerald" | "rose" | "indigo";
 }) => {
   const map = {
     amber: "bg-amber-50 text-amber-600 ring-amber-100",
     emerald: "bg-emerald-50 text-emerald-600 ring-emerald-100",
+    rose: "bg-rose-50 text-rose-600 ring-rose-100",
     indigo: "bg-indigo-50 text-indigo-600 ring-indigo-100",
-    gray: "bg-gray-100 text-gray-600 ring-gray-200",
   } as const;
   return (
     <div className="bg-white rounded-2xl border border-gray-200/80 p-5 shadow-[0_1px_2px_rgba(15,23,42,0.04)]">
@@ -116,37 +109,33 @@ const StatCard = ({
   );
 };
 
-// ─── Page ─────────────────────────────────────────────────────────────────────
-
-export const CompanyReviewQueue = () => {
+/**
+ * Job moderation — one page for every listing, with standing as a filter
+ * rather than separate routes. Details and review actions open in a drawer.
+ * Scraped listings are excluded server-side: admins moderate Vetriconn posts.
+ */
+const JobsTable = () => {
   const searchParams = useSearchParams();
-  // One page for every company; standing is a filter, not a separate route.
-  const [status, setStatus] = useState<CompanyStatus | "all">("all");
+  const [status, setStatus] = useState<AdminJobStatus | "all">("all");
   const [page, setPage] = useState(1);
 
-  const { companies, pagination, isLoading, mutate } = useAdminCompanies(
-    status,
-    page,
-  );
+  const { jobs, pagination, isLoading, mutate } = useAdminJobQueue(status, page);
   const { data: counts, mutate: mutateCounts } = useSWR(
-    "admin-company-counts",
-    adminCompanyCounts,
+    "admin-job-counts",
+    adminJobCounts,
   );
   const { showToast } = useToaster();
 
-  const [busyId, setBusyId] = useState<string | null>(null);
   const [drawerId, setDrawerId] = useState<string | null>(null);
-  const [rejecting, setRejecting] = useState<Company | null>(null);
-  const [rejectBusy, setRejectBusy] = useState(false);
-  const [stepUp, setStepUp] = useState<{
-    company: Company;
-    action: "suspend" | "reinstate";
-  } | null>(null);
-  const [stepUpBusy, setStepUpBusy] = useState(false);
+  const [busyId, setBusyId] = useState<string | null>(null);
+  const [rejecting, setRejecting] = useState<AdminJob | null>(null);
+  const [unpublishing, setUnpublishing] = useState<AdminJob | null>(null);
+  const [dialogBusy, setDialogBusy] = useState(false);
 
-  // Deep link: /admin/companies?company=<id> opens that company's drawer.
+  // Deep link: /admin/jobs?job=<id> opens that job's drawer, so notification
+  // and dashboard links still land on the subject now that details live here.
   useEffect(() => {
-    const deepLink = searchParams.get("company");
+    const deepLink = searchParams.get("job");
     if (deepLink) setDrawerId(deepLink);
   }, [searchParams]);
 
@@ -155,16 +144,16 @@ export const CompanyReviewQueue = () => {
     mutateCounts();
   };
 
-  const handleApprove = async (company: Company) => {
-    setBusyId(company._id);
+  const handleApprove = async (job: AdminJob) => {
+    setBusyId(job.id);
     try {
-      await adminApproveCompany(company._id);
-      showToast({ type: "success", title: "Company approved" });
+      await approveAdminJob(job.id);
+      showToast({ type: "success", title: "Job approved" });
       refresh();
     } catch (err) {
       showToast({
         type: "error",
-        title: "Couldn't approve company",
+        title: "Couldn't approve job",
         description: err instanceof Error ? err.message : undefined,
       });
     } finally {
@@ -174,90 +163,76 @@ export const CompanyReviewQueue = () => {
 
   const handleReject = async (reason?: string) => {
     if (!rejecting || !reason?.trim()) return;
-    setRejectBusy(true);
+    setDialogBusy(true);
     try {
-      await adminRejectCompany(rejecting._id, reason.trim());
-      showToast({ type: "success", title: "Company rejected" });
+      await rejectAdminJob(rejecting.id, reason.trim());
+      showToast({ type: "success", title: "Job rejected" });
       setRejecting(null);
       refresh();
     } catch (err) {
       showToast({
         type: "error",
-        title: "Couldn't reject company",
+        title: "Couldn't reject job",
         description: err instanceof Error ? err.message : undefined,
       });
     } finally {
-      setRejectBusy(false);
+      setDialogBusy(false);
     }
   };
 
-  const handleStepUpConfirm = async (creds: StepUpCreds) => {
-    if (!stepUp) return;
-    const { company, action } = stepUp;
-    setStepUpBusy(true);
+  const handleUnpublish = async (reason?: string) => {
+    if (!unpublishing || !reason?.trim()) return;
+    setDialogBusy(true);
     try {
-      if (action === "suspend") {
-        await adminSuspendCompany(company._id, {
-          reason: creds.reason,
-          password: creds.password,
-          totp_code: creds.totp_code,
-        });
-      } else {
-        await adminReinstateCompany(company._id, {
-          password: creds.password,
-          totp_code: creds.totp_code,
-        });
-      }
-      showToast({
-        type: "success",
-        title: action === "suspend" ? "Company suspended" : "Company reinstated",
-      });
-      setStepUp(null);
+      await unpublishAdminJob(unpublishing.id, reason.trim());
+      showToast({ type: "success", title: "Job unpublished" });
+      setUnpublishing(null);
       refresh();
     } catch (err) {
       showToast({
         type: "error",
-        title: "Action failed",
+        title: "Couldn't unpublish job",
         description: err instanceof Error ? err.message : undefined,
       });
     } finally {
-      setStepUpBusy(false);
+      setDialogBusy(false);
     }
   };
 
-  const rowActions = (company: Company): KebabAction[] => {
+  const rowActions = (job: AdminJob): KebabAction[] => {
     const actions: KebabAction[] = [
       {
         label: "View details",
         icon: HiOutlineEye,
-        onClick: () => setDrawerId(company._id),
+        onClick: () => setDrawerId(job.id),
       },
     ];
-    if (company.status === "pending") {
+    if (job.status === "pending") {
       actions.push({
         label: "Approve",
         icon: HiOutlineCheck,
-        onClick: () => handleApprove(company),
-        disabled: busyId === company._id,
+        onClick: () => handleApprove(job),
+        disabled: busyId === job.id,
       });
       actions.push({
         label: "Reject",
         icon: HiOutlineXMark,
         danger: true,
-        onClick: () => setRejecting(company),
+        onClick: () => setRejecting(job),
       });
-    } else if (company.status === "approved") {
+    } else if (job.status === "approved") {
       actions.push({
-        label: "Suspend",
-        icon: HiOutlinePauseCircle,
+        label: "Unpublish",
+        icon: HiOutlineXCircle,
         danger: true,
-        onClick: () => setStepUp({ company, action: "suspend" }),
+        onClick: () => setUnpublishing(job),
       });
-    } else if (company.status === "suspended") {
+    } else if (job.status === "rejected") {
       actions.push({
-        label: "Reinstate",
-        icon: HiOutlinePlayCircle,
-        onClick: () => setStepUp({ company, action: "reinstate" }),
+        label: "Approve",
+        icon: HiOutlineCheck,
+        onClick: () => handleApprove(job),
+        disabled: busyId === job.id,
       });
     }
     return actions;
@@ -266,11 +241,11 @@ export const CompanyReviewQueue = () => {
   return (
     <div className="max-w-7xl mx-auto space-y-6">
       <AdminPageHeader
-        title="Companies"
-        description="Vet company applications and manage organisations that post jobs"
+        title="Jobs"
+        description="Review job postings before they go live on the board"
+        actions={<ScrapeJobsButton />}
       />
 
-      {/* Summary cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-5">
         <StatCard
           icon={HiOutlineClock}
@@ -285,13 +260,13 @@ export const CompanyReviewQueue = () => {
           tone="emerald"
         />
         <StatCard
-          icon={HiOutlinePauseCircle}
-          label="Suspended"
-          value={counts?.suspended ?? "—"}
-          tone="gray"
+          icon={HiOutlineXCircle}
+          label="Rejected"
+          value={counts?.rejected ?? "—"}
+          tone="rose"
         />
         <StatCard
-          icon={HiOutlineBuildingOffice2}
+          icon={HiOutlineBriefcase}
           label="Total"
           value={counts?.total ?? "—"}
           tone="indigo"
@@ -302,12 +277,11 @@ export const CompanyReviewQueue = () => {
       <div
         className="inline-flex flex-wrap rounded-xl border border-gray-200 bg-white p-1"
         role="tablist"
-        aria-label="Company status"
+        aria-label="Job status"
       >
         {FILTERS.map((f) => {
           const active = status === f.value;
-          const count =
-            f.value === "all" ? counts?.total : counts?.[f.value];
+          const count = f.value === "all" ? counts?.total : counts?.[f.value];
           return (
             <button
               key={f.value}
@@ -329,7 +303,9 @@ export const CompanyReviewQueue = () => {
                 <span
                   className={clsx(
                     "ml-1.5 inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 rounded-full text-[11px] font-bold",
-                    active ? "bg-white/20 text-white" : "bg-gray-100 text-gray-600",
+                    active
+                      ? "bg-white/20 text-white"
+                      : "bg-gray-100 text-gray-600",
                   )}
                 >
                   {count}
@@ -343,8 +319,8 @@ export const CompanyReviewQueue = () => {
       <AdminTablePanel>
         <AdminTable>
           <AdminTableHead>
+            <AdminTableTh>Role</AdminTableTh>
             <AdminTableTh>Company</AdminTableTh>
-            <AdminTableTh>Industry</AdminTableTh>
             <AdminTableTh>Location</AdminTableTh>
             <AdminTableTh>Status</AdminTableTh>
             <AdminTableTh>Submitted</AdminTableTh>
@@ -355,67 +331,60 @@ export const CompanyReviewQueue = () => {
               ? Array.from({ length: 5 }).map((_, i) => (
                   <AdminRowSkeleton key={i} columns={6} />
                 ))
-              : companies.map((company) => (
-                  <AdminTableRow key={company._id}>
+              : jobs.map((job) => (
+                  <AdminTableRow key={job.id}>
                     <AdminTableTd className="font-semibold text-gray-900">
-                      <div className="flex items-center gap-3">
-                        <div className="w-9 h-9 rounded-lg bg-gray-100 flex items-center justify-center overflow-hidden shrink-0">
-                          {company.logo_url ? (
-                            // eslint-disable-next-line @next/next/no-img-element
-                            <img
-                              src={company.logo_url}
-                              alt={company.name}
-                              className="w-full h-full object-cover"
-                            />
-                          ) : (
-                            <HiOutlineBuildingOffice2 className="w-5 h-5 text-gray-400" />
-                          )}
-                        </div>
+                      <div className="flex items-center gap-2">
                         <button
-                          onClick={() => setDrawerId(company._id)}
+                          onClick={() => setDrawerId(job.id)}
                           className="text-left hover:text-primary"
                         >
-                          {company.name}
+                          {job.role}
                         </button>
+                        {!!job.scam_flags?.length && (
+                          <span
+                            title={`Scam signals: ${job.scam_flags.join(", ")}`}
+                            className="inline-flex items-center text-amber-500"
+                          >
+                            <HiOutlineExclamationTriangle className="w-4 h-4" />
+                          </span>
+                        )}
                       </div>
                     </AdminTableTd>
                     <AdminTableTd className="text-gray-600">
-                      {company.industry || "—"}
+                      {job.company_name || "—"}
                     </AdminTableTd>
                     <AdminTableTd className="text-gray-600">
-                      {[company.city, company.country]
-                        .filter(Boolean)
-                        .join(", ") || "—"}
+                      {job.location || "—"}
                     </AdminTableTd>
                     <AdminTableTd>
-                      <StatusPill tone={STATUS_TONE[company.status]}>
-                        {company.status}
+                      <StatusPill tone={STATUS_TONE[job.status]}>
+                        {job.status}
                       </StatusPill>
                     </AdminTableTd>
                     <AdminTableTd className="text-gray-600 tabular-nums">
-                      {formatDate(company.createdAt)}
+                      {formatDate(job.submittedAt)}
                     </AdminTableTd>
                     <AdminTableTd align="right">
-                      <KebabMenu actions={rowActions(company)} />
+                      <KebabMenu actions={rowActions(job)} />
                     </AdminTableTd>
                   </AdminTableRow>
                 ))}
           </AdminTableBody>
         </AdminTable>
 
-        {!isLoading && companies.length === 0 && (
+        {!isLoading && jobs.length === 0 && (
           <AdminEmptyState
-            title="No companies"
+            title="No jobs"
             description={
               status === "all"
-                ? "No companies have applied yet."
-                : `No ${status} companies.`
+                ? "No jobs have been posted yet."
+                : `No ${status} jobs.`
             }
-            icon={HiOutlineBuildingOffice2}
+            icon={HiOutlineBriefcase}
           />
         )}
 
-        {/* Pagination */}
         {pagination && pagination.totalPages > 1 && (
           <div className="flex items-center justify-between gap-4 px-5 md:px-6 py-3 border-t border-gray-100">
             <p className="text-xs text-gray-500 tabular-nums">
@@ -444,54 +413,43 @@ export const CompanyReviewQueue = () => {
         )}
       </AdminTablePanel>
 
-      {/* Detail drawer */}
       <DetailDrawer
         open={!!drawerId}
-        title="Company details"
+        title="Job details"
         onClose={() => setDrawerId(null)}
       >
-        {drawerId && <CompanyDetail companyId={drawerId} onChanged={refresh} />}
+        {drawerId && <AdminJobDetail jobId={drawerId} onChanged={refresh} />}
       </DetailDrawer>
 
-      {/* Reject dialog */}
       <ConfirmDialog
         open={!!rejecting}
-        title="Reject this company?"
-        subject={rejecting?.name}
-        description="A reason is required and is shown to the applicant."
+        title="Reject this job?"
+        subject={rejecting?.role}
+        description="A reason is required and is shown to the poster."
         reasonLabel="Reason for rejection"
-        reasonPlaceholder="What was missing or wrong?"
-        confirmLabel="Reject Company"
+        reasonPlaceholder="What needs to change?"
+        confirmLabel="Reject Job"
         tone="danger"
-        busy={rejectBusy}
-        onClose={() => (rejectBusy ? null : setRejecting(null))}
+        busy={dialogBusy}
+        onClose={() => (dialogBusy ? null : setRejecting(null))}
         onConfirm={handleReject}
       />
 
-      {/* Suspend / reinstate step-up */}
-      {stepUp && (
-        <StepUpDialog
-          open
-          title={
-            stepUp.action === "suspend"
-              ? "Suspend this company?"
-              : "Reinstate this company?"
-          }
-          description={
-            stepUp.action === "suspend"
-              ? `${stepUp.company.name} will stop being able to post jobs.`
-              : `${stepUp.company.name} can post jobs again.`
-          }
-          confirmLabel={stepUp.action === "suspend" ? "Suspend" : "Reinstate"}
-          requireReason={stepUp.action === "suspend"}
-          danger={stepUp.action === "suspend"}
-          busy={stepUpBusy}
-          onClose={() => (stepUpBusy ? null : setStepUp(null))}
-          onConfirm={handleStepUpConfirm}
-        />
-      )}
+      <ConfirmDialog
+        open={!!unpublishing}
+        title="Unpublish this job?"
+        subject={unpublishing?.role}
+        description="The listing comes off the public board and returns to the moderated states."
+        reasonLabel="Reason"
+        reasonPlaceholder="Why is this coming down?"
+        confirmLabel="Unpublish"
+        tone="danger"
+        busy={dialogBusy}
+        onClose={() => (dialogBusy ? null : setUnpublishing(null))}
+        onConfirm={handleUnpublish}
+      />
     </div>
   );
 };
 
-export default CompanyReviewQueue;
+export default JobsTable;

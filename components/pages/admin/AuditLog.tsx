@@ -5,8 +5,8 @@ import clsx from "clsx";
 import { HiOutlineArrowLeft, HiOutlineDocumentText } from "react-icons/hi2";
 import {
   useAdminAuditLog,
-  ACTION_LABEL,
-  ACTION_TONE,
+  actionLabel,
+  actionTone,
   type AuditLogEntry,
 } from "@/hooks/useAdminAuditLog";
 import {
@@ -85,8 +85,8 @@ const AuditLog = () => {
                   <AdminTableRow key={e.id}>
                     <AdminTableTd>
                       <div className="flex flex-col gap-1">
-                        <StatusPill tone={ACTION_TONE[e.action]}>
-                          {ACTION_LABEL[e.action]}
+                        <StatusPill tone={actionTone(e.action)}>
+                          {actionLabel(e.action)}
                         </StatusPill>
                         {renderMetadata(e.metadata)}
                       </div>

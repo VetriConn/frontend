@@ -2,6 +2,7 @@ import React from "react";
 import { HiOutlineDocumentText } from "react-icons/hi2";
 import { Avatar } from "@/components/ui/Avatar";
 import { formatTime } from "@/lib/date-utils";
+import { safeHttpUrl } from "@/lib/safe-url";
 
 import { Message } from "@/types/inbox";
 
@@ -56,10 +57,10 @@ export function MessageList({
             <p className="text-sm leading-relaxed whitespace-pre-wrap break-words">
               {msg.text}
             </p>
-            {msg.attachmentUrl && (
+            {safeHttpUrl(msg.attachmentUrl) && (
               <div className="mt-3">
                 <a
-                  href={msg.attachmentUrl}
+                  href={safeHttpUrl(msg.attachmentUrl)}
                   target="_blank"
                   rel="noopener noreferrer"
                   className={`flex items-center gap-2.5 p-2.5 rounded-lg border transition-all text-xs font-medium ${

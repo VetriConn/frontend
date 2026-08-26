@@ -41,6 +41,7 @@ export const SignIn = () => {
   const rawReturnUrl = searchParams.get(RETURN_URL_PARAM);
   const postAuthPath = resolvePostAuthPath(rawReturnUrl);
   const isReturningSomewhere = postAuthPath !== "/dashboard";
+  const sessionExpired = searchParams.get("reason") === "session-expired";
 
   // Carry the destination through if they need an account first.
   const signUpHref = rawReturnUrl
@@ -117,7 +118,8 @@ export const SignIn = () => {
       <div className="flex-1 bg-gray-100 items-center justify-center p-8 text-left bg-[linear-gradient(70deg,rgba(0,0,0,0.65),rgba(0,0,0,0.45)),url('/images/Hero/1.svg')] bg-right bg-cover hidden mobile:hidden tablet:hidden relative md:flex">
         <DottedBox9 className="absolute top-50 right-10 w-32 h-auto z-0 opacity-60" />
         <h1 className="font-lato text-2xl md:text-4xl mb-4 text-white font-semibold leading-tight drop-shadow-lg">
-          Join the <br /> <span className="text-primary drop-shadow-lg">Vetriconn</span>{" "}
+          Welcome back to the <br />{" "}
+          <span className="text-primary drop-shadow-lg">Vetriconn</span>{" "}
           community
         </h1>
         <DottedBox7 className="absolute bottom-80 left-15 w-32 h-auto z-0 opacity-60" />
@@ -134,6 +136,11 @@ export const SignIn = () => {
           <p className="text-sm md:text-base mb-4">
             Sign in to continue to your account and find opportunities.
           </p>
+          {sessionExpired && (
+            <div className="mb-4 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+              Your session expired. Please sign in again to continue.
+            </div>
+          )}
           <form onSubmit={handleSubmit}>
             <FormField
               name="email"

@@ -1,4 +1,5 @@
 import useSWR from "swr";
+import { adminGetOverview } from "@/lib/api/admin";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -7,6 +8,13 @@ export interface AdminStats {
   activeJobs: number;
   companies: number;
   users: number;
+  /** Extra counters the dashboard can surface as secondary stats/badges. */
+  companiesPending: number;
+  openReports: number;
+  /** Trailing-7-day new counts, for the card trend labels. */
+  activeJobsThisWeek: number;
+  companiesThisWeek: number;
+  usersThisWeek: number;
 }
 
 export interface AdminActivityItem {
@@ -22,63 +30,19 @@ export interface AdminOverview {
   recentActivity: AdminActivityItem[];
 }
 
-// ─── Mock data (replace with real API) ───────────────────────────────────────
-//
-// When the backend exposes GET /api/v1/admin/overview, swap the fetcher below
-// for `apiFetch`. The shape is intentionally aligned with what the endpoint
-// should return so the swap is a one-liner.
-
-const MOCK_OVERVIEW: AdminOverview = {
+const EMPTY: AdminOverview = {
   stats: {
-    jobsPending: 12,
-    activeJobs: 86,
-    companies: 34,
-    users: 215,
+    jobsPending: 0,
+    activeJobs: 0,
+    companies: 0,
+    users: 0,
+    companiesPending: 0,
+    openReports: 0,
+    activeJobsThisWeek: 0,
+    companiesThisWeek: 0,
+    usersThisWeek: 0,
   },
-  recentActivity: [
-    {
-      id: "1",
-      title: "Part-Time Warehouse Associate",
-      company: "MapleCorp",
-      status: "pending",
-      date: "2026-02-24",
-    },
-    {
-      id: "2",
-      title: "Customer Service Rep",
-      company: "Northern Trust",
-      status: "approved",
-      date: "2026-02-23",
-    },
-    {
-      id: "3",
-      title: "Security Guard",
-      company: "Guardian Services",
-      status: "rejected",
-      date: "2026-02-22",
-    },
-    {
-      id: "4",
-      title: "Administrative Assistant",
-      company: "CivicWorks",
-      status: "pending",
-      date: "2026-02-22",
-    },
-    {
-      id: "5",
-      title: "Library Aide",
-      company: "City of Ottawa",
-      status: "approved",
-      date: "2026-02-21",
-    },
-  ],
-};
-
-const fetchAdminOverview = async (): Promise<AdminOverview> => {
-  // TODO: wire to backend
-  // return apiFetch<AdminOverview>(`${API_BASE_URL}/api/v1/admin/overview`);
-  await new Promise((r) => setTimeout(r, 200));
-  return MOCK_OVERVIEW;
+  recentActivity: [],
 };
 
 // ─── Hook ────────────────────────────────────────────────────────────────────
@@ -86,11 +50,27 @@ const fetchAdminOverview = async (): Promise<AdminOverview> => {
 export function useAdminOverview() {
   const { data, error, isLoading, mutate } = useSWR<AdminOverview>(
     "/admin/overview",
-    fetchAdminOverview,
+    async () => {
+      const res = await adminGetOverview();
+      return {
+        stats: {
+          jobsPending: res.stats.jobsPending,
+          activeJobs: res.stats.activeJobs,
+          companies: res.stats.companies,
+          users: res.stats.users,
+          companiesPending: res.stats.companiesPending,
+          openReports: res.stats.openReports,
+          activeJobsThisWeek: res.stats.activeJobsThisWeek,
+          companiesThisWeek: res.stats.companiesThisWeek,
+          usersThisWeek: res.stats.usersThisWeek,
+        },
+        recentActivity: res.recentActivity,
+      };
+    },
   );
 
   return {
-    data: data ?? { stats: { jobsPending: 0, activeJobs: 0, companies: 0, users: 0 }, recentActivity: [] },
+    data: data ?? EMPTY,
     isLoading,
     isError: !!error,
     mutate,

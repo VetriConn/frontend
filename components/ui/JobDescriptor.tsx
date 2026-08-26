@@ -841,7 +841,9 @@ const JobDescriptor: React.FC<JobDescriptorProps> = ({
                   </Link>
                 )}
 
-                {/* Save Button */}
+                {/* Save Button — hidden on your own listing (you can't save
+                    your own job). */}
+                {!isOwnListing && (
                 <button
                   onClick={handleToggleSave}
                   disabled={isMutating(id)}
@@ -864,6 +866,7 @@ const JobDescriptor: React.FC<JobDescriptorProps> = ({
                       ? "Job Saved"
                       : "Save Job"}
                 </button>
+                )}
 
                 {/* Info notices */}
                 <div className="space-y-3 pt-5 border-t border-gray-100">

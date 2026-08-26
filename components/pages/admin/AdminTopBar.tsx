@@ -13,6 +13,7 @@ import {
   HiOutlineCog6Tooth,
 } from "react-icons/hi2";
 import { useUserProfile } from "@/hooks/useUserProfile";
+import { useAdminNotifications } from "@/hooks/useAdminNotifications";
 import { logoutUser } from "@/lib/api";
 import { useToaster } from "@/components/ui/Toaster";
 import { getInitials } from "@/lib/initials";
@@ -23,6 +24,8 @@ interface AdminTopBarProps {
 
 const AdminTopBar = ({ onOpenMobileMenu }: AdminTopBarProps) => {
   const { userProfile } = useUserProfile();
+  const { notifications } = useAdminNotifications();
+  const hasUnread = notifications.some((n) => !n.read);
   const { showToast } = useToaster();
   const router = useRouter();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -73,7 +76,9 @@ const AdminTopBar = ({ onOpenMobileMenu }: AdminTopBarProps) => {
           className="relative p-2 rounded-lg text-gray-600 hover:bg-gray-100 transition-colors"
         >
           <HiOutlineBell className="w-5 h-5" />
-          <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-primary ring-2 ring-white" />
+          {hasUnread && (
+            <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-primary ring-2 ring-white" />
+          )}
         </Link>
 
         {/* Profile */}

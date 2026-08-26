@@ -138,21 +138,30 @@ const AdminDashboard = () => {
         <StatCard
           label="Active Jobs"
           value={isLoading ? "—" : data.stats.activeJobs}
-          delta={{ value: "+12 this week", positive: true }}
+          delta={{
+            value: `+${data.stats.activeJobsThisWeek} this week`,
+            positive: data.stats.activeJobsThisWeek > 0,
+          }}
           icon={HiOutlineCheckCircle}
           tone="emerald"
         />
         <StatCard
           label="Companies Registered"
           value={isLoading ? "—" : data.stats.companies}
-          delta={{ value: "+3 this week", positive: true }}
+          delta={{
+            value: `+${data.stats.companiesThisWeek} this week`,
+            positive: data.stats.companiesThisWeek > 0,
+          }}
           icon={HiOutlineBuildingOffice2}
           tone="indigo"
         />
         <StatCard
           label="Users Registered"
           value={isLoading ? "—" : data.stats.users}
-          delta={{ value: "+18 this week", positive: true }}
+          delta={{
+            value: `+${data.stats.usersThisWeek} this week`,
+            positive: data.stats.usersThisWeek > 0,
+          }}
           icon={HiOutlineUsers}
           tone="rose"
         />
@@ -161,7 +170,7 @@ const AdminDashboard = () => {
       {/* Quick actions */}
       <div className="flex flex-wrap items-center gap-2.5">
         <Link
-          href="/admin/jobs/pending"
+          href="/admin/jobs"
           className="inline-flex items-center gap-2 bg-primary text-white px-4 py-2.5 rounded-xl text-sm font-semibold hover:bg-primary-hover transition-colors shadow-[0_8px_20px_-12px_rgba(229,62,62,0.7)]"
         >
           <HiOutlineBriefcase className="w-4 h-4" />
@@ -216,7 +225,7 @@ const AdminDashboard = () => {
                 >
                   <div className="flex-1 min-w-0">
                     <Link
-                      href={`/admin/jobs/${item.id}`}
+                      href={`/admin/jobs?job=${item.id}`}
                       className="block text-sm font-semibold text-gray-900 hover:text-primary truncate"
                     >
                       {item.title}
@@ -240,7 +249,7 @@ const AdminDashboard = () => {
                   </span>
 
                   <Link
-                    href={`/admin/jobs/${item.id}`}
+                    href={`/admin/jobs?job=${item.id}`}
                     aria-label={`Open ${item.title}`}
                     className="shrink-0 w-8 h-8 rounded-lg flex items-center justify-center text-gray-400 group-hover:text-gray-700 group-hover:bg-white border border-transparent group-hover:border-gray-200 transition-colors"
                   >

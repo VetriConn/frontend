@@ -31,7 +31,11 @@ export function AuthGuard({
   const { userProfile, isLoading } = useUserProfile();
   const router = useRouter();
 
-  const permitted = !adminOnly || userProfile?.role === "admin";
+  const isAdmin = userProfile?.role === "admin";
+  // Admins are staff and don't participate as members, so the member dashboard
+  // isn't theirs to use — the server refuses those endpoints outright
+  // (middleware `denyAdmin`), and this keeps them out of the UI that calls them.
+  const permitted = adminOnly ? isAdmin : !isAdmin;
 
   useEffect(() => {
     if (isLoading) return;
@@ -41,8 +45,10 @@ export function AuthGuard({
       return;
     }
 
-    if (!permitted) router.replace(redirectTo ?? "/dashboard");
-  }, [userProfile, isLoading, permitted, redirectTo, router]);
+    if (!permitted) {
+      router.replace(redirectTo ?? (isAdmin ? "/admin" : "/dashboard"));
+    }
+  }, [userProfile, isLoading, permitted, isAdmin, redirectTo, router]);
 
   if (isLoading) {
     return (

@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import clsx from "clsx";
 import {
   HiOutlineBell,
@@ -53,6 +54,34 @@ const formatRelative = (iso: string) => {
   return d.toLocaleDateString();
 };
 
+/**
+ * Where a notification points, derived from its stable key
+ * ("job:<id>", "company:<id>", "content:<id>", "user:<id>", "report:<id>").
+ * Reports have no per-item page, so they open the report queue.
+ */
+function notificationHref(id: string): string | null {
+  const idx = id.indexOf(":");
+  if (idx === -1) return null;
+  const kind = id.slice(0, idx);
+  const targetId = id.slice(idx + 1);
+  if (!targetId) return null;
+  switch (kind) {
+    case "job":
+      return `/admin/jobs?job=${targetId}`;
+    case "company":
+      // Details open in a drawer on the queue page.
+      return `/admin/companies?company=${targetId}`;
+    case "content":
+      return `/admin/community/${targetId}`;
+    case "user":
+      return `/admin/users/${targetId}`;
+    case "report":
+      return "/admin/reports";
+    default:
+      return null;
+  }
+}
+
 const NotificationRow = ({
   n,
   onMarkRead,
@@ -61,15 +90,10 @@ const NotificationRow = ({
   onMarkRead: (id: string) => void;
 }) => {
   const Icon = ICONS[n.type];
-  return (
-    <li
-      className={clsx(
-        "group relative flex items-center gap-4 px-5 md:px-6 py-4 transition-colors",
-        n.read
-          ? "bg-white hover:bg-gray-50/70"
-          : "bg-rose-50/30 hover:bg-rose-50/50",
-      )}
-    >
+  const href = notificationHref(n.id);
+
+  const body = (
+    <>
       <div
         className={clsx(
           "w-10 h-10 rounded-xl ring-1 flex items-center justify-center shrink-0",
@@ -92,6 +116,32 @@ const NotificationRow = ({
           {formatRelative(n.createdAt)}
         </p>
       </div>
+    </>
+  );
+
+  return (
+    <li
+      className={clsx(
+        "group relative flex items-center gap-4 px-5 md:px-6 py-4 transition-colors",
+        n.read
+          ? "bg-white hover:bg-gray-50/70"
+          : "bg-rose-50/30 hover:bg-rose-50/50",
+      )}
+    >
+      {href ? (
+        // Opening the subject also marks it read.
+        <Link
+          href={href}
+          onClick={() => {
+            if (!n.read) onMarkRead(n.id);
+          }}
+          className="flex items-center gap-4 flex-1 min-w-0"
+        >
+          {body}
+        </Link>
+      ) : (
+        <div className="flex items-center gap-4 flex-1 min-w-0">{body}</div>
+      )}
 
       {!n.read && (
         <button

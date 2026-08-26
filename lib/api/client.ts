@@ -29,6 +29,43 @@ type ApiFetchInit = RequestInit & {
   skipContentTypeHeaderCheck?: boolean;
 };
 
+// Once a dead session is detected we send the user to sign in exactly once —
+// concurrent failing requests must not stack up redirects.
+let redirectingToSignin = false;
+
+/**
+ * Endpoints where a 401/403 is an expected answer to a fresh attempt (wrong
+ * password, bad/expired token in an email link) rather than an expired session,
+ * so they must NOT trigger the auto sign-out.
+ */
+function isPreAuthEndpoint(url: string): boolean {
+  return (
+    /\/api\/v1\/auth\/(login|register|two-factor|forgot-password|reset-password|verify-email|resend-verification|check-verification|check-email)/i.test(
+      url,
+    ) || /\/invites\/accept/i.test(url)
+  );
+}
+
+/**
+ * A previously-valid session has expired or been revoked. Rather than leaving
+ * the page stuck on error/loading states, send the user to sign in and bring
+ * them back to where they were afterward.
+ */
+function handleExpiredSession(): void {
+  if (typeof window === "undefined" || redirectingToSignin) return;
+  const path = window.location.pathname;
+  if (path.startsWith("/signin")) return;
+  // Only bounce out of the authenticated areas. A 401 while browsing public
+  // pages (an anonymous visitor) is normal and must not force a sign-in.
+  if (!path.startsWith("/dashboard") && !path.startsWith("/admin")) return;
+  redirectingToSignin = true;
+  // `redirect` is the return-url param the sign-in page reads (RETURN_URL_PARAM).
+  const back = path + window.location.search;
+  window.location.assign(
+    `/signin?reason=session-expired&redirect=${encodeURIComponent(back)}`,
+  );
+}
+
 function getErrorMessageFromPayload(payload: unknown): string | null {
   if (!payload || typeof payload !== "object") return null;
 
@@ -50,9 +87,16 @@ export async function apiFetch<T>(
   init: ApiFetchInit = {},
 ): Promise<T> {
   try {
+    // Custom header the backend requires on cookie-authenticated mutations
+    // (CSRF defense — a cross-site form/simple request cannot set it).
+    const headers = new Headers(init.headers);
+    if (!headers.has("X-Requested-With")) {
+      headers.set("X-Requested-With", "XMLHttpRequest");
+    }
     const response = await fetch(url, {
       credentials: "include",
       ...init,
+      headers,
     });
 
     const contentType = response.headers.get("content-type") || "";
@@ -76,6 +120,17 @@ export async function apiFetch<T>(
       const message =
         getErrorMessageFromPayload(payload) ||
         `HTTP ${response.status}: ${response.statusText}`;
+
+      // A dead session (401, or the "invalid/expired token" 403) on any
+      // authenticated request → sign the user out cleanly instead of leaving
+      // the UI wedged. Login/verify flows are excluded so their own errors show.
+      const sessionExpired =
+        response.status === 401 ||
+        (response.status === 403 && /invalid or expired token/i.test(message));
+      if (sessionExpired && !isPreAuthEndpoint(url)) {
+        handleExpiredSession();
+      }
+
       throw new Error(message);
     }
 
@@ -96,9 +151,14 @@ export async function apiFetchBlob(
   init: RequestInit = {},
 ): Promise<Blob> {
   try {
+    const headers = new Headers(init.headers);
+    if (!headers.has("X-Requested-With")) {
+      headers.set("X-Requested-With", "XMLHttpRequest");
+    }
     const response = await fetch(url, {
       credentials: "include",
       ...init,
+      headers,
     });
 
     if (!response.ok) {

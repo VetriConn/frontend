@@ -17,7 +17,6 @@ import {
   CreateAccountStep,
   ContactInfoStep,
   WorkBackgroundStep,
-  ResumeUploadStep,
   CompletionStep,
 } from "./steps";
 import {
@@ -346,10 +345,6 @@ export function SignupWizard() {
         return false;
       }
 
-      if (formData.resumeFile) {
-        // Resume upload is intentionally deferred until post-verification sign-in.
-      }
-
       // Clear session storage on successful registration
       sessionStorage.removeItem(STORAGE_KEY);
 
@@ -500,8 +495,6 @@ export function SignupWizard() {
       case 3:
         return <WorkBackgroundStep {...stepProps} />;
       case 4:
-        return <ResumeUploadStep {...stepProps} />;
-      case 5:
         return (
           <CompletionStep
             formData={formData}

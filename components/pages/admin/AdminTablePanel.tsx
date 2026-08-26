@@ -280,3 +280,52 @@ export const AdminRowSkeleton = ({ columns }: AdminRowSkeletonProps) => (
     ))}
   </tr>
 );
+
+// ─── Summary stat card ───────────────────────────────────────────────────────
+
+export type StatTone = "amber" | "emerald" | "rose" | "indigo" | "gray";
+
+const STAT_TONES: Record<StatTone, string> = {
+  amber: "bg-amber-50 text-amber-600 ring-amber-100",
+  emerald: "bg-emerald-50 text-emerald-600 ring-emerald-100",
+  rose: "bg-rose-50 text-rose-600 ring-rose-100",
+  indigo: "bg-indigo-50 text-indigo-600 ring-indigo-100",
+  gray: "bg-gray-100 text-gray-600 ring-gray-200",
+};
+
+/** The summary card that heads every admin list page. */
+export const AdminStatCard = ({
+  icon: Icon,
+  label,
+  value,
+  tone,
+}: {
+  icon: React.ComponentType<{ className?: string }>;
+  label: string;
+  value: number | string;
+  tone: StatTone;
+}) => (
+  <div className="bg-white rounded-2xl border border-gray-200/80 p-5 shadow-[0_1px_2px_rgba(15,23,42,0.04)]">
+    <div className="flex items-start justify-between gap-3">
+      <div className="min-w-0">
+        <p className="text-[13px] font-medium text-gray-500">{label}</p>
+        <p className="mt-2 text-3xl font-bold text-gray-900 tracking-tight tabular-nums">
+          {value}
+        </p>
+      </div>
+      <div
+        className={clsx(
+          "w-11 h-11 rounded-xl ring-1 flex items-center justify-center shrink-0",
+          STAT_TONES[tone],
+        )}
+      >
+        <Icon className="w-5 h-5" />
+      </div>
+    </div>
+  </div>
+);
+
+/** Row of summary cards; 2-up on mobile, 4-up on desktop. */
+export const AdminStatRow = ({ children }: { children: React.ReactNode }) => (
+  <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-5">{children}</div>
+);

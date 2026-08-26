@@ -47,6 +47,7 @@ export interface Company {
   tagline?: string;
   rc_number?: string;
   registration_authority?: string;
+  business_number?: string;
   authorized_rep_verified?: boolean;
   logo_url?: string;
   banner_url?: string;
@@ -227,6 +228,37 @@ export async function transferOwnership(
 
 // ── Jobs ────────────────────────────────────────────────────────────────────
 
+/** A company's live listings, for its public profile. No auth required. */
+export async function getPublicCompanyJobs(
+  companyId: string,
+  page = 1,
+  limit = 20,
+): Promise<{
+  jobs: PublicCompanyJob[];
+  pagination?: PaginatedApiEnvelope<PublicCompanyJob[]>["pagination"];
+}> {
+  const response = await apiFetch<PaginatedApiEnvelope<PublicCompanyJob[]>>(
+    `${COMPANIES_URL}/${companyId}/open-jobs?page=${page}&limit=${limit}`,
+    { method: "GET" },
+  );
+  return { jobs: response.data || [], pagination: response.pagination };
+}
+
+export interface PublicCompanyJob {
+  _id: string;
+  id?: string;
+  role: string;
+  location?: string;
+  job_type?: string;
+  work_arrangement?: string;
+  salary?: { number?: number; currency?: string };
+  salary_range?: { min?: number; max?: number };
+  salary_text?: string;
+  payment_type?: string;
+  currency?: string;
+  createdAt?: string;
+}
+
 export async function getCompanyJobs(
   companyId: string,
 ): Promise<PostedJobSummary[]> {
@@ -238,6 +270,57 @@ export async function getCompanyJobs(
 }
 
 // ── Admin review ────────────────────────────────────────────────────────────
+
+/** The requesting (owner) account attached to a company under review. */
+export interface AdminCompanyOwner {
+  id: string;
+  full_name: string;
+  email?: string;
+  picture?: string;
+}
+
+export interface AdminCompanyDetail extends Company {
+  owner: AdminCompanyOwner | null;
+}
+
+/**
+ * Full company record for admin review — any status, with the owner account —
+ * unlike the public getCompanyById which hides non-approved companies.
+ */
+export async function adminGetCompany(
+  companyId: string,
+): Promise<AdminCompanyDetail> {
+  const response = await apiFetch<ApiEnvelope<AdminCompanyDetail>>(
+    `${COMPANIES_URL}/admin/${companyId}`,
+    { method: "GET" },
+  );
+  return response.data;
+}
+
+export interface AdminCompanyCounts {
+  pending: number;
+  approved: number;
+  rejected: number;
+  suspended: number;
+  total: number;
+}
+
+/** Company counts by status, for the admin list page's summary cards. */
+export async function adminCompanyCounts(): Promise<AdminCompanyCounts> {
+  const response = await apiFetch<ApiEnvelope<AdminCompanyCounts>>(
+    `${COMPANIES_URL}/admin/counts`,
+    { method: "GET" },
+  );
+  return (
+    response.data ?? {
+      pending: 0,
+      approved: 0,
+      rejected: 0,
+      suspended: 0,
+      total: 0,
+    }
+  );
+}
 
 export async function adminListCompanies(options?: {
   status?: CompanyStatus;
@@ -289,13 +372,19 @@ export async function adminRejectCompany(
  * account. Its existing listings stay up — taking those down is a separate
  * decision from taking the company's standing away.
  */
+/** Step-up credentials required by suspend/reinstate (ADM-5). */
+export interface StepUpAuth {
+  password: string;
+  totp_code?: string;
+}
+
 export async function adminSuspendCompany(
   companyId: string,
-  reason?: string,
+  auth: StepUpAuth & { reason?: string },
 ): Promise<Company> {
   const response = await apiFetch<ApiEnvelope<Company>>(
     `${COMPANIES_URL}/admin/${companyId}/suspend`,
-    jsonRequest("PATCH", { reason }),
+    jsonRequest("PATCH", auth),
   );
   return response.data;
 }
@@ -303,10 +392,11 @@ export async function adminSuspendCompany(
 /** Restore a suspended company to approved. */
 export async function adminReinstateCompany(
   companyId: string,
+  auth: StepUpAuth,
 ): Promise<Company> {
   const response = await apiFetch<ApiEnvelope<Company>>(
     `${COMPANIES_URL}/admin/${companyId}/reinstate`,
-    { method: "PATCH" },
+    jsonRequest("PATCH", auth),
   );
   return response.data;
 }

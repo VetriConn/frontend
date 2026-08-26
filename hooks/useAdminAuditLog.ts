@@ -1,91 +1,49 @@
 import useSWR from "swr";
+import { adminListAuditLogs, type AdminAuditLog } from "@/lib/api/admin";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
-export type AuditAction =
-  | "admin.invited"
-  | "admin.invite_revoked"
-  | "admin.role_changed"
-  | "admin.suspended"
-  | "admin.reinstated"
-  | "admin.removed"
-  | "job.approved"
-  | "job.rejected"
-  | "job.unpublished"
-  | "employer.suspended"
-  | "employer.reinstated"
-  | "user.suspended"
-  | "user.reinstated"
-  | "post.removed"
-  | "ticket.replied"
-  | "ticket.resolved"
-  | "ticket.closed";
-
 export interface AuditLogEntry {
   id: string;
-  action: AuditAction;
+  /** Raw backend event type (e.g. "JOB_APPROVED"). */
+  action: string;
   actor: { id: string; name: string };
   target?: { id: string; label: string };
   metadata?: Record<string, string>;
   createdAt: string;
 }
 
-// ─── Mock data ───────────────────────────────────────────────────────────────
+// ─── Mapping ─────────────────────────────────────────────────────────────────
 
-const MOCK: AuditLogEntry[] = [
-  {
-    id: "log-1",
-    action: "admin.invited",
-    actor: { id: "a-1", name: "Admin User" },
-    target: { id: "inv-1", label: "rosa@vetriconn.com" },
-    metadata: { role: "admin" },
-    createdAt: "2026-05-22T14:02:00Z",
-  },
-  {
-    id: "log-2",
-    action: "admin.suspended",
-    actor: { id: "a-1", name: "Admin User" },
-    target: { id: "a-4", label: "Dana Whitford" },
-    metadata: { reason: "Repeated policy violations" },
-    createdAt: "2026-05-21T10:30:00Z",
-  },
-  {
-    id: "log-3",
-    action: "job.approved",
-    actor: { id: "a-2", name: "Priya Shah" },
-    target: { id: "j-0901", label: "Customer Service Rep — Northern Trust" },
-    createdAt: "2026-05-20T16:15:00Z",
-  },
-  {
-    id: "log-4",
-    action: "post.removed",
-    actor: { id: "a-3", name: "Marcus Lee" },
-    target: { id: "p-1", label: "Tips for Returning to Work After Retirement" },
-    metadata: { reason: "Spam" },
-    createdAt: "2026-05-19T08:45:00Z",
-  },
-  {
-    id: "log-5",
-    action: "employer.suspended",
-    actor: { id: "a-2", name: "Priya Shah" },
-    target: { id: "e-4", label: "Guardian Services" },
-    metadata: { reason: "Failed verification" },
-    createdAt: "2026-05-18T12:11:00Z",
-  },
-];
+function toEntry(log: AdminAuditLog): AuditLogEntry {
+  const metadata: Record<string, string> | undefined = log.metadata
+    ? Object.fromEntries(
+        Object.entries(log.metadata).map(([k, v]) => [k, String(v)]),
+      )
+    : undefined;
 
-const fetchAuditLog = async (): Promise<AuditLogEntry[]> => {
-  // TODO: GET /api/v1/admin/team/audit-log
-  await new Promise((r) => setTimeout(r, 200));
-  return MOCK;
-};
+  return {
+    id: log._id,
+    action: log.eventType,
+    actor: {
+      id: log.userId ?? "",
+      name: log.email ?? log.userId ?? "System",
+    },
+    metadata,
+    createdAt: log.timestamp,
+  };
+}
 
 // ─── Hook ────────────────────────────────────────────────────────────────────
 
-export function useAdminAuditLog() {
+export function useAdminAuditLog(params?: {
+  eventType?: string;
+  userId?: string;
+}) {
   const { data, error, isLoading, mutate } = useSWR<AuditLogEntry[]>(
-    "/admin/team/audit-log",
-    fetchAuditLog,
+    ["admin-audit-logs", params?.eventType ?? "", params?.userId ?? ""],
+    async () =>
+      (await adminListAuditLogs({ ...params, limit: 100 })).logs.map(toEntry),
   );
   return {
     entries: data ?? [],
@@ -97,42 +55,61 @@ export function useAdminAuditLog() {
 
 // ─── Display helpers ─────────────────────────────────────────────────────────
 
-export const ACTION_LABEL: Record<AuditAction, string> = {
-  "admin.invited": "Invited admin",
-  "admin.invite_revoked": "Revoked admin invite",
-  "admin.role_changed": "Changed admin role",
-  "admin.suspended": "Suspended admin",
-  "admin.reinstated": "Reinstated admin",
-  "admin.removed": "Removed admin",
-  "job.approved": "Approved job",
-  "job.rejected": "Rejected job",
-  "job.unpublished": "Unpublished job",
-  "employer.suspended": "Suspended employer",
-  "employer.reinstated": "Reinstated employer",
-  "user.suspended": "Suspended user",
-  "user.reinstated": "Reinstated user",
-  "post.removed": "Removed community post",
-  "ticket.replied": "Replied to ticket",
-  "ticket.resolved": "Resolved ticket",
-  "ticket.closed": "Closed ticket",
+const LABELS: Record<string, string> = {
+  LOGIN_SUCCESS: "Login",
+  LOGIN_FAILURE: "Failed login",
+  LOGOUT: "Logout",
+  PASSWORD_CHANGE: "Password changed",
+  PASSWORD_RESET_REQUEST: "Password reset requested",
+  PASSWORD_RESET_COMPLETE: "Password reset",
+  ACCOUNT_CREATED: "Account created",
+  ACCOUNT_DEACTIVATED: "Account deactivated",
+  ACCOUNT_DELETED: "Account deleted",
+  ACCOUNT_RESTORED: "Account restored",
+  EMAIL_VERIFICATION: "Email verified",
+  ROLE_CHANGE: "Role changed",
+  RATE_LIMIT_EXCEEDED: "Rate limit exceeded",
+  USER_SUSPENDED: "Suspended member",
+  USER_REINSTATED: "Reinstated member",
+  ADMIN_INVITED: "Invited admin",
+  ADMIN_INVITE_ACCEPTED: "Admin invite accepted",
+  ADMIN_ROLE_GRANTED: "Granted admin",
+  ADMIN_ROLE_CHANGED: "Changed admin role",
+  ADMIN_SUSPENDED: "Suspended admin",
+  ADMIN_REINSTATED: "Reinstated admin",
+  ADMIN_SESSION_REVOKED: "Revoked admin session",
+  STEP_UP_AUTH_SUCCESS: "Step-up verified",
+  STEP_UP_AUTH_FAILURE: "Step-up failed",
+  JOB_APPROVED: "Approved job",
+  JOB_REJECTED: "Rejected job",
+  JOB_BULK_ACTION: "Bulk job action",
+  JOB_REPORTED: "Job reported",
+  JOB_RETURNED_TO_QUEUE: "Job returned to queue",
+  COMPANY_APPROVED: "Approved company",
+  COMPANY_REJECTED: "Rejected company",
+  COMPANY_SUSPENDED: "Suspended company",
+  COMPANY_REINSTATED: "Reinstated company",
+  COMPANY_VERIFIED: "Verified company",
+  COMPANY_MEMBER_REMOVED_BY_ADMIN: "Removed company member",
+  COMPANY_MEMBER_REPORTED: "Company member reported",
 };
 
-export const ACTION_TONE: Record<AuditAction, "rose" | "emerald" | "indigo" | "amber" | "gray"> = {
-  "admin.invited": "indigo",
-  "admin.invite_revoked": "rose",
-  "admin.role_changed": "amber",
-  "admin.suspended": "rose",
-  "admin.reinstated": "emerald",
-  "admin.removed": "rose",
-  "job.approved": "emerald",
-  "job.rejected": "rose",
-  "job.unpublished": "amber",
-  "employer.suspended": "rose",
-  "employer.reinstated": "emerald",
-  "user.suspended": "rose",
-  "user.reinstated": "emerald",
-  "post.removed": "rose",
-  "ticket.replied": "indigo",
-  "ticket.resolved": "emerald",
-  "ticket.closed": "gray",
-};
+/** A readable label for any event type, mapped or humanized. */
+export function actionLabel(eventType: string): string {
+  if (LABELS[eventType]) return LABELS[eventType];
+  const lower = eventType.replace(/_/g, " ").toLowerCase();
+  return lower.charAt(0).toUpperCase() + lower.slice(1);
+}
+
+export type ActionTone = "rose" | "emerald" | "indigo" | "amber" | "gray";
+
+/** Colour by outcome — destructive red, positive green, neutral gray. */
+export function actionTone(eventType: string): ActionTone {
+  if (/(REJECT|SUSPEND|FAIL|DELET|DEACTIV|REMOV|RATE_LIMIT|REPORTED)/.test(eventType))
+    return "rose";
+  if (/(APPROV|REINSTAT|VERIF|RESTOR|SUCCESS|CREATED|ACCEPTED)/.test(eventType))
+    return "emerald";
+  if (/(INVIT|LOGIN|GRANT)/.test(eventType)) return "indigo";
+  if (/(RETURNED_TO_QUEUE|CHANGE|BULK)/.test(eventType)) return "amber";
+  return "gray";
+}

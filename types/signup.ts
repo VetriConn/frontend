@@ -103,12 +103,6 @@ export const STEP_CONFIGS: SignupStepConfig[] = [
   },
   {
     id: 4,
-    name: "Resume Upload",
-    isOptional: true,
-    fields: ["resumeFile"],
-  },
-  {
-    id: 5,
     name: "Complete",
     isOptional: false,
     fields: [],

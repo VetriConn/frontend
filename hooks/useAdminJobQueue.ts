@@ -85,14 +85,27 @@ export function toAdminJob(j: AdminJobRaw): AdminJob {
 
 // ─── Hooks ───────────────────────────────────────────────────────────────────
 
-export function useAdminJobQueue(status: AdminJobStatus) {
-  const { data, error, isLoading, mutate } = useSWR<AdminJob[]>(
-    ["admin-jobs", status],
-    async () => (await adminListJobs(status)).map(toAdminJob),
+export function useAdminJobQueue(
+  status: AdminJobStatus | "all",
+  page = 1,
+  limit = 20,
+) {
+  const { data, error, isLoading, mutate } = useSWR(
+    ["admin-jobs", status, page, limit],
+    async () => {
+      // "all" omits the approval filter, returning every moderation state.
+      const res = await adminListJobs(
+        status === "all" ? undefined : status,
+        page,
+        limit,
+      );
+      return { jobs: res.jobs.map(toAdminJob), pagination: res.pagination };
+    },
   );
 
   return {
-    jobs: data ?? [],
+    jobs: data?.jobs ?? [],
+    pagination: data?.pagination,
     isLoading,
     isError: !!error,
     mutate,

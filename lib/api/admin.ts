@@ -152,6 +152,10 @@ export interface AdminOverviewStats {
   companiesPending: number;
   users: number;
   openReports: number;
+  /** Trailing-7-day new counts, for the card trend labels. */
+  activeJobsThisWeek: number;
+  companiesThisWeek: number;
+  usersThisWeek: number;
 }
 
 export interface AdminOverviewActivity {
@@ -181,6 +185,9 @@ export async function adminGetOverview(): Promise<AdminOverviewResponse> {
         companiesPending: 0,
         users: 0,
         openReports: 0,
+        activeJobsThisWeek: 0,
+        companiesThisWeek: 0,
+        usersThisWeek: 0,
       },
       recentActivity: [],
     }
@@ -427,6 +434,13 @@ export interface AdminSettingsResponse {
     new_job_submissions: boolean;
     user_reports: boolean;
   };
+  /** Identity + security context shown in the profile header. */
+  picture?: string;
+  admin_role?: AdminRole;
+  admin_status?: "active" | "suspended" | "pending_mfa";
+  two_factor_enabled?: boolean;
+  last_active_at?: string;
+  created_at?: string;
 }
 
 export async function adminGetSettings(): Promise<AdminSettingsResponse> {
@@ -461,4 +475,59 @@ export async function adminUpdateSettingsNotifications(body: {
     `${ADMIN_URL}/settings/notifications`,
     jsonRequest("PATCH", body),
   );
+}
+
+// ─── Summary counts for the list pages' stat cards ───────────────────────────
+
+export interface AdminMemberCounts {
+  total: number;
+  active: number;
+  suspended: number;
+}
+
+export async function adminMemberCounts(): Promise<AdminMemberCounts> {
+  const res = await apiFetch<ApiEnvelope<AdminMemberCounts>>(
+    `${ADMIN_URL}/members/counts`,
+    { method: "GET" },
+  );
+  return res.data ?? { total: 0, active: 0, suspended: 0 };
+}
+
+export interface AdminContentCounts {
+  visible: number;
+  flagged: number;
+  removed: number;
+  total: number;
+}
+
+export async function adminContentCounts(): Promise<AdminContentCounts> {
+  const res = await apiFetch<ApiEnvelope<AdminContentCounts>>(
+    `${ADMIN_URL}/content/counts`,
+    { method: "GET" },
+  );
+  return res.data ?? { visible: 0, flagged: 0, removed: 0, total: 0 };
+}
+
+// ─── Own admin sessions (GET/DELETE /api/v1/admin/sessions) ──────────────────
+
+export interface AdminSessionRow {
+  _id: string;
+  jti: string;
+  ip?: string;
+  userAgent?: string;
+  createdAt: string;
+  lastSeenAt: string;
+}
+
+/** Live console sessions for the signed-in admin (the endpoint returns the array directly). */
+export async function adminListOwnSessions(): Promise<AdminSessionRow[]> {
+  const res = await apiFetch<ApiEnvelope<AdminSessionRow[]>>(
+    `${ADMIN_URL}/sessions`,
+    { method: "GET" },
+  );
+  return res.data ?? [];
+}
+
+export async function adminRevokeOwnSession(sessionId: string): Promise<void> {
+  await apiFetch(`${ADMIN_URL}/sessions/${sessionId}`, { method: "DELETE" });
 }

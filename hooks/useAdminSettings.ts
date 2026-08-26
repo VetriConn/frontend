@@ -15,6 +15,12 @@ export interface AdminAccountSettings {
     new_job_submissions: boolean;
     user_reports: boolean;
   };
+  picture?: string;
+  admin_role?: "super_admin" | "reviewer" | "moderator" | "billing";
+  admin_status?: "active" | "suspended" | "pending_mfa";
+  two_factor_enabled?: boolean;
+  last_active_at?: string;
+  created_at?: string;
 }
 
 export function useAdminSettings() {

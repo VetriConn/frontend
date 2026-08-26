@@ -1,5 +1,8 @@
+import { useEffect, useState } from "react";
 import useSWR from "swr";
 import {
+  getPublicCompanyJobs,
+  type PublicCompanyJob,
   getMyCompanies,
   getCompanyById,
   getCompanyJobs,
@@ -60,10 +63,17 @@ export function useCompanyJobs(companyId: string | undefined) {
 }
 
 /** Admin review queue, filtered by review status. */
-export function useAdminCompanies(status: CompanyStatus) {
+export function useAdminCompanies(
+  status: CompanyStatus | "all",
+  page = 1,
+  limit = 20,
+) {
+  // "all" omits the status filter entirely, so the endpoint returns every
+  // company regardless of standing.
+  const filter = status === "all" ? undefined : status;
   const { data, error, isLoading, mutate } = useSWR(
-    `/companies/admin/all?status=${status}`,
-    () => adminListCompanies({ status }),
+    `/companies/admin/all?status=${status}&page=${page}&limit=${limit}`,
+    () => adminListCompanies({ status: filter, page, limit }),
   );
 
   return {
@@ -73,5 +83,37 @@ export function useAdminCompanies(status: CompanyStatus) {
     isError: !!error,
     error,
     mutate,
+  };
+}
+
+/** A company's live listings for its public profile (no auth). */
+export function usePublicCompanyJobs(
+  companyId: string | undefined,
+  limit = 20,
+) {
+  const [page, setPage] = useState(1);
+  const { data, error, isLoading } = useSWR(
+    companyId ? `/companies/${companyId}/open-jobs?page=${page}&limit=${limit}` : null,
+    () => getPublicCompanyJobs(companyId!, page, limit),
+  );
+
+  // Listings accumulate as the visitor pages, so "load more" appends rather
+  // than replacing the section.
+  const [all, setAll] = useState<PublicCompanyJob[]>([]);
+  useEffect(() => {
+    if (!data?.jobs) return;
+    setAll((prev) =>
+      page === 1 ? data.jobs : [...prev, ...data.jobs.filter((j) => !prev.some((p) => p._id === j._id))],
+    );
+  }, [data, page]);
+
+  return {
+    jobs: page === 1 && !data ? [] : all,
+    total: data?.pagination?.totalItems ?? all.length,
+    hasMore: data?.pagination?.hasNext ?? false,
+    loadMore: () => setPage((p) => p + 1),
+    isLoadingMore: isLoading && page > 1,
+    isLoading: isLoading && page === 1,
+    isError: !!error,
   };
 }

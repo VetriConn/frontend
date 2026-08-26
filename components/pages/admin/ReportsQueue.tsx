@@ -3,13 +3,21 @@
 import { useState } from "react";
 import Link from "next/link";
 import clsx from "clsx";
-import { HiOutlineFlag, HiOutlineCheck, HiOutlineXMark } from "react-icons/hi2";
+import {
+  HiOutlineFlag,
+  HiOutlineCheck,
+  HiOutlineXMark,
+  HiOutlineBriefcase,
+  HiOutlineBuildingOffice2,
+  HiOutlineUsers,
+} from "react-icons/hi2";
 import {
   useAdminReports,
   useReportCounts,
   resolveAdminReport,
   TARGET_TYPE_LABEL,
   REASON_LABEL,
+  type AdminReport,
   type ReportStatus,
   type ReportTargetType,
 } from "@/hooks/useAdminReports";
@@ -24,9 +32,11 @@ import {
   AdminTableTd,
   AdminRowSkeleton,
   AdminEmptyState,
-  RowActions,
   StatusPill,
+  AdminStatCard,
+  AdminStatRow,
 } from "./AdminTablePanel";
+import KebabMenu, { type KebabAction } from "./KebabMenu";
 import { useToaster } from "@/components/ui/Toaster";
 
 const formatDate = (iso: string) => {
@@ -65,7 +75,7 @@ const ReportsQueue = () => {
     status,
     type === "all" ? undefined : type,
   );
-  const { total: openTotal, mutate: mutateCounts } = useReportCounts();
+  const { counts, total: openTotal, mutate: mutateCounts } = useReportCounts();
   const { showToast } = useToaster();
   const [busyId, setBusyId] = useState<string | null>(null);
 
@@ -85,12 +95,54 @@ const ReportsQueue = () => {
     }
   };
 
+  const rowActions = (r: AdminReport): KebabAction[] => [
+    {
+      label: "Resolve",
+      icon: HiOutlineCheck,
+      onClick: () => act(r.id, "resolved"),
+      disabled: busyId === r.id,
+    },
+    {
+      label: "Dismiss",
+      icon: HiOutlineXMark,
+      onClick: () => act(r.id, "dismissed"),
+      disabled: busyId === r.id,
+    },
+  ];
+
   return (
     <div className="max-w-7xl mx-auto space-y-6">
       <AdminPageHeader
         title="Reports"
         description="Abuse reports across jobs, companies, and company members."
       />
+
+      <AdminStatRow>
+        <AdminStatCard
+          icon={HiOutlineFlag}
+          label="Open reports"
+          value={openTotal}
+          tone="rose"
+        />
+        <AdminStatCard
+          icon={HiOutlineBriefcase}
+          label="On jobs"
+          value={counts.job ?? 0}
+          tone="amber"
+        />
+        <AdminStatCard
+          icon={HiOutlineBuildingOffice2}
+          label="On companies"
+          value={counts.company ?? 0}
+          tone="indigo"
+        />
+        <AdminStatCard
+          icon={HiOutlineUsers}
+          label="On members"
+          value={counts.company_member ?? 0}
+          tone="gray"
+        />
+      </AdminStatRow>
 
       {/* Filters */}
       <div className="flex flex-wrap items-center gap-3">
@@ -226,26 +278,11 @@ const ReportsQueue = () => {
                     </AdminTableTd>
                     <AdminTableTd align="right">
                       {status === "open" ? (
-                        <RowActions>
-                          <button
-                            onClick={() => act(r.id, "resolved")}
-                            disabled={busyId === r.id}
-                            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-emerald-200 bg-white text-xs font-semibold text-emerald-700 hover:bg-emerald-50 disabled:opacity-50"
-                          >
-                            <HiOutlineCheck className="w-3.5 h-3.5" />
-                            Resolve
-                          </button>
-                          <button
-                            onClick={() => act(r.id, "dismissed")}
-                            disabled={busyId === r.id}
-                            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-gray-200 bg-white text-xs font-semibold text-gray-600 hover:bg-gray-50 disabled:opacity-50"
-                          >
-                            <HiOutlineXMark className="w-3.5 h-3.5" />
-                            Dismiss
-                          </button>
-                        </RowActions>
+                        <KebabMenu actions={rowActions(r)} />
                       ) : (
-                        <StatusPill tone={status === "resolved" ? "emerald" : "gray"}>
+                        <StatusPill
+                          tone={status === "resolved" ? "emerald" : "gray"}
+                        >
                           {status === "resolved" ? "Resolved" : "Dismissed"}
                         </StatusPill>
                       )}

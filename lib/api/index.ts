@@ -127,6 +127,8 @@ export {
   removeMember,
   transferOwnership,
   getCompanyJobs,
+  getPublicCompanyJobs,
+  type PublicCompanyJob,
   adminListCompanies,
   adminApproveCompany,
   adminRejectCompany,

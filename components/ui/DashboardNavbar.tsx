@@ -399,7 +399,7 @@ const DashboardNavbar = () => {
         </Link>
 
         {/* Right Side - All Navigation Items */}
-        <div className="hidden md:flex items-center gap-2" ref={jobsDropdownRef}>
+        <div className="hidden lg:flex items-center gap-2" ref={jobsDropdownRef}>
           {/* Center Navigation */}
           {navItems.map((item) => (
             <div key={item.name} className="relative">
@@ -594,7 +594,7 @@ const DashboardNavbar = () => {
         </div>
 
         {/* Mobile Menu Button */}
-        <div className="md:hidden">
+        <div className="lg:hidden">
           <button
             ref={mobileMenuButtonRef}
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
@@ -614,7 +614,7 @@ const DashboardNavbar = () => {
       {/* Mobile Menu Backdrop */}
       <div
         className={clsx(
-          "fixed inset-0 bg-black/50 z-40 md:hidden transition-opacity duration-300 ease-in-out",
+          "fixed inset-0 bg-black/50 z-40 lg:hidden transition-opacity duration-300 ease-in-out",
           isMobileMenuOpen ? "opacity-100" : "opacity-0 pointer-events-none",
         )}
         onClick={closeMobileMenu}
@@ -625,15 +625,32 @@ const DashboardNavbar = () => {
       <div
         ref={mobileMenuRef}
         className={clsx(
-          "fixed top-0 right-0 bottom-0 w-80 bg-white border-l border-gray-200 shadow-xl z-50 md:hidden overflow-y-auto transition-transform duration-300 ease-in-out",
+          "fixed top-0 right-0 bottom-0 w-80 bg-white border-l border-gray-200 shadow-xl z-50 lg:hidden overflow-y-auto transition-transform duration-300 ease-in-out",
           isMobileMenuOpen ? "translate-x-0" : "translate-x-full",
         )}
         role="dialog"
         aria-modal="true"
         aria-label="Mobile navigation menu"
       >
-        <div className="pt-[73px] pb-[73px] px-0">
-          {navItems.map((item, index) => (
+        {/* Close-button header — sticky so it stays reachable while scrolling. */}
+        <div className="sticky top-0 z-10 flex items-center justify-between h-[73px] px-4 bg-white border-b border-gray-100">
+          <span className="text-sm font-semibold text-gray-500">Menu</span>
+          <button
+            onClick={closeMobileMenu}
+            aria-label="Close menu"
+            className="p-2 -mr-2 rounded-lg text-gray-500 hover:bg-gray-100 min-h-[44px] min-w-[44px] flex items-center justify-center"
+          >
+            <HiOutlineXMark className="w-6 h-6" />
+          </button>
+        </div>
+
+        <div className="pb-[73px] px-0">
+          {/* Only the non-dropdown top-level items here; the dropdown groups
+              (Find Jobs, My Postings) render once as sections below, so they're
+              no longer duplicated as flat rows. */}
+          {navItems
+            .filter((item) => !item.dropdown)
+            .map((item, index) => (
             <Link
               key={item.name}
               ref={index === 0 ? firstMobileMenuItemRef : undefined}

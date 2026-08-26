@@ -1,7 +1,16 @@
 "use client";
 
 import { useState } from "react";
-import { HiOutlineUsers } from "react-icons/hi2";
+import { useRouter } from "next/navigation";
+import useSWR from "swr";
+import {
+  HiOutlineUsers,
+  HiOutlineUserCircle,
+  HiOutlineNoSymbol,
+  HiOutlineEye,
+  HiOutlineCheckCircle,
+} from "react-icons/hi2";
+import { adminMemberCounts } from "@/lib/api/admin";
 import {
   useAdminUsers,
   suspendAdminUser,
@@ -19,10 +28,11 @@ import {
   AdminTableTd,
   AdminRowSkeleton,
   AdminEmptyState,
-  RowActions,
-  ViewAction,
-  DangerAction,
+  StatusPill,
+  AdminStatCard,
+  AdminStatRow,
 } from "./AdminTablePanel";
+import KebabMenu, { type KebabAction } from "./KebabMenu";
 import ConfirmDialog from "./ConfirmDialog";
 import { useToaster } from "@/components/ui/Toaster";
 
@@ -37,7 +47,12 @@ const formatDate = (iso: string) => {
 };
 
 const UserManagement = () => {
+  const router = useRouter();
   const { users, isLoading, mutate } = useAdminUsers();
+  const { data: counts, mutate: mutateCounts } = useSWR(
+    "admin-member-counts",
+    adminMemberCounts,
+  );
   const { showToast } = useToaster();
   const [target, setTarget] = useState<AdminUser | null>(null);
   const [busy, setBusy] = useState(false);
@@ -77,12 +92,59 @@ const UserManagement = () => {
     }
   };
 
+  const rowActions = (u: AdminUser): KebabAction[] => [
+    {
+      label: "View profile",
+      icon: HiOutlineEye,
+      onClick: () => router.push(`/admin/users/${u.id}`),
+    },
+    u.status === "suspended"
+      ? {
+          label: "Reinstate",
+          icon: HiOutlineCheckCircle,
+          onClick: () => setTarget(u),
+        }
+      : {
+          label: "Suspend",
+          icon: HiOutlineNoSymbol,
+          danger: true,
+          onClick: () => setTarget(u),
+        },
+  ];
+
   return (
     <div className="max-w-7xl mx-auto space-y-6">
       <AdminPageHeader
         title="User Management"
         description="Manage job seeker accounts"
       />
+
+      <AdminStatRow>
+        <AdminStatCard
+          icon={HiOutlineUsers}
+          label="Total members"
+          value={counts?.total ?? "—"}
+          tone="indigo"
+        />
+        <AdminStatCard
+          icon={HiOutlineCheckCircle}
+          label="Active"
+          value={counts?.active ?? "—"}
+          tone="emerald"
+        />
+        <AdminStatCard
+          icon={HiOutlineNoSymbol}
+          label="Suspended"
+          value={counts?.suspended ?? "—"}
+          tone="rose"
+        />
+        <AdminStatCard
+          icon={HiOutlineUserCircle}
+          label="Showing"
+          value={isLoading ? "—" : users.length}
+          tone="gray"
+        />
+      </AdminStatRow>
 
       <AdminTablePanel>
         <AdminTable>
@@ -91,12 +153,13 @@ const UserManagement = () => {
             <AdminTableTh>Email</AdminTableTh>
             <AdminTableTh>Registered</AdminTableTh>
             <AdminTableTh>Applications</AdminTableTh>
+            <AdminTableTh>Status</AdminTableTh>
             <AdminTableTh align="right">Actions</AdminTableTh>
           </AdminTableHead>
           <AdminTableBody>
             {isLoading
               ? Array.from({ length: 5 }).map((_, i) => (
-                  <AdminRowSkeleton key={i} columns={5} />
+                  <AdminRowSkeleton key={i} columns={6} />
                 ))
               : users.map((u) => (
                   <AdminTableRow key={u.id}>
@@ -110,16 +173,15 @@ const UserManagement = () => {
                     <AdminTableTd className="tabular-nums">
                       {u.applications}
                     </AdminTableTd>
+                    <AdminTableTd>
+                      <StatusPill
+                        tone={u.status === "suspended" ? "rose" : "emerald"}
+                      >
+                        {u.status}
+                      </StatusPill>
+                    </AdminTableTd>
                     <AdminTableTd align="right">
-                      <RowActions>
-                        <ViewAction href={`/admin/users/${u.id}`} />
-                        <DangerAction
-                          label={
-                            u.status === "suspended" ? "Reinstate" : "Suspend"
-                          }
-                          onClick={() => setTarget(u)}
-                        />
-                      </RowActions>
+                      <KebabMenu actions={rowActions(u)} />
                     </AdminTableTd>
                   </AdminTableRow>
                 ))}

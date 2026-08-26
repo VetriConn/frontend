@@ -11,6 +11,10 @@ export interface AdminStats {
   /** Extra counters the dashboard can surface as secondary stats/badges. */
   companiesPending: number;
   openReports: number;
+  /** Trailing-7-day new counts, for the card trend labels. */
+  activeJobsThisWeek: number;
+  companiesThisWeek: number;
+  usersThisWeek: number;
 }
 
 export interface AdminActivityItem {
@@ -34,6 +38,9 @@ const EMPTY: AdminOverview = {
     users: 0,
     companiesPending: 0,
     openReports: 0,
+    activeJobsThisWeek: 0,
+    companiesThisWeek: 0,
+    usersThisWeek: 0,
   },
   recentActivity: [],
 };
@@ -53,6 +60,9 @@ export function useAdminOverview() {
           users: res.stats.users,
           companiesPending: res.stats.companiesPending,
           openReports: res.stats.openReports,
+          activeJobsThisWeek: res.stats.activeJobsThisWeek,
+          companiesThisWeek: res.stats.companiesThisWeek,
+          usersThisWeek: res.stats.usersThisWeek,
         },
         recentActivity: res.recentActivity,
       };

@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useMemo, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { HiXMark, HiPlus } from "react-icons/hi2";
 import { searchSkills, ALL_SKILLS } from "@/lib/skills-data";
 import { FIELD_LABEL, FIELD_HELPER, FIELD_ERROR, fieldBorder } from "./fieldStyles";
@@ -49,6 +50,11 @@ export const SkillsInput: React.FC<SkillsInputProps> = ({
   const [highlight, setHighlight] = useState(0);
   const [remote, setRemote] = useState<string[]>([]);
   const inputRef = useRef<HTMLInputElement>(null);
+  // The suggestion menu is portaled to <body> and positioned off this box, so
+  // it overlays surrounding content (e.g. a modal's footer) instead of being
+  // clipped by an ancestor's overflow or growing the layout.
+  const boxRef = useRef<HTMLDivElement>(null);
+  const [coords, setCoords] = useState({ top: 0, left: 0, width: 0 });
 
   const atMax = max !== undefined && value.length >= max;
 
@@ -103,6 +109,29 @@ export const SkillsInput: React.FC<SkillsInputProps> = ({
   // The menu is suggestions plus, optionally, the "Add …" row at the end.
   const menuCount = suggestions.length + (canAddCustom ? 1 : 0);
 
+  // Keep the portaled menu pinned to the box. Recompute while it's open, and on
+  // scroll/resize, so it tracks the input as pills wrap or the page moves.
+  useEffect(() => {
+    if (!open) return;
+    const update = () => {
+      const el = boxRef.current;
+      if (!el) return;
+      const rect = el.getBoundingClientRect();
+      setCoords({
+        top: rect.bottom + window.scrollY + 4,
+        left: rect.left + window.scrollX,
+        width: rect.width,
+      });
+    };
+    update();
+    window.addEventListener("scroll", update, true);
+    window.addEventListener("resize", update);
+    return () => {
+      window.removeEventListener("scroll", update, true);
+      window.removeEventListener("resize", update);
+    };
+  }, [open, value.length, menuCount]);
+
   const addSkill = (skill: string) => {
     const clean = skill.trim();
     if (!clean || atMax) return;
@@ -155,6 +184,7 @@ export const SkillsInput: React.FC<SkillsInputProps> = ({
 
       <div className="relative">
         <div
+          ref={boxRef}
           className={`flex flex-wrap items-center gap-2 rounded-lg border bg-white px-3 py-2 transition-colors focus-within:ring-2 focus-within:ring-primary focus-within:border-transparent ${fieldBorder(
             !!error,
           )}`}
@@ -204,12 +234,20 @@ export const SkillsInput: React.FC<SkillsInputProps> = ({
           />
         </div>
 
-        {open && menuCount > 0 && (
-          <ul
-            id={`${id}-listbox`}
-            role="listbox"
-            className="absolute z-30 mt-1 max-h-60 w-full overflow-y-auto rounded-lg border border-gray-200 bg-white py-1 shadow-lg"
-          >
+        {open && menuCount > 0 && typeof document !== "undefined" &&
+          createPortal(
+            <ul
+              id={`${id}-listbox`}
+              role="listbox"
+              style={{
+                position: "absolute",
+                top: coords.top,
+                left: coords.left,
+                width: coords.width,
+                zIndex: 9999,
+              }}
+              className="max-h-60 overflow-y-auto rounded-lg border border-gray-200 bg-white py-1 shadow-lg"
+            >
             {suggestions.map((s, i) => (
               <li key={s} role="option" aria-selected={highlight === i}>
                 <button
@@ -248,8 +286,9 @@ export const SkillsInput: React.FC<SkillsInputProps> = ({
                 </button>
               </li>
             )}
-          </ul>
-        )}
+            </ul>,
+            document.body,
+          )}
       </div>
 
       {helperText && !error && <p className={FIELD_HELPER}>{helperText}</p>}

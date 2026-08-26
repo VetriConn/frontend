@@ -92,9 +92,9 @@ export const WorkExperienceCard: React.FC<WorkExperienceCardProps> = ({
                 </div>
 
                 {/* Content */}
-                <div className={`flex-10${!isLast ? " pb-10" : ""}`}>
-                  <div className="flex items-start justify-between">
-                    <div>
+                <div className={`flex-1 min-w-0${!isLast ? " pb-10" : ""}`}>
+                  <div className="flex items-start justify-between gap-4">
+                    <div className="min-w-0">
                       <h3 className="text-base md:text-lg font-bold text-gray-900">
                         {exp.position}
                       </h3>
@@ -102,7 +102,7 @@ export const WorkExperienceCard: React.FC<WorkExperienceCardProps> = ({
                         {exp.company}
                       </p>
                     </div>
-                    <div className="flex items-center gap-1 shrink-0 ml-4">
+                    <div className="flex items-center gap-2 shrink-0">
                       <button
                         onClick={() => onEdit?.(exp._originalIndex)}
                         className="p-1.5 min-h-[44px] min-w-[44px] text-gray-400 hover:text-gray-600 transition-colors rounded-md hover:bg-gray-100 flex items-center justify-center"

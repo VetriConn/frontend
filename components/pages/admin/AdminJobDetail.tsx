@@ -1,11 +1,8 @@
 "use client";
 
-import { useMemo, useState } from "react";
-import { useRouter } from "next/navigation";
-import Link from "next/link";
+import { useState } from "react";
 import clsx from "clsx";
 import {
-  HiOutlineArrowLeft,
   HiOutlineBriefcase,
   HiOutlineBuildingOffice2,
   HiOutlineMapPin,
@@ -27,10 +24,11 @@ import {
 } from "@/hooks/useAdminJobQueue";
 import { useToaster } from "@/components/ui/Toaster";
 import ConfirmDialog from "./ConfirmDialog";
-import { AdminPageHeader } from "./AdminTablePanel";
 
 interface AdminJobDetailProps {
   jobId: string;
+  /** Called after an action succeeds, so the surrounding list can refresh. */
+  onChanged?: () => void;
 }
 
 const STATUS_META: Record<
@@ -69,8 +67,7 @@ const formatDate = (iso?: string) => {
   });
 };
 
-const AdminJobDetail = ({ jobId }: AdminJobDetailProps) => {
-  const router = useRouter();
+const AdminJobDetail = ({ jobId, onChanged }: AdminJobDetailProps) => {
   const { showToast } = useToaster();
   const { job, isLoading, mutate } = useAdminJob(jobId);
 
@@ -83,17 +80,6 @@ const AdminJobDetail = ({ jobId }: AdminJobDetailProps) => {
   const meta = job ? STATUS_META[job.status] : null;
   const StatusIcon = meta?.icon;
 
-  const goBack = useMemo(
-    () => () => {
-      if (!job) {
-        router.push("/admin/jobs/pending");
-        return;
-      }
-      router.push(`/admin/jobs/${job.status}`);
-    },
-    [job, router],
-  );
-
   const handleApprove = async () => {
     if (!job) return;
     setBusy("approve");
@@ -105,6 +91,7 @@ const AdminJobDetail = ({ jobId }: AdminJobDetailProps) => {
         approvedAt: new Date().toISOString(),
       };
       await mutate(next, false);
+      onChanged?.();
       showToast({
         type: "success",
         title: "Job approved",
@@ -129,6 +116,7 @@ const AdminJobDetail = ({ jobId }: AdminJobDetailProps) => {
         rejection_reason: reason,
       };
       await mutate(next, false);
+      onChanged?.();
       showToast({
         type: "success",
         title: "Job rejected",
@@ -154,6 +142,7 @@ const AdminJobDetail = ({ jobId }: AdminJobDetailProps) => {
         rejection_reason: reason,
       };
       await mutate(next, false);
+      onChanged?.();
       showToast({
         type: "success",
         title: "Listing unpublished",
@@ -171,7 +160,7 @@ const AdminJobDetail = ({ jobId }: AdminJobDetailProps) => {
 
   if (isLoading) {
     return (
-      <div className="max-w-6xl mx-auto space-y-6">
+      <div className="space-y-6">
         <div className="h-5 w-32 bg-gray-100 rounded animate-shimmer" />
         <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-6">
           <div className="bg-white rounded-2xl border border-gray-200/80 p-6 space-y-4">
@@ -191,7 +180,7 @@ const AdminJobDetail = ({ jobId }: AdminJobDetailProps) => {
 
   if (!job) {
     return (
-      <div className="max-w-2xl mx-auto py-10">
+      <div className="py-10">
         <div className="bg-white rounded-2xl border border-gray-200/80 shadow-[0_1px_2px_rgba(15,23,42,0.04)] p-10 text-center">
           <div className="mx-auto w-12 h-12 rounded-xl bg-gray-50 text-gray-400 flex items-center justify-center mb-4">
             <HiOutlineBriefcase className="w-6 h-6" />
@@ -202,30 +191,13 @@ const AdminJobDetail = ({ jobId }: AdminJobDetailProps) => {
           <p className="mt-1 text-sm text-gray-500">
             The listing you&apos;re looking for may have been removed.
           </p>
-          <Link
-            href="/admin/jobs/pending"
-            className="inline-flex items-center gap-1.5 mt-5 text-sm font-semibold text-primary hover:text-primary-hover"
-          >
-            <HiOutlineArrowLeft className="w-4 h-4" />
-            Back to queue
-          </Link>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="max-w-6xl mx-auto space-y-6">
-      <button
-        onClick={goBack}
-        className="inline-flex items-center gap-1.5 text-sm font-semibold text-gray-600 hover:text-primary"
-      >
-        <HiOutlineArrowLeft className="w-4 h-4" />
-        Back
-      </button>
-
-      <AdminPageHeader title="Job Details" description={`Listing ${job.id}`} />
-
+    <div className="space-y-6">
       <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-6 items-start">
         {/* Detail panel */}
         <article className="bg-white rounded-2xl border border-gray-200/80 shadow-[0_1px_2px_rgba(15,23,42,0.04)] p-5 md:p-6">

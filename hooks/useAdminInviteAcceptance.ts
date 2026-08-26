@@ -1,62 +1,25 @@
-import { API_BASE_URL, apiFetch, type ApiEnvelope } from "@/lib/api/client";
-
-// ─── Types ───────────────────────────────────────────────────────────────────
-
-export interface InvitePreview {
-  email: string;
-  role: "admin" | "super_admin";
-  invitedBy: string;
-  expiresAt: string;
-}
-
-export interface AcceptInvitePayload {
-  token: string;
-  full_name: string;
-  password: string;
-}
+import { API_BASE_URL, apiFetch } from "@/lib/api/client";
 
 // ─── Wire ────────────────────────────────────────────────────────────────────
 //
-// Both endpoints are unauthenticated — the token in the URL is the only
-// credential, and accepting creates the admin account. That makes a leaked
-// link equivalent to platform admin, so the server must treat the token as a
-// secret: single use, short expiry, revocable, and with the email fixed by the
-// invite so the recipient cannot redirect it to another address.
-//
-// Neither endpoint exists yet; see the API contract handed to the backend.
+// Redeeming an admin invite is unauthenticated — the token in the URL is the
+// only credential, and accepting sets the account's real password. The invitee
+// (email, name, role) was fixed by the super_admin when the invite was created,
+// so the only thing collected here is a password. The account still can't reach
+// the console until it completes MFA setup on first sign-in.
 
-const INVITES_URL = `${API_BASE_URL}/api/v1/auth/admin-invites`;
-
-/**
- * Read what an invite is for, before asking anyone to set a password.
- * Expired, revoked and unknown tokens must be indistinguishable in the
- * response, so the endpoint cannot be used to probe for live tokens.
- */
-export async function fetchInvitePreview(
-  token: string,
-): Promise<InvitePreview> {
-  const response = await apiFetch<ApiEnvelope<InvitePreview>>(
-    `${INVITES_URL}/${encodeURIComponent(token)}`,
-    { method: "GET" },
-  );
-
-  if (!response.data) {
-    throw new Error("This invite link is no longer valid.");
-  }
-  return response.data;
+export interface AcceptAdminInvitePayload {
+  token: string;
+  password: string;
 }
 
-/**
- * Redeem the invite and create the admin account. The email comes from the
- * invite, never from this payload.
- */
+/** Redeem the invite and set the account's password. */
 export async function acceptAdminInvite(
-  payload: AcceptInvitePayload,
+  payload: AcceptAdminInvitePayload,
 ): Promise<void> {
-  const { token, ...body } = payload;
-  await apiFetch(`${INVITES_URL}/${encodeURIComponent(token)}/accept`, {
+  await apiFetch(`${API_BASE_URL}/api/v1/admin/invites/accept`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(body),
+    body: JSON.stringify(payload),
   });
 }

@@ -39,25 +39,16 @@ const NAV_ITEMS: NavItem[] = [
     icon: HiOutlineSquares2X2,
   },
   {
+    // One page; moderation state is a filter on the table, not sub-routes.
     label: "Jobs",
     href: "/admin/jobs",
     icon: HiOutlineBriefcase,
-    children: [
-      { label: "Pending Review", href: "/admin/jobs/pending" },
-      { label: "Approved Jobs", href: "/admin/jobs/approved" },
-      { label: "Rejected Jobs", href: "/admin/jobs/rejected" },
-    ],
   },
   {
+    // One page; standing is a filter on the table, not four sub-routes.
     label: "Companies",
     href: "/admin/companies",
     icon: HiOutlineBuildingOffice2,
-    children: [
-      { label: "Pending Review", href: "/admin/companies" },
-      { label: "Approved", href: "/admin/companies/approved" },
-      { label: "Rejected", href: "/admin/companies/rejected" },
-      { label: "Suspended", href: "/admin/companies/suspended" },
-    ],
   },
   {
     label: "Users",

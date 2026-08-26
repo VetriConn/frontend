@@ -11,6 +11,11 @@ import {
   HiOutlineClock,
   HiOutlineExclamationTriangle,
   HiOutlineArrowRight,
+  HiOutlineAdjustmentsHorizontal,
+  HiOutlineNoSymbol,
+  HiOutlineCheckCircle,
+  HiOutlineEnvelopeOpen,
+  HiOutlineTrash,
 } from "react-icons/hi2";
 import {
   useAdminTeam,
@@ -40,6 +45,7 @@ import {
   RowActions,
   StatusPill,
 } from "./AdminTablePanel";
+import KebabMenu, { type KebabAction } from "./KebabMenu";
 import InviteAdminDialog from "./InviteAdminDialog";
 import ChangeAdminRoleDialog from "./ChangeAdminRoleDialog";
 import StepUpDialog, { type StepUpCreds } from "./StepUpDialog";
@@ -396,25 +402,26 @@ const AdminTeam = () => {
                         {formatDate(inv.expiresAt)}
                       </AdminTableTd>
                       <AdminTableTd align="right">
-                        <RowActions>
-                          {isSuper && (
-                            <>
-                              <button
-                                onClick={() => handleResend(inv)}
-                                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-gray-200 bg-white text-xs font-semibold text-gray-700 hover:bg-gray-50"
-                              >
-                                <HiOutlineEnvelope className="w-3.5 h-3.5 text-gray-500" />
-                                Resend
-                              </button>
-                              <button
-                                onClick={() => handleRevoke(inv)}
-                                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-rose-200 bg-white text-xs font-semibold text-rose-600 hover:bg-rose-50"
-                              >
-                                Revoke
-                              </button>
-                            </>
-                          )}
-                        </RowActions>
+                        {isSuper ? (
+                          <KebabMenu
+                            label={`Actions for ${inv.email}`}
+                            actions={[
+                              {
+                                label: "Resend invite",
+                                icon: HiOutlineEnvelopeOpen,
+                                onClick: () => handleResend(inv),
+                              },
+                              {
+                                label: "Revoke invite",
+                                icon: HiOutlineTrash,
+                                danger: true,
+                                onClick: () => handleRevoke(inv),
+                              },
+                            ]}
+                          />
+                        ) : (
+                          <span className="text-xs text-gray-400">—</span>
+                        )}
                       </AdminTableTd>
                     </AdminTableRow>
                   ))}
@@ -548,35 +555,29 @@ const MemberRowMenu = ({
     ? "Can't change the last super admin"
     : null;
 
-  return (
-    <div className="flex items-center gap-2 flex-wrap justify-end">
-      <button
-        onClick={onChangeRole}
-        disabled={!!lockedReason}
-        title={lockedReason ?? undefined}
-        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-gray-200 bg-white text-xs font-semibold text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
-      >
-        Change role
-      </button>
-      {member.status === "active" ? (
-        <button
-          onClick={onSuspend}
-          disabled={!!lockedReason}
-          title={lockedReason ?? undefined}
-          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-rose-200 bg-white text-xs font-semibold text-rose-600 hover:bg-rose-50 disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          Suspend
-        </button>
-      ) : (
-        <button
-          onClick={onReinstate}
-          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-gray-200 bg-white text-xs font-semibold text-gray-700 hover:bg-gray-50"
-        >
-          Reinstate
-        </button>
-      )}
-    </div>
-  );
+  const actions: KebabAction[] = [
+    {
+      label: "Change role",
+      icon: HiOutlineAdjustmentsHorizontal,
+      onClick: onChangeRole,
+      disabled: !!lockedReason,
+    },
+    member.status === "active"
+      ? {
+          label: "Suspend",
+          icon: HiOutlineNoSymbol,
+          danger: true,
+          onClick: onSuspend,
+          disabled: !!lockedReason,
+        }
+      : {
+          label: "Reinstate",
+          icon: HiOutlineCheckCircle,
+          onClick: onReinstate,
+        },
+  ];
+
+  return <KebabMenu actions={actions} label={`Actions for ${member.full_name}`} />;
 };
 
 const inviteStatusTone = (

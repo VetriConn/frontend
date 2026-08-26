@@ -902,8 +902,10 @@ export default function ProfilePage() {
             </div>
           </div>
 
-          {/* Sidebar */}
-          <div className="space-y-4 md:space-y-6 lg:col-span-1">
+          {/* Sidebar — stays in view (below the sticky navbar) while the
+              profile sections scroll. self-start keeps the grid item at its
+              natural height so sticky can engage. */}
+          <div className="space-y-4 md:space-y-6 lg:col-span-1 lg:sticky lg:top-24 lg:self-start">
             {profileCompletion.percentage <= 75 && (
               <ProfileCompletionCard
                 completion={profileCompletion}

@@ -73,14 +73,43 @@ export interface AdminJobRaw {
 }
 
 /** List jobs for the review queue, filtered by moderation state. */
-export async function adminListJobs(
-  approval: "pending" | "approved" | "rejected",
-): Promise<AdminJobRaw[]> {
-  const response = await apiFetch<PaginatedApiEnvelope<AdminJobRaw[]>>(
-    `${API_BASE_URL}/api/v1/jobs/admin/all?approval=${approval}&limit=100`,
+export interface AdminJobCounts {
+  pending: number;
+  approved: number;
+  rejected: number;
+  total: number;
+}
+
+/** Moderation totals for the review page's summary cards. */
+export async function adminJobCounts(): Promise<AdminJobCounts> {
+  const response = await apiFetch<ApiEnvelope<AdminJobCounts>>(
+    `${API_BASE_URL}/api/v1/jobs/admin/counts`,
     { method: "GET" },
   );
-  return response.data ?? [];
+  return response.data ?? { pending: 0, approved: 0, rejected: 0, total: 0 };
+}
+
+/**
+ * Admin job list. `approval` omitted returns every moderation state; the
+ * endpoint already scopes to Vetriconn-posted jobs.
+ */
+export async function adminListJobs(
+  approval?: "pending" | "approved" | "rejected",
+  page = 1,
+  limit = 20,
+): Promise<{
+  jobs: AdminJobRaw[];
+  pagination?: PaginatedApiEnvelope<AdminJobRaw[]>["pagination"];
+}> {
+  const qs = new URLSearchParams();
+  if (approval) qs.set("approval", approval);
+  qs.set("page", String(page));
+  qs.set("limit", String(limit));
+  const response = await apiFetch<PaginatedApiEnvelope<AdminJobRaw[]>>(
+    `${API_BASE_URL}/api/v1/jobs/admin/all?${qs.toString()}`,
+    { method: "GET" },
+  );
+  return { jobs: response.data ?? [], pagination: response.pagination };
 }
 
 /** Approve a pending job (id is the Mongo _id). */

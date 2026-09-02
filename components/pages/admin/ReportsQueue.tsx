@@ -41,7 +41,7 @@ import { useToaster } from "@/components/ui/Toaster";
 
 const formatDate = (iso: string) => {
   const d = new Date(iso);
-  if (Number.isNaN(d.getTime())) return iso || "—";
+  if (Number.isNaN(d.getTime())) return iso || "-";
   return d.toLocaleDateString("en-US", {
     month: "short",
     day: "numeric",
@@ -266,7 +266,7 @@ const ReportsQueue = () => {
                             </span>
                           )}
                           <span className="text-[11px] text-gray-400">
-                            {r.reporter.email || "—"}
+                            {r.reporter.email || "-"}
                           </span>
                         </div>
                       ) : (

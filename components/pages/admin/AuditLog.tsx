@@ -100,7 +100,7 @@ const AuditLog = () => {
                         !e.target && "text-gray-400 italic",
                       )}
                     >
-                      {e.target?.label ?? "—"}
+                      {e.target?.label ?? "-"}
                     </AdminTableTd>
                     <AdminTableTd className="text-gray-600 tabular-nums">
                       {formatTimestamp(e.createdAt)}

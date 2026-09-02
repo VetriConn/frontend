@@ -89,7 +89,7 @@ function MatchCell({
   flagged?: boolean;
 }) {
   if (typeof score !== "number") {
-    return <span className="text-xs text-gray-400">—</span>;
+    return <span className="text-xs text-gray-400"> - </span>;
   }
   const tone =
     score >= 70
@@ -106,7 +106,7 @@ function MatchCell({
       </span>
       {flagged && (
         <span
-          title="A knockout question wasn't met — worth a closer look"
+          title="A knockout question wasn't met - worth a closer look"
           className="inline-flex items-center gap-1 rounded-full bg-red-50 px-2 py-0.5 text-xs font-medium text-red-600"
         >
           <HiOutlineFlag className="w-3.5 h-3.5" />

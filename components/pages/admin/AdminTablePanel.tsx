@@ -109,12 +109,33 @@ export const AdminTableBody = ({ children }: AdminTableBodyProps) => (
 interface AdminTableRowProps {
   children: ReactNode;
   className?: string;
+  /**
+   * Opens the row's detail view. Clicks that land on interactive descendants
+   * (kebab, links, buttons) are ignored, so an action never also opens the
+   * drawer behind it. The kebab's "View details" remains the keyboard path;
+   * the whole-row target is a convenience on top, not a replacement.
+   */
+  onOpen?: () => void;
 }
 
-export const AdminTableRow = ({ children, className }: AdminTableRowProps) => (
+export const AdminTableRow = ({
+  children,
+  className,
+  onOpen,
+}: AdminTableRowProps) => (
   <tr
+    onClick={
+      onOpen
+        ? (e) => {
+            const el = e.target as HTMLElement;
+            if (el.closest("button, a, input, label, [role='menu']")) return;
+            onOpen();
+          }
+        : undefined
+    }
     className={clsx(
       "hover:bg-gray-50/70 transition-colors",
+      onOpen && "cursor-pointer",
       className,
     )}
   >

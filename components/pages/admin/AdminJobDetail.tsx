@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import clsx from "clsx";
 import {
   HiOutlineBriefcase,
@@ -8,6 +8,7 @@ import {
   HiOutlineMapPin,
   HiOutlineBanknotes,
   HiOutlineShieldCheck,
+  HiOutlineExclamationTriangle,
   HiOutlineCheck,
   HiOutlineXMark,
   HiOutlineClock,
@@ -57,7 +58,7 @@ const STATUS_META: Record<
 };
 
 const formatDate = (iso?: string) => {
-  if (!iso) return "—";
+  if (!iso) return "-";
   const d = new Date(iso);
   if (Number.isNaN(d.getTime())) return iso;
   return d.toLocaleDateString("en-US", {
@@ -67,12 +68,34 @@ const formatDate = (iso?: string) => {
   });
 };
 
+/**
+ * What a reviewer must confirm before a listing can go live. Ticking is
+ * deliberate friction: approval publishes to the public board, so the checks
+ * are made explicit rather than assumed.
+ */
+const REVIEW_CHECKS = [
+  "Job description is clear and professional",
+  "Requirements are reasonable",
+  "Salary information is provided",
+  "Employer is verified",
+  "No discriminatory language",
+] as const;
+
 const AdminJobDetail = ({ jobId, onChanged }: AdminJobDetailProps) => {
   const { showToast } = useToaster();
   const { job, isLoading, mutate } = useAdminJob(jobId);
 
   const [rejectOpen, setRejectOpen] = useState(false);
   const [unpublishOpen, setUnpublishOpen] = useState(false);
+  const [checked, setChecked] = useState<string[]>([]);
+
+  // A fresh job means a fresh review — never carry ticks across listings.
+  useEffect(() => {
+    setChecked([]);
+  }, [jobId]);
+
+  const allChecked = checked.length === REVIEW_CHECKS.length;
+
   const [busy, setBusy] = useState<null | "approve" | "reject" | "unpublish">(
     null,
   );
@@ -163,7 +186,7 @@ const AdminJobDetail = ({ jobId, onChanged }: AdminJobDetailProps) => {
       <div className="space-y-6">
         <div className="h-5 w-32 bg-gray-100 rounded animate-shimmer" />
         <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-6">
-          <div className="bg-white rounded-2xl border border-gray-200/80 p-6 space-y-4">
+          <div className="space-y-4">
             <div className="h-7 w-2/3 bg-gray-100 rounded animate-shimmer" />
             <div className="h-4 w-1/2 bg-gray-100 rounded animate-shimmer" />
             <div className="h-3 w-full bg-gray-100 rounded animate-shimmer" />
@@ -181,7 +204,7 @@ const AdminJobDetail = ({ jobId, onChanged }: AdminJobDetailProps) => {
   if (!job) {
     return (
       <div className="py-10">
-        <div className="bg-white rounded-2xl border border-gray-200/80 shadow-[0_1px_2px_rgba(15,23,42,0.04)] p-10 text-center">
+        <div className="p-10 text-center">
           <div className="mx-auto w-12 h-12 rounded-xl bg-gray-50 text-gray-400 flex items-center justify-center mb-4">
             <HiOutlineBriefcase className="w-6 h-6" />
           </div>
@@ -198,9 +221,9 @@ const AdminJobDetail = ({ jobId, onChanged }: AdminJobDetailProps) => {
 
   return (
     <div className="space-y-6">
-      <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-6 items-start">
-        {/* Detail panel */}
-        <article className="bg-white rounded-2xl border border-gray-200/80 shadow-[0_1px_2px_rgba(15,23,42,0.04)] p-5 md:p-6">
+      <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_320px] gap-8 items-start">
+        {/* Detail panel — no card chrome: the drawer is already the surface. */}
+        <article className="max-w-[70ch] animate-slide-up">
           {meta && StatusIcon && (
             <span
               className={clsx(
@@ -213,7 +236,29 @@ const AdminJobDetail = ({ jobId, onChanged }: AdminJobDetailProps) => {
             </span>
           )}
 
-          <h2 className="mt-3 text-2xl font-bold text-gray-900 tracking-tight">
+          {job.scam_flags && job.scam_flags.length > 0 && (
+            <div className="mt-3 rounded-xl bg-amber-50 border border-amber-200/70 p-3.5">
+              <div className="flex items-center gap-2">
+                <HiOutlineExclamationTriangle className="w-4 h-4 text-amber-600 shrink-0" />
+                <p className="text-xs font-bold text-amber-800 uppercase tracking-wide">
+                  {job.scam_flags.length} scam signal
+                  {job.scam_flags.length === 1 ? "" : "s"} detected
+                </p>
+              </div>
+              <ul className="mt-2 flex flex-wrap gap-1.5">
+                {job.scam_flags.map((flag) => (
+                  <li
+                    key={flag}
+                    className="px-2 py-0.5 rounded-md bg-white/70 border border-amber-200 text-[11px] font-medium text-amber-900"
+                  >
+                    {flag.replace(/_/g, " ")}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+
+          <h2 className="mt-3 text-[28px] leading-[1.15] font-bold text-gray-900 tracking-[-0.02em]">
             {job.role}
           </h2>
 
@@ -246,17 +291,40 @@ const AdminJobDetail = ({ jobId, onChanged }: AdminJobDetailProps) => {
 
           <div className="mt-6 space-y-5">
             <section>
-              <h3 className="text-sm font-semibold text-gray-900">
+              <h3 className="text-[11px] font-semibold text-gray-500 uppercase tracking-wide">
                 Job Description
               </h3>
-              <p className="mt-1.5 text-sm text-gray-600 leading-relaxed whitespace-pre-line">
-                {job.description}
-              </p>
+              {!job.description?.trim() ? (
+                <p className="mt-1.5 text-sm text-gray-400 italic">
+                  No description supplied.
+                </p>
+              ) : /<\/?(p|ul|ol|li|br|strong|b|em|i|u|a)\b/i.test(job.description) ? (
+                <div
+                  className="rich-text mt-1.5 text-sm text-gray-600 leading-relaxed"
+                  // Safe: sanitized server-side to a small formatting allowlist.
+                  dangerouslySetInnerHTML={{ __html: job.description }}
+                />
+              ) : (
+                <p className="mt-1.5 text-sm text-gray-600 leading-relaxed whitespace-pre-line">
+                  {job.description}
+                </p>
+              )}
             </section>
+
+            {job.requirements?.length === 0 && (
+              <section>
+                <h3 className="text-[11px] font-semibold text-gray-500 uppercase tracking-wide">
+                  Requirements
+                </h3>
+                <p className="mt-1.5 text-sm text-gray-400 italic">
+                  None listed.
+                </p>
+              </section>
+            )}
 
             {job.requirements?.length > 0 && (
               <section>
-                <h3 className="text-sm font-semibold text-gray-900">
+                <h3 className="text-[11px] font-semibold text-gray-500 uppercase tracking-wide">
                   Requirements
                 </h3>
                 <ul className="mt-1.5 space-y-1.5 text-sm text-gray-600">
@@ -282,27 +350,27 @@ const AdminJobDetail = ({ jobId, onChanged }: AdminJobDetailProps) => {
             )}
           </div>
 
-          <dl className="mt-6 pt-4 border-t border-gray-100 grid grid-cols-2 gap-x-6 gap-y-2 text-xs text-gray-500">
+          <dl className="mt-8 pt-5 border-t border-gray-100 grid grid-cols-2 sm:grid-cols-4 gap-x-6 gap-y-4 text-xs text-gray-500">
             <div>
               <dt className="font-semibold text-gray-600">Submitted</dt>
-              <dd className="tabular-nums">{formatDate(job.submittedAt)}</dd>
+              <dd className="tabular-nums text-sm font-semibold text-gray-900 mt-0.5">{formatDate(job.submittedAt)}</dd>
             </div>
             {job.approvedAt && (
               <div>
                 <dt className="font-semibold text-gray-600">Approved</dt>
-                <dd className="tabular-nums">{formatDate(job.approvedAt)}</dd>
+                <dd className="tabular-nums text-sm font-semibold text-gray-900 mt-0.5">{formatDate(job.approvedAt)}</dd>
               </div>
             )}
             {job.rejectedAt && (
               <div>
                 <dt className="font-semibold text-gray-600">Rejected</dt>
-                <dd className="tabular-nums">{formatDate(job.rejectedAt)}</dd>
+                <dd className="tabular-nums text-sm font-semibold text-gray-900 mt-0.5">{formatDate(job.rejectedAt)}</dd>
               </div>
             )}
             {typeof job.applications === "number" && (
               <div>
                 <dt className="font-semibold text-gray-600">Applications</dt>
-                <dd className="tabular-nums">{job.applications}</dd>
+                <dd className="tabular-nums text-sm font-semibold text-gray-900 mt-0.5">{job.applications}</dd>
               </div>
             )}
           </dl>
@@ -327,10 +395,88 @@ const AdminJobDetail = ({ jobId, onChanged }: AdminJobDetailProps) => {
           </div>
 
           {job.status === "pending" && (
+            <fieldset className="mt-5 pt-4 border-t border-gray-100">
+              <legend className="sr-only">Review checklist</legend>
+              <div className="flex items-center justify-between gap-2">
+                <p className="text-[11px] font-semibold text-gray-500 uppercase tracking-wide">
+                  Review checklist
+                </p>
+                <span
+                  className={clsx(
+                    "text-[11px] font-bold tabular-nums",
+                    allChecked ? "text-emerald-600" : "text-gray-400",
+                  )}
+                >
+                  {checked.length}/{REVIEW_CHECKS.length}
+                </span>
+              </div>
+
+              <ul className="mt-2.5 space-y-0.5">
+                {REVIEW_CHECKS.map((item) => {
+                  const isOn = checked.includes(item);
+                  return (
+                    <li key={item}>
+                      <label
+                        className={clsx(
+                          "flex items-start gap-2.5 py-1.5 px-2 -mx-2 rounded-lg cursor-pointer transition-colors",
+                          "hover:bg-gray-50 focus-within:bg-gray-50",
+                        )}
+                      >
+                        <input
+                          type="checkbox"
+                          checked={isOn}
+                          onChange={() =>
+                            setChecked((prev) =>
+                              prev.includes(item)
+                                ? prev.filter((c) => c !== item)
+                                : [...prev, item],
+                            )
+                          }
+                          className="sr-only peer"
+                        />
+                        <span
+                          aria-hidden
+                          className={clsx(
+                            "mt-px w-4 h-4 rounded-[5px] border flex items-center justify-center shrink-0 transition-colors",
+                            "peer-focus-visible:ring-2 peer-focus-visible:ring-primary/40",
+                            isOn
+                              ? "bg-emerald-500 border-emerald-500 text-white"
+                              : "bg-white border-gray-300",
+                          )}
+                        >
+                          {isOn && <HiOutlineCheck className="w-3 h-3" strokeWidth={3} />}
+                        </span>
+                        <span
+                          className={clsx(
+                            "text-xs leading-snug transition-colors",
+                            isOn ? "text-gray-500 line-through" : "text-gray-700",
+                          )}
+                        >
+                          {item}
+                        </span>
+                      </label>
+                    </li>
+                  );
+                })}
+              </ul>
+            </fieldset>
+          )}
+
+          {job.status === "pending" && (
             <div className="mt-4 space-y-2.5">
+              {!allChecked && (
+                <p className="text-[11px] text-gray-500 leading-snug">
+                  Complete the checklist to approve. You can reject at any time.
+                </p>
+              )}
               <button
                 onClick={handleApprove}
-                disabled={busy !== null}
+                title={
+                  allChecked
+                    ? undefined
+                    : "Tick every checklist item before approving"
+                }
+                disabled={busy !== null || !allChecked}
                 className="w-full inline-flex items-center justify-center gap-2 bg-primary text-white px-4 py-2.5 rounded-xl text-sm font-semibold hover:bg-primary-hover transition-colors shadow-[0_8px_20px_-12px_rgba(229,62,62,0.7)] disabled:opacity-60 disabled:cursor-not-allowed"
               >
                 <HiOutlineCheck className="w-4 h-4" />
@@ -365,25 +511,6 @@ const AdminJobDetail = ({ jobId, onChanged }: AdminJobDetailProps) => {
             </p>
           )}
 
-          <div className="mt-5 pt-4 border-t border-gray-100">
-            <p className="text-[11px] font-semibold text-gray-500 uppercase tracking-wide">
-              Review checklist
-            </p>
-            <ul className="mt-2 space-y-1.5 text-xs text-gray-600">
-              {[
-                "Job description is clear and professional",
-                "Requirements are reasonable",
-                "Salary information is provided",
-                "Employer is verified",
-                "No discriminatory language",
-              ].map((item) => (
-                <li key={item} className="flex items-start gap-2">
-                  <HiOutlineCheck className="w-3.5 h-3.5 text-emerald-500 mt-0.5 shrink-0" />
-                  <span>{item}</span>
-                </li>
-              ))}
-            </ul>
-          </div>
         </aside>
       </div>
 

@@ -130,14 +130,14 @@ const AdminDashboard = () => {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-5">
         <StatCard
           label="Jobs Pending Review"
-          value={isLoading ? "—" : data.stats.jobsPending}
+          value={isLoading ? "-" : data.stats.jobsPending}
           delta={{ value: "Awaiting moderation" }}
           icon={HiOutlineClock}
           tone="amber"
         />
         <StatCard
           label="Active Jobs"
-          value={isLoading ? "—" : data.stats.activeJobs}
+          value={isLoading ? "-" : data.stats.activeJobs}
           delta={{
             value: `+${data.stats.activeJobsThisWeek} this week`,
             positive: data.stats.activeJobsThisWeek > 0,
@@ -147,7 +147,7 @@ const AdminDashboard = () => {
         />
         <StatCard
           label="Companies Registered"
-          value={isLoading ? "—" : data.stats.companies}
+          value={isLoading ? "-" : data.stats.companies}
           delta={{
             value: `+${data.stats.companiesThisWeek} this week`,
             positive: data.stats.companiesThisWeek > 0,
@@ -157,7 +157,7 @@ const AdminDashboard = () => {
         />
         <StatCard
           label="Users Registered"
-          value={isLoading ? "—" : data.stats.users}
+          value={isLoading ? "-" : data.stats.users}
           delta={{
             value: `+${data.stats.usersThisWeek} this week`,
             positive: data.stats.usersThisWeek > 0,

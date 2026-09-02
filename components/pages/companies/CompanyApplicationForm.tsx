@@ -172,7 +172,7 @@ export const CompanyApplicationForm = () => {
       </div>
       <p className="text-sm text-gray-500 mb-8">
         A Company Page lets you hire as an organisation rather than as an
-        individual — invite teammates to review applicants, and keep job
+        individual - invite teammates to review applicants, and keep job
         postings with the company if someone leaves. An admin reviews every
         application before the page goes live.
       </p>

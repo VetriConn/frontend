@@ -187,13 +187,18 @@ export const SignIn = () => {
               />
               <label htmlFor="remember-me">Remember me on this device</label>
             </div>
-            <button
-              type="submit"
-              className="bg-primary text-white py-3 px-7 border-none rounded-lg text-sm cursor-pointer transition-colors ml-auto mt-2 inline-block hover:bg-red-700 disabled:bg-gray-300 disabled:text-text-muted disabled:cursor-not-allowed w-full"
-              disabled={isButtonDisabled}
-            >
-              {isSubmitting ? "Signing In..." : "Sign In to your account"}
-            </button>
+            {/* Same treatment as the signup wizard's Continue (WizardNav):
+                full-width and large-tap on mobile, a compact right-aligned
+                button from sm up. */}
+            <div className="mt-2 flex justify-end">
+              <button
+                type="submit"
+                className="w-full rounded-lg bg-primary px-8 py-3 font-medium text-white transition-colors hover:bg-primary/90 disabled:cursor-not-allowed disabled:bg-gray-300 disabled:text-text-muted sm:w-auto"
+                disabled={isButtonDisabled}
+              >
+                {isSubmitting ? "Signing In…" : "Sign In"}
+              </button>
+            </div>
           </form>
 
           {/* Divider with text */}

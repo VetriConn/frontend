@@ -69,9 +69,9 @@ export type PhysicalDemands = (typeof PHYSICAL_DEMANDS)[number];
 
 export const PHYSICAL_DEMAND_LABELS: Record<PhysicalDemands, string> = {
   none: "No physical demands",
-  light: "Light — mostly seated or standing",
-  moderate: "Moderate — some lifting or movement",
-  heavy: "Heavy — regular physical activity",
+  light: "Light - mostly seated or standing",
+  moderate: "Moderate - some lifting or movement",
+  heavy: "Heavy - regular physical activity",
 };
 
 export const WORK_SCHEDULES = [

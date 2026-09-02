@@ -160,7 +160,7 @@ export const JobResultsList = ({
       >
         {/* The count of MATCHES, not of rows on screen. This read jobs.length,
             which was the whole board back when the page fetched all of it and
-            sliced in the browser — and would now say 10 regardless. */}
+            sliced in the browser - and would now say 10 regardless. */}
         {totalCount ?? jobs.length} {(totalCount ?? jobs.length) === 1 ? "job" : "jobs"} found
       </div>
 

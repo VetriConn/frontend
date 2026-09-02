@@ -56,7 +56,7 @@ const RecommendedJobCard: React.FC<RecommendedJobCardProps> = ({
       >
         {/* One step down the scale: 24px in a 274px card overwhelmed it.
             Two lines are clamped AND reserved, so a one-line title and a
-            two-line title leave the rows below starting at the same height —
+            two-line title leave the rows below starting at the same height  - 
             it is the raggedness, more than the size, that read as off. */}
         <h3
           className={clsx(CARD_TITLE, "text-lg capitalize line-clamp-2 min-h-[2.75em] mb-2")}
@@ -175,7 +175,7 @@ export const RecommendedJobs: React.FC = () => {
           "Ranked by how well they match your profile and location"
         ) : (
           <>
-            The newest openings across Canada —{" "}
+            The newest openings across Canada  - {" "}
             <Link
               href="/dashboard/profile"
               className="text-primary hover:underline"
@@ -188,7 +188,7 @@ export const RecommendedJobs: React.FC = () => {
       </p>
 
       {/* A failed request used to render as this exact section with a silent
-          empty grid under it — indistinguishable from "no jobs". Say what
+          empty grid under it - indistinguishable from "no jobs". Say what
           happened and offer the retry. */}
       {error && (
         <div className="bg-white rounded-xl border border-gray-200 p-8 text-center">
@@ -209,7 +209,7 @@ export const RecommendedJobs: React.FC = () => {
         <div className="bg-white rounded-xl border border-gray-200 p-8 text-center">
           <p className="text-sm text-gray-500">
             No open listings at the moment. New jobs are added throughout the
-            day — check back soon.
+            day - check back soon.
           </p>
         </div>
       )}

@@ -640,7 +640,7 @@ function StepDescription({
         <FieldLabel htmlFor="responsibilities" required>
           What You&apos;ll Do
         </FieldLabel>
-        <HelperText>List the main responsibilities — one per line.</HelperText>
+        <HelperText>List the main responsibilities - one per line.</HelperText>
         <textarea
           id="responsibilities"
           value={formData.responsibilities}
@@ -660,7 +660,7 @@ function StepDescription({
       <div className="mt-6">
         <FieldLabel htmlFor="requirements">What We&apos;re Looking For</FieldLabel>
         <HelperText>
-          List key requirements or qualifications — one per line. Optional.
+          List key requirements or qualifications - one per line. Optional.
         </HelperText>
         <textarea
           id="requirements"
@@ -746,7 +746,7 @@ function StepRequirements({
             onChange={(v) => onChange("security_clearance", v)}
             options={SECURITY_CLEARANCES}
             placeholder="None required"
-            helperText="Many veterans already hold a clearance — flagging it helps matching."
+            helperText="Many veterans already hold a clearance - flagging it helps matching."
           />
         </div>
 
@@ -1139,7 +1139,7 @@ function StepEssentials({
           <FieldLabel htmlFor="responsibilities" required>
             What You&apos;ll Do
           </FieldLabel>
-          <HelperText>List the main responsibilities — one per line.</HelperText>
+          <HelperText>List the main responsibilities - one per line.</HelperText>
           <textarea
             id="responsibilities"
             value={formData.responsibilities}

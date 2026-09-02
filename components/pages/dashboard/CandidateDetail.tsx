@@ -191,14 +191,14 @@ export function CandidateDetail({ applicationId }: { applicationId: string }) {
         <div className="mt-6 grid grid-cols-2 gap-4 border-t border-gray-100 pt-5 md:grid-cols-4">
           {[
             { label: "Applied on", value: formatDate(application.createdAt) },
-            { label: "Job Applied", value: job?.role ?? "—" },
+            { label: "Job Applied", value: job?.role ?? "-" },
             {
               label: "Status",
               value: STATUS_LABEL[application.status] ?? application.status,
             },
             {
               label: "Match Score",
-              value: match.percent !== null ? `${match.percent}%` : "—",
+              value: match.percent !== null ? `${match.percent}%` : "-",
             },
           ].map((item) => (
             <div key={item.label}>
@@ -362,8 +362,8 @@ export function CandidateDetail({ applicationId }: { applicationId: string }) {
                 <HiOutlineSparkles className="mt-0.5 h-5 w-5 shrink-0 text-primary" />
                 <p className="text-sm text-gray-600">
                   {match.percent !== null && match.percent >= 70
-                    ? `Strong fit — meets ${match.matched.length} of ${match.required.length} required skills.`
-                    : `Partial fit — meets ${match.matched.length} of ${match.required.length} required skills.`}
+                    ? `Strong fit - meets ${match.matched.length} of ${match.required.length} required skills.`
+                    : `Partial fit - meets ${match.matched.length} of ${match.required.length} required skills.`}
                 </p>
               </div>
             </section>
@@ -424,7 +424,7 @@ export function CandidateDetail({ applicationId }: { applicationId: string }) {
                 <HiStar className="h-8 w-8 text-yellow-400" />
                 <div>
                   <p className="text-3xl font-extrabold text-gray-900">
-                    {stars ?? "—"}
+                    {stars ?? "-"}
                   </p>
                   <p className="text-xs text-gray-400">Overall score (of 5)</p>
                 </div>
@@ -439,7 +439,7 @@ export function CandidateDetail({ applicationId }: { applicationId: string }) {
               </div>
               {application.screening_flagged && (
                 <p className="mt-3 text-xs font-medium text-red-600">
-                  Flagged: a knockout screening question wasn&apos;t met — worth
+                  Flagged: a knockout screening question wasn&apos;t met - worth
                   a closer look.
                 </p>
               )}

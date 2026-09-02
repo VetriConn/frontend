@@ -63,7 +63,7 @@ export function ProfilePreviewDialog({
         className="fixed inset-0 z-50 flex items-center justify-center p-4"
         role="dialog"
         aria-modal="true"
-        aria-label="Profile preview — how employers see your profile"
+        aria-label="Profile preview - how employers see your profile"
       >
         <div className="bg-white rounded-2xl shadow-xl w-[95%] md:w-full max-w-2xl max-h-[90vh] overflow-hidden flex flex-col">
           {/* Header bar */}
@@ -204,7 +204,7 @@ export function ProfilePreviewDialog({
                       <p className="text-sm text-gray-600">{exp.company}</p>
                       <p className="text-xs text-gray-400 mt-0.5">
                         {exp.start_date}
-                        {exp.end_date ? ` — ${exp.end_date}` : " — Present"}
+                        {exp.end_date ? ` - ${exp.end_date}` : " - Present"}
                       </p>
                       {exp.description && (
                         <p className="text-sm text-gray-500 mt-1.5 leading-relaxed">
@@ -234,7 +234,7 @@ export function ProfilePreviewDialog({
                       <p className="text-sm text-gray-600">{edu.institution}</p>
                       <p className="text-xs text-gray-400 mt-0.5">
                         {edu.start_year}
-                        {edu.end_year ? ` — ${edu.end_year}` : " — Present"}
+                        {edu.end_year ? ` - ${edu.end_year}` : " - Present"}
                       </p>
                     </div>
                   ))}

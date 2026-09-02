@@ -13,7 +13,8 @@
  */
 
 interface WizardNavProps {
-  onBack: () => void;
+  /** Omitted on the first step, which has nothing to go back to. */
+  onBack?: () => void;
   onNext: () => void;
   /** Disables Continue — e.g. an invalid required step. */
   nextDisabled?: boolean;
@@ -53,14 +54,16 @@ export const WizardNav = ({
         )}
 
         <div className="flex w-full flex-col gap-3 sm:w-auto sm:flex-row sm:items-center">
-          <button
-            type="button"
-            onClick={onBack}
-            disabled={busy}
-            className="w-full rounded-lg bg-gray-100 px-6 py-3 font-medium text-gray-700 transition-colors hover:bg-gray-200 disabled:opacity-60 disabled:cursor-not-allowed sm:w-auto"
-          >
-            Back
-          </button>
+          {onBack && (
+            <button
+              type="button"
+              onClick={onBack}
+              disabled={busy}
+              className="w-full rounded-lg bg-gray-100 px-6 py-3 font-medium text-gray-700 transition-colors hover:bg-gray-200 disabled:opacity-60 disabled:cursor-not-allowed sm:w-auto"
+            >
+              Back
+            </button>
+          )}
           <button
             type="button"
             onClick={onNext}

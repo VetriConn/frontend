@@ -54,7 +54,7 @@ import { useUserProfile } from "@/hooks/useUserProfile";
 import { isSuperAdmin } from "@/lib/admin-permissions";
 
 const formatDate = (iso?: string) => {
-  if (!iso) return "—";
+  if (!iso) return "-";
   const d = new Date(iso);
   if (Number.isNaN(d.getTime())) return iso;
   return d.toLocaleDateString("en-US", {
@@ -420,7 +420,7 @@ const AdminTeam = () => {
                             ]}
                           />
                         ) : (
-                          <span className="text-xs text-gray-400">—</span>
+                          <span className="text-xs text-gray-400"> - </span>
                         )}
                       </AdminTableTd>
                     </AdminTableRow>
@@ -545,7 +545,7 @@ const MemberRowMenu = ({
   onSuspend,
   onReinstate,
 }: MemberRowMenuProps) => {
-  if (!isSuper) return <span className="text-xs text-gray-400">—</span>;
+  if (!isSuper) return <span className="text-xs text-gray-400"> - </span>;
   const isSelf = currentUserId && member.id === currentUserId;
   if (isSelf) return <span className="text-xs text-gray-400">You</span>;
 

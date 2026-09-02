@@ -282,7 +282,7 @@ export default function SavedSearchesPage() {
                   </p>
                   <p className="text-sm text-red-600 leading-relaxed">
                     When you enable alerts, we&apos;ll save your preference.
-                    Email notifications for new matching jobs are coming soon —
+                    Email notifications for new matching jobs are coming soon  - 
                     for now, you can quickly re-run your searches from this
                     page.
                   </p>

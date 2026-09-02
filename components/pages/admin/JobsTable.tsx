@@ -59,10 +59,10 @@ const STATUS_TONE: Record<AdminJobStatus, "amber" | "emerald" | "rose"> = {
 };
 
 const formatDate = (iso?: string) => {
-  if (!iso) return "—";
+  if (!iso) return "-";
   const d = new Date(iso);
   return Number.isNaN(d.getTime())
-    ? "—"
+    ? "-"
     : d.toLocaleDateString("en-US", {
         month: "short",
         day: "numeric",
@@ -250,25 +250,25 @@ const JobsTable = () => {
         <StatCard
           icon={HiOutlineClock}
           label="Pending"
-          value={counts?.pending ?? "—"}
+          value={counts?.pending ?? "-"}
           tone="amber"
         />
         <StatCard
           icon={HiOutlineCheckCircle}
           label="Approved"
-          value={counts?.approved ?? "—"}
+          value={counts?.approved ?? "-"}
           tone="emerald"
         />
         <StatCard
           icon={HiOutlineXCircle}
           label="Rejected"
-          value={counts?.rejected ?? "—"}
+          value={counts?.rejected ?? "-"}
           tone="rose"
         />
         <StatCard
           icon={HiOutlineBriefcase}
           label="Total"
-          value={counts?.total ?? "—"}
+          value={counts?.total ?? "-"}
           tone="indigo"
         />
       </div>
@@ -332,7 +332,7 @@ const JobsTable = () => {
                   <AdminRowSkeleton key={i} columns={6} />
                 ))
               : jobs.map((job) => (
-                  <AdminTableRow key={job.id}>
+                  <AdminTableRow key={job.id} onOpen={() => setDrawerId(job.id)}>
                     <AdminTableTd className="font-semibold text-gray-900">
                       <div className="flex items-center gap-2">
                         <button
@@ -352,10 +352,10 @@ const JobsTable = () => {
                       </div>
                     </AdminTableTd>
                     <AdminTableTd className="text-gray-600">
-                      {job.company_name || "—"}
+                      {job.company_name || "-"}
                     </AdminTableTd>
                     <AdminTableTd className="text-gray-600">
-                      {job.location || "—"}
+                      {job.location || "-"}
                     </AdminTableTd>
                     <AdminTableTd>
                       <StatusPill tone={STATUS_TONE[job.status]}>

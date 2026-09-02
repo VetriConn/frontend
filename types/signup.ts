@@ -44,7 +44,8 @@ export interface StepProps {
   errors: Record<string, string>;
   onFieldChange: (field: keyof SignupFormData, value: unknown) => void;
   onNext: () => void;
-  onBack: () => void;
+  /** Absent on the first step, which has nothing to go back to. */
+  onBack?: () => void;
   onSkip?: () => void;
   isBusy?: boolean;
   /** For the in-step header's progress indicator. */

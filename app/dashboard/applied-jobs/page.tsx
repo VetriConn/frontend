@@ -155,7 +155,7 @@ function EmptyState({ onAdd }: { onAdd: () => void }) {
         No applications yet
       </h3>
       <p className="text-sm text-gray-500 max-w-[380px] leading-relaxed mb-8">
-        Track all your job applications in one place — whether you applied
+        Track all your job applications in one place - whether you applied
         through Vetriconn or elsewhere.
       </p>
       <div className="flex flex-col sm:flex-row gap-3">

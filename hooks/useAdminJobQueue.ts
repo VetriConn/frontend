@@ -54,7 +54,7 @@ export function toAdminJob(j: AdminJobRaw): AdminJob {
     company_logo: j.company_logo,
     location: j.location || "Canada",
     employment_type:
-      fieldLabel(JOB_TYPE_LABELS, j.job_type) ?? (j.job_type || "—"),
+      fieldLabel(JOB_TYPE_LABELS, j.job_type) ?? (j.job_type || "-"),
     salary_range:
       formatJobSalary(
         {

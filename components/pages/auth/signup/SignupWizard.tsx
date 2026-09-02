@@ -480,7 +480,8 @@ export function SignupWizard() {
       errors,
       onFieldChange: handleFieldChange,
       onNext: handleNext,
-      onBack: handleBack,
+      // Step 1 is the entry point — no Back control there.
+      onBack: currentStep > 1 ? handleBack : undefined,
       onSkip: handleSkip,
       isBusy: state.isSubmitting || isActionLocked,
       currentStep,

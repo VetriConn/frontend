@@ -46,8 +46,8 @@ export function formatFullDateTime(value?: string | Date): string {
  * Returns "—" for missing or invalid values.
  */
 export function formatDate(value?: string | Date): string {
-  if (!value) return "—";
+  if (!value) return "-";
   const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return "—";
+  if (Number.isNaN(date.getTime())) return "-";
   return date.toLocaleDateString();
 }

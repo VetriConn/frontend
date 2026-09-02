@@ -79,7 +79,7 @@ export default function ApplyPage() {
               Apply on the employer&apos;s website
             </h2>
             <p className="text-sm text-gray-500 mb-6">
-              This role uses the employer&apos;s own application process —
+              This role uses the employer&apos;s own application process  - 
               we&apos;ll take you there to finish applying.
             </p>
             <a

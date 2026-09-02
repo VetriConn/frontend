@@ -1,4 +1,6 @@
 "use client";
+import BrushUnderline from "@/components/ui/BrushUnderline";
+import Eyebrow from "@/components/ui/Eyebrow";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
@@ -146,7 +148,7 @@ function JobCard({ job }: { job: Job }) {
       )}
 
       {/* Chips come from the category/type/arrangement columns, not tags, so
-          gate on what actually renders — a job with a type but no category
+          gate on what actually renders - a job with a type but no category
           has empty tags yet still has chips. */}
       {jobChipLabels(job).length > 0 && (
         <div className="flex flex-wrap gap-2 mt-3">
@@ -204,67 +206,37 @@ export default function JobsPage() {
           aria-hidden="true"
         />
 
-        <div className="flex items-center justify-between gap-8 relative max-w-7xl mx-auto p-8 mobile:flex-col mobile:text-center mobile:gap-6 mobile:mt-4 mobile:p-4 mobile:pt-8">
+        {/* Anchored to the section at a positive offset — hanging it off the
+            copy column at -left-40 clipped it against overflow-hidden, the
+            same bug fixed in the home hero. */}
+        <DottedBox
+          className="absolute top-6 left-6 lg:left-10 z-0 w-24 lg:w-28 h-auto pointer-events-none hidden md:block"
+          aria-hidden="true"
+        />
+
+        <div className="flex items-center justify-between gap-8 relative max-w-[1600px] mx-auto p-8 md:px-10 lg:px-14 mobile:flex-col mobile:text-center mobile:gap-6 mobile:mt-4 mobile:p-4 mobile:pt-8">
           {/* Left — Text content */}
           <div className="flex-[0_0_45%] max-w-lg relative mobile:flex-none mobile:w-full mobile:mx-auto mobile:max-w-full">
-            {/* Dotted box decoration */}
-            <DottedBox
-              className="absolute top-0 -left-40 z-0 w-28 h-auto pointer-events-none mobile:w-20 mobile:-top-10 mobile:left-0"
-              aria-hidden="true"
-            />
-
             <h1 className="heading-1 mb-6 mobile:mb-4">
-              Find The{" "}
-              <span className="italic font-[var(--font-outfit)] underline decoration-primary decoration-2 underline-offset-4">
-                Perfect Opportunity
-              </span>{" "}
-              <span className="text-primary">For You</span>
+              Find the <BrushUnderline>right role</BrushUnderline> for the{" "}
+              <span className="text-primary">experience you bring</span>
             </h1>
             <p className="body-text text-base mobile:text-sm mb-2 max-w-[80%] mobile:mb-2 mobile:max-w-full">
               Browse pre-vetted job opportunities for Canadian veterans and
-              retirees — flexible roles that match your experience, skills, and
+              retirees - flexible roles that match your experience, skills, and
               lifestyle.
             </p>
 
             {/* CTA + pins row */}
             <div className="flex flex-wrap items-center gap-5 mt-4 mobile:justify-center">
-              <Link
-                href="/signin"
-                className="inline-flex items-center gap-2 bg-primary hover:bg-red-700 text-white font-semibold py-3.5 px-8 rounded-full transition-all shadow-sm group"
+              <a
+                href="#job-listings"
+                className="inline-flex items-center justify-center gap-2 bg-primary hover:bg-primary-hover text-white font-semibold py-3.5 px-8 min-h-[52px] rounded-full transition-colors shadow-sm group no-underline whitespace-nowrap focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:ring-offset-2"
               >
-                Browse Jobs
+                Browse jobs
                 <HiOutlineArrowRight className="w-4 h-4 md:w-5 md:h-5 transition-transform group-hover:-rotate-45" aria-hidden="true" />
-              </Link>
+              </a>
 
-              {/* Job pins stack */}
-              <div className="hidden md:flex items-center">
-                <div className="flex -space-x-2.5">
-                  {["jobs_pin", "jobs_pin2", "jobs_pin3", "jobs_pin4"].map(
-                    (pin) => (
-                      <div
-                        key={pin}
-                        className="w-9 h-9 md:w-10 md:h-10 rounded-full border-2 border-white bg-gray-200 overflow-hidden"
-                        style={{ aspectRatio: '1' }}
-                      >
-                        <Image
-                          src={`/images/${pin}.jpg`}
-                          alt=""
-                          width={40}
-                          height={40}
-                          className="w-full h-auto object-cover"
-                          sizes="(max-width: 850px) 36px, 40px"
-                          loading="lazy"
-                        />
-                      </div>
-                    ),
-                  )}
-                  <div className="w-9 h-9 md:w-10 md:h-10 rounded-full border-2 border-white bg-gray-100 flex items-center justify-center">
-                    <span className="text-xs font-semibold text-gray-600">
-                      +500
-                    </span>
-                  </div>
-                </div>
-              </div>
             </div>
           </div>
 
@@ -285,6 +257,7 @@ export default function JobsPage() {
             {/* Image 1 — top-left, tilted left */}
             <div className="absolute left-0 top-0 w-[48%] h-[55%] -rotate-3 rounded-2xl overflow-hidden shadow-lg z-[3]">
               <Image
+                unoptimized
                 src="/images/jobs_hero.jpg"
                 alt="Professional working at desk"
                 fill
@@ -298,6 +271,7 @@ export default function JobsPage() {
             {/* Image 2 — top-right, tilted right */}
             <div className="absolute right-0 top-2 w-[48%] h-[55%] rotate-3 rounded-2xl overflow-hidden shadow-lg z-[4]">
               <Image
+                unoptimized
                 src="/images/jobs_hero2.jpg"
                 alt="Experienced professional collaborating"
                 fill
@@ -311,6 +285,7 @@ export default function JobsPage() {
             {/* Image 3 — bottom-center, tilted slightly */}
             <div className="absolute left-[15%] bottom-0 w-[52%] h-[50%] rotate-2 rounded-2xl overflow-hidden shadow-lg z-[5]">
               <Image
+                unoptimized
                 src="/images/jobs_hero3.jpg"
                 alt="Veteran in professional setting"
                 fill
@@ -343,11 +318,12 @@ export default function JobsPage() {
       </section>
 
       {/* Job listings */}
-      <main className="flex-1 max-w-5xl w-full mx-auto px-4 sm:px-6 py-10 sm:py-14">
+      <main id="job-listings" className="flex-1 max-w-5xl w-full mx-auto px-4 sm:px-6 py-10 sm:py-14 scroll-mt-24">
         <div className="flex items-center justify-between mb-8">
           <div>
+            <Eyebrow className="mb-1.5">Open roles</Eyebrow>
             <h2 className="heading-2">
-              Recently Posted Jobs
+              Recently posted<span className="text-primary">.</span>
             </h2>
             <p className="text-sm text-gray-500 mt-1">
               {isLoading
@@ -400,7 +376,7 @@ export default function JobsPage() {
               No jobs available right now
             </h3>
             <p className="text-gray-500 max-w-md mx-auto">
-              Check back soon — new opportunities are posted regularly.
+              Check back soon - new opportunities are posted regularly.
             </p>
           </div>
         )}

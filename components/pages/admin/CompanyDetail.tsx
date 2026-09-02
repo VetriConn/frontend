@@ -34,10 +34,10 @@ const STATUS_TONE: Record<CompanyStatus, "amber" | "emerald" | "rose" | "gray"> 
 };
 
 const formatDate = (iso?: string) => {
-  if (!iso) return "—";
+  if (!iso) return "-";
   const d = new Date(iso);
   return Number.isNaN(d.getTime())
-    ? "—"
+    ? "-"
     : d.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
 };
 
@@ -186,7 +186,7 @@ const CompanyDetail = ({
   return (
     <div className="space-y-6">
       {/* Header + actions */}
-      <div className="bg-white rounded-2xl border border-gray-200 p-6">
+      <div className="pb-6 border-b border-gray-100">
         <div className="flex items-start gap-4 flex-wrap">
           <div className="w-14 h-14 rounded-xl bg-gray-100 flex items-center justify-center overflow-hidden shrink-0">
             {company.logo_url ? (
@@ -213,7 +213,7 @@ const CompanyDetail = ({
               )}
             </div>
             <p className="text-sm text-gray-500 mt-1">
-              {company.tagline || company.industry || "—"}
+              {company.tagline || company.industry || "-"}
             </p>
           </div>
           <div className="flex items-center gap-2 shrink-0">
@@ -262,7 +262,7 @@ const CompanyDetail = ({
       </div>
 
       {/* Requesting account */}
-      <div className="bg-white rounded-2xl border border-gray-200 p-6">
+      <div className="pb-6 border-b border-gray-100">
         <h2 className="text-sm font-bold text-gray-900 mb-4">
           Requesting account
         </h2>
@@ -283,7 +283,7 @@ const CompanyDetail = ({
               </div>
               <div className="min-w-0">
                 <p className="text-sm font-semibold text-gray-900 truncate">
-                  {company.owner.full_name || "—"}
+                  {company.owner.full_name || "-"}
                 </p>
                 <p className="text-xs text-gray-500 truncate">
                   {company.owner.email}
@@ -304,7 +304,7 @@ const CompanyDetail = ({
       </div>
 
       {/* Submitted details */}
-      <div className="bg-white rounded-2xl border border-gray-200 p-6">
+      <div>
         <h2 className="text-sm font-bold text-gray-900 mb-4">
           Submitted details
         </h2>

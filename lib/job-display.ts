@@ -36,6 +36,40 @@ export function isAggregatedJob(job: Pick<Job, "source">): boolean {
   return job.source === "scraped";
 }
 
+/**
+ * A listing title fit to display.
+ *
+ * Aggregated boards publish titles in flat lower case ("cook", "guard,
+ * security"), which reads as unfinished next to employer-written ones. Only
+ * all-lowercase titles are recapitalised — a title with any capital in it was
+ * cased deliberately, and rewriting it would turn "IT support" into "It
+ * Support". Short joining words stay lowercase unless they lead.
+ */
+const TITLE_MINOR_WORDS = new Set([
+  "a", "an", "and", "as", "at", "but", "by", "for", "in", "nor", "of", "on",
+  "or", "per", "the", "to", "vs", "via", "with",
+]);
+
+export function toDisplayTitle(title: string): string {
+  const trimmed = (title ?? "").trim();
+  if (!trimmed) return "";
+  // Any existing capital means the source cased it on purpose — leave it be.
+  if (/[A-Z]/.test(trimmed)) return trimmed;
+
+  return trimmed
+    .split(/(\s+)/)
+    .map((token) => {
+      if (/^\s+$/.test(token)) return token;
+      // Capitalise after any leading punctuation, e.g. "(part-time)".
+      return token.replace(/[a-z]+/g, (word, offset) => {
+        const isFirstWordOfTitle = offset === 0 && token === trimmed.split(/\s+/)[0];
+        if (!isFirstWordOfTitle && TITLE_MINOR_WORDS.has(word)) return word;
+        return word.charAt(0).toUpperCase() + word.slice(1);
+      });
+    })
+    .join("");
+}
+
 /** Board a listing was aggregated from, for attribution. */
 export function getSourceLabel(
   job: Pick<Job, "source" | "source_name">,

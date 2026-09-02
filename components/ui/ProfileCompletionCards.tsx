@@ -51,7 +51,7 @@ export const CompleteProfileCard: React.FC<CompleteProfileCardProps> = ({
           <button
             type="button"
             onClick={onDismiss}
-            aria-label="Dismiss — finish your profile any time from your profile page"
+            aria-label="Dismiss - finish your profile any time from your profile page"
             className="min-h-[44px] min-w-[44px] inline-flex items-center justify-center rounded-lg text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600"
           >
             <HiX className="w-5 h-5" />
@@ -87,7 +87,7 @@ export const ReadyToApplyCard: React.FC = () => {
           </h3>
           <p className="text-sm md:text-base text-gray-500 mb-4">
             Your profile looks great! We&apos;ve found some positions that match
-            your experience and preferences. Take your time browsing —
+            your experience and preferences. Take your time browsing  - 
             there&apos;s no rush.
           </p>
 

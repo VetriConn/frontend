@@ -139,15 +139,15 @@ describe("date-utils", () => {
 
   describe("formatDate", () => {
     it("should return an em-dash placeholder for undefined", () => {
-      expect(formatDate(undefined)).toBe("—");
+      expect(formatDate(undefined)).toBe("-");
     });
 
     it("should return an em-dash placeholder for an empty string", () => {
-      expect(formatDate("")).toBe("—");
+      expect(formatDate("")).toBe("-");
     });
 
     it("should return an em-dash placeholder for an invalid date", () => {
-      expect(formatDate("2026-13-45")).toBe("—");
+      expect(formatDate("2026-13-45")).toBe("-");
     });
 
     it("should format a valid date as a locale date", () => {

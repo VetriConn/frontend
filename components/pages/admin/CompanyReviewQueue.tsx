@@ -64,10 +64,10 @@ const STATUS_TONE: Record<CompanyStatus, "amber" | "emerald" | "rose" | "gray"> 
   };
 
 const formatDate = (iso?: string) => {
-  if (!iso) return "—";
+  if (!iso) return "-";
   const d = new Date(iso);
   return Number.isNaN(d.getTime())
-    ? "—"
+    ? "-"
     : d.toLocaleDateString("en-US", {
         month: "short",
         day: "numeric",
@@ -275,25 +275,25 @@ export const CompanyReviewQueue = () => {
         <StatCard
           icon={HiOutlineClock}
           label="Pending"
-          value={counts?.pending ?? "—"}
+          value={counts?.pending ?? "-"}
           tone="amber"
         />
         <StatCard
           icon={HiOutlineCheckCircle}
           label="Approved"
-          value={counts?.approved ?? "—"}
+          value={counts?.approved ?? "-"}
           tone="emerald"
         />
         <StatCard
           icon={HiOutlinePauseCircle}
           label="Suspended"
-          value={counts?.suspended ?? "—"}
+          value={counts?.suspended ?? "-"}
           tone="gray"
         />
         <StatCard
           icon={HiOutlineBuildingOffice2}
           label="Total"
-          value={counts?.total ?? "—"}
+          value={counts?.total ?? "-"}
           tone="indigo"
         />
       </div>
@@ -356,7 +356,7 @@ export const CompanyReviewQueue = () => {
                   <AdminRowSkeleton key={i} columns={6} />
                 ))
               : companies.map((company) => (
-                  <AdminTableRow key={company._id}>
+                  <AdminTableRow key={company._id} onOpen={() => setDrawerId(company._id)}>
                     <AdminTableTd className="font-semibold text-gray-900">
                       <div className="flex items-center gap-3">
                         <div className="w-9 h-9 rounded-lg bg-gray-100 flex items-center justify-center overflow-hidden shrink-0">
@@ -380,12 +380,12 @@ export const CompanyReviewQueue = () => {
                       </div>
                     </AdminTableTd>
                     <AdminTableTd className="text-gray-600">
-                      {company.industry || "—"}
+                      {company.industry || "-"}
                     </AdminTableTd>
                     <AdminTableTd className="text-gray-600">
                       {[company.city, company.country]
                         .filter(Boolean)
-                        .join(", ") || "—"}
+                        .join(", ") || "-"}
                     </AdminTableTd>
                     <AdminTableTd>
                       <StatusPill tone={STATUS_TONE[company.status]}>

@@ -357,7 +357,7 @@ const SearchResultsPage = () => {
                     <p className="text-sm text-gray-500">
                       We&apos;re searching further afield for
                       {appliedSearchQuery ? ` “${appliedSearchQuery}”` : " this"}
-                      . Check back in a moment — new listings are added as we
+                      . Check back in a moment - new listings are added as we
                       find them.
                     </p>
                   </div>

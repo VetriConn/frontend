@@ -67,7 +67,7 @@ export default function WelcomePage() {
 
           {/* Neutral, not red. A red-tinted panel directly under a green tick
               reads as a warning and undercuts the thing the page exists to
-              say — the brand colour is doing the wrong job here. */}
+              say - the brand colour is doing the wrong job here. */}
           <div className="bg-gray-50 border border-gray-200 rounded-xl p-5 md:p-6 mb-6 text-left">
             <h2 className="text-sm font-semibold text-gray-900 mb-3">
               You can now

@@ -123,25 +123,25 @@ const UserManagement = () => {
         <AdminStatCard
           icon={HiOutlineUsers}
           label="Total members"
-          value={counts?.total ?? "—"}
+          value={counts?.total ?? "-"}
           tone="indigo"
         />
         <AdminStatCard
           icon={HiOutlineCheckCircle}
           label="Active"
-          value={counts?.active ?? "—"}
+          value={counts?.active ?? "-"}
           tone="emerald"
         />
         <AdminStatCard
           icon={HiOutlineNoSymbol}
           label="Suspended"
-          value={counts?.suspended ?? "—"}
+          value={counts?.suspended ?? "-"}
           tone="rose"
         />
         <AdminStatCard
           icon={HiOutlineUserCircle}
           label="Showing"
-          value={isLoading ? "—" : users.length}
+          value={isLoading ? "-" : users.length}
           tone="gray"
         />
       </AdminStatRow>
@@ -162,7 +162,7 @@ const UserManagement = () => {
                   <AdminRowSkeleton key={i} columns={6} />
                 ))
               : users.map((u) => (
-                  <AdminTableRow key={u.id}>
+                  <AdminTableRow key={u.id} onOpen={() => router.push(`/admin/users/${u.id}`)}>
                     <AdminTableTd className="font-semibold text-gray-900">
                       {u.full_name}
                     </AdminTableTd>

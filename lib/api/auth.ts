@@ -5,6 +5,7 @@
 
 import { getApiUrl, API_CONFIG } from "../api-config";
 import { apiFetch, API_BASE_URL } from "./client";
+import { setAuthHint } from "../auth-hint";
 import { SignupFormData } from "@/types/signup";
 import type { LoginResponse } from "@/types/api";
 
@@ -166,6 +167,9 @@ export async function logoutUser(): Promise<{
   success: boolean;
   message: string;
 }> {
+  // Cleared first: a redirect can unmount the header before the profile
+  // refetch resolves, which would leave "Dashboard" showing on the next load.
+  setAuthHint(false);
   try {
     return await apiFetch<{ success: boolean; message: string }>(
       `${API_BASE_URL}/api/v1/auth/logout`,

@@ -24,11 +24,14 @@ interface FormFieldProps {
   onChange: (value: string) => void;
   options?: { value: string; label: string }[];
   disabled?: boolean;
+  /** Passed through so password managers and browser autofill work. */
+  autoComplete?: string;
 }
 
 export const FormField = ({
   label,
   name,
+  autoComplete,
   type = "text",
   placeholder,
   helperText,
@@ -88,6 +91,7 @@ export const FormField = ({
       ) : (
         <input
           id={inputId}
+          autoComplete={autoComplete}
           name={name}
           type={type}
           value={value}

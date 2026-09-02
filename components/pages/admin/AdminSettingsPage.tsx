@@ -755,7 +755,7 @@ const AdminSettingsPage = () => {
                   <p className="text-xs text-gray-500 mt-0.5">
                     {twoFactorEnabled
                       ? "Required at sign-in and for high-risk admin actions."
-                      : "Strongly recommended — admin actions need a second factor."}
+                      : "Strongly recommended - admin actions need a second factor."}
                   </p>
                 </div>
                 <button

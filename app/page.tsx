@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Advert from "@/components/ui/Advert";
 import { HeroSection } from "@/components/pages/home/HeroSection";
 import Footer from "@/components/ui/Footer";
 import { AboutSection } from "@/components/pages/home/AboutSection";
@@ -21,15 +22,20 @@ export const metadata: Metadata = generateSeoMetadata({
 
 export default function Home() {
   return (
-    <main className="max-w-screen-2xl min-w-80 mx-auto">
+    <main className="max-w-[1800px] min-w-80 mx-auto">
       <div className="sticky bg-white top-0 left-0 z-50">
         <Header />
       </div>
       <div>
+        {/* Identify, persuade, instruct — then ask for a favour.
+            "Who it's for" used to sit after the benefits, so the page argued
+            its case before the reader knew whether it was talking to them,
+            and the research invite split that argument down the middle. */}
         <HeroSection />
-        <BenefitsSection />
         <AboutSection id="about-section" />
+        <BenefitsSection />
         <HowItWorksStepsSection />
+        <Advert />
         <FaqSection id="faq-section" />
         <ContactSection id="contact-section" />
         <Footer />

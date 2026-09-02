@@ -30,11 +30,11 @@ const inputClasses =
   "w-full px-3 py-2 md:px-4 md:py-3 border border-gray-200 rounded-lg text-sm md:text-base focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent bg-white";
 
 const WEIGHT_LABELS: Record<number, string> = {
-  1: "1 — Nice to have",
-  2: "2 — Minor",
-  3: "3 — Important",
-  4: "4 — Major",
-  5: "5 — Critical",
+  1: "1 - Nice to have",
+  2: "2 - Minor",
+  3: "3 - Important",
+  4: "4 - Major",
+  5: "5 - Critical",
 };
 
 const YES_NO_OPTIONS = ["yes", "no"];
@@ -254,7 +254,7 @@ function ScreeningQuestionCard({
           <p className="mb-1.5 text-xs font-medium text-gray-600">
             Preferred answer{question.type === "multi_choice" ? "s" : ""}{" "}
             <span className="font-normal text-gray-400">
-              (used for ranking — optional)
+              (used for ranking - optional)
             </span>
           </p>
           <div className="flex flex-wrap gap-2">
@@ -377,7 +377,7 @@ export function StepHiring({
       <p className="text-sm md:text-base text-gray-500 mb-6">
         Optional. Ask a few screening questions to rank applicants, answer common
         questions up front, and show candidates what to expect. Screening never
-        rejects anyone automatically — it only helps you sort.
+        rejects anyone automatically - it only helps you sort.
       </p>
 
       {/* Screening questions */}
@@ -433,7 +433,7 @@ export function StepHiring({
                   onChange={(e) =>
                     updateFaq(i, { ...faq, question: e.target.value })
                   }
-                  placeholder="Question — e.g. Is parking available?"
+                  placeholder="Question - e.g. Is parking available?"
                   className={inputClasses}
                   aria-label={`FAQ question ${i + 1}`}
                 />
@@ -486,7 +486,7 @@ export function StepHiring({
                 type="text"
                 value={stage}
                 onChange={(e) => updateStage(i, e.target.value)}
-                placeholder={`Stage ${i + 1} — e.g. Phone screen`}
+                placeholder={`Stage ${i + 1} - e.g. Phone screen`}
                 className={inputClasses}
                 aria-label={`Hiring stage ${i + 1}`}
               />

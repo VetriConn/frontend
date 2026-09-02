@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useUserProfile } from "@/hooks/useUserProfile";
 import clsx from "clsx";
 import { HiOutlineAdjustmentsHorizontal } from "react-icons/hi2";
 import {
@@ -37,6 +38,10 @@ const ChangeAdminRoleDialog = ({
   onClose,
   onConfirm,
 }: ChangeAdminRoleDialogProps) => {
+  // The profile already knows whether this admin has 2FA — asking "if 2FA
+  // is on" made them verify something we can check ourselves.
+  const { userProfile } = useUserProfile();
+  const twoFactorOn = !!userProfile?.two_factor_enabled;
   const [role, setRole] = useState<AdminMemberRole>(currentRole);
   const [password, setPassword] = useState("");
   const [totp, setTotp] = useState("");
@@ -126,21 +131,23 @@ const ChangeAdminRoleDialog = ({
                 className="mt-1.5 w-full px-3 py-2.5 text-sm border border-gray-200 rounded-xl outline-none focus:border-primary focus:ring-2 focus:ring-primary/10"
               />
             </label>
+            {twoFactorOn && (
             <label className="block">
               <span className="text-xs font-semibold text-gray-700">
-                Authentication code{" "}
-                <span className="font-normal text-gray-400">(if 2FA is on)</span>
-              </span>
+                Authentication code
+                              </span>
               <input
                 type="text"
                 inputMode="numeric"
                 value={totp}
                 onChange={(e) => setTotp(e.target.value)}
                 placeholder="123456"
+              required
                 autoComplete="one-time-code"
                 className="mt-1.5 w-full px-3 py-2.5 text-sm border border-gray-200 rounded-xl outline-none focus:border-primary focus:ring-2 focus:ring-primary/10 tracking-widest"
               />
             </label>
+            )}
           </div>
         </div>
 

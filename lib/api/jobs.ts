@@ -359,3 +359,25 @@ export async function getRecommendedJobs(): Promise<JobsResponse[]> {
 
   return response.data?.jobs || [];
 }
+
+// ─── Public landing-page stats (GET /api/v1/jobs/stats) ──────────────────────
+
+export interface PublicStats {
+  openJobs: number;
+  employers: number;
+  provinces: number;
+}
+
+/** Headline numbers for the marketing page. Public, cached at the edge. */
+export async function getPublicStats(): Promise<PublicStats | null> {
+  try {
+    const res = await apiFetch<ApiEnvelope<PublicStats>>(
+      `${API_BASE_URL}/api/v1/jobs/stats`,
+      { method: "GET" },
+    );
+    return res.data ?? null;
+  } catch {
+    // A marketing flourish must never break the page it decorates.
+    return null;
+  }
+}

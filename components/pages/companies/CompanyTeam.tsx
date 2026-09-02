@@ -38,8 +38,8 @@ interface CompanyTeamProps {
 }
 
 const ROLE_OPTIONS = [
-  { value: "recruiter", label: "Recruiter — review applicants" },
-  { value: "admin", label: "Admin — manage jobs and teammates" },
+  { value: "recruiter", label: "Recruiter - review applicants" },
+  { value: "admin", label: "Admin - manage jobs and teammates" },
 ];
 
 const ROLE_LABEL: Record<CompanyRole, string> = {
@@ -180,7 +180,7 @@ export const CompanyTeam = ({
       </div>
       <p className="text-sm text-gray-500 mb-5">
         Teammates manage this company&apos;s jobs and applicants with their own
-        accounts — nobody needs to share a password.
+        accounts - nobody needs to share a password.
       </p>
 
       {inviteOpen && (
@@ -244,7 +244,7 @@ export const CompanyTeam = ({
               <div className="min-w-0 flex-1">
                 {/* Members who joined by invite keep their invited_email, but
                     the owner never had one and the API returns ids rather than
-                    names — so an unlabelled row would show a raw ObjectId. */}
+                    names - so an unlabelled row would show a raw ObjectId. */}
                 <p className="text-sm font-medium text-gray-900 truncate">
                   {member.invited_email ||
                     (member.user_id && member.user_id === myUserId

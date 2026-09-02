@@ -155,7 +155,7 @@ export const AcceptCompanyInvite = () => {
         <p className="text-sm text-gray-500 mb-6">
           You&apos;ve been invited to help manage a company&apos;s job postings
           on Vetriconn. Accepting adds this to your account
-          {userProfile?.email ? ` (${userProfile.email})` : ""} — your personal
+          {userProfile?.email ? ` (${userProfile.email})` : ""} - your personal
           profile stays your own.
         </p>
 

@@ -1,5 +1,6 @@
 import type { Job } from "@/types/job";
 import type { JobsResponse } from "@/types/api";
+import { toDisplayTitle } from "./job-display";
 
 /**
  * The one JobsResponse → Job transform.
@@ -14,7 +15,9 @@ export function mapJobsResponse(job: JobsResponse): Job {
     // The Mongo id wins so detail links stay stable across retitles; the
     // saved-jobs hook indexes both identities, so saved state follows either.
     id: job._id || job.id,
-    role: job.role,
+    // Aggregated boards publish flat lowercase titles; only those are
+    // recapitalised (see toDisplayTitle), so deliberate casing survives.
+    role: toDisplayTitle(job.role),
     company_name: job.company_name,
     company_logo: job.company_logo || "",
     location: job.location || "",

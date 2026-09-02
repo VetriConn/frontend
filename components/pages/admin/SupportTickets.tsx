@@ -325,7 +325,7 @@ const SupportTickets = () => {
                   <AdminRowSkeleton key={i} columns={9} />
                 ))
               : visible.map((t) => (
-                  <AdminTableRow key={t.id}>
+                  <AdminTableRow key={t.id} onOpen={() => setOpenTicketId(t.id)}>
                     <AdminTableTd className="font-semibold text-gray-700 tabular-nums">
                       {t.reference}
                     </AdminTableTd>

@@ -213,7 +213,7 @@ export default function SavedJobsPage() {
           )}
         </div>
         <p className="text-gray-500 text-sm mb-8 leading-relaxed">
-          Jobs you&apos;ve saved to review or apply for later. Take your time —
+          Jobs you&apos;ve saved to review or apply for later. Take your time  - 
           there&apos;s no rush.
         </p>
 

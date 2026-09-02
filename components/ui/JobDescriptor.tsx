@@ -54,6 +54,7 @@ import {
   formatJobSalary,
   getExternalApplyUrl,
   getSourceLabel,
+  isAggregatedJob,
   splitDescriptionParts,
 } from "@/lib/job-display";
 
@@ -253,6 +254,7 @@ const JobDescriptor: React.FC<JobDescriptorProps> = ({
     applicationLink,
   });
   const sourceLabel = getSourceLabel({ source, source_name });
+  const isAggregated = isAggregatedJob({ source });
 
   // Straight column reads. This used to scan tags against a hardcoded list
   // and default to "Full-Time" — inventing a fact for any listing that
@@ -359,7 +361,7 @@ const JobDescriptor: React.FC<JobDescriptorProps> = ({
         </nav>
 
         {/* Two-column layout. No items-start: the columns stretch to equal
-            height so the sidebar's sticky card has room to hold as you scroll —
+            height so the sidebar's sticky card has room to hold as you scroll  - 
             only the details column actually moves. */}
         <div className="flex flex-col md:flex-row gap-4 md:gap-8">
           {/* Main Content */}
@@ -416,10 +418,23 @@ const JobDescriptor: React.FC<JobDescriptorProps> = ({
                     {company_name}
                   </p>
                 )}
-                <p className="text-xs text-gray-400 flex items-center gap-1">
-                  <HiOutlineShieldCheck className="w-4 h-4 md:w-5 md:h-5 text-emerald-500" />
-                  Trusted employer
-                </p>
+                {/* Only for listings posted here. An aggregated listing has
+                    no vetted employer behind it - badging it "trusted" would
+                    vouch for a company we've never dealt with. External ones
+                    get their source attributed instead. */}
+                {isAggregated ? (
+                  sourceLabel && (
+                    <p className="text-xs text-gray-400 flex items-center gap-1">
+                      <HiOutlineGlobeAlt className="w-4 h-4 md:w-5 md:h-5 text-gray-400" />
+                      Listed via {sourceLabel}
+                    </p>
+                  )
+                ) : (
+                  <p className="text-xs text-gray-400 flex items-center gap-1">
+                    <HiOutlineShieldCheck className="w-4 h-4 md:w-5 md:h-5 text-emerald-500" />
+                    Trusted employer
+                  </p>
+                )}
               </div>
             </div>
 
@@ -781,7 +796,7 @@ const JobDescriptor: React.FC<JobDescriptorProps> = ({
                 </div>
 
                 {/* The application finishes on another site, so set that
-                    expectation before the click — but neutrally, without
+                    expectation before the click - but neutrally, without
                     naming where the listing came from. */}
                 {externalApplyUrl && (
                   <p className="text-xs text-gray-500 mb-2.5">
@@ -880,7 +895,7 @@ const JobDescriptor: React.FC<JobDescriptorProps> = ({
                   <div className="flex items-start gap-2.5">
                     <HiOutlineCheckCircle className="w-4 h-4 md:w-5 md:h-5 text-emerald-500 shrink-0 mt-0.5" />
                     <p className="text-xs text-gray-500 leading-relaxed">
-                      Be one of the first to apply — early applicants are 3x
+                      Be one of the first to apply - early applicants are 3x
                       more likely to get noticed
                     </p>
                   </div>

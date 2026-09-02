@@ -122,7 +122,7 @@ const CompanyCard = ({
           {company.status === "pending" && (
             <p className="text-xs text-gray-500 mt-3">
               An admin is reviewing this. You can post jobs as a company once
-              it&apos;s approved — posting as yourself still works in the
+              it&apos;s approved - posting as yourself still works in the
               meantime.
             </p>
           )}

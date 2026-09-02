@@ -148,7 +148,7 @@ export const ProfileHeader: React.FC<ProfileHeaderProps> = ({
               </p>
             ) : (
               <p className="text-xs md:text-sm text-gray-400 italic mb-4">
-                No bio yet — tell employers about yourself.
+                No bio yet - tell employers about yourself.
               </p>
             )}
 

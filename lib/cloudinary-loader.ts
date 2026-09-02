@@ -58,7 +58,11 @@ export default function cloudinaryLoader({
   width,
   quality,
 }: ImageLoaderProps): string {
-  // Local / relative URLs: let the browser handle them natively.
+  // Local / relative URLs pass through untouched. Routing them to
+  // /_next/image is not an option: configuring `loader: "custom"` disables
+  // Next's built-in optimizer endpoint, so those URLs 404. These call sites
+  // carry `unoptimized`, which stops Next asking this loader for a width it
+  // cannot honour (and silences the "does not implement width" warning).
   if (src.startsWith("/")) return src;
 
   if (!src.includes("res.cloudinary.com")) {

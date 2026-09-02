@@ -137,25 +137,25 @@ const CommunityModeration = () => {
         <AdminStatCard
           icon={HiOutlineChatBubbleLeftRight}
           label="Total posts"
-          value={counts?.total ?? "—"}
+          value={counts?.total ?? "-"}
           tone="indigo"
         />
         <AdminStatCard
           icon={HiOutlineCheckCircle}
           label="Visible"
-          value={counts?.visible ?? "—"}
+          value={counts?.visible ?? "-"}
           tone="emerald"
         />
         <AdminStatCard
           icon={HiOutlineFlag}
           label="Flagged"
-          value={counts?.flagged ?? "—"}
+          value={counts?.flagged ?? "-"}
           tone="amber"
         />
         <AdminStatCard
           icon={HiOutlineTrash}
           label="Removed"
-          value={counts?.removed ?? "—"}
+          value={counts?.removed ?? "-"}
           tone="rose"
         />
       </AdminStatRow>
@@ -175,7 +175,7 @@ const CommunityModeration = () => {
                   <AdminRowSkeleton key={i} columns={5} />
                 ))
               : posts.map((p) => (
-                  <AdminTableRow key={p.id}>
+                  <AdminTableRow key={p.id} onOpen={() => setViewing(p)}>
                     <AdminTableTd className="font-semibold text-gray-900">
                       {p.title}
                     </AdminTableTd>

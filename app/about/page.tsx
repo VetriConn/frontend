@@ -47,9 +47,9 @@ const benefits = [
 // ── Decorative Images ────────────────────────────────────────────────
 
 const heroImages = [
-  { src: "/images/Hero/2.svg", alt: "Veteran finding new career" },
-  { src: "/images/Hero/3.svg", alt: "Retiree at work" },
-  { src: "/images/Hero/8.svg", alt: "Professional collaboration" },
+  { src: "/images/hero/2.jpg", alt: "Veteran finding new career" },
+  { src: "/images/hero/3.jpg", alt: "Retiree at work" },
+  { src: "/images/hero/8.jpg", alt: "Professional collaboration" },
 ];
 
 // ── Page ─────────────────────────────────────────────────────────────
@@ -132,7 +132,6 @@ export default function AboutPage() {
 
             <div className="absolute left-0 top-0 w-[48%] h-[55%] -rotate-3 rounded-2xl overflow-hidden shadow-lg z-[3]">
               <Image
-                unoptimized={heroImages[0].src.endsWith(".svg")}
                 src={heroImages[0].src}
                 alt={heroImages[0].alt}
                 fill
@@ -143,7 +142,6 @@ export default function AboutPage() {
             </div>
             <div className="absolute right-0 top-2 w-[48%] h-[55%] rotate-3 rounded-2xl overflow-hidden shadow-lg z-[4]">
               <Image
-                unoptimized={heroImages[1].src.endsWith(".svg")}
                 src={heroImages[1].src}
                 alt={heroImages[1].alt}
                 fill
@@ -154,7 +152,6 @@ export default function AboutPage() {
             </div>
             <div className="absolute left-[15%] bottom-0 w-[52%] h-[50%] rotate-2 rounded-2xl overflow-hidden shadow-lg z-[5]">
               <Image
-                unoptimized={heroImages[2].src.endsWith(".svg")}
                 src={heroImages[2].src}
                 alt={heroImages[2].alt}
                 fill
@@ -220,8 +217,7 @@ export default function AboutPage() {
             {/* Right — Image */}
             <div className="relative w-full aspect-[4/3] rounded-2xl overflow-hidden shadow-lg mobile:aspect-[16/10]">
               <Image
-              unoptimized
-                src="/images/Hero/7.svg"
+                src="/images/hero/7.jpg"
                 alt="Community of veterans and retirees"
                 fill
                 className="object-cover w-full h-auto"
@@ -241,8 +237,7 @@ export default function AboutPage() {
             {/* Left — Image */}
             <div className="relative w-full aspect-[4/3] rounded-2xl overflow-hidden shadow-lg mobile:order-2 mobile:aspect-[16/10]">
               <Image
-              unoptimized
-                src="/images/Hero/1.svg"
+                src="/images/hero/1.jpg"
                 alt="Meaningful employment opportunities"
                 fill
                 className="object-cover w-full h-auto"

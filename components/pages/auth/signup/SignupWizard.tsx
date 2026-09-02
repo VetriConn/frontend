@@ -497,7 +497,7 @@ export function SignupWizard() {
       {/* Left — image panel, matching sign in. Fixed to the viewport so the
           taller signup form scrolls past it rather than dragging it along.
           Hidden below md, where the form takes the full width. */}
-      <div className="hidden md:flex md:w-1/2 lg:w-[45%] self-start sticky top-0 h-screen relative items-center justify-center p-8 text-left bg-[linear-gradient(70deg,rgba(0,0,0,0.65),rgba(0,0,0,0.45)),url('/images/Hero/3.svg')] bg-center bg-cover">
+      <div className="hidden md:flex md:w-1/2 lg:w-[45%] self-start sticky top-0 h-screen relative items-center justify-center p-8 text-left bg-[linear-gradient(70deg,rgba(0,0,0,0.65),rgba(0,0,0,0.45)),url('/images/hero/3.jpg')] bg-center bg-cover">
         <DottedBox9 className="absolute top-50 right-10 w-32 h-auto z-0 opacity-60" />
         <h1 className="font-lato text-2xl md:text-4xl mb-4 text-white font-semibold leading-tight drop-shadow-lg">
           Join the <br />{" "}
@@ -523,7 +523,7 @@ export function SignupWizard() {
             >
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
-                src="/images/logo_1.svg"
+                src="/images/logo.png"
                 alt="Vetriconn"
                 className="w-40 h-auto"
               />

@@ -115,7 +115,7 @@ export const SignIn = () => {
   return (
     <div className="flex min-h-screen font-open-sans">
       {/* Desktop: Left side with image */}
-      <div className="flex-1 bg-gray-100 items-center justify-center p-8 text-left bg-[linear-gradient(70deg,rgba(0,0,0,0.65),rgba(0,0,0,0.45)),url('/images/Hero/1.svg')] bg-right bg-cover hidden mobile:hidden tablet:hidden relative md:flex">
+      <div className="flex-1 bg-gray-100 items-center justify-center p-8 text-left bg-[linear-gradient(70deg,rgba(0,0,0,0.65),rgba(0,0,0,0.45)),url('/images/hero/1.jpg')] bg-right bg-cover hidden mobile:hidden tablet:hidden relative md:flex">
         <DottedBox9 className="absolute top-50 right-10 w-32 h-auto z-0 opacity-60" />
         <h1 className="font-lato text-2xl md:text-4xl mb-4 text-white font-semibold leading-tight drop-shadow-lg">
           Welcome back to the <br />{" "}
@@ -130,7 +130,7 @@ export const SignIn = () => {
         <DottedBox4 className="absolute top-8 left-15 h-auto z-0 opacity-60" />
         <div className="w-full max-w-lg">
           {/* Logo */}
-          <img src="/images/logo_1.svg" alt="Vetriconn" className="w-40 mb-8" />
+          <img src="/images/logo.png" alt="Vetriconn" className="w-40 mb-8" />
 
           <h2 className="text-xl md:text-3xl mb-4">Welcome back</h2>
           <p className="text-sm md:text-base mb-4">

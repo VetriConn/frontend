@@ -1,8 +1,10 @@
 import type { ImageLoaderProps } from "next/image";
 
 /**
- * Image loader that bypasses Next.js's optimizer for Cloudinary URLs and
- * uses Cloudinary's own transformations instead.
+ * Per-<Image> loader that bypasses Next.js's optimizer for Cloudinary URLs
+ * and uses Cloudinary's own transformations instead. Pass it explicitly:
+ * <Image loader={cloudinaryLoader} …> - it is no longer wired globally,
+ * because a global custom loader disables the optimizer for local images.
  *
  * Why bypass:
  *   - Cloudinary already serves resized + format-optimized output.
@@ -58,12 +60,18 @@ export default function cloudinaryLoader({
   width,
   quality,
 }: ImageLoaderProps): string {
-  // Local / relative URLs pass through untouched. Routing them to
-  // /_next/image is not an option: configuring `loader: "custom"` disables
-  // Next's built-in optimizer endpoint, so those URLs 404. These call sites
-  // carry `unoptimized`, which stops Next asking this loader for a width it
-  // cannot honour (and silences the "does not implement width" warning).
-  if (src.startsWith("/")) return src;
+  // Local / relative URLs route through Next's optimizer - it exists again
+  // now that this loader is per-usage rather than global, so components that
+  // pass this loader can still render local fallbacks optimized.
+  if (src.startsWith("/")) {
+    if (/\.svg($|\?)/i.test(src)) return src;
+    const params = new URLSearchParams({
+      url: src,
+      w: String(width),
+      q: String(quality ?? 75),
+    });
+    return `/_next/image?${params.toString()}`;
+  }
 
   if (!src.includes("res.cloudinary.com")) {
     // Not a Cloudinary URL — return as-is. Next will hit it directly because

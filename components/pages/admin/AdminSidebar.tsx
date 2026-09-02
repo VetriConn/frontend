@@ -123,7 +123,7 @@ const AdminSidebar = ({ isMobileOpen, onCloseMobile }: AdminSidebarProps) => {
           <Link href="/admin" className="flex items-center gap-2.5">
             <div className="relative w-8 h-8 rounded-lg bg-white/5 ring-1 ring-white/10 overflow-hidden flex items-center justify-center">
               <Image
-                src="/images/logo_1.svg"
+                src="/images/logo.png"
                 alt="Vetriconn"
                 width={20}
                 height={20}

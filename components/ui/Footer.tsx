@@ -1,5 +1,4 @@
 import Image from "next/image";
-import Logo from "@/public/images/logo_1.svg";
 // One family for both, matching the contact section. These were Line Awesome
 // and Feather respectively — two weights, two corner radii, and neither of
 // them the official mark.
@@ -27,15 +26,21 @@ const Footer = () => {
         <div className="grid grid-cols-1 md:grid-cols-[1fr_auto] gap-8 md:gap-8 items-start">
           {/* Brand */}
           <div className="flex flex-col items-start gap-3">
-            <Logo className="w-[162px] h-auto block overflow-visible mobile:w-[110px]" />
+            <Image
+              src="/images/logo.png"
+              alt="Vetriconn"
+              width={360}
+              height={164}
+              sizes="162px"
+              className="w-[162px] h-auto mobile:w-[110px]"
+            />
             {/* Explicit width at both sizes. w-auto lost to the global img rule,
                 so the box stretched to the full column and object-fit: fill
                 squashed the artwork inside it — which read as a badge floating
                 in the middle of the column rather than sitting under the logo. */}
             <Image
-              unoptimized
               src="/badge.svg"
-              alt="PIPEDA certification badge"
+              alt="Committed to PIPEDA-compliant privacy practices"
               height={40}
               width={140}
               className="block w-[140px] h-auto object-contain mobile:w-[98px]"

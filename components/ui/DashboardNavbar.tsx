@@ -32,6 +32,7 @@ import {
 } from "react-icons/hi2";
 import { getInitials } from "@/lib/initials";
 import Image from "next/image";
+import cloudinaryLoader from "@/lib/cloudinary-loader";
 import { logoutUser } from "@/lib/api";
 import { useToaster } from "@/components/ui/Toaster";
 import { useUserProfile } from "@/hooks/useUserProfile";
@@ -389,10 +390,10 @@ const DashboardNavbar = () => {
         {/* Logo */}
         <Link href="/dashboard" className="flex items-center shrink-0">
           <Image
-            src="/images/logo_1.svg"
+            src="/images/logo.png"
             alt="Vetriconn"
             width={140}
-            height={45}
+            height={64}
             priority
             sizes="140px"
           />
@@ -495,6 +496,7 @@ const DashboardNavbar = () => {
               >
                 {avatarUrl ? (
                   <Image
+                    loader={cloudinaryLoader}
                     src={avatarUrl}
                     alt={userName}
                     width={40}

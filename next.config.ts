@@ -66,11 +66,10 @@ const nextConfig: NextConfig = {
         hostname: "res.cloudinary.com",
       },
     ],
-    // Use a custom loader for ALL images. Cloudinary URLs get Cloudinary
-    // transformations and skip Next's optimizer (which 504s on slow upstreams).
-    // Local images pass through unchanged.
-    loader: "custom",
-    loaderFile: "./lib/cloudinary-loader.ts",
+    // Next's own optimizer serves local images (responsive sizes, webp/avif).
+    // Cloudinary URLs skip it via a per-<Image> loader (lib/cloudinary-loader)
+    // so their delivery never proxies through us - a global custom loader here
+    // would turn the optimizer off for every local image on the site.
     minimumCacheTTL: 60 * 60 * 24, // 1 day
   },
   webpack(config) {

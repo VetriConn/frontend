@@ -2,6 +2,7 @@
 
 import React from "react";
 import Image from "next/image";
+import cloudinaryLoader from "@/lib/cloudinary-loader";
 import {
   HiOutlineMapPin,
   HiOutlineBriefcase,
@@ -92,6 +93,7 @@ export function ProfilePreviewDialog({
               <div className="w-16 h-16 md:w-20 md:h-20 rounded-full overflow-hidden bg-red-50 border-2 border-red-100 flex items-center justify-center shrink-0">
                 {profile.avatar ? (
                   <Image
+                    loader={cloudinaryLoader}
                     src={profile.avatar}
                     alt={profile.name}
                     width={80}

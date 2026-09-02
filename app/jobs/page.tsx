@@ -257,7 +257,6 @@ export default function JobsPage() {
             {/* Image 1 — top-left, tilted left */}
             <div className="absolute left-0 top-0 w-[48%] h-[55%] -rotate-3 rounded-2xl overflow-hidden shadow-lg z-[3]">
               <Image
-                unoptimized
                 src="/images/jobs_hero.jpg"
                 alt="Professional working at desk"
                 fill
@@ -271,7 +270,6 @@ export default function JobsPage() {
             {/* Image 2 — top-right, tilted right */}
             <div className="absolute right-0 top-2 w-[48%] h-[55%] rotate-3 rounded-2xl overflow-hidden shadow-lg z-[4]">
               <Image
-                unoptimized
                 src="/images/jobs_hero2.jpg"
                 alt="Experienced professional collaborating"
                 fill
@@ -285,7 +283,6 @@ export default function JobsPage() {
             {/* Image 3 — bottom-center, tilted slightly */}
             <div className="absolute left-[15%] bottom-0 w-[52%] h-[50%] rotate-2 rounded-2xl overflow-hidden shadow-lg z-[5]">
               <Image
-                unoptimized
                 src="/images/jobs_hero3.jpg"
                 alt="Veteran in professional setting"
                 fill

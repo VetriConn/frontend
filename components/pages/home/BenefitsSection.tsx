@@ -24,14 +24,14 @@ const benefits: Benefit[] = [
     title: "Roles that come to you",
     description:
       "Tell us the work and hours you want. Matching jobs arrive as they're posted.",
-    image: "/images/Hero/8.svg",
+    image: "/images/hero/8.jpg",
     imageAlt: "Connected professionals collaborating",
   },
   {
     title: "Paid work and volunteering",
     description:
       "Full-time, part-time, and volunteer placements from Canadian organisations that want experienced people.",
-    image: "/images/Hero/5.svg",
+    image: "/images/hero/5.jpg",
     imageAlt: "Building stronger communities together",
   },
 ];
@@ -80,9 +80,6 @@ export const BenefitsSection = ({ id }: BenefitsSectionProps) => (
                 <Image
                   src={benefit.image}
                   alt={benefit.imageAlt}
-                  // No local image can be optimized: a custom loader disables
-                  // Next's optimizer endpoint entirely.
-                  unoptimized
                   fill
                   className="object-cover w-full h-full transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-[1.03] motion-reduce:transition-none motion-reduce:transform-none"
                   sizes="(max-width: 850px) 100vw, 50vw"

@@ -2,6 +2,7 @@
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import cloudinaryLoader from "@/lib/cloudinary-loader";
 import clsx from "clsx";
 import {
   HiOutlineMapPin,
@@ -386,6 +387,7 @@ const JobDescriptor: React.FC<JobDescriptorProps> = ({
             <div className="flex items-center gap-3 mb-6">
               {company_logo ? (
                 <Image
+                  loader={cloudinaryLoader}
                   src={company_logo}
                   alt={company_name}
                   width={40}

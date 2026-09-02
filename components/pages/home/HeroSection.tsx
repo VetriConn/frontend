@@ -7,9 +7,9 @@ import { HiOutlineArrowRight } from "react-icons/hi2";
 import DottedBox from "@/public/images/dotted_box.svg";
 
 const COLLAGE_IMAGES = [
-  { src: "/images/Hero/4.svg", alt: "Veteran finding new career" },
-  { src: "/images/Hero/5.svg", alt: "Retiree at work" },
-  { src: "/images/Hero/6.svg", alt: "Professional collaboration" },
+  { src: "/images/hero/4.jpg", alt: "Veteran finding new career" },
+  { src: "/images/hero/5.jpg", alt: "Retiree at work" },
+  { src: "/images/hero/6.jpg", alt: "Professional collaboration" },
 ] as const;
 
 const CAROUSEL_INTERVAL_MS = 5000;
@@ -139,8 +139,6 @@ export const HeroSection = () => {
                 <Image
                   src={image.src}
                   alt={image.alt}
-                  // Hero art is SVG: nothing for the optimizer to resize.
-                  unoptimized
                   fill
                   className="object-cover w-full h-full"
                   sizes="(max-width: 850px) 92vw, 40vw"

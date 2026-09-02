@@ -1,6 +1,6 @@
 "use client";
+import Image from "next/image";
 import { useState, useEffect } from "react";
-import Logo from "@/public/images/logo_1.svg";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import clsx from "clsx";
@@ -105,7 +105,15 @@ export const Header = () => {
 
   return (
     <nav className="flex justify-between items-center py-2 max-w-[1600px] mx-auto px-6 shadow-[0_6px_4px_-4px_#e8e8e8]">
-      <Logo className="w-[180px] h-auto block overflow-visible mobile:w-[140px]" />
+      <Image
+        src="/images/logo.png"
+        alt="Vetriconn"
+        width={360}
+        height={164}
+        priority
+        sizes="180px"
+        className="w-[180px] h-auto mobile:w-[140px]"
+      />
       <button
         className={clsx(
           "hidden mobile:block bg-transparent border-none cursor-pointer z-[60] py-4 px-2.5 relative",

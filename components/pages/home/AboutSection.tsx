@@ -26,7 +26,7 @@ const aboutContent = {
 };
 
 const aboutImage = {
-  src: "/images/Hero/1.svg",
+  src: "/images/hero/1.jpg",
   alt: "An experienced worker back at the bench, doing skilled work",
 };
 
@@ -48,7 +48,6 @@ export const AboutSection = ({ id }: AboutSectionProps) => (
           <Image
             src={aboutImage.src}
             alt={aboutImage.alt}
-            unoptimized
             fill
             className="object-cover w-full h-full transition-transform duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-[1.03] motion-reduce:transition-none motion-reduce:group-hover:scale-100"
             sizes="(max-width: 850px) 100vw, 50vw"

@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
+import cloudinaryLoader from "@/lib/cloudinary-loader";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import clsx from "clsx";
@@ -93,6 +94,7 @@ const AdminTopBar = ({ onOpenMobileMenu }: AdminTopBarProps) => {
             >
               {avatar ? (
                 <Image
+                  loader={cloudinaryLoader}
                   src={avatar}
                   alt={name}
                   width={36}

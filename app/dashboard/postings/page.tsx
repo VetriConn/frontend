@@ -16,6 +16,7 @@ import {
   HiOutlineMapPin,
   HiOutlineUsers,
   HiOutlineTrash,
+  HiOutlinePencilSquare,
   HiOutlineEye,
   HiOutlineEyeSlash,
   HiOutlineArrowTopRightOnSquare,
@@ -205,6 +206,13 @@ export default function ManageJobsPage() {
                               </span>
                             );
                           })()}
+                          {job.moderation_status === "rejected" &&
+                            job.rejection_reason && (
+                              <p className="mt-1.5 max-w-[16rem] text-xs text-rose-700">
+                                {job.rejection_reason} Edit the job to fix this
+                                and resubmit it for review.
+                              </p>
+                            )}
                         </td>
                         <td className="px-6 py-4">
                           <div className="flex items-center gap-2 text-sm text-gray-700">
@@ -220,6 +228,13 @@ export default function ManageJobsPage() {
                         </td>
                         <td className="px-6 py-4 text-right">
                           <div className="flex items-center justify-end gap-1">
+                            <Link
+                              href={`/dashboard/post-job?draftId=${job._id}`}
+                              className="p-1.5 rounded-lg text-gray-400 hover:text-primary hover:bg-red-50 transition-colors"
+                              title="Edit Job"
+                            >
+                              <HiOutlinePencilSquare className="w-5 h-5" />
+                            </Link>
                             <Link
                               href={`/jobs/${job._id}`}
                               className="p-1.5 rounded-lg text-gray-400 hover:text-primary hover:bg-red-50 transition-colors"

@@ -404,6 +404,8 @@ export interface PostedJobSummary {
   moderation_status?: "pending" | "approved" | "rejected";
   is_approved?: boolean;
   rejected_at?: string;
+  /** Why moderation turned it down — shown so the employer can fix and resubmit. */
+  rejection_reason?: string;
   application_count?: number;
   createdAt?: string;
   updatedAt?: string;

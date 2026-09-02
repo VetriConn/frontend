@@ -1864,19 +1864,28 @@ const CreateJobPosting = ({
 
     setIsSaving(true);
     try {
-      if (editingJobId) {
-        await updatePosting(editingJobId, buildPayload("published"));
-      } else {
-        await createPosting(buildPayload("published"));
-      }
+      const saved = editingJobId
+        ? await updatePosting(editingJobId, buildPayload("published"))
+        : await createPosting(buildPayload("published"));
       await mutate("employer-jobs-dashboard");
       await mutate("employer-jobs-manage");
       await mutate("employer-jobs-drafts");
-      showToast({
-        type: "success",
-        title: "Job published",
-        description: "Your job is now live",
-      });
+      // New jobs (and content edits to live ones) sit in the moderation queue
+      // before they appear on the board — say so, don't claim "live".
+      if (saved.moderation_status === "approved") {
+        showToast({
+          type: "success",
+          title: "Job updated",
+          description: "Your changes are live",
+        });
+      } else {
+        showToast({
+          type: "success",
+          title: "Job submitted for review",
+          description:
+            "Our team checks every listing before it goes live. We'll let you know when it's up.",
+        });
+      }
       router.push("/dashboard/postings");
     } catch (err) {
       const message = err instanceof Error ? err.message : "Failed to publish";

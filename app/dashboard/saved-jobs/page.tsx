@@ -42,7 +42,7 @@ function EmptyState() {
       <h3 className="text-xl font-bold text-gray-900 mb-3">
         You haven&apos;t saved any jobs yet
       </h3>
-      <p className="text-sm text-gray-500 max-w-95 leading-relaxed mb-8">
+      <p className="text-sm text-gray-600 max-w-95 leading-relaxed mb-8">
         Browse jobs and save ones you&apos;d like to apply for later. Your saved
         jobs will appear here for easy access.
       </p>
@@ -73,13 +73,13 @@ function SavedJobCard({
       <div className="space-y-3">
         {/* Position */}
         <div>
-          <div className="text-xs font-medium text-gray-500 mb-1">Position</div>
+          <div className="text-sm font-medium text-gray-600 mb-1">Position</div>
           <div className="text-sm font-semibold text-gray-900">{job.role}</div>
         </div>
 
         {/* Company */}
         <div>
-          <div className="text-xs font-medium text-gray-500 mb-1">Company</div>
+          <div className="text-sm font-medium text-gray-600 mb-1">Company</div>
           <div className="flex items-center gap-1.5 text-sm text-gray-900">
             <HiOutlineBuildingOffice2 className="w-4 h-4 text-gray-400" />
             {job.company}
@@ -88,7 +88,7 @@ function SavedJobCard({
 
         {/* Location */}
         <div>
-          <div className="text-xs font-medium text-gray-500 mb-1">Location</div>
+          <div className="text-sm font-medium text-gray-600 mb-1">Location</div>
           <div className="flex items-center gap-1.5 text-sm text-gray-900">
             <HiOutlineMapPin className="w-4 h-4 text-gray-400" />
             {job.location}
@@ -97,7 +97,7 @@ function SavedJobCard({
 
         {/* Job Type */}
         <div>
-          <div className="text-xs font-medium text-gray-500 mb-1">Type</div>
+          <div className="text-sm font-medium text-gray-600 mb-1">Type</div>
           <div className="flex items-center gap-1.5 text-sm text-gray-900">
             <HiOutlineClock className="w-4 h-4 text-gray-400" />
             {job.jobType}
@@ -106,7 +106,7 @@ function SavedJobCard({
 
         {/* Salary */}
         <div>
-          <div className="text-xs font-medium text-gray-500 mb-1">Salary</div>
+          <div className="text-sm font-medium text-gray-600 mb-1">Salary</div>
           <div className="flex items-center gap-1.5 text-sm text-gray-900">
             <HiOutlineCurrencyDollar className="w-4 h-4 text-gray-400" />
             {job.salary}
@@ -115,8 +115,8 @@ function SavedJobCard({
 
         {/* Saved Date */}
         <div>
-          <div className="text-xs font-medium text-gray-500 mb-1">Saved</div>
-          <div className="flex items-center gap-1.5 text-xs text-gray-500">
+          <div className="text-sm font-medium text-gray-600 mb-1">Saved</div>
+          <div className="flex items-center gap-1.5 text-sm text-gray-600">
             <HiOutlineCalendarDays className="w-3.5 h-3.5" />
             {job.savedDate}
           </div>
@@ -151,7 +151,7 @@ function SavedJobCard({
         ) : (
           <button
             onClick={() => setShowConfirmDelete(true)}
-            className="inline-flex items-center justify-center gap-1.5 px-4 py-2 min-h-44 text-sm text-gray-500 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+            className="inline-flex items-center justify-center gap-1.5 px-4 py-2 min-h-44 text-sm text-gray-600 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
           >
             <HiOutlineBookmarkSlash className="w-4 h-4" />
             Remove from Saved
@@ -207,12 +207,12 @@ export default function SavedJobsPage() {
             Saved Jobs
           </h1>
           {savedJobs.length > 0 && (
-            <span className="text-sm text-gray-400 mt-2">
+            <span className="text-sm text-gray-500 mt-2">
               {savedJobs.length} job{savedJobs.length !== 1 && "s"} saved
             </span>
           )}
         </div>
-        <p className="text-gray-500 text-sm mb-8 leading-relaxed">
+        <p className="text-gray-600 text-sm mb-8 leading-relaxed">
           Jobs you&apos;ve saved to review or apply for later. Take your time  - 
           there&apos;s no rush.
         </p>
@@ -230,22 +230,22 @@ export default function SavedJobsPage() {
               <table className="w-full">
                 <thead>
                   <tr className="bg-gray-50 border-b border-gray-200">
-                    <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700">
+                    <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">
                       Position
                     </th>
-                    <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700">
+                    <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">
                       Company
                     </th>
-                    <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700">
+                    <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">
                       Location
                     </th>
-                    <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700">
+                    <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">
                       Type
                     </th>
-                    <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700">
+                    <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">
                       Salary
                     </th>
-                    <th className="px-4 py-3 text-right text-xs font-semibold text-gray-700">
+                    <th className="px-4 py-3 text-right text-sm font-semibold text-gray-700">
                       Actions
                     </th>
                   </tr>
@@ -318,7 +318,7 @@ export default function SavedJobsPage() {
 
             {/* Footer message */}
             <div className="mt-8 pt-6 border-t border-gray-200">
-              <p className="text-sm text-gray-400 text-center">
+              <p className="text-sm text-gray-500 text-center">
                 Your saved jobs are always here when you need them. Take your
                 time to review each opportunity before applying.
               </p>

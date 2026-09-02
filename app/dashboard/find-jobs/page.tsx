@@ -269,7 +269,7 @@ const SearchResultsPage = () => {
         <div className="max-w-screen-xl mx-auto w-full flex-1 min-h-0 flex flex-col px-4 md:px-6 pt-4">
           <Link
             href="/dashboard"
-            className="inline-flex items-center gap-2 text-sm text-gray-500 hover:text-gray-900 font-medium transition-colors no-underline mb-3"
+            className="inline-flex items-center gap-2 text-sm text-gray-600 hover:text-gray-900 font-medium transition-colors no-underline mb-3"
           >
             <HiOutlineArrowLeft className="w-4 h-4 md:w-5 md:h-5" />
             Back to Dashboard
@@ -280,7 +280,7 @@ const SearchResultsPage = () => {
             <h1 className="text-xl sm:text-2xl font-bold text-gray-900 leading-tight tracking-tight mb-1">
               Find Your Next Opportunity
             </h1>
-            <p className="text-gray-500 text-sm">
+            <p className="text-gray-600 text-sm">
               Browse flexible positions designed for experienced professionals
               like you.
             </p>
@@ -313,7 +313,7 @@ const SearchResultsPage = () => {
                 )}
                 <Link
                   href="/dashboard/saved-searches"
-                  className="text-sm text-gray-400 hover:text-gray-600 transition-colors no-underline"
+                  className="text-sm text-gray-500 hover:text-gray-600 transition-colors no-underline"
                 >
                   View saved searches
                 </Link>
@@ -354,7 +354,7 @@ const SearchResultsPage = () => {
                     <p className="text-sm font-medium text-gray-900">
                       Still looking for more matches
                     </p>
-                    <p className="text-sm text-gray-500">
+                    <p className="text-sm text-gray-600">
                       We&apos;re searching further afield for
                       {appliedSearchQuery ? ` “${appliedSearchQuery}”` : " this"}
                       . Check back in a moment - new listings are added as we

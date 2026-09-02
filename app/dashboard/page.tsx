@@ -39,7 +39,7 @@ const Dashboard = () => {
           <h1 className="text-xl font-bold text-gray-900 mb-2">
             We couldn&apos;t load your dashboard
           </h1>
-          <p className="text-sm text-gray-500 mb-6">
+          <p className="text-sm text-gray-600 mb-6">
             Please sign in again to continue.
           </p>
           <button

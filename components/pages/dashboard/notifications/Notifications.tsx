@@ -51,7 +51,7 @@ export default function Notifications() {
           <h1 className="font-lato text-xl md:text-3xl font-bold text-gray-900 mb-1">
             Notifications
           </h1>
-          <p className="text-gray-500 text-sm">
+          <p className="text-gray-600 text-sm">
             Updates about your applications, jobs, and community activity.
           </p>
         </div>
@@ -63,7 +63,7 @@ export default function Notifications() {
               {totalCount} total
             </span>
             {unreadCount > 0 && (
-              <span className="px-2 py-0.5 rounded-full bg-red-50 text-primary text-xs font-semibold">
+              <span className="px-2 py-0.5 rounded-full bg-red-50 text-primary text-sm font-semibold">
                 {unreadCount} unread
               </span>
             )}
@@ -96,7 +96,7 @@ export default function Notifications() {
           {isLoading ? (
             <div className="flex flex-col items-center justify-center py-20">
               <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-primary mb-4"></div>
-              <p className="text-sm text-gray-500 font-medium">
+              <p className="text-sm text-gray-600 font-medium">
                 Loading notifications...
               </p>
             </div>
@@ -143,7 +143,7 @@ export default function Notifications() {
                         Clear all notifications
                       </h3>
                       <div className="mt-2">
-                        <p className="text-sm text-gray-500">
+                        <p className="text-sm text-gray-600">
                           Are you sure you want to delete all notifications?
                           This action cannot be undone.
                         </p>

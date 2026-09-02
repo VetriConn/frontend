@@ -145,7 +145,7 @@ const FindJobsDashboard = () => {
           <h1 className="text-2xl md:text-4xl font-bold text-gray-900">
             {greeting}
           </h1>
-          <p className="text-gray-500 mt-1">Find Your Next Opportunity</p>
+          <p className="text-gray-600 mt-1">Find Your Next Opportunity</p>
         </div>
 
         {/* Search & filters — a clean, cohesive panel. Labels stay (this is
@@ -156,7 +156,7 @@ const FindJobsDashboard = () => {
           <div className="flex flex-wrap items-end gap-3 md:gap-4">
             {/* Job Search */}
             <div className="flex-1 min-w-56">
-              <label className="block text-xs md:text-sm font-medium text-gray-700 mb-1.5">
+              <label className="block text-sm font-medium text-gray-700 mb-1.5">
                 Job Search
               </label>
               <div className="relative">
@@ -176,7 +176,7 @@ const FindJobsDashboard = () => {
 
             {/* Location */}
             <div className="min-w-44">
-              <label className="block text-xs md:text-sm font-medium text-gray-700 mb-1.5">
+              <label className="block text-sm font-medium text-gray-700 mb-1.5">
                 Location
               </label>
               <div className="relative">
@@ -202,7 +202,7 @@ const FindJobsDashboard = () => {
 
             {/* Work Type */}
             <div>
-              <label className="block text-xs md:text-sm font-medium text-gray-700 mb-1.5">
+              <label className="block text-sm font-medium text-gray-700 mb-1.5">
                 Work Type
               </label>
               <div className="flex gap-1 rounded-lg bg-gray-100 p-1">
@@ -226,7 +226,7 @@ const FindJobsDashboard = () => {
 
             {/* Experience Level */}
             <div className="min-w-40">
-              <label className="block text-xs md:text-sm font-medium text-gray-700 mb-1.5">
+              <label className="block text-sm font-medium text-gray-700 mb-1.5">
                 Experience Level
               </label>
               <div className="relative">
@@ -259,13 +259,13 @@ const FindJobsDashboard = () => {
 
           {/* Popular searches */}
           <div className="mt-4 flex flex-wrap items-center gap-2">
-            <span className="text-xs font-medium text-gray-400">Popular:</span>
+            <span className="text-sm font-medium text-gray-500">Popular:</span>
             {POPULAR_SEARCHES.map((term) => (
               <button
                 key={term}
                 type="button"
                 onClick={() => quickSearch(term)}
-                className="rounded-full border border-gray-200 px-3 py-1 text-xs font-medium text-gray-600 transition-colors hover:border-primary hover:text-primary"
+                className="rounded-full border border-gray-200 px-3 py-1 text-sm font-medium text-gray-600 transition-colors hover:border-primary hover:text-primary"
               >
                 {term}
               </button>

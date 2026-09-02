@@ -105,7 +105,7 @@ function SectionCard({
       <h2 className="font-lato text-lg font-bold text-gray-900 mb-1">
         {title}
       </h2>
-      <p className="text-sm text-gray-500 mb-6">{subtitle}</p>
+      <p className="text-sm text-gray-600 mb-6">{subtitle}</p>
       {children}
     </div>
   );
@@ -384,7 +384,7 @@ export default function AccountSettings() {
           <h1 className="font-lato text-xl md:text-3xl font-bold text-gray-900 mb-1">
             Account settings
           </h1>
-          <p className="text-gray-500 text-sm leading-relaxed">
+          <p className="text-gray-600 text-sm leading-relaxed">
             Manage your account preferences, security, and privacy settings.
           </p>
         </div>
@@ -414,9 +414,9 @@ export default function AccountSettings() {
                   type="email"
                   value={userProfile?.email || ""}
                   disabled
-                  className="form-input disabled:bg-gray-50 disabled:text-gray-500 disabled:cursor-not-allowed"
+                  className="form-input disabled:bg-gray-50 disabled:text-gray-600 disabled:cursor-not-allowed"
                 />
-                <p className="text-xs text-gray-400 mt-1.5">
+                <p className="text-sm text-gray-500 mt-1.5">
                   Your email is used to sign in and cannot be changed here.
                   Contact support if you need to update it.
                 </p>
@@ -451,7 +451,7 @@ export default function AccountSettings() {
                 <h4 className="text-sm font-semibold text-gray-900 mb-1">
                   Change Your Password
                 </h4>
-                <p className="text-sm text-gray-500 leading-relaxed mb-3">
+                <p className="text-sm text-gray-600 leading-relaxed mb-3">
                   We recommend updating your password every few months, or if
                   you think someone else might know it.
                 </p>
@@ -474,12 +474,12 @@ export default function AccountSettings() {
                   <h4 className="text-sm font-semibold text-gray-900 mb-1">
                     Two-Step Verification
                     {twoFactorEnabled && (
-                      <span className="ml-2 inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200/70">
+                      <span className="ml-2 inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200/70">
                         On
                       </span>
                     )}
                   </h4>
-                  <p className="text-sm text-gray-500 leading-relaxed">
+                  <p className="text-sm text-gray-600 leading-relaxed">
                     Pair an authenticator app like 1Password or Google
                     Authenticator. We&apos;ll ask for a 6-digit code each time
                     you sign in.
@@ -577,7 +577,7 @@ export default function AccountSettings() {
                   <h4 className="text-sm font-semibold text-gray-900 mb-0.5">
                     Email Notifications
                   </h4>
-                  <p className="text-sm text-gray-500">
+                  <p className="text-sm text-gray-600">
                     Receive important updates about your account and
                     applications.
                   </p>
@@ -604,7 +604,7 @@ export default function AccountSettings() {
                   <h4 className="text-sm font-semibold text-gray-900 mb-0.5">
                     Job Alerts
                   </h4>
-                  <p className="text-sm text-gray-500">
+                  <p className="text-sm text-gray-600">
                     Get notified when new jobs match your preferences.
                   </p>
                 </div>
@@ -628,7 +628,7 @@ export default function AccountSettings() {
                   <h4 className="text-sm font-semibold text-gray-900 mb-0.5">
                     Application Approved/Rejected
                   </h4>
-                  <p className="text-sm text-gray-500">
+                  <p className="text-sm text-gray-600">
                     Get notified when your applications are reviewed and their
                     status changes.
                   </p>
@@ -655,7 +655,7 @@ export default function AccountSettings() {
                   <h4 className="text-sm font-semibold text-gray-900 mb-0.5">
                     Your job posts
                   </h4>
-                  <p className="text-sm text-gray-500">
+                  <p className="text-sm text-gray-600">
                     Get notified when a job you posted is approved or rejected.
                   </p>
                 </div>
@@ -681,7 +681,7 @@ export default function AccountSettings() {
                   <h4 className="text-sm font-semibold text-gray-900 mb-0.5">
                     New applicants
                   </h4>
-                  <p className="text-sm text-gray-500">
+                  <p className="text-sm text-gray-600">
                     Get notified when someone applies to a job you posted.
                   </p>
                 </div>
@@ -707,7 +707,7 @@ export default function AccountSettings() {
                   <h4 className="text-sm font-semibold text-gray-900 mb-0.5">
                     Messages
                   </h4>
-                  <p className="text-sm text-gray-500">
+                  <p className="text-sm text-gray-600">
                     Get notified when you receive a new message from an
                     employer.
                   </p>
@@ -732,7 +732,7 @@ export default function AccountSettings() {
                   <h4 className="text-sm font-semibold text-gray-900 mb-0.5">
                     Community Updates
                   </h4>
-                  <p className="text-sm text-gray-500">
+                  <p className="text-sm text-gray-600">
                     Stay informed about community events and discussions.
                   </p>
                 </div>
@@ -764,7 +764,7 @@ export default function AccountSettings() {
               >
                 Text Size
               </p>
-              <p className="text-xs text-gray-400 mb-4">
+              <p className="text-sm text-gray-500 mb-4">
                 Choose a text size that&apos;s comfortable for you to read.
               </p>
               <div
@@ -809,7 +809,7 @@ export default function AccountSettings() {
                     >
                       Aa
                     </span>
-                    <span className="text-xs text-gray-500 mt-1">
+                    <span className="text-sm text-gray-600 mt-1">
                       {opt.label}
                     </span>
                   </button>
@@ -827,7 +827,7 @@ export default function AccountSettings() {
                   <h4 className="text-sm font-semibold text-gray-900 mb-0.5">
                     High Contrast Mode
                   </h4>
-                  <p className="text-sm text-gray-500">
+                  <p className="text-sm text-gray-600">
                     Makes text easier to read by increasing the contrast between
                     text and backgrounds.
                   </p>
@@ -882,7 +882,7 @@ export default function AccountSettings() {
                 <h4 className="text-sm font-semibold text-gray-900 mb-1">
                   Download Your Data
                 </h4>
-                <p className="text-sm text-gray-500 leading-relaxed mb-3">
+                <p className="text-sm text-gray-600 leading-relaxed mb-3">
                   Get a copy of all the information you&apos;ve shared with us.
                   This may take a few minutes to prepare.
                 </p>
@@ -918,7 +918,7 @@ export default function AccountSettings() {
                   <h4 className="text-sm font-semibold text-gray-900 mb-1">
                     Deactivate Account
                   </h4>
-                  <p className="text-sm text-gray-500 leading-relaxed mb-3">
+                  <p className="text-sm text-gray-600 leading-relaxed mb-3">
                     If you no longer wish to use this platform, you can
                     deactivate your account. Your data will be saved for 30 days
                     in case you change your mind.
@@ -958,7 +958,7 @@ export default function AccountSettings() {
                         ? "Set your password"
                         : "Change Password"}
                     </h3>
-                    <p className="text-xs text-gray-400">
+                    <p className="text-sm text-gray-500">
                       {mustChangePassword
                         ? "Your temporary password works only for this"
                         : "Keep your account secure"}
@@ -984,7 +984,7 @@ export default function AccountSettings() {
                   <h4 className="text-lg font-bold text-gray-900 mb-1">
                     Password Updated
                   </h4>
-                  <p className="text-sm text-gray-500">
+                  <p className="text-sm text-gray-600">
                     Your password has been changed successfully.
                   </p>
                 </div>
@@ -1095,7 +1095,7 @@ export default function AccountSettings() {
                                 </svg>
                               </div>
                               <span
-                                className={`text-xs ${
+                                className={`text-sm ${
                                   req.met ? "text-emerald-600" : "text-gray-400"
                                 }`}
                               >
@@ -1144,12 +1144,12 @@ export default function AccountSettings() {
                         </button>
                       </div>
                       {confirmPassword.length > 0 && !passwordsMatch && (
-                        <p className="text-xs text-red-500 mt-1.5">
+                        <p className="text-sm text-red-500 mt-1.5">
                           Passwords do not match.
                         </p>
                       )}
                       {passwordsMatch && (
-                        <p className="text-xs text-emerald-500 mt-1.5 flex items-center gap-1">
+                        <p className="text-sm text-emerald-500 mt-1.5 flex items-center gap-1">
                           <HiOutlineCheckCircle className="w-3.5 h-3.5" />
                           Passwords match
                         </p>
@@ -1207,7 +1207,7 @@ export default function AccountSettings() {
                     <h3 className="text-lg font-bold text-gray-900">
                       Deactivate Account
                     </h3>
-                    <p className="text-xs text-gray-400">
+                    <p className="text-sm text-gray-500">
                       This action cannot be easily undone
                     </p>
                   </div>

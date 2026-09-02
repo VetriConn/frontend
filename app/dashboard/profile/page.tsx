@@ -818,7 +818,7 @@ export default function ProfilePage() {
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                   <div>
-                    <p className="text-xs text-gray-400 mb-1">Job Title</p>
+                    <p className="text-sm text-gray-500 mb-1">Job Title</p>
                     <p className="text-sm text-gray-900 font-medium">
                       {userProfile.job_title || (
                         <span className="text-gray-400 italic font-normal">
@@ -828,7 +828,7 @@ export default function ProfilePage() {
                     </p>
                   </div>
                   <div>
-                    <p className="text-xs text-gray-400 mb-1">Industry</p>
+                    <p className="text-sm text-gray-500 mb-1">Industry</p>
                     <p className="text-sm text-gray-900 font-medium">
                       {userProfile.industry || (
                         <span className="text-gray-400 italic font-normal">
@@ -838,7 +838,7 @@ export default function ProfilePage() {
                     </p>
                   </div>
                   <div>
-                    <p className="text-xs text-gray-400 mb-1">
+                    <p className="text-sm text-gray-500 mb-1">
                       Years of Experience
                     </p>
                     <p className="text-sm text-gray-900 font-medium">
@@ -958,7 +958,7 @@ export default function ProfilePage() {
                 className="form-input resize-none"
                 placeholder="Tell employers about your background, skills, and what you're looking for..."
               />
-              <p className="text-xs text-gray-400 mt-1.5">
+              <p className="text-sm text-gray-500 mt-1.5">
                 {publicProfileForm.bio.length}/500 characters
               </p>
             </div>

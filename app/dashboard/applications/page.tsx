@@ -47,7 +47,7 @@ function getJobLabel(
 function ApplicationStatusBadge({ status }: { status: string }) {
   if (status === "accepted") {
     return (
-      <span className="inline-flex px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-50 text-green-700">
+      <span className="inline-flex px-2.5 py-0.5 rounded-full text-sm font-medium bg-green-50 text-green-700">
         Accepted
       </span>
     );
@@ -55,7 +55,7 @@ function ApplicationStatusBadge({ status }: { status: string }) {
 
   if (status === "rejected") {
     return (
-      <span className="inline-flex px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-50 text-red-700">
+      <span className="inline-flex px-2.5 py-0.5 rounded-full text-sm font-medium bg-red-50 text-red-700">
         Rejected
       </span>
     );
@@ -63,14 +63,14 @@ function ApplicationStatusBadge({ status }: { status: string }) {
 
   if (status === "reviewed") {
     return (
-      <span className="inline-flex px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-50 text-blue-700">
+      <span className="inline-flex px-2.5 py-0.5 rounded-full text-sm font-medium bg-blue-50 text-blue-700">
         Reviewed
       </span>
     );
   }
 
   return (
-    <span className="inline-flex px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-50 text-yellow-700">
+    <span className="inline-flex px-2.5 py-0.5 rounded-full text-sm font-medium bg-yellow-50 text-yellow-700">
       Pending
     </span>
   );
@@ -89,7 +89,7 @@ function MatchCell({
   flagged?: boolean;
 }) {
   if (typeof score !== "number") {
-    return <span className="text-xs text-gray-400"> - </span>;
+    return <span className="text-sm text-gray-500"> - </span>;
   }
   const tone =
     score >= 70
@@ -100,14 +100,14 @@ function MatchCell({
   return (
     <div className="flex items-center gap-1.5">
       <span
-        className={`inline-flex px-2.5 py-0.5 rounded-full text-xs font-semibold ${tone}`}
+        className={`inline-flex px-2.5 py-0.5 rounded-full text-sm font-semibold ${tone}`}
       >
         {score}%
       </span>
       {flagged && (
         <span
           title="A knockout question wasn't met - worth a closer look"
-          className="inline-flex items-center gap-1 rounded-full bg-red-50 px-2 py-0.5 text-xs font-medium text-red-600"
+          className="inline-flex items-center gap-1 rounded-full bg-red-50 px-2 py-0.5 text-sm font-medium text-red-600"
         >
           <HiOutlineFlag className="w-3.5 h-3.5" />
           Flag
@@ -144,7 +144,7 @@ function ApplicantDetail({ app }: { app: any }) {
           Screening answers
         </h4>
         {questions.length === 0 ? (
-          <p className="text-sm text-gray-400">
+          <p className="text-sm text-gray-500">
             This job had no screening questions.
           </p>
         ) : (
@@ -185,7 +185,7 @@ function ApplicantDetail({ app }: { app: any }) {
                       {answer.length ? answer.join(", ") : "No answer"}
                     </p>
                     {(q.preferred_answers ?? []).length > 0 && (
-                      <p className="text-xs text-gray-400 capitalize">
+                      <p className="text-sm text-gray-500 capitalize">
                         Preferred: {(q.preferred_answers ?? []).join(", ")}
                         {q.knockout && (
                           <span className="ml-1 text-red-500">• knockout</span>
@@ -221,7 +221,7 @@ function ApplicantDetail({ app }: { app: any }) {
               {app.selected_skills.map((skill: string) => (
                 <span
                   key={skill}
-                  className="rounded-full bg-white border border-gray-200 px-2.5 py-0.5 text-xs text-gray-700"
+                  className="rounded-full bg-white border border-gray-200 px-2.5 py-0.5 text-sm text-gray-700"
                 >
                   {skill}
                 </span>
@@ -233,7 +233,7 @@ function ApplicantDetail({ app }: { app: any }) {
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             {shownDetails.map((d) => (
               <div key={d.label}>
-                <p className="text-xs text-gray-400">{d.label}</p>
+                <p className="text-sm text-gray-500">{d.label}</p>
                 <p className="text-sm text-gray-700">{d.value}</p>
               </div>
             ))}
@@ -362,7 +362,7 @@ export default function ApplicationsPage() {
           <h1 className="text-2xl font-bold text-gray-900 mb-1">
             Applications & Applicants
           </h1>
-          <p className="text-gray-500">
+          <p className="text-gray-600">
             Review and manage candidates who have applied to your job postings.
           </p>
         </div>
@@ -370,7 +370,7 @@ export default function ApplicationsPage() {
         {isLoading ? (
           <div className="flex flex-col items-center justify-center py-20">
             <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-primary mb-4"></div>
-            <p className="text-sm text-gray-500 font-medium">
+            <p className="text-sm text-gray-600 font-medium">
               Loading applications...
             </p>
           </div>
@@ -394,7 +394,7 @@ export default function ApplicationsPage() {
 
               {/* Status Filters */}
               <div className="flex flex-wrap items-center gap-1.5">
-                <div className="flex items-center gap-1.5 text-xs font-semibold text-gray-400 mr-2 uppercase tracking-wider">
+                <div className="flex items-center gap-1.5 text-sm font-semibold text-gray-500 mr-2 uppercase tracking-wider">
                   <HiOutlineFunnel className="w-4 h-4" />
                   <span>Status:</span>
                 </div>
@@ -405,7 +405,7 @@ export default function ApplicationsPage() {
                     <button
                       key={filter.key}
                       onClick={() => setSelectedStatus(filter.key)}
-                      className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
+                      className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${
                         isActive
                           ? "bg-primary text-white shadow-sm"
                           : "bg-gray-50 text-gray-600 hover:bg-gray-100 border border-gray-200/60"
@@ -413,10 +413,10 @@ export default function ApplicationsPage() {
                     >
                       <span>{filter.label}</span>
                       <span
-                        className={`inline-block px-1.5 py-0.5 rounded-full text-[10px] ${
+                        className={`inline-block px-1.5 py-0.5 rounded-full text-xs ${
                           isActive
                             ? "bg-white/20 text-white font-bold"
-                            : "bg-gray-200/80 text-gray-500 font-semibold"
+                            : "bg-gray-200/80 text-gray-600 font-semibold"
                         }`}
                       >
                         {count}
@@ -428,7 +428,7 @@ export default function ApplicationsPage() {
 
               {/* Sort */}
               <div className="flex flex-wrap items-center gap-1.5">
-                <span className="text-xs font-semibold text-gray-400 mr-2 uppercase tracking-wider">
+                <span className="text-sm font-semibold text-gray-500 mr-2 uppercase tracking-wider">
                   Sort:
                 </span>
                 {(
@@ -440,7 +440,7 @@ export default function ApplicationsPage() {
                   <button
                     key={opt.key}
                     onClick={() => setSortBy(opt.key)}
-                    className={`inline-flex items-center px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
+                    className={`inline-flex items-center px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${
                       sortBy === opt.key
                         ? "bg-primary text-white shadow-sm"
                         : "bg-gray-50 text-gray-600 hover:bg-gray-100 border border-gray-200/60"
@@ -459,22 +459,22 @@ export default function ApplicationsPage() {
                   <table className="w-full text-left border-collapse">
                     <thead>
                       <tr className="bg-gray-50 border-b border-gray-200">
-                        <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                        <th className="px-6 py-4 text-sm font-semibold text-gray-600 uppercase tracking-wider">
                           Applicant
                         </th>
-                        <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                        <th className="px-6 py-4 text-sm font-semibold text-gray-600 uppercase tracking-wider">
                           Applied For
                         </th>
-                        <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                        <th className="px-6 py-4 text-sm font-semibold text-gray-600 uppercase tracking-wider">
                           Date
                         </th>
-                        <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                        <th className="px-6 py-4 text-sm font-semibold text-gray-600 uppercase tracking-wider">
                           Status
                         </th>
-                        <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                        <th className="px-6 py-4 text-sm font-semibold text-gray-600 uppercase tracking-wider">
                           Match
                         </th>
-                        <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider text-right">
+                        <th className="px-6 py-4 text-sm font-semibold text-gray-600 uppercase tracking-wider text-right">
                           Actions
                         </th>
                       </tr>
@@ -505,7 +505,7 @@ export default function ApplicationsPage() {
                                 >
                                   {app.user_id?.full_name || app.full_name || "Unknown User"}
                                 </Link>
-                                <p className="text-xs text-gray-500">
+                                <p className="text-sm text-gray-600">
                                   {app.user_id?.email || app.email || "No email provided"}
                                 </p>
                               </div>
@@ -524,7 +524,7 @@ export default function ApplicationsPage() {
                                     <p className="text-sm text-gray-700 font-medium truncate max-w-[200px]">
                                       {app.job_id?.role}
                                     </p>
-                                    <p className="text-xs text-gray-500 font-bold mt-0.5 truncate max-w-[200px]">
+                                    <p className="text-sm text-gray-600 font-bold mt-0.5 truncate max-w-[200px]">
                                       {app.job_id?.company_name}
                                     </p>
                                   </>
@@ -532,7 +532,7 @@ export default function ApplicationsPage() {
                               </div>
                             </div>
                           </td>
-                          <td className="px-6 py-4 text-sm text-gray-500">
+                          <td className="px-6 py-4 text-sm text-gray-600">
                             <div className="flex items-center gap-2">
                               <HiOutlineCalendar className="w-4 h-4 text-gray-400" />
                               {formatDate(app.createdAt)}
@@ -562,7 +562,7 @@ export default function ApplicationsPage() {
                                     ? "Hide details"
                                     : "Show details"
                                 }
-                                className="p-1.5 rounded-lg text-gray-500 hover:text-primary hover:bg-red-50 transition-colors"
+                                className="p-1.5 rounded-lg text-gray-600 hover:text-primary hover:bg-red-50 transition-colors"
                                 title="Details"
                               >
                                 <HiOutlineChevronDown
@@ -576,7 +576,7 @@ export default function ApplicationsPage() {
                                   href={app.resume_url}
                                   target="_blank"
                                   rel="noopener noreferrer"
-                                  className="p-1.5 rounded-lg text-gray-500 hover:text-primary hover:bg-red-50 transition-colors"
+                                  className="p-1.5 rounded-lg text-gray-600 hover:text-primary hover:bg-red-50 transition-colors"
                                   title="Download Resume"
                                 >
                                   <HiOutlineDocumentArrowDown className="w-5 h-5" />
@@ -625,7 +625,7 @@ export default function ApplicationsPage() {
                 <h3 className="text-lg font-semibold text-gray-900 mb-2">
                   No matching applications found
                 </h3>
-                <p className="text-sm text-gray-500 max-w-sm mx-auto">
+                <p className="text-sm text-gray-600 max-w-sm mx-auto">
                   Try adjusting your search terms or status filters to find what you are looking for.
                 </p>
               </div>
@@ -639,7 +639,7 @@ export default function ApplicationsPage() {
             <h3 className="text-lg font-semibold text-gray-900 mb-2">
               No applications yet
             </h3>
-            <p className="text-sm text-gray-500 max-w-sm mx-auto">
+            <p className="text-sm text-gray-600 max-w-sm mx-auto">
               When candidates apply to your job postings, they will appear here
               for you to review.
             </p>

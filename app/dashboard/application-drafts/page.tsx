@@ -85,7 +85,7 @@ export default function ApplicationDraftsPage() {
             <h1 className="text-2xl md:text-3xl font-bold text-gray-900 mb-1">
               Application Drafts
             </h1>
-            <p className="text-gray-500">
+            <p className="text-gray-600">
               Pick up where you left off with your job applications.
             </p>
           </div>
@@ -109,11 +109,11 @@ export default function ApplicationDraftsPage() {
                       <h3 className="text-lg font-bold text-gray-900 truncate">
                         {draft.jobTitle}
                       </h3>
-                      <span className="shrink-0 px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-gray-100 text-gray-500">
+                      <span className="shrink-0 px-2 py-0.5 rounded text-xs font-bold uppercase tracking-wider bg-gray-100 text-gray-600">
                         Draft
                       </span>
                     </div>
-                    <div className="flex flex-wrap items-center gap-y-1 gap-x-4 text-sm text-gray-500">
+                    <div className="flex flex-wrap items-center gap-y-1 gap-x-4 text-sm text-gray-600">
                       <span className="font-medium text-gray-700">
                         {draft.companyName}
                       </span>
@@ -152,7 +152,7 @@ export default function ApplicationDraftsPage() {
             <h2 className="text-xl font-bold text-gray-900 mb-2">
               No application drafts found
             </h2>
-            <p className="text-gray-500 max-w-sm mx-auto mb-8">
+            <p className="text-gray-600 max-w-sm mx-auto mb-8">
               When you start an application but don&apos;t finish it, we&apos;ll
               save your progress here so you can come back later.
             </p>

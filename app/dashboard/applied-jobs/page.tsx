@@ -35,9 +35,9 @@ function StatusBadge({ status }: { status: ApplicationStatus }) {
   const config = APPLICATION_STATUS_CONFIG[status];
   return (
     <span
-      className={`inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold border ${config.textColor} ${config.bgColor} ${config.borderColor}`}
+      className={`inline-flex items-center gap-2 px-3 py-1 rounded-full text-sm font-semibold border ${config.textColor} ${config.bgColor} ${config.borderColor}`}
     >
-      <span className="text-xs">{config.icon}</span>
+      <span className="text-sm">{config.icon}</span>
       {config.label}
     </span>
   );
@@ -46,14 +46,14 @@ function StatusBadge({ status }: { status: ApplicationStatus }) {
 function SourceBadge({ source }: { source: ApplicationSource }) {
   if (source === "vetriconn") {
     return (
-      <span className="inline-flex items-center gap-2 text-xs text-primary font-medium">
+      <span className="inline-flex items-center gap-2 text-sm text-primary font-medium">
         <HiOutlineBriefcase className="w-4 h-4 md:w-5 md:h-5" />
         Via Vetriconn
       </span>
     );
   }
   return (
-    <span className="inline-flex items-center gap-2 text-xs text-gray-400 font-medium">
+    <span className="inline-flex items-center gap-2 text-sm text-gray-500 font-medium">
       <HiOutlineGlobeAlt className="w-4 h-4 md:w-5 md:h-5" />
       External
     </span>
@@ -74,7 +74,7 @@ function StatsCard({
   return (
     <div className="bg-white rounded-xl border border-gray-200 py-5 px-6 text-center flex-1 min-w-[120px]">
       <div className={`text-2xl font-bold ${color} mb-1`}>{value}</div>
-      <div className="text-sm text-gray-500">{label}</div>
+      <div className="text-sm text-gray-600">{label}</div>
     </div>
   );
 }
@@ -104,7 +104,7 @@ function StatusDropdown({
     <div className="relative">
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="inline-flex items-center gap-1 text-xs text-gray-500 hover:text-gray-700 cursor-pointer transition-colors"
+        className="inline-flex items-center gap-1 text-sm text-gray-600 hover:text-gray-700 cursor-pointer transition-colors"
       >
         Update status
         <HiOutlineChevronDown
@@ -133,7 +133,7 @@ function StatusDropdown({
                       : "text-gray-700 hover:bg-gray-50"
                   }`}
                 >
-                  <span className="mr-2 text-xs">{config.icon}</span>
+                  <span className="mr-2 text-sm">{config.icon}</span>
                   {config.label}
                 </button>
               );
@@ -156,7 +156,7 @@ function EmptyState({ onAdd }: { onAdd: () => void }) {
       <h3 className="text-xl font-bold text-gray-900 mb-3">
         No applications yet
       </h3>
-      <p className="text-sm text-gray-500 max-w-[380px] leading-relaxed mb-8">
+      <p className="text-sm text-gray-600 max-w-[380px] leading-relaxed mb-8">
         Track all your job applications in one place - whether you applied
         through Vetriconn or elsewhere.
       </p>
@@ -207,7 +207,7 @@ function EmployerDecisionBadge({
   } as const;
   return (
     <span
-      className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold ring-1 ${styles[status]}`}
+      className={`inline-flex items-center px-2 py-0.5 rounded-full text-sm font-semibold ring-1 ${styles[status]}`}
     >
       {labels[status]}
     </span>
@@ -256,7 +256,7 @@ function ApplicationCard({
               <SourceBadge source={application.source} />
             </div>
 
-            <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-gray-500 mb-2">
+            <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-gray-600 mb-2">
               <span className="inline-flex items-center gap-2">
                 <HiOutlineBuildingOffice2 className="w-4 h-4 md:w-5 md:h-5" />
                 {application.company}
@@ -269,14 +269,14 @@ function ApplicationCard({
               )}
             </div>
 
-            <div className="flex items-center gap-2 text-xs text-gray-400">
+            <div className="flex items-center gap-2 text-sm text-gray-500">
               <HiOutlineCalendarDays className="w-4 h-4 md:w-5 md:h-5" />
               Applied {appliedDate}
             </div>
 
             {application.notes && (
               <div className="mt-3 p-3 bg-gray-50 rounded-lg">
-                <div className="flex items-center gap-2 text-xs text-gray-500 font-medium mb-1">
+                <div className="flex items-center gap-2 text-sm text-gray-600 font-medium mb-1">
                   <HiOutlineDocumentText className="w-4 h-4 md:w-5 md:h-5" />
                   Notes
                 </div>
@@ -297,7 +297,7 @@ function ApplicationCard({
 
           <button
             onClick={() => onEditNotes(application)}
-            className="inline-flex items-center gap-2 text-xs text-gray-500 hover:text-gray-700 cursor-pointer transition-colors"
+            className="inline-flex items-center gap-2 text-sm text-gray-600 hover:text-gray-700 cursor-pointer transition-colors"
           >
             <HiOutlinePencilSquare className="w-4 h-4 md:w-5 md:h-5" />
             {application.notes ? "Edit notes" : "Add notes"}
@@ -308,7 +308,7 @@ function ApplicationCard({
               href={application.url}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 text-xs text-primary hover:text-primary-hover transition-colors no-underline"
+              className="inline-flex items-center gap-2 text-sm text-primary hover:text-primary-hover transition-colors no-underline"
             >
               <HiOutlineGlobeAlt className="w-4 h-4 md:w-5 md:h-5" />
               View posting
@@ -318,7 +318,7 @@ function ApplicationCard({
           {application.job_id && (
             <Link
               href={`/jobs/${application.job_id}`}
-              className="inline-flex items-center gap-2 text-xs text-primary hover:text-primary-hover transition-colors no-underline"
+              className="inline-flex items-center gap-2 text-sm text-primary hover:text-primary-hover transition-colors no-underline"
             >
               <HiOutlineBriefcase className="w-4 h-4 md:w-5 md:h-5" />
               View on Vetriconn
@@ -329,13 +329,13 @@ function ApplicationCard({
             <div className="flex items-center gap-2 mt-1">
               <button
                 onClick={() => onDelete(application.id)}
-                className="px-2.5 py-1 text-xs font-medium text-red-600 bg-red-50 border border-red-200 rounded-md hover:bg-red-100 transition-colors cursor-pointer"
+                className="px-2.5 py-1 text-sm font-medium text-red-600 bg-red-50 border border-red-200 rounded-md hover:bg-red-100 transition-colors cursor-pointer"
               >
                 Remove
               </button>
               <button
                 onClick={() => setShowConfirmDelete(false)}
-                className="px-2.5 py-1 text-xs font-medium text-gray-600 bg-white border border-gray-200 rounded-md hover:bg-gray-50 transition-colors cursor-pointer"
+                className="px-2.5 py-1 text-sm font-medium text-gray-600 bg-white border border-gray-200 rounded-md hover:bg-gray-50 transition-colors cursor-pointer"
               >
                 Cancel
               </button>
@@ -343,7 +343,7 @@ function ApplicationCard({
           ) : (
             <button
               onClick={() => setShowConfirmDelete(true)}
-              className="inline-flex items-center gap-2 text-xs text-gray-400 hover:text-red-600 cursor-pointer transition-colors mt-1"
+              className="inline-flex items-center gap-2 text-sm text-gray-500 hover:text-red-600 cursor-pointer transition-colors mt-1"
             >
               <HiOutlineTrash className="w-4 h-4 md:w-5 md:h-5" />
               Remove
@@ -545,7 +545,7 @@ export default function AppliedJobsPage() {
             <h1 className="font-lato text-xl md:text-3xl font-bold text-gray-900">
               Application Tracker
             </h1>
-            <p className="text-gray-500 text-sm mt-1">
+            <p className="text-gray-600 text-sm mt-1">
               Track all your job applications in one place.
             </p>
           </div>
@@ -605,7 +605,7 @@ export default function AppliedJobsPage() {
             {/* Applications list */}
             {filteredApplications.length === 0 ? (
               <div className="bg-white rounded-xl border border-gray-200 p-12 text-center">
-                <p className="text-gray-400 text-sm">
+                <p className="text-gray-500 text-sm">
                   No applications match this filter.
                 </p>
               </div>
@@ -616,19 +616,19 @@ export default function AppliedJobsPage() {
                   <table className="w-full">
                     <thead>
                       <tr className="bg-gray-50 border-b border-gray-200">
-                        <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700">
+                        <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">
                           Position
                         </th>
-                        <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700">
+                        <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">
                           Company
                         </th>
-                        <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700">
+                        <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">
                           Status
                         </th>
-                        <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700">
+                        <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">
                           Applied
                         </th>
-                        <th className="px-4 py-3 text-right text-xs font-semibold text-gray-700">
+                        <th className="px-4 py-3 text-right text-sm font-semibold text-gray-700">
                           Actions
                         </th>
                       </tr>
@@ -653,7 +653,7 @@ export default function AppliedJobsPage() {
                                 {app.position}
                               </div>
                               {app.location && (
-                                <div className="flex items-center gap-1 text-xs text-gray-500 mt-1">
+                                <div className="flex items-center gap-1 text-sm text-gray-600 mt-1">
                                   <HiOutlineMapPin className="w-3 h-3" />
                                   {app.location}
                                 </div>
@@ -683,7 +683,7 @@ export default function AppliedJobsPage() {
                               )}
                             </td>
                             <td className="px-4 py-4">
-                              <div className="flex items-center gap-2 text-xs text-gray-500">
+                              <div className="flex items-center gap-2 text-sm text-gray-600">
                                 <HiOutlineCalendarDays className="w-4 h-4 md:w-5 md:h-5" />
                                 {appliedDate}
                               </div>
@@ -698,7 +698,7 @@ export default function AppliedJobsPage() {
                                 />
                                 <button
                                   onClick={() => handleEditNotes(app)}
-                                  className="p-2 min-h-44 min-w-44 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
+                                  className="p-2 min-h-44 min-w-44 text-gray-600 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
                                   aria-label={
                                     app.notes ? "Edit notes" : "Add notes"
                                   }
@@ -771,7 +771,7 @@ export default function AppliedJobsPage() {
           submitLabel="Log Application"
         >
           <div className="space-y-4">
-            <p className="text-sm text-gray-500 -mt-2 mb-2">
+            <p className="text-sm text-gray-600 -mt-2 mb-2">
               Track a job you applied to outside of Vetriconn.
             </p>
             <div>
@@ -882,7 +882,7 @@ export default function AppliedJobsPage() {
               placeholder="Add notes about this application \u2014 interview prep, key contacts, follow-up dates..."
               autoFocus
             />
-            <p className="text-xs text-gray-400 mt-2">
+            <p className="text-sm text-gray-500 mt-2">
               Notes are saved locally and only visible to you.
             </p>
           </div>

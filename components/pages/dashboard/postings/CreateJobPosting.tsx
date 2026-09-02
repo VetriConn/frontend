@@ -315,7 +315,7 @@ function FieldLabel({
 }
 
 function HelperText({ children }: { children: React.ReactNode }) {
-  return <p className="text-xs md:text-sm text-gray-400 mt-1">{children}</p>;
+  return <p className="text-sm text-gray-500 mt-1">{children}</p>;
 }
 
 /**
@@ -362,7 +362,7 @@ function SelectField({
 
 function FieldError({ message }: { message?: string }) {
   if (!message) return null;
-  return <p className="text-xs text-red-500 mt-1">{message}</p>;
+  return <p className="text-sm text-red-500 mt-1">{message}</p>;
 }
 
 /**
@@ -438,7 +438,7 @@ function ToggleRow({
       <span>
         <span className="block text-sm font-medium text-gray-800">{label}</span>
         {description && (
-          <span className="mt-0.5 block text-xs text-gray-500">
+          <span className="mt-0.5 block text-sm text-gray-600">
             {description}
           </span>
         )}
@@ -543,7 +543,7 @@ function StepJobDetails({
   return (
     <div>
       <h2 className="text-xl font-semibold text-gray-900 mb-1">Job Details</h2>
-      <p className="text-sm md:text-base text-gray-500 mb-6">
+      <p className="text-sm md:text-base text-gray-600 mb-6">
         Define the basic identity of the job you&apos;re posting.
       </p>
 
@@ -617,7 +617,7 @@ function StepDescription({
       <h2 className="text-xl font-semibold text-gray-900 mb-1">
         Job Description
       </h2>
-      <p className="text-sm md:text-base text-gray-500 mb-6">
+      <p className="text-sm md:text-base text-gray-600 mb-6">
         Explain the role simply and honestly to help candidates understand what
         to expect. Use formatting to keep it scannable.
       </p>
@@ -694,7 +694,7 @@ function StepRequirements({
       <h2 className="text-xl font-semibold text-gray-900 mb-1">
         Requirements &amp; Experience
       </h2>
-      <p className="text-sm md:text-base text-gray-500 mb-6">
+      <p className="text-sm md:text-base text-gray-600 mb-6">
         Set realistic expectations for veterans and retirees.
       </p>
 
@@ -853,7 +853,7 @@ function StepSalaryLocation({
       <h2 className="text-xl font-semibold text-gray-900 mb-1">
         Salary &amp; Location
       </h2>
-      <p className="text-sm md:text-base text-gray-500 mb-6">
+      <p className="text-sm md:text-base text-gray-600 mb-6">
         Be transparent about compensation and location to reduce uncertainty for
         applicants.
       </p>
@@ -864,7 +864,7 @@ function StepSalaryLocation({
           <div>
             <FieldLabel htmlFor="salary_min">Minimum</FieldLabel>
             <div className="relative">
-              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">
+              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-sm">
                 $
               </span>
               <input
@@ -880,7 +880,7 @@ function StepSalaryLocation({
           <div>
             <FieldLabel htmlFor="salary_max">Maximum</FieldLabel>
             <div className="relative">
-              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">
+              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-sm">
                 $
               </span>
               <input
@@ -1008,7 +1008,7 @@ function StepEssentials({
       <h2 className="text-xl font-semibold text-gray-900 mb-1">
         The essentials
       </h2>
-      <p className="text-sm md:text-base text-gray-500 mb-6">
+      <p className="text-sm md:text-base text-gray-600 mb-6">
         Just the basics to get your job live. You can always edit it later.
       </p>
 
@@ -1078,7 +1078,7 @@ function StepEssentials({
               Salary (min)
             </FieldLabel>
             <div className="relative">
-              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">
+              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-sm">
                 $
               </span>
               <input
@@ -1094,7 +1094,7 @@ function StepEssentials({
           <div>
             <FieldLabel htmlFor="salary_max">Salary (max)</FieldLabel>
             <div className="relative">
-              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">
+              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-sm">
                 $
               </span>
               <input
@@ -1241,7 +1241,7 @@ function StepReview({ formData }: { formData: JobFormData }) {
       <h2 className="text-2xl font-bold text-gray-900 mb-1">
         Review Your Job Listing
       </h2>
-      <p className="text-sm md:text-base text-gray-500 mb-6">
+      <p className="text-sm md:text-base text-gray-600 mb-6">
         Review all the details before submitting. This is how candidates will
         see your posting.
       </p>
@@ -1254,16 +1254,16 @@ function StepReview({ formData }: { formData: JobFormData }) {
             <h3 className="text-lg md:text-2xl font-bold text-gray-900">
               {formData.job_title || "Job Title"}
             </h3>
-            <span className="text-xs font-medium text-gray-400 bg-gray-100 px-2.5 py-1 rounded-full">
+            <span className="text-sm font-medium text-gray-500 bg-gray-100 px-2.5 py-1 rounded-full">
               Preview
             </span>
           </div>
-          <p className="text-sm md:text-base text-gray-500 mb-3">
+          <p className="text-sm md:text-base text-gray-600 mb-3">
             {displayCategory || "Category"}
           </p>
 
           {/* Tags row */}
-          <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-gray-400 mb-5">
+          <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm text-gray-500 mb-5">
             <span className="flex items-center gap-1">
               <span className="w-1 h-1 rounded-full bg-gray-300" />
               {displayJobType || "Not specified"}
@@ -1286,7 +1286,7 @@ function StepReview({ formData }: { formData: JobFormData }) {
             <h4 className="text-sm font-semibold text-gray-900 mb-1">
               About this role
             </h4>
-            <p className="text-sm md:text-base text-gray-500 leading-relaxed">
+            <p className="text-sm md:text-base text-gray-600 leading-relaxed">
               {plainDescription
                 ? plainDescription.slice(0, 300) +
                   (plainDescription.length > 300 ? "..." : "")
@@ -1300,14 +1300,14 @@ function StepReview({ formData }: { formData: JobFormData }) {
               Requirements
             </h4>
             <div className="space-y-1">
-              <p className="text-sm md:text-base text-gray-500">
+              <p className="text-sm md:text-base text-gray-600">
                 <span className="font-medium text-gray-600">
                   Experience Level:
                 </span>{" "}
                 {displayExperience || "Not specified"}
               </p>
               {formData.skills && (
-                <p className="text-sm md:text-base text-gray-500">
+                <p className="text-sm md:text-base text-gray-600">
                   <span className="font-medium text-gray-600">
                     Required Skills:
                   </span>{" "}
@@ -1315,7 +1315,7 @@ function StepReview({ formData }: { formData: JobFormData }) {
                 </p>
               )}
               {formData.physical_demands && (
-                <p className="text-sm md:text-base text-gray-500">
+                <p className="text-sm md:text-base text-gray-600">
                   <span className="font-medium text-gray-600">
                     Physical Demands:
                   </span>{" "}
@@ -1350,7 +1350,7 @@ function StepReview({ formData }: { formData: JobFormData }) {
                     <p className="text-sm md:text-base font-medium text-gray-700">
                       {item.label}
                     </p>
-                    <p className="text-xs md:text-sm text-gray-400">
+                    <p className="text-sm text-gray-500">
                       {item.value || "Not specified"}
                     </p>
                   </div>
@@ -1361,7 +1361,7 @@ function StepReview({ formData }: { formData: JobFormData }) {
             {/* Required fields warning */}
             {missingRequired && (
               <div className="mt-5 p-3 bg-red-50 border border-red-200 rounded-lg">
-                <p className="text-xs text-red-600 leading-relaxed">
+                <p className="text-sm text-red-600 leading-relaxed">
                   Please complete the required fields (Title, Category,
                   Location, Salary, Job Brief and What You&apos;ll Do) before
                   submitting.
@@ -1442,7 +1442,7 @@ function VerticalStepper({
                   >
                     {step.label}
                   </span>
-                  <span className="text-xs text-gray-400">
+                  <span className="text-sm text-gray-500">
                     {isComplete ? "Completed" : isCurrent ? "In progress" : ""}
                   </span>
                 </span>
@@ -1990,7 +1990,7 @@ const CreateJobPosting = ({
               <h1 className="text-2xl md:text-4xl font-bold text-gray-900">
                 {editingJobId ? "Continue Draft" : "Create Job Posting"}
               </h1>
-              <p className="text-xs md:text-sm text-gray-500">
+              <p className="text-sm text-gray-600">
                 Step {currentStep} of {totalSteps}
               </p>
             </div>
@@ -2027,7 +2027,7 @@ const CreateJobPosting = ({
             )}
             <Link
               href="/dashboard"
-              className="flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-700 transition-colors"
+              className="flex items-center gap-1.5 text-sm text-gray-600 hover:text-gray-700 transition-colors"
             >
               <HiOutlineArrowLeft className="w-4 h-4" />
               <span className="hidden md:inline">Back to Dashboard</span>
@@ -2106,7 +2106,7 @@ const CreateJobPosting = ({
           )}
 
           {isDraftLoading ? (
-            <div className="text-sm text-gray-500">Loading draft...</div>
+            <div className="text-sm text-gray-600">Loading draft...</div>
           ) : (
             renderStep()
           )}

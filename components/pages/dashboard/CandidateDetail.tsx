@@ -82,7 +82,7 @@ export function CandidateDetail({ applicationId }: { applicationId: string }) {
 
   if (isLoading) {
     return (
-      <div className="mx-auto max-w-6xl px-6 py-10 text-sm text-gray-500">
+      <div className="mx-auto max-w-6xl px-6 py-10 text-sm text-gray-600">
         Loading candidate…
       </div>
     );
@@ -93,7 +93,7 @@ export function CandidateDetail({ applicationId }: { applicationId: string }) {
       <div className="mx-auto max-w-6xl px-6 py-10">
         <Link
           href="/dashboard/applications"
-          className="mb-4 inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-700"
+          className="mb-4 inline-flex items-center gap-1.5 text-sm text-gray-600 hover:text-gray-700"
         >
           <HiOutlineArrowLeft className="h-4 w-4" /> Back to applications
         </Link>
@@ -138,10 +138,10 @@ export function CandidateDetail({ applicationId }: { applicationId: string }) {
   return (
     <div className="mx-auto max-w-6xl px-6 py-8">
       {/* Breadcrumb */}
-      <nav className="mb-4 flex items-center gap-1.5 text-sm text-gray-500">
+      <nav className="mb-4 flex items-center gap-1.5 text-sm text-gray-600">
         <Link
           href="/dashboard/applications"
-          className="hover:text-gray-700 no-underline text-gray-500"
+          className="hover:text-gray-700 no-underline text-gray-600"
         >
           Applications
         </Link>
@@ -164,7 +164,7 @@ export function CandidateDetail({ applicationId }: { applicationId: string }) {
             </div>
             <div>
               <h1 className="text-2xl font-bold text-gray-900">{name}</h1>
-              <div className="mt-1 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-gray-500">
+              <div className="mt-1 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-gray-600">
                 <span className="flex items-center gap-1.5">
                   <HiOutlineBriefcase className="h-4 w-4" />
                   {headline}
@@ -202,7 +202,7 @@ export function CandidateDetail({ applicationId }: { applicationId: string }) {
             },
           ].map((item) => (
             <div key={item.label}>
-              <p className="text-xs text-gray-400">{item.label}</p>
+              <p className="text-sm text-gray-500">{item.label}</p>
               <p className="mt-0.5 text-sm font-semibold text-gray-900">
                 {item.value}
               </p>
@@ -244,13 +244,13 @@ export function CandidateDetail({ applicationId }: { applicationId: string }) {
                         {exp.position || "Role"}
                       </p>
                       <p className="text-sm text-gray-600">{exp.company}</p>
-                      <p className="text-xs text-gray-400">
+                      <p className="text-sm text-gray-500">
                         {[exp.start_date, exp.end_date || "Present"]
                           .filter(Boolean)
                           .join(" – ")}
                       </p>
                       {exp.description && (
-                        <p className="mt-1 text-sm text-gray-500">
+                        <p className="mt-1 text-sm text-gray-600">
                           {exp.description}
                         </p>
                       )}
@@ -333,7 +333,7 @@ export function CandidateDetail({ applicationId }: { applicationId: string }) {
                 <span className="text-3xl font-extrabold text-primary">
                   {match.percent}%
                 </span>
-                <span className="text-sm text-gray-500">
+                <span className="text-sm text-gray-600">
                   Matched · {match.matched.length} of {match.required.length}{" "}
                   skills
                 </span>
@@ -351,7 +351,7 @@ export function CandidateDetail({ applicationId }: { applicationId: string }) {
                 {match.unmatched.map((s) => (
                   <span
                     key={s}
-                    className="inline-flex items-center gap-1 rounded-full bg-gray-100 px-3 py-1 text-sm text-gray-400"
+                    className="inline-flex items-center gap-1 rounded-full bg-gray-100 px-3 py-1 text-sm text-gray-500"
                   >
                     <HiOutlineXMark className="h-4 w-4" />
                     {s}
@@ -426,7 +426,7 @@ export function CandidateDetail({ applicationId }: { applicationId: string }) {
                   <p className="text-3xl font-extrabold text-gray-900">
                     {stars ?? "-"}
                   </p>
-                  <p className="text-xs text-gray-400">Overall score (of 5)</p>
+                  <p className="text-sm text-gray-500">Overall score (of 5)</p>
                 </div>
               </div>
               <div className="space-y-3">
@@ -438,7 +438,7 @@ export function CandidateDetail({ applicationId }: { applicationId: string }) {
                 )}
               </div>
               {application.screening_flagged && (
-                <p className="mt-3 text-xs font-medium text-red-600">
+                <p className="mt-3 text-sm font-medium text-red-600">
                   Flagged: a knockout screening question wasn&apos;t met - worth
                   a closer look.
                 </p>

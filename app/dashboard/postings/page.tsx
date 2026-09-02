@@ -112,7 +112,7 @@ export default function ManageJobsPage() {
             <h1 className="text-2xl font-bold text-gray-900 mb-1">
               Manage Job Postings
             </h1>
-            <p className="text-gray-500">
+            <p className="text-gray-600">
               You have {totalJobs} total job posting
               {totalJobs !== 1 && "s"}.
             </p>
@@ -129,7 +129,7 @@ export default function ManageJobsPage() {
         {isLoading ? (
           <div className="flex flex-col items-center justify-center py-20">
             <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-primary mb-4"></div>
-            <p className="text-sm text-gray-500 font-medium">Loading jobs...</p>
+            <p className="text-sm text-gray-600 font-medium">Loading jobs...</p>
           </div>
         ) : totalJobs > 0 ? (
           <>
@@ -138,19 +138,19 @@ export default function ManageJobsPage() {
                 <table className="w-full text-left border-collapse">
                   <thead>
                     <tr className="bg-gray-50 border-b border-gray-200">
-                      <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                      <th className="px-6 py-4 text-sm font-semibold text-gray-600 uppercase tracking-wider">
                         Job Details
                       </th>
-                      <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                      <th className="px-6 py-4 text-sm font-semibold text-gray-600 uppercase tracking-wider">
                         Status
                       </th>
-                      <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                      <th className="px-6 py-4 text-sm font-semibold text-gray-600 uppercase tracking-wider">
                         Applicants
                       </th>
-                      <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                      <th className="px-6 py-4 text-sm font-semibold text-gray-600 uppercase tracking-wider">
                         Date Posted
                       </th>
-                      <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider text-right">
+                      <th className="px-6 py-4 text-sm font-semibold text-gray-600 uppercase tracking-wider text-right">
                         Actions
                       </th>
                     </tr>
@@ -170,7 +170,7 @@ export default function ManageJobsPage() {
                               <p className="text-sm font-semibold text-gray-900 truncate">
                                 {job.role}
                               </p>
-                              <div className="flex items-center gap-2 mt-0.5 text-xs text-gray-500">
+                              <div className="flex items-center gap-2 mt-0.5 text-sm text-gray-600">
                                 <span className="flex items-center gap-1">
                                   <HiOutlineMapPin className="w-3 h-3" />
                                   {job.location}
@@ -200,7 +200,7 @@ export default function ManageJobsPage() {
                                       };
                             return (
                               <span
-                                className={`inline-flex px-2.5 py-0.5 rounded-full text-xs font-medium ${badge.cls}`}
+                                className={`inline-flex px-2.5 py-0.5 rounded-full text-sm font-medium ${badge.cls}`}
                               >
                                 {badge.label}
                               </span>
@@ -208,7 +208,7 @@ export default function ManageJobsPage() {
                           })()}
                           {job.moderation_status === "rejected" &&
                             job.rejection_reason && (
-                              <p className="mt-1.5 max-w-[16rem] text-xs text-rose-700">
+                              <p className="mt-1.5 max-w-[16rem] text-sm text-rose-700">
                                 {job.rejection_reason} Edit the job to fix this
                                 and resubmit it for review.
                               </p>
@@ -220,7 +220,7 @@ export default function ManageJobsPage() {
                             {job.application_count || 0}
                           </div>
                         </td>
-                        <td className="px-6 py-4 text-sm text-gray-500">
+                        <td className="px-6 py-4 text-sm text-gray-600">
                           <div className="flex items-center gap-2">
                             <HiOutlineCalendar className="w-4 h-4 text-gray-400" />
                             {formatDate(job.createdAt)}
@@ -285,7 +285,7 @@ export default function ManageJobsPage() {
             {/* Pagination */}
             {totalPages > 1 && (
               <div className="mt-6 flex items-center justify-between">
-                <p className="text-sm text-gray-500 font-medium">
+                <p className="text-sm text-gray-600 font-medium">
                   Showing page {currentPage} of {totalPages}
                 </p>
                 <div className="flex items-center gap-2">
@@ -319,7 +319,7 @@ export default function ManageJobsPage() {
             <h3 className="text-lg font-semibold text-gray-900 mb-2">
               No jobs posted yet
             </h3>
-            <p className="text-sm text-gray-500 max-w-sm mx-auto mb-8">
+            <p className="text-sm text-gray-600 max-w-sm mx-auto mb-8">
               Post your first job opening to start receiving applications from
               qualified candidates.
             </p>

@@ -66,8 +66,8 @@ function IconButton({
       title={label}
       className={`inline-flex h-9 w-9 items-center justify-center rounded-lg border transition-colors disabled:opacity-40 disabled:cursor-not-allowed ${
         danger
-          ? "border-gray-200 text-gray-500 hover:border-red-300 hover:text-red-600"
-          : "border-gray-200 text-gray-500 hover:border-primary hover:text-primary"
+          ? "border-gray-200 text-gray-600 hover:border-red-300 hover:text-red-600"
+          : "border-gray-200 text-gray-600 hover:border-primary hover:text-primary"
       }`}
     >
       {children}
@@ -148,7 +148,7 @@ function ScreeningQuestionCard({
   return (
     <div className="rounded-xl border border-gray-200 p-4 md:p-5">
       <div className="mb-3 flex items-start gap-3">
-        <span className="mt-2 text-sm font-semibold text-gray-400">
+        <span className="mt-2 text-sm font-semibold text-gray-500">
           {index + 1}
         </span>
         <div className="flex-1">
@@ -215,7 +215,7 @@ function ScreeningQuestionCard({
       {/* Options editor for choice types */}
       {isChoice && (
         <div className="mt-4">
-          <p className="mb-1.5 text-xs font-medium text-gray-600">Options</p>
+          <p className="mb-1.5 text-sm font-medium text-gray-600">Options</p>
           <div className="space-y-2">
             {(question.options ?? []).map((opt, optIndex) => (
               <div key={optIndex} className="flex items-center gap-2">
@@ -251,7 +251,7 @@ function ScreeningQuestionCard({
       {/* Preferred answer(s) — the scoring target */}
       {canScore && preferredCandidates.length > 0 && (
         <div className="mt-4">
-          <p className="mb-1.5 text-xs font-medium text-gray-600">
+          <p className="mb-1.5 text-sm font-medium text-gray-600">
             Preferred answer{question.type === "multi_choice" ? "s" : ""}{" "}
             <span className="font-normal text-gray-400">
               (used for ranking - optional)
@@ -281,7 +281,7 @@ function ScreeningQuestionCard({
       )}
 
       {question.type === "short_text" && (
-        <p className="mt-3 text-xs text-gray-400">
+        <p className="mt-3 text-sm text-gray-500">
           Short answers are shown to you but aren&apos;t scored.
         </p>
       )}
@@ -374,7 +374,7 @@ export function StepHiring({
       <h2 className="text-xl font-semibold text-gray-900 mb-1">
         Screening &amp; Hiring
       </h2>
-      <p className="text-sm md:text-base text-gray-500 mb-6">
+      <p className="text-sm md:text-base text-gray-600 mb-6">
         Optional. Ask a few screening questions to rank applicants, answer common
         questions up front, and show candidates what to expect. Screening never
         rejects anyone automatically - it only helps you sort.
@@ -385,7 +385,7 @@ export function StepHiring({
         <h3 className="text-base font-semibold text-gray-900 mb-1">
           Screening questions
         </h3>
-        <p className="text-sm text-gray-500 mb-4">
+        <p className="text-sm text-gray-600 mb-4">
           Set a preferred answer and importance to rank applicants automatically.
         </p>
         <div className="space-y-4">
@@ -417,7 +417,7 @@ export function StepHiring({
         <h3 className="text-base font-semibold text-gray-900 mb-1">
           Frequently asked questions
         </h3>
-        <p className="text-sm text-gray-500 mb-4">
+        <p className="text-sm text-gray-600 mb-4">
           Answer common questions so applicants don&apos;t have to ask.
         </p>
         <div className="space-y-4">
@@ -473,7 +473,7 @@ export function StepHiring({
         <h3 className="text-base font-semibold text-gray-900 mb-1">
           Hiring process
         </h3>
-        <p className="text-sm text-gray-500 mb-4">
+        <p className="text-sm text-gray-600 mb-4">
           Show candidates the steps from application to offer.
         </p>
         <div className="space-y-2">

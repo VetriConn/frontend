@@ -11,7 +11,7 @@ export default function BillingPage() {
           <h1 className="text-2xl font-bold text-gray-900 mb-1">
             Billing &amp; Subscription
           </h1>
-          <p className="text-gray-500">
+          <p className="text-gray-600">
             Manage your subscription plan, payment methods, and billing history.
           </p>
         </div>
@@ -23,7 +23,7 @@ export default function BillingPage() {
           <h2 className="text-xl font-semibold text-gray-900 mb-2">
             Billing Coming Soon
           </h2>
-          <p className="text-gray-500 max-w-md mx-auto">
+          <p className="text-gray-600 max-w-md mx-auto">
             Subscription management and payment features are under development.
             You&apos;ll be able to upgrade plans, manage payment methods, and
             view invoices.

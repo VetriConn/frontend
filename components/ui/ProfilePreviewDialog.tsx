@@ -3,6 +3,7 @@
 import React from "react";
 import Image from "next/image";
 import cloudinaryLoader from "@/lib/cloudinary-loader";
+import { useModalFocus } from "@/hooks/useModalFocus";
 import {
   HiOutlineMapPin,
   HiOutlineBriefcase,
@@ -48,6 +49,8 @@ export function ProfilePreviewDialog({
   onClose,
   profile,
 }: ProfilePreviewDialogProps) {
+  const panelRef = useModalFocus(isOpen, onClose);
+
   if (!isOpen) return null;
 
   return (
@@ -66,7 +69,10 @@ export function ProfilePreviewDialog({
         aria-modal="true"
         aria-label="Profile preview - how employers see your profile"
       >
-        <div className="bg-white rounded-2xl shadow-xl w-[95%] md:w-full max-w-2xl max-h-[90vh] overflow-hidden flex flex-col">
+        <div
+          ref={panelRef}
+          className="bg-white rounded-2xl shadow-xl w-[95%] md:w-full max-w-2xl max-h-[90vh] overflow-hidden flex flex-col"
+        >
           {/* Header bar */}
           <div className="sticky top-0 bg-white border-b border-gray-200 px-4 md:px-6 py-4 flex items-center justify-between rounded-t-2xl z-10 shrink-0">
             <div>

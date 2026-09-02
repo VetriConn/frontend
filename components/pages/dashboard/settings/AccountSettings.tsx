@@ -62,15 +62,19 @@ interface SettingsState {
 function Toggle({
   enabled,
   onToggle,
+  ariaLabel,
 }: {
   enabled: boolean;
   onToggle: () => void;
+  /** The switch is a bare pill — without this it has no accessible name. */
+  ariaLabel: string;
 }) {
   return (
     <button
       type="button"
       role="switch"
       aria-checked={enabled}
+      aria-label={ariaLabel}
       onClick={onToggle}
       className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
         enabled ? "bg-primary" : "bg-gray-200"
@@ -399,10 +403,14 @@ export default function AccountSettings() {
             <div className="space-y-4">
               {/* Email Address (read-only) */}
               <div>
-                <label className="block text-sm font-semibold text-gray-900 mb-1.5 md:mb-2">
+                <label
+                  htmlFor="settings-email"
+                  className="block text-sm font-semibold text-gray-900 mb-1.5 md:mb-2"
+                >
                   Email Address
                 </label>
                 <input
+                  id="settings-email"
                   type="email"
                   value={userProfile?.email || ""}
                   disabled
@@ -480,6 +488,7 @@ export default function AccountSettings() {
               </div>
               <div className="shrink-0 pt-1">
                 <Toggle
+                  ariaLabel="Two-step verification"
                   enabled={twoFactorEnabled}
                   onToggle={handleTwoFactorToggle}
                 />
@@ -576,6 +585,7 @@ export default function AccountSettings() {
               </div>
               <div className="shrink-0 pt-1">
                 <Toggle
+                  ariaLabel="Email notifications"
                   enabled={settings.emailNotifications}
                   onToggle={() =>
                     update("emailNotifications", !settings.emailNotifications)
@@ -601,6 +611,7 @@ export default function AccountSettings() {
               </div>
               <div className="shrink-0 pt-1">
                 <Toggle
+                  ariaLabel="Job alerts"
                   enabled={settings.jobAlerts}
                   onToggle={() => update("jobAlerts", !settings.jobAlerts)}
                 />
@@ -625,6 +636,7 @@ export default function AccountSettings() {
               </div>
               <div className="shrink-0 pt-1">
                 <Toggle
+                  ariaLabel="Application decisions"
                   enabled={settings.applicationUpdates}
                   onToggle={() =>
                     update("applicationUpdates", !settings.applicationUpdates)
@@ -650,6 +662,7 @@ export default function AccountSettings() {
               </div>
               <div className="shrink-0 pt-1">
                 <Toggle
+                  ariaLabel="Your job posts"
                   enabled={settings.postingUpdates}
                   onToggle={() =>
                     update("postingUpdates", !settings.postingUpdates)
@@ -675,6 +688,7 @@ export default function AccountSettings() {
               </div>
               <div className="shrink-0 pt-1">
                 <Toggle
+                  ariaLabel="New applicants"
                   enabled={settings.newApplications}
                   onToggle={() =>
                     update("newApplications", !settings.newApplications)
@@ -701,6 +715,7 @@ export default function AccountSettings() {
               </div>
               <div className="shrink-0 pt-1">
                 <Toggle
+                  ariaLabel="Messages"
                   enabled={settings.messages}
                   onToggle={() => update("messages", !settings.messages)}
                 />
@@ -724,6 +739,7 @@ export default function AccountSettings() {
               </div>
               <div className="shrink-0 pt-1">
                 <Toggle
+                  ariaLabel="Community updates"
                   enabled={settings.communityUpdates}
                   onToggle={() =>
                     update("communityUpdates", !settings.communityUpdates)
@@ -742,13 +758,20 @@ export default function AccountSettings() {
           <div className="space-y-6">
             {/* Text Size */}
             <div>
-              <label className="block text-sm font-semibold text-gray-900 mb-1">
+              <p
+                id="settings-text-size-label"
+                className="block text-sm font-semibold text-gray-900 mb-1"
+              >
                 Text Size
-              </label>
+              </p>
               <p className="text-xs text-gray-400 mb-4">
                 Choose a text size that&apos;s comfortable for you to read.
               </p>
-              <div className="grid grid-cols-3 gap-3">
+              <div
+                role="radiogroup"
+                aria-labelledby="settings-text-size-label"
+                className="grid grid-cols-3 gap-3"
+              >
                 {[
                   {
                     key: "normal" as TextSize,
@@ -768,6 +791,8 @@ export default function AccountSettings() {
                 ].map((opt) => (
                   <button
                     key={opt.key}
+                    role="radio"
+                    aria-checked={textSize === opt.key}
                     onClick={() => setTextSize(opt.key)}
                     className={`flex flex-col items-center justify-center py-5 px-3 rounded-xl border-2 transition-colors cursor-pointer ${
                       textSize === opt.key
@@ -810,6 +835,7 @@ export default function AccountSettings() {
               </div>
               <div className="shrink-0 pt-1">
                 <Toggle
+                  ariaLabel="High contrast mode"
                   enabled={highContrast}
                   onToggle={() => setHighContrast(!highContrast)}
                 />
@@ -976,11 +1002,15 @@ export default function AccountSettings() {
 
                     {/* Current Password */}
                     <div>
-                      <label className="block text-sm font-semibold text-gray-900 mb-1.5 md:mb-2">
+                      <label
+                        htmlFor="settings-current-password"
+                        className="block text-sm font-semibold text-gray-900 mb-1.5 md:mb-2"
+                      >
                         Current Password
                       </label>
                       <div className="relative">
                         <input
+                          id="settings-current-password"
                           type={showCurrentPassword ? "text" : "password"}
                           value={currentPassword}
                           onChange={(e) => setCurrentPassword(e.target.value)}
@@ -992,6 +1022,7 @@ export default function AccountSettings() {
                           onClick={() =>
                             setShowCurrentPassword(!showCurrentPassword)
                           }
+                          aria-label={showCurrentPassword ? "Hide password" : "Show password"}
                           className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 cursor-pointer"
                         >
                           {showCurrentPassword ? (
@@ -1005,11 +1036,15 @@ export default function AccountSettings() {
 
                     {/* New Password */}
                     <div>
-                      <label className="block text-sm font-semibold text-gray-900 mb-1.5 md:mb-2">
+                      <label
+                        htmlFor="settings-new-password"
+                        className="block text-sm font-semibold text-gray-900 mb-1.5 md:mb-2"
+                      >
                         New Password
                       </label>
                       <div className="relative">
                         <input
+                          id="settings-new-password"
                           type={showNewPassword ? "text" : "password"}
                           value={newPassword}
                           onChange={(e) => setNewPassword(e.target.value)}
@@ -1019,6 +1054,7 @@ export default function AccountSettings() {
                         <button
                           type="button"
                           onClick={() => setShowNewPassword(!showNewPassword)}
+                          aria-label={showNewPassword ? "Hide password" : "Show password"}
                           className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 cursor-pointer"
                         >
                           {showNewPassword ? (
@@ -1073,11 +1109,15 @@ export default function AccountSettings() {
 
                     {/* Confirm Password */}
                     <div>
-                      <label className="block text-sm font-semibold text-gray-900 mb-1.5 md:mb-2">
+                      <label
+                        htmlFor="settings-confirm-password"
+                        className="block text-sm font-semibold text-gray-900 mb-1.5 md:mb-2"
+                      >
                         Confirm New Password
                       </label>
                       <div className="relative">
                         <input
+                          id="settings-confirm-password"
                           type={showConfirmPassword ? "text" : "password"}
                           value={confirmPassword}
                           onChange={(e) => setConfirmPassword(e.target.value)}
@@ -1093,6 +1133,7 @@ export default function AccountSettings() {
                           onClick={() =>
                             setShowConfirmPassword(!showConfirmPassword)
                           }
+                          aria-label={showConfirmPassword ? "Hide password" : "Show password"}
                           className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 cursor-pointer"
                         >
                           {showConfirmPassword ? (
@@ -1206,11 +1247,15 @@ export default function AccountSettings() {
 
                 {/* Password */}
                 <div>
-                  <label className="block text-sm font-semibold text-gray-900 mb-1.5 md:mb-2">
+                  <label
+                    htmlFor="settings-deactivate-password"
+                    className="block text-sm font-semibold text-gray-900 mb-1.5 md:mb-2"
+                  >
                     Confirm your password
                   </label>
                   <div className="relative">
                     <input
+                      id="settings-deactivate-password"
                       type={showDeactivatePassword ? "text" : "password"}
                       value={deactivatePassword}
                       onChange={(e) => setDeactivatePassword(e.target.value)}
@@ -1222,6 +1267,7 @@ export default function AccountSettings() {
                       onClick={() =>
                         setShowDeactivatePassword(!showDeactivatePassword)
                       }
+                      aria-label={showDeactivatePassword ? "Hide password" : "Show password"}
                       className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 cursor-pointer"
                     >
                       {showDeactivatePassword ? (
@@ -1235,12 +1281,16 @@ export default function AccountSettings() {
 
                 {/* Type DEACTIVATE to confirm */}
                 <div>
-                  <label className="block text-sm font-semibold text-gray-900 mb-1.5 md:mb-2">
+                  <label
+                    htmlFor="settings-deactivate-confirm"
+                    className="block text-sm font-semibold text-gray-900 mb-1.5 md:mb-2"
+                  >
                     Type{" "}
                     <span className="text-red-600 font-bold">DEACTIVATE</span>{" "}
                     to confirm
                   </label>
                   <input
+                    id="settings-deactivate-confirm"
                     type="text"
                     value={deactivateConfirmText}
                     onChange={(e) => setDeactivateConfirmText(e.target.value)}

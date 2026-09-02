@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useModalFocus } from "@/hooks/useModalFocus";
 import { useUserProfile } from "@/hooks/useUserProfile";
 import { HiOutlineShieldCheck } from "react-icons/hi2";
 
@@ -47,6 +48,8 @@ const StepUpDialog = ({
   const [totp, setTotp] = useState("");
   const [reason, setReason] = useState("");
 
+  const panelRef = useModalFocus(open, onClose, { closeDisabled: busy });
+
   useEffect(() => {
     if (!open) {
       setPassword("");
@@ -63,7 +66,10 @@ const StepUpDialog = ({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 animate-fadeIn">
       <div className="absolute inset-0 bg-black/50" onClick={onClose} />
-      <div className="relative w-full max-w-md bg-white rounded-2xl shadow-xl border border-gray-200 overflow-hidden">
+      <div
+        ref={panelRef}
+        className="relative w-full max-w-md bg-white rounded-2xl shadow-xl border border-gray-200 overflow-hidden"
+      >
         <div className="px-5 py-4 border-b border-gray-100 flex items-start gap-3">
           <div className="w-10 h-10 rounded-xl bg-primary/10 text-primary ring-1 ring-primary/15 flex items-center justify-center shrink-0">
             <HiOutlineShieldCheck className="w-5 h-5" />

@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import clsx from "clsx";
+import { useModalFocus } from "@/hooks/useModalFocus";
 import {
   HiOutlineXMark,
   HiOutlineChatBubbleLeftRight,
@@ -65,25 +66,12 @@ const TicketDetailDialog = ({
     setReply("");
   }, [ticket?.id]);
 
-  // Close on Escape
-  useEffect(() => {
-    if (!ticket) return;
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape" && busy === null) onClose();
-    };
-    document.addEventListener("keydown", onKey);
-    return () => document.removeEventListener("keydown", onKey);
-  }, [ticket, busy, onClose]);
-
-  // Lock body scroll while open
-  useEffect(() => {
-    if (!ticket) return;
-    const prev = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
-    return () => {
-      document.body.style.overflow = prev;
-    };
-  }, [ticket]);
+  // Escape/scroll-lock plus focus: trap Tab inside, move focus in on open,
+  // restore it to the opening row after close — the same contract as the
+  // other admin dialogs, via useModalFocus.
+  const panelRef = useModalFocus(!!ticket, onClose, {
+    closeDisabled: busy !== null,
+  });
 
   if (!ticket) return null;
 
@@ -157,7 +145,10 @@ const TicketDetailDialog = ({
         className="absolute inset-0 bg-black/50"
         onClick={() => busy === null && onClose()}
       />
-      <div className="relative w-full max-w-2xl bg-white rounded-2xl shadow-xl border border-gray-200 overflow-hidden flex flex-col max-h-[90vh]">
+      <div
+        ref={panelRef}
+        className="relative w-full max-w-2xl bg-white rounded-2xl shadow-xl border border-gray-200 overflow-hidden flex flex-col max-h-[90vh]"
+      >
         {/* Header */}
         <div className="px-5 md:px-6 py-4 border-b border-gray-100 flex items-start gap-3 shrink-0">
           <div className="flex-1 min-w-0">

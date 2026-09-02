@@ -1,9 +1,9 @@
 "use client";
 
-import { useEffect } from "react";
 import { createPortal } from "react-dom";
 import clsx from "clsx";
 import { HiOutlineXMark } from "react-icons/hi2";
+import { useModalFocus } from "@/hooks/useModalFocus";
 
 /**
  * Right-hand slide-over drawer at 80% width, used for entity detail views on the
@@ -21,19 +21,10 @@ const DetailDrawer = ({
   onClose: () => void;
   children: React.ReactNode;
 }) => {
-  useEffect(() => {
-    if (!open) return;
-    const onEsc = (e: KeyboardEvent) => {
-      if (e.key === "Escape") onClose();
-    };
-    document.addEventListener("keydown", onEsc);
-    const prevOverflow = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
-    return () => {
-      document.removeEventListener("keydown", onEsc);
-      document.body.style.overflow = prevOverflow;
-    };
-  }, [open, onClose]);
+  // Escape/scroll-lock plus the parts the old inline handler missed: focus
+  // moves in on open, Tab can't reach the fully-tabbable table behind the
+  // aria-modal panel, and the row that opened the drawer regains focus after.
+  const panelRef = useModalFocus(open, onClose);
 
   if (typeof document === "undefined") return null;
 
@@ -52,6 +43,7 @@ const DetailDrawer = ({
       />
       {/* Panel */}
       <div
+        ref={panelRef}
         role="dialog"
         aria-modal="true"
         aria-label={title}

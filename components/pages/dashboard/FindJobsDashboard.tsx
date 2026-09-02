@@ -5,7 +5,7 @@ import { useUserProfile } from "@/hooks/useUserProfile";
 import { PROVINCES } from "@/lib/job-fields";
 import { pickGreeting } from "@/lib/greeting";
 import { DashboardSkeleton } from "@/components/ui/Skeleton";
-import { HiOutlineLocationMarker } from "react-icons/hi";
+import { HiOutlineMapPin } from "react-icons/hi2";
 import { HiMagnifyingGlass, HiChevronDown } from "react-icons/hi2";
 
 // Dynamically import profile cards for better optimization
@@ -180,7 +180,7 @@ const FindJobsDashboard = () => {
                 Location
               </label>
               <div className="relative">
-                <HiOutlineLocationMarker className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5 pointer-events-none" />
+                <HiOutlineMapPin className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5 pointer-events-none" />
                 <select
                   value={location}
                   onChange={(e) => setLocation(e.target.value)}

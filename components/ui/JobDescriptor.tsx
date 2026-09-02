@@ -133,7 +133,6 @@ const JobDescriptor: React.FC<JobDescriptorProps> = ({
   min_qualification,
   security_clearance,
   requires_drivers_license,
-  visa_sponsorship,
   languages,
   certifications,
   benefits,

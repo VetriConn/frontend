@@ -10,9 +10,8 @@ import {
   HiOutlineAcademicCap,
   HiOutlineXMark,
   HiOutlineBuildingOffice2,
-  HiOutlineEnvelope,
 } from "react-icons/hi2";
-import { PiTreeStructureLight } from "react-icons/pi";
+import { HiOutlineRectangleGroup } from "react-icons/hi2";
 import {
   JobSeekingStatusBadge,
   type JobSeekingStatus,
@@ -180,7 +179,7 @@ export function ProfilePreviewDialog({
             {profile.skills && profile.skills.length > 0 && (
               <div>
                 <h4 className="text-sm font-semibold text-gray-900 mb-2 flex items-center gap-1.5">
-                  <PiTreeStructureLight className="w-4 h-4 text-red-500" />
+                  <HiOutlineRectangleGroup className="w-4 h-4 text-red-500" />
                   Skills
                 </h4>
                 <div className="flex flex-wrap gap-2">

@@ -6,7 +6,6 @@ import {
 } from "react-icons/hi2";
 import { Avatar } from "@/components/ui/Avatar";
 import { formatRelativeTime } from "@/lib/date-utils";
-import { getInitials } from "@/lib/initials";
 
 import { Conversation } from "@/types/inbox";
 

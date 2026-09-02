@@ -100,11 +100,6 @@ export async function loginUser(
     );
   }
 
-  // Mock 2FA detour — only triggers in dev when the email contains "2fa".
-  // The real backend will return `requires2FA: true` itself once shipped.
-  const SIMULATE_2FA =
-    process.env.NEXT_PUBLIC_NODE_ENV === "development" &&
-    /2fa/i.test(email);
 
   try {
     const response = await apiFetch<LoginResponse>(

@@ -1,7 +1,7 @@
 "use client";
 import React from "react";
 import Link from "next/link";
-import { HiArrowRight, HiX } from "react-icons/hi";
+import { HiArrowRight, HiXMark } from "react-icons/hi2";
 
 interface CompleteProfileCardProps {
   completed: number;
@@ -54,7 +54,7 @@ export const CompleteProfileCard: React.FC<CompleteProfileCardProps> = ({
             aria-label="Dismiss - finish your profile any time from your profile page"
             className="min-h-[44px] min-w-[44px] inline-flex items-center justify-center rounded-lg text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600"
           >
-            <HiX className="w-5 h-5" />
+            <HiXMark className="w-5 h-5" />
           </button>
         )}
       </div>

@@ -8,7 +8,6 @@ import React, {
 } from "react";
 import Link from "next/link";
 import {
-  HiOutlineArrowLeft,
   HiOutlineMapPin,
   HiOutlineClock,
   HiOutlineBriefcase,
@@ -887,7 +886,6 @@ function SectionCard({
   title,
   subtitle,
   complete,
-  optional,
   children,
 }: {
   number: number;

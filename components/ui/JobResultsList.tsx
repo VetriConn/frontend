@@ -7,7 +7,7 @@ import { fieldLabel, JOB_TYPE_LABELS } from "@/lib/job-fields";
 import { JobResultCard } from "./JobResultCard";
 import { Skeleton } from "./Skeleton";
 import { HiOutlineMagnifyingGlass } from "react-icons/hi2";
-import { FaExclamationTriangle, FaRedo } from "react-icons/fa";
+import { HiOutlineExclamationTriangle, HiOutlineArrowPath } from "react-icons/hi2";
 
 interface JobResultsListProps {
   jobs: Job[];
@@ -76,7 +76,7 @@ const ErrorState = ({
     aria-label="Error loading jobs"
   >
     <div className="mb-6" aria-hidden="true">
-      <FaExclamationTriangle className="text-5xl text-amber-500 opacity-80" />
+      <HiOutlineExclamationTriangle className="text-5xl text-amber-500 opacity-80" />
     </div>
     <h3 className="text-lg md:text-2xl font-semibold text-gray-700 mb-2">
       Something went wrong
@@ -89,7 +89,7 @@ const ErrorState = ({
         onClick={onRetry}
         className="inline-flex items-center gap-2 bg-primary text-white py-3 px-6 rounded-lg text-sm font-medium hover:bg-red-700 transition-colors"
       >
-        <FaRedo className="text-sm" aria-hidden="true" />
+        <HiOutlineArrowPath className="text-sm" aria-hidden="true" />
         Try Again
       </button>
     )}

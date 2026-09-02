@@ -4,10 +4,6 @@ import Eyebrow from "@/components/ui/Eyebrow";
 import Reveal from "@/components/ui/Reveal";
 import React, { useState } from "react";
 import clsx from "clsx";
-import LocationIcon from "@/public/images/location.svg";
-import CallCallingIcon from "@/public/images/call-calling.svg";
-import SmsIcon from "@/public/images/sms.svg";
-import SmsTrackingIcon from "@/public/images/sms-tracking.svg";
 // Both marks from one family. Facebook was a hand-rolled SVG and LinkedIn
 // was Feather's, so the pair never matched in weight or corner radius —
 // and Feather's "in" is a lookalike rather than the real mark.

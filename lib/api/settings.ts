@@ -3,7 +3,7 @@
  * Password, account management, data export, and user settings
  */
 
-import { apiFetch, apiFetchBlob, API_BASE_URL, ApiEnvelope } from "./client";
+import { apiFetch, API_BASE_URL, ApiEnvelope } from "./client";
 
 // Change password
 export async function changePassword(

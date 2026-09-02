@@ -8,7 +8,7 @@
  * @see frontend/docs/high-contrast-mode-test-report.md
  */
 
-import { render, screen } from '@testing-library/react';
+import { render } from '@testing-library/react';
 import '@testing-library/jest-dom';
 
 // Mock components for testing
@@ -231,24 +231,6 @@ describe('High Contrast Mode Compatibility', () => {
 
     afterEach(() => {
       document.documentElement.classList.remove('high-contrast');
-    });
-
-    it('maintains container-main padding with high contrast', () => {
-      const { container } = render(
-        <div className="container-main">Content</div>
-      );
-      const element = container.querySelector('.container-main');
-
-      expect(element).toHaveClass('container-main');
-    });
-
-    it('maintains container-dashboard padding with high contrast', () => {
-      const { container } = render(
-        <div className="container-dashboard">Content</div>
-      );
-      const element = container.querySelector('.container-dashboard');
-
-      expect(element).toHaveClass('container-dashboard');
     });
 
     it('maintains card padding with high contrast', () => {

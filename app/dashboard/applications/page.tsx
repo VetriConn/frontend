@@ -26,21 +26,6 @@ import { formatDate } from "@/lib/date-utils";
 import { CustomDropdown } from "@/components/ui/CustomDropdown";
 
 
-function getJobLabel(
-  job:
-    | string
-    | {
-        _id: string;
-        id: string;
-        role: string;
-        company_name: string;
-        location?: string;
-        company_logo?: string;
-      },
-) {
-  if (typeof job === "string") return "Job posting";
-  return `${job.role} • ${job.company_name}`;
-}
 
 
 

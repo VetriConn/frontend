@@ -1,6 +1,6 @@
 import { SignupFormData } from "@/types/signup";
-import { HiCheckCircle } from "react-icons/hi";
-import { CiMail } from "react-icons/ci";
+import { HiCheckCircle } from "react-icons/hi2";
+import { HiOutlineEnvelope } from "react-icons/hi2";
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useToaster } from "@/components/ui/Toaster";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -29,8 +29,8 @@ export function CompletionStep({
     : "/signin";
   const [timeRemaining, setTimeRemaining] = useState(0);
   const [resendAttempts, setResendAttempts] = useState(0);
-  const [isCheckingVerification, setIsCheckingVerification] = useState(false);
-  const [pollCount, setPollCount] = useState(0);
+  const [, setIsCheckingVerification] = useState(false);
+  const [, setPollCount] = useState(0);
   const pollIntervalRef = useRef<NodeJS.Timeout | null>(null);
   
   const MAX_ATTEMPTS = 5;
@@ -210,7 +210,7 @@ export function CompletionStep({
       {/* Email Icon */}
       <div className="flex justify-center">
         <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center">
-          <CiMail className="w-12 h-12 text-green-600" />
+          <HiOutlineEnvelope className="w-12 h-12 text-green-600" />
         </div>
       </div>
 

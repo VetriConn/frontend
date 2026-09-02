@@ -17,33 +17,9 @@ const MIN_TOUCH_TARGET_SIZE = 44; // pixels
 /**
  * Helper function to check if an element meets touch target requirements
  */
-const meetsTouchTargetRequirements = (element: HTMLElement): boolean => {
-  const rect = element.getBoundingClientRect();
-  const computedStyle = window.getComputedStyle(element);
-  
-  // Get actual dimensions including padding
-  const width = rect.width;
-  const height = rect.height;
-  
-  // Check minimum dimensions
-  const meetsWidth = width >= MIN_TOUCH_TARGET_SIZE;
-  const meetsHeight = height >= MIN_TOUCH_TARGET_SIZE;
-  
-  return meetsWidth && meetsHeight;
-};
-
 /**
  * Helper to get computed pixel value from rem/em
  */
-const getPixelValue = (value: string): number => {
-  if (value.includes('rem')) {
-    const rem = parseFloat(value);
-    const fontSize = parseFloat(getComputedStyle(document.documentElement).fontSize);
-    return rem * fontSize;
-  }
-  return parseFloat(value);
-};
-
 describe('Touch Target Compliance', () => {
   describe('Button Component', () => {
     it('should meet touch target requirements for small buttons', () => {
@@ -405,18 +381,6 @@ describe('Touch Target Compliance', () => {
   });
 
   describe('Touch Target Utility Class', () => {
-    it('should have touch-target utility class defined', () => {
-      const TestElement = () => (
-        <button className="touch-target">
-          Test
-        </button>
-      );
-
-      render(<TestElement />);
-      
-      const button = screen.getByText('Test');
-      expect(button).toHaveClass('touch-target');
-    });
   });
 
   describe('Spacing Between Touch Targets', () => {

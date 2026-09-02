@@ -6,10 +6,10 @@ import { formatJobSalary } from "@/lib/job-display";
 import {
   HiOutlineArrowRight,
   HiOutlineBriefcase,
-  HiOutlineLocationMarker,
+  HiOutlineMapPin,
   HiOutlineClock,
   HiCurrencyDollar,
-} from "react-icons/hi";
+} from "react-icons/hi2";
 import { getRecommendedJobs } from "@/lib/api";
 import { useUserProfile } from "@/hooks/useUserProfile";
 import clsx from "clsx";
@@ -73,7 +73,7 @@ const RecommendedJobCard: React.FC<RecommendedJobCardProps> = ({
         </div>
 
         <div className={clsx(CARD_META_ROW, "text-gray-600 mb-2")}>
-          <HiOutlineLocationMarker className={CARD_META_ICON} />
+          <HiOutlineMapPin className={CARD_META_ICON} />
           <span>{location}</span>
         </div>
 

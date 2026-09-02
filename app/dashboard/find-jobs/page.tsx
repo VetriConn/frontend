@@ -20,7 +20,6 @@ import { FilterPanel } from "@/components/ui/FilterPanel";
 import { JobResultsList } from "@/components/ui/JobResultsList";
 import { Pagination } from "@/components/ui/Pagination";
 import { useJobs } from "@/hooks/useJobs";
-import { Job } from "@/types/job";
 import { useSavedSearches } from "@/hooks/useSavedSearches";
 import { useToaster } from "@/components/ui/Toaster";
 

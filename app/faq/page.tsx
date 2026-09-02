@@ -2,27 +2,16 @@
 
 import BrushUnderline from "@/components/ui/BrushUnderline";
 import Eyebrow from "@/components/ui/Eyebrow";
-import React, { useState } from "react";
+import React from "react";
 import Link from "next/link";
 import { HiOutlineArrowRight } from "react-icons/hi2";
-import { FaPlus, FaMinus } from "react-icons/fa6";
 import { Header } from "@/components/ui/Header";
 import Footer from "@/components/ui/Footer";
-import { Accordion } from "@/components/ui/Accordion";
 import { FAQ_DATA } from "@/lib/faq-data";
-
-// ── FAQ Icons — one per question for visual variety ──────────────────
-
 
 // ── Page ─────────────────────────────────────────────────────────────
 
 export default function FaqPage() {
-  const [openIndex, setOpenIndex] = useState<number | null>(null);
-
-  const handleToggle = (idx: number) => {
-    setOpenIndex((prev) => (prev === idx ? null : idx));
-  };
-
   return (
     <div className="min-h-screen flex flex-col bg-white">
       {/* Navbar */}

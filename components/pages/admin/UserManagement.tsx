@@ -41,7 +41,7 @@ import { formatDate } from "@/lib/date-utils";
 const UserManagement = () => {
   const router = useRouter();
   const { users, isLoading, mutate } = useAdminUsers();
-  const { data: counts, mutate: mutateCounts } = useSWR(
+  const { data: counts } = useSWR(
     "admin-member-counts",
     adminMemberCounts,
   );

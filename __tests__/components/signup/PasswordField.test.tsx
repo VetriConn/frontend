@@ -67,7 +67,6 @@ describe('PasswordField Component', () => {
   });
 
   it('should update requirement indicators as password is typed', async () => {
-    const user = userEvent.setup();
     const { rerender } = render(
       <PasswordField
         label="Password"

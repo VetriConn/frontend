@@ -7,7 +7,6 @@ import {
   HiOutlineMapPin,
   HiOutlineEnvelope,
   HiOutlineBriefcase,
-  HiOutlineCalendarDays,
   HiOutlineChevronRight,
   HiOutlineSparkles,
   HiOutlineCheck,
@@ -18,7 +17,6 @@ import {
 } from "react-icons/hi2";
 import { getReceivedApplication } from "@/lib/api";
 import type { CandidateProfile } from "@/lib/api/postings";
-import type { ApplicationItem } from "@/types/api";
 import { formatDate } from "@/lib/date-utils";
 import { getInitials } from "@/lib/initials";
 import { regionName } from "@/lib/regions";

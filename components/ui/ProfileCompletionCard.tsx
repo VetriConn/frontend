@@ -1,6 +1,5 @@
 "use client";
 import React from "react";
-import { FaCircle } from "react-icons/fa";
 import { CheckCircleIcon } from "@/components/ui/CheckCircleIcon";
 import type { CompletionStatus } from "@/lib/profile-utils";
 
@@ -83,7 +82,7 @@ export const ProfileCompletionCard: React.FC<ProfileCompletionCardProps> = ({
               {item.isComplete ? (
                 <CheckCircleIcon color="green" size={18} className="shrink-0" />
               ) : (
-                <FaCircle className="text-gray-300 shrink-0 text-xs" />
+                <span aria-hidden="true" className="w-3 h-3 rounded-full bg-gray-300 shrink-0" />
               )}
               <span className={item.isComplete ? "line-through" : ""}>
                 {item.label}

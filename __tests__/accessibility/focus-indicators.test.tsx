@@ -154,7 +154,7 @@ describe('Focus Indicators - All Breakpoints', () => {
     });
 
     it('should have focus indicators on dialog action buttons', () => {
-      const { container } = render(
+      render(
         <EditDialog
           isOpen={true}
           title="Test Dialog"

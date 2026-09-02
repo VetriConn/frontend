@@ -15,7 +15,6 @@ import {
   HiOutlineCheckCircle,
   HiOutlineLockClosed,
   HiOutlineArrowTopRightOnSquare,
-  HiOutlineChevronDown,
   HiOutlineChatBubbleLeftRight,
   HiOutlineClipboardDocumentCheck,
 } from "react-icons/hi2";
@@ -28,7 +27,6 @@ import {
   requestDataExport,
   deactivateAccount as deactivateAccountApi,
   updateUserSettings,
-  patchUserProfile,
 } from "@/lib/api";
 import TwoFactorSetupDialog from "@/components/security/TwoFactorSetupDialog";
 import DisableTwoFactorDialog from "@/components/security/DisableTwoFactorDialog";

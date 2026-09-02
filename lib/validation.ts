@@ -85,9 +85,6 @@ export const step4Schema = z.object({
 });
 
 // Step 5: Resume Upload
-export const step5Schema = z.object({
-});
-
 // Experience levels for dropdown (standardized format matching profile settings)
 export const EXPERIENCE_LEVELS = [
   { value: "0-2 years", label: "0–2 years" },

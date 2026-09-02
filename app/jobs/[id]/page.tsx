@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import { getJobById } from "@/lib/api";
-import { JobsResponse } from "@/types/api";
 import { generateJobMetadata, generateJobPostingSchema } from "@/lib/seo";
 import { JsonLd } from "@/components/seo/JsonLd";
 import { Job } from "@/types/job";

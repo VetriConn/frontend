@@ -8,7 +8,6 @@ import {
   HiOutlineBuildingOffice2,
   HiOutlineClock,
   HiOutlineCheckCircle,
-  HiOutlineXCircle,
   HiOutlinePauseCircle,
   HiOutlinePlayCircle,
   HiOutlineEye,

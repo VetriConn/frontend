@@ -7,7 +7,6 @@ import {
   step2Schema,
   step3Schema,
   step4Schema,
-  step5Schema,
 } from "@/lib/validation";
 
 describe("Signup Validation Schemas", () => {
@@ -182,28 +181,6 @@ describe("Signup Validation Schemas", () => {
 
     it("should accept missing fields (optional)", () => {
       const result = step4Schema.safeParse({});
-      expect(result.success).toBe(true);
-    });
-  });
-
-  describe("Step 5: Resume Upload Schema (Optional)", () => {
-    it("should accept null resume file", () => {
-      const result = step5Schema.safeParse({
-      });
-      expect(result.success).toBe(true);
-    });
-
-    it("should accept missing resume file", () => {
-      const result = step5Schema.safeParse({});
-      expect(result.success).toBe(true);
-    });
-
-    it("should accept File object", () => {
-      const file = new File(["content"], "resume.pdf", {
-        type: "application/pdf",
-      });
-      const result = step5Schema.safeParse({
-      });
       expect(result.success).toBe(true);
     });
   });

@@ -4,14 +4,11 @@ import React, { useState, useRef, useEffect } from "react";
 import {
   HiOutlineCamera,
   HiOutlineTrash,
-  HiOutlineArrowPath,
   HiOutlineMagnifyingGlassPlus,
   HiOutlineMagnifyingGlassMinus,
   HiOutlineXMark,
   HiOutlinePencilSquare,
   HiOutlineEye,
-  HiOutlineSparkles,
-  HiOutlineAdjustmentsHorizontal,
   HiOutlineCheck,
   HiOutlineArrowsRightLeft,
   HiOutlineArrowsUpDown,
@@ -164,7 +161,7 @@ export const ProfilePhotoModal: React.FC<ProfilePhotoModalProps> = ({
       if (videoRef.current) {
         videoRef.current.srcObject = stream;
       }
-    } catch (err) {
+    } catch {
       setError("Could not access camera. Please check permissions.");
       setMode("update-choice");
     }

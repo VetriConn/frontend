@@ -60,8 +60,11 @@ export async function closeAdminTicket(ticketId: string): Promise<void> {
  */
 export async function claimAdminTicket(
   ticketId: string,
-  _admin?: { id: string; name: string },
+  admin?: { id: string; name: string },
 ): Promise<void> {
+  // The claimant is the authenticated admin server-side; the parameter only
+  // exists so call sites read naturally.
+  void admin;
   await adminClaimTicket(ticketId);
 }
 

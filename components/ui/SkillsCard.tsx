@@ -6,7 +6,7 @@ import {
   HiOutlinePlusCircle,
   HiOutlineXMark,
 } from "react-icons/hi2";
-import { PiTreeStructureLight } from "react-icons/pi";
+import { HiOutlineRectangleGroup } from "react-icons/hi2";
 import { searchSkills, ALL_SKILLS } from "@/lib/skills-data";
 
 // ─── Types ──────────────────────────────────────────────────────────────────────
@@ -54,7 +54,7 @@ export const SkillsCard: React.FC<SkillsCardProps> = ({ skills, onEdit }) => {
     <div className="bg-white rounded-lg md:rounded-xl border border-gray-200 p-4 md:p-6">
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
-          <PiTreeStructureLight className="w-5 h-5 md:w-6 md:h-6 text-red-500" />
+          <HiOutlineRectangleGroup className="w-5 h-5 md:w-6 md:h-6 text-red-500" />
           <h3 className="text-lg md:text-xl font-bold text-gray-900">Skills</h3>
         </div>
         <button
@@ -75,7 +75,7 @@ export const SkillsCard: React.FC<SkillsCardProps> = ({ skills, onEdit }) => {
         </div>
       ) : (
         <div className="text-center py-6">
-          <PiTreeStructureLight className="w-8 h-8 md:w-12 md:h-12 text-gray-300 mx-auto mb-2" />
+          <HiOutlineRectangleGroup className="w-8 h-8 md:w-12 md:h-12 text-gray-300 mx-auto mb-2" />
           <p className="text-sm text-gray-500 mb-1">No skills added yet</p>
           <p className="text-gray-400 text-xs">
             Click &quot;Add Skills&quot; above to add your first skill

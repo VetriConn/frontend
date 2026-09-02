@@ -111,7 +111,7 @@ export default function ProfilePage() {
   });
 
   // ─── Photo upload state ───────────────────────────────────────────────────
-  const [photoFile, setPhotoFile] = useState<File | null>(null);
+  const [, setPhotoFile] = useState<File | null>(null);
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
   const [isUploadingPhoto, setIsUploadingPhoto] = useState(false);
   const [isUploadingDoc, setIsUploadingDoc] = useState(false);

@@ -33,7 +33,6 @@ import {
   AdminTableTd,
   AdminRowSkeleton,
   AdminEmptyState,
-  RowActions,
 } from "./AdminTablePanel";
 import KebabMenu, { type KebabAction } from "./KebabMenu";
 import TicketDetailDialog from "./TicketDetailDialog";

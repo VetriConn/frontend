@@ -402,7 +402,8 @@ export interface PostedJobSummary {
   status?: "draft" | "published";
   /** Admin moderation state — a published job is only live once approved. */
   moderation_status?: "pending" | "approved" | "rejected";
-  is_approved?: boolean;
+  /** Platform hold: the owning company is suspended; the listing is off the board. */
+  unpublished_reason?: "company_suspended";
   rejected_at?: string;
   /** Why moderation turned it down — shown so the employer can fix and resubmit. */
   rejection_reason?: string;

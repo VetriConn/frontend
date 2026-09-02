@@ -182,22 +182,25 @@ export default function ManageJobsPage() {
                         <td className="px-6 py-4">
                           {(() => {
                             const moderation =
-                              job.moderation_status ??
-                              (job.is_approved ? "approved" : "pending");
+                              job.moderation_status ?? "pending";
                             // A draft isn't submitted. A published job is only
                             // live once an admin approves it — until then it's
-                            // awaiting review, not "live".
+                            // awaiting review, not "live". A suspension hold
+                            // shows as its own state: it isn't a rejection and
+                            // there is nothing for the employer to fix.
                             const badge =
                               job.status === "draft"
                                 ? { label: "Draft", cls: "bg-gray-100 text-gray-600" }
                                 : moderation === "rejected"
                                   ? { label: "Rejected", cls: "bg-rose-50 text-rose-700" }
-                                  : moderation === "approved"
-                                    ? { label: "Published", cls: "bg-green-50 text-green-700" }
-                                    : {
-                                        label: "Awaiting approval",
-                                        cls: "bg-yellow-50 text-yellow-700",
-                                      };
+                                  : job.unpublished_reason === "company_suspended"
+                                    ? { label: "On hold", cls: "bg-amber-50 text-amber-700" }
+                                    : moderation === "approved"
+                                      ? { label: "Published", cls: "bg-green-50 text-green-700" }
+                                      : {
+                                          label: "Awaiting approval",
+                                          cls: "bg-yellow-50 text-yellow-700",
+                                        };
                             return (
                               <span
                                 className={`inline-flex px-2.5 py-0.5 rounded-full text-sm font-medium ${badge.cls}`}

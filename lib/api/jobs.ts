@@ -60,7 +60,7 @@ export interface AdminJobRaw {
   responsibilities?: string[];
   qualifications?: string[];
   moderation_status?: "pending" | "approved" | "rejected";
-  is_approved?: boolean;
+  __v?: number;
   approved_at?: string;
   rejected_at?: string;
   rejection_reason?: string;
@@ -113,10 +113,24 @@ export async function adminListJobs(
 }
 
 /** Approve a pending job (id is the Mongo _id). */
-export async function adminApproveJob(id: string): Promise<void> {
+export async function adminApproveJob(
+  id: string,
+  expectedVersion?: number,
+): Promise<void> {
   await apiFetch<ApiEnvelope<unknown>>(
     `${API_BASE_URL}/api/v1/jobs/admin/${id}/approve`,
-    { method: "PATCH" },
+    {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      // The document version this decision was made against. The backend
+      // preconditions the write on it, so approving content that changed
+      // since it was loaded 409s instead of landing unreviewed.
+      body: JSON.stringify(
+        typeof expectedVersion === "number"
+          ? { expected_version: expectedVersion }
+          : {},
+      ),
+    },
   );
 }
 
@@ -124,13 +138,18 @@ export async function adminApproveJob(id: string): Promise<void> {
 export async function adminRejectJob(
   id: string,
   reason: string,
+  expectedVersion?: number,
 ): Promise<void> {
   await apiFetch<ApiEnvelope<unknown>>(
     `${API_BASE_URL}/api/v1/jobs/admin/${id}/reject`,
     {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ reason }),
+      body: JSON.stringify(
+        typeof expectedVersion === "number"
+          ? { reason, expected_version: expectedVersion }
+          : { reason },
+      ),
     },
   );
 }

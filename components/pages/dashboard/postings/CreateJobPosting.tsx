@@ -1871,12 +1871,20 @@ const CreateJobPosting = ({
       await mutate("employer-jobs-manage");
       await mutate("employer-jobs-drafts");
       // New jobs (and content edits to live ones) sit in the moderation queue
-      // before they appear on the board — say so, don't claim "live".
-      if (saved.moderation_status === "approved") {
+      // before they appear on the board — say so, don't claim "live". An
+      // approved job can also be held (company suspended): approved ≠ live.
+      if (saved.moderation_status === "approved" && !saved.unpublished_reason) {
         showToast({
           type: "success",
           title: "Job updated",
           description: "Your changes are live",
+        });
+      } else if (saved.moderation_status === "approved") {
+        showToast({
+          type: "success",
+          title: "Job updated",
+          description:
+            "Your changes are saved. The listing stays off the board while your company is on hold.",
         });
       } else {
         showToast({

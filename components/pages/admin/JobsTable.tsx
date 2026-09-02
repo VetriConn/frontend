@@ -102,7 +102,7 @@ const StatCard = ({
 /**
  * Job moderation — one page for every listing, with standing as a filter
  * rather than separate routes. Details and review actions open in a drawer.
- * Scraped listings are excluded server-side: admins moderate Vetriconn posts.
+ * Scraped listings appear only when moderation touched them (a report takedown makes one pending); admins otherwise moderate Vetriconn posts.
  */
 const JobsTable = () => {
   const searchParams = useSearchParams();
@@ -137,7 +137,7 @@ const JobsTable = () => {
   const handleApprove = async (job: AdminJob) => {
     setBusyId(job.id);
     try {
-      await approveAdminJob(job.id);
+      await approveAdminJob(job.id, job.version);
       showToast({ type: "success", title: "Job approved" });
       refresh();
     } catch (err) {
@@ -155,7 +155,7 @@ const JobsTable = () => {
     if (!rejecting || !reason?.trim()) return;
     setDialogBusy(true);
     try {
-      await rejectAdminJob(rejecting.id, reason.trim());
+      await rejectAdminJob(rejecting.id, reason.trim(), rejecting.version);
       showToast({ type: "success", title: "Job rejected" });
       setRejecting(null);
       refresh();
@@ -174,7 +174,7 @@ const JobsTable = () => {
     if (!unpublishing || !reason?.trim()) return;
     setDialogBusy(true);
     try {
-      await unpublishAdminJob(unpublishing.id, reason.trim());
+      await unpublishAdminJob(unpublishing.id, reason.trim(), unpublishing.version);
       showToast({ type: "success", title: "Job unpublished" });
       setUnpublishing(null);
       refresh();

@@ -98,7 +98,7 @@ const AdminJobDetail = ({ jobId, onChanged }: AdminJobDetailProps) => {
     if (!job) return;
     setBusy("approve");
     try {
-      await approveAdminJob(job.id);
+      await approveAdminJob(job.id, job.version);
       const next: AdminJob = {
         ...job,
         status: "approved",
@@ -122,7 +122,7 @@ const AdminJobDetail = ({ jobId, onChanged }: AdminJobDetailProps) => {
     if (!job || !reason) return;
     setBusy("reject");
     try {
-      await rejectAdminJob(job.id, reason);
+      await rejectAdminJob(job.id, reason, job.version);
       const next: AdminJob = {
         ...job,
         status: "rejected",
@@ -148,7 +148,7 @@ const AdminJobDetail = ({ jobId, onChanged }: AdminJobDetailProps) => {
     if (!job || !reason) return;
     setBusy("unpublish");
     try {
-      await unpublishAdminJob(job.id, reason);
+      await unpublishAdminJob(job.id, reason, job.version);
       const next: AdminJob = {
         ...job,
         status: "rejected",

@@ -29,6 +29,8 @@ export interface AdminJob {
   applications?: number;
   status: AdminJobStatus;
   rejection_reason?: string;
+  /** __v the row was loaded at; decisions are preconditioned on it. */
+  version?: number;
   /** Keyword scam signals from the backend detector — worth a close look. */
   scam_flags?: string[];
   employer: {
@@ -40,10 +42,10 @@ export interface AdminJob {
 // ─── Mapping (raw lean job → view model) ─────────────────────────────────────
 
 function deriveStatus(j: AdminJobRaw): AdminJobStatus {
-  if (j.moderation_status) return j.moderation_status;
-  if (j.is_approved) return "approved";
-  if (j.rejected_at) return "rejected";
-  return "pending";
+  // moderation_status is the single verdict field (schema default "pending",
+  // no pre-default documents exist); the old is_approved/rejected_at
+  // fallback chain disagreed with the employer surface and is gone with it.
+  return j.moderation_status ?? "pending";
 }
 
 export function toAdminJob(j: AdminJobRaw): AdminJob {
@@ -73,6 +75,7 @@ export function toAdminJob(j: AdminJobRaw): AdminJob {
     applications: j.application_count,
     status: deriveStatus(j),
     rejection_reason: j.rejection_reason,
+    version: j.__v,
     scam_flags: j.scam_flags,
     // No per-poster verification flag on the job; a company posting is the
     // closest "vetted" signal we have here.
@@ -127,15 +130,19 @@ export function useAdminJob(id: string) {
 
 // ─── Mutations ───────────────────────────────────────────────────────────────
 
-export async function approveAdminJob(id: string): Promise<void> {
-  await adminApproveJob(id);
+export async function approveAdminJob(
+  id: string,
+  expectedVersion?: number,
+): Promise<void> {
+  await adminApproveJob(id, expectedVersion);
 }
 
 export async function rejectAdminJob(
   id: string,
   reason: string,
+  expectedVersion?: number,
 ): Promise<void> {
-  await adminRejectJob(id, reason);
+  await adminRejectJob(id, reason, expectedVersion);
 }
 
 /**
@@ -146,6 +153,7 @@ export async function rejectAdminJob(
 export async function unpublishAdminJob(
   id: string,
   reason: string,
+  expectedVersion?: number,
 ): Promise<void> {
-  await adminRejectJob(id, reason);
+  await adminRejectJob(id, reason, expectedVersion);
 }

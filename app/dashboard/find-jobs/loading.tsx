@@ -1,7 +1,7 @@
 export default function JobsLoading() {
   return (
     <div className="min-h-screen bg-gray-50">
-      <main className="flex-1">
+      <main id="main-content" className="flex-1">
         <div className="max-w-[1200px] mx-auto px-4 sm:px-6 py-6 sm:py-8">
           {/* Page Header */}
           <div className="mb-6 sm:mb-8 animate-pulse">

@@ -41,7 +41,7 @@ export default function AdminLayout({
       />
       <div className="flex-1 min-w-0 flex flex-col">
         <AdminTopBar onOpenMobileMenu={() => setIsMobileNavOpen(true)} />
-        <main className="flex-1 px-4 md:px-6 lg:px-8 py-6 md:py-8">
+        <main id="main-content" className="flex-1 px-4 md:px-6 lg:px-8 py-6 md:py-8">
           {children}
         </main>
       </div>

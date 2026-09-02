@@ -514,7 +514,7 @@ export function SignupWizard() {
         {/* Main Content. Vertically centred like sign in — the column grows
             with the form, so a tall step still scrolls from the top rather
             than clipping. The logo sits at the top of this centred block. */}
-        <main className="relative z-10 flex-1 flex items-center justify-center px-4 md:px-8 py-8">
+        <main id="main-content" className="relative z-10 flex-1 flex items-center justify-center px-4 md:px-8 py-8">
           <div className="w-full max-w-xl">
             <Link
               href="/"

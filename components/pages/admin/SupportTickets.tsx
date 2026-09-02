@@ -283,7 +283,7 @@ const SupportTickets = () => {
               id="ticket-filter"
               value={filter}
               onChange={(e) => setFilter(e.target.value as FilterValue)}
-              className="appearance-none pl-3.5 pr-9 py-2 rounded-xl border border-gray-200 bg-white text-sm font-medium text-gray-800 outline-none focus:border-primary focus:ring-2 focus:ring-primary/10 transition cursor-pointer"
+              className="appearance-none pl-3.5 pr-9 py-2 rounded-xl border border-gray-200 bg-white text-sm font-medium text-gray-800 outline-none focus:border-primary focus:ring-2 focus:ring-primary/30 transition cursor-pointer"
             >
               {FILTER_OPTIONS.map((opt) => (
                 <option key={opt.value} value={opt.value}>

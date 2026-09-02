@@ -82,7 +82,7 @@ export function ResetPassword() {
     <div className="min-h-screen bg-[#FBFAF9] flex flex-col">
       <AuthHeader />
 
-      <main className="flex-1 flex items-center justify-center px-4 py-10">
+      <main id="main-content" className="flex-1 flex items-center justify-center px-4 py-10">
         <div className="w-full max-w-xl">
           <div className="bg-white rounded-2xl shadow-sm p-8 mobile:p-6">
             <h1 className="text-2xl md:text-4xl font-semibold text-gray-900 mb-2 text-center">

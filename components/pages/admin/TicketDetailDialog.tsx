@@ -256,7 +256,7 @@ const TicketDetailDialog = ({
                 onChange={(e) => setReply(e.target.value)}
                 rows={4}
                 placeholder="Type your response…"
-                className="mt-1.5 w-full px-3.5 py-2.5 text-sm border border-rose-200 rounded-xl outline-none focus:border-primary focus:ring-2 focus:ring-primary/10 resize-none"
+                className="mt-1.5 w-full px-3.5 py-2.5 text-sm border border-rose-200 rounded-xl outline-none focus:border-primary focus:ring-2 focus:ring-primary/30 resize-none"
               />
             </section>
           )}

@@ -160,7 +160,7 @@ const KebabMenu = ({
         aria-label={label}
         aria-haspopup="menu"
         aria-expanded={open}
-        className="p-1.5 rounded-lg text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition-colors"
+        className="p-3 rounded-lg text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition-colors"
       >
         <HiOutlineEllipsisVertical className="w-5 h-5" />
       </button>

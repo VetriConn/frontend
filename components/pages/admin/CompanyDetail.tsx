@@ -196,7 +196,7 @@ const CompanyDetail = ({
           </div>
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-3 flex-wrap">
-              <h1 className="text-xl font-bold text-gray-900">{company.name}</h1>
+              <h2 className="text-xl font-bold text-gray-900">{company.name}</h2>
               <StatusPill tone={STATUS_TONE[company.status]}>
                 {company.status}
               </StatusPill>

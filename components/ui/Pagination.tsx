@@ -92,7 +92,7 @@ export const Pagination = ({
               aria-label={`Page ${item}`}
               aria-current={item === page ? "page" : undefined}
               className={clsx(
-                "min-w-9 h-9 px-2.5 rounded-lg text-sm font-medium transition-colors",
+                "min-w-11 h-11 px-2.5 rounded-lg text-sm font-medium transition-colors",
                 item === page
                   ? "bg-primary text-white"
                   : "border border-gray-200 text-gray-600 hover:bg-gray-50",

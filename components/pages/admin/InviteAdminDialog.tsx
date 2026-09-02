@@ -100,7 +100,7 @@ const InviteAdminDialog = ({
               value={fullName}
               onChange={(e) => setFullName(e.target.value)}
               placeholder="Jordan Lee"
-              className="mt-1.5 w-full px-3.5 py-2.5 text-sm border border-gray-200 rounded-xl outline-none focus:border-primary focus:ring-2 focus:ring-primary/10"
+              className="mt-1.5 w-full px-3.5 py-2.5 text-sm border border-gray-200 rounded-xl outline-none focus:border-primary focus:ring-2 focus:ring-primary/30"
             />
           </label>
 
@@ -111,7 +111,7 @@ const InviteAdminDialog = ({
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="name@vetriconn.com"
-              className="mt-1.5 w-full px-3.5 py-2.5 text-sm border border-gray-200 rounded-xl outline-none focus:border-primary focus:ring-2 focus:ring-primary/10"
+              className="mt-1.5 w-full px-3.5 py-2.5 text-sm border border-gray-200 rounded-xl outline-none focus:border-primary focus:ring-2 focus:ring-primary/30"
             />
           </label>
 
@@ -151,7 +151,7 @@ const InviteAdminDialog = ({
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 autoComplete="current-password"
-                className="mt-1.5 w-full px-3 py-2.5 text-sm border border-gray-200 rounded-xl outline-none focus:border-primary focus:ring-2 focus:ring-primary/10"
+                className="mt-1.5 w-full px-3 py-2.5 text-sm border border-gray-200 rounded-xl outline-none focus:border-primary focus:ring-2 focus:ring-primary/30"
               />
             </label>
             {twoFactorOn && (
@@ -167,7 +167,7 @@ const InviteAdminDialog = ({
                 placeholder="123456"
               required
                 autoComplete="one-time-code"
-                className="mt-1.5 w-full px-3 py-2.5 text-sm border border-gray-200 rounded-xl outline-none focus:border-primary focus:ring-2 focus:ring-primary/10 tracking-widest"
+                className="mt-1.5 w-full px-3 py-2.5 text-sm border border-gray-200 rounded-xl outline-none focus:border-primary focus:ring-2 focus:ring-primary/30 tracking-widest"
               />
             </label>
             )}

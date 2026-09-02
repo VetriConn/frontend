@@ -489,9 +489,36 @@ html.high-contrast .bg-primary {
   .reveal-on-enter,
   /* Panel entrances (admin drawers) resolve to their final state rather than
      playing faster — a reduced-motion request means no motion, not less. */
-  .animate-slide-up {
+  .animate-slide-up,
+  /* Dialog entrances (translateY is motion too) and the skeleton shimmer. */
+  .animate-fadeIn,
+  .animate-shimmer {
     animation: none;
   }
+}
+
+/* Keyboard focus is visible everywhere by default. Components with their own
+   ring keep it; anything unstyled falls back to this outline instead of to
+   nothing. Mouse focus (:focus without :focus-visible) stays quiet. */
+:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+/* Skip-to-content: visually hidden until focused, then a clear banner. */
+.skip-link {
+  position: absolute;
+  left: -9999px;
+  top: 0;
+  z-index: 100;
+  background: var(--color-primary);
+  color: #fff;
+  padding: 12px 20px;
+  border-radius: 0 0 8px 0;
+  font-weight: 600;
+}
+.skip-link:focus {
+  left: 0;
 }
 
 /* Rich-text: the job Brief editor and its rendered output. Tailwind's preflight

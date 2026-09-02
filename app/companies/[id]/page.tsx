@@ -15,7 +15,7 @@ export default async function PublicCompanyPage({ params }: PageProps) {
   const { id } = await params;
 
   return (
-    <main className="max-w-screen-2xl min-w-80 mx-auto">
+    <main id="main-content" className="max-w-screen-2xl min-w-80 mx-auto">
       <div className="sticky bg-white top-0 left-0 z-50">
         <Header />
       </div>

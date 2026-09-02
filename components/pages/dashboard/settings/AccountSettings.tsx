@@ -968,7 +968,7 @@ export default function AccountSettings() {
                 {!mustChangePassword && (
                   <button
                     onClick={handleClosePasswordModal}
-                    className="p-2 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors cursor-pointer"
+                    className="p-2 rounded-lg text-gray-500 hover:text-gray-700 hover:bg-gray-100 transition-colors cursor-pointer"
                   >
                     <HiOutlineXMark className="w-5 h-5" />
                   </button>
@@ -1023,7 +1023,7 @@ export default function AccountSettings() {
                             setShowCurrentPassword(!showCurrentPassword)
                           }
                           aria-label={showCurrentPassword ? "Hide password" : "Show password"}
-                          className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 cursor-pointer"
+                          className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 cursor-pointer"
                         >
                           {showCurrentPassword ? (
                             <HiOutlineEyeSlash className="w-5 h-5" />
@@ -1055,7 +1055,7 @@ export default function AccountSettings() {
                           type="button"
                           onClick={() => setShowNewPassword(!showNewPassword)}
                           aria-label={showNewPassword ? "Hide password" : "Show password"}
-                          className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 cursor-pointer"
+                          className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 cursor-pointer"
                         >
                           {showNewPassword ? (
                             <HiOutlineEyeSlash className="w-5 h-5" />
@@ -1096,7 +1096,7 @@ export default function AccountSettings() {
                               </div>
                               <span
                                 className={`text-sm ${
-                                  req.met ? "text-emerald-600" : "text-gray-400"
+                                  req.met ? "text-emerald-600" : "text-gray-600"
                                 }`}
                               >
                                 {req.label}
@@ -1134,7 +1134,7 @@ export default function AccountSettings() {
                             setShowConfirmPassword(!showConfirmPassword)
                           }
                           aria-label={showConfirmPassword ? "Hide password" : "Show password"}
-                          className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 cursor-pointer"
+                          className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 cursor-pointer"
                         >
                           {showConfirmPassword ? (
                             <HiOutlineEyeSlash className="w-5 h-5" />
@@ -1214,7 +1214,7 @@ export default function AccountSettings() {
                 </div>
                 <button
                   onClick={handleCloseDeactivateModal}
-                  className="p-2 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors cursor-pointer"
+                  className="p-2 rounded-lg text-gray-500 hover:text-gray-700 hover:bg-gray-100 transition-colors cursor-pointer"
                 >
                   <HiOutlineXMark className="w-5 h-5" />
                 </button>
@@ -1268,7 +1268,7 @@ export default function AccountSettings() {
                         setShowDeactivatePassword(!showDeactivatePassword)
                       }
                       aria-label={showDeactivatePassword ? "Hide password" : "Show password"}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 cursor-pointer"
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 cursor-pointer"
                     >
                       {showDeactivatePassword ? (
                         <HiOutlineEyeSlash className="w-5 h-5" />

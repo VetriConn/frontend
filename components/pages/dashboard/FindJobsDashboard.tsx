@@ -265,7 +265,7 @@ const FindJobsDashboard = () => {
                 key={term}
                 type="button"
                 onClick={() => quickSearch(term)}
-                className="rounded-full border border-gray-200 px-3 py-1 text-sm font-medium text-gray-600 transition-colors hover:border-primary hover:text-primary"
+                className="rounded-full border border-gray-200 px-4 py-2 min-h-[44px] text-sm font-medium text-gray-600 transition-colors hover:border-primary hover:text-primary"
               >
                 {term}
               </button>

@@ -148,7 +148,7 @@ export function CandidateDetail({ applicationId }: { applicationId: string }) {
         <HiOutlineChevronRight className="h-4 w-4 text-gray-400" />
         {job && (
           <>
-            <span className="text-gray-400">{job.role}</span>
+            <span className="text-gray-500">{job.role}</span>
             <HiOutlineChevronRight className="h-4 w-4 text-gray-400" />
           </>
         )}

@@ -119,6 +119,11 @@ export default function RootLayout({
       <body
         className={`${lato.variable} ${openSans.variable} ${outfit.variable}`}
       >
+        {/* First tabbable element on every page: keyboard users skip the
+            navigation instead of walking it link by link (WCAG 2.4.1). */}
+        <a href="#main-content" className="skip-link">
+          Skip to main content
+        </a>
         <ToasterProvider>
           <AccessibilityProvider>{children}</AccessibilityProvider>
         </ToasterProvider>

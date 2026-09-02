@@ -11,7 +11,7 @@ export default function JobsLoading() {
       <div className="sticky top-0 z-50 bg-white">
         <Header />
       </div>
-      <main
+      <main id="main-content"
         className="flex-1 max-w-5xl w-full mx-auto px-4 sm:px-6 py-10 sm:py-14"
         aria-busy="true"
         aria-label="Loading jobs"

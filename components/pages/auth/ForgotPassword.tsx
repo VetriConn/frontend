@@ -63,7 +63,7 @@ export function ForgotPassword() {
     <div className="min-h-screen bg-[#FBFAF9] flex flex-col font-open-sans">
       <AuthHeader />
 
-      <main className="flex-1 flex items-center justify-center px-4 py-10">
+      <main id="main-content" className="flex-1 flex items-center justify-center px-4 py-10">
         <div className="w-full max-w-md">
           <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-8 mobile:p-6">
             {sentTo ? (

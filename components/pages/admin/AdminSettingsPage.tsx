@@ -60,7 +60,7 @@ const formatRelative = (iso?: string) => (iso ? formatRelativeTime(iso) : "Never
 const Input = (props: React.InputHTMLAttributes<HTMLInputElement>) => (
   <input
     {...props}
-    className="w-full px-3.5 py-2.5 text-sm border border-gray-200 rounded-xl bg-white outline-none focus:border-primary focus:ring-2 focus:ring-primary/10 transition disabled:bg-gray-50 disabled:text-gray-500"
+    className="w-full px-3.5 py-2.5 text-sm border border-gray-200 rounded-xl bg-white outline-none focus:border-primary focus:ring-2 focus:ring-primary/30 transition disabled:bg-gray-50 disabled:text-gray-500"
   />
 );
 

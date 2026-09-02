@@ -44,7 +44,7 @@ export default function WelcomePage() {
     <div className="min-h-screen flex flex-col bg-gradient-to-br from-gray-50 to-gray-100">
       <AuthHeader />
 
-      <main className="flex-1 flex items-center justify-center px-4 py-10 md:px-6 md:py-16">
+      <main id="main-content" className="flex-1 flex items-center justify-center px-4 py-10 md:px-6 md:py-16">
         <div className="max-w-md w-full bg-white rounded-2xl border border-gray-200/80 shadow-sm p-6 md:p-8 text-center">
           <div className="flex justify-center mb-5">
             <div className="w-16 h-16 bg-emerald-50 rounded-full flex items-center justify-center">

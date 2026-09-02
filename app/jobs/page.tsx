@@ -238,7 +238,7 @@ export default async function JobsPage({
             {/* CTA + pins row */}
             <div className="flex flex-wrap items-center gap-5 mt-4 mobile:justify-center">
               <a
-                href="#job-listings"
+                href="#main-content"
                 className="inline-flex items-center justify-center gap-2 bg-primary hover:bg-primary-hover text-white font-semibold py-3.5 px-8 min-h-[52px] rounded-full transition-colors shadow-sm group no-underline whitespace-nowrap focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:ring-offset-2"
               >
                 Browse jobs
@@ -323,8 +323,10 @@ export default async function JobsPage({
       </section>
 
       {/* Job listings */}
+      {/* One id serves both the skip link and the in-page "Browse jobs" /
+          pagination anchors. */}
       <main
-        id="job-listings"
+        id="main-content"
         className="flex-1 max-w-5xl w-full mx-auto px-4 sm:px-6 py-10 sm:py-14 scroll-mt-24"
       >
         <div className="mb-8">
@@ -441,7 +443,7 @@ export default async function JobsPage({
           >
             {page > 1 ? (
               <Link
-                href={`${pageHref(page - 1, q)}#job-listings`}
+                href={`${pageHref(page - 1, q)}#main-content`}
                 className="inline-flex items-center gap-2 min-h-[52px] px-6 rounded-full border border-gray-200 bg-white text-sm font-semibold text-gray-700 hover:border-primary hover:text-primary transition-colors no-underline"
               >
                 <HiOutlineChevronLeft className="w-4 h-4" aria-hidden="true" />
@@ -455,7 +457,7 @@ export default async function JobsPage({
             </p>
             {page < totalPages ? (
               <Link
-                href={`${pageHref(page + 1, q)}#job-listings`}
+                href={`${pageHref(page + 1, q)}#main-content`}
                 className="inline-flex items-center gap-2 min-h-[52px] px-6 rounded-full border border-gray-200 bg-white text-sm font-semibold text-gray-700 hover:border-primary hover:text-primary transition-colors no-underline"
               >
                 Next

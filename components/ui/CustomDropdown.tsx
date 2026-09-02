@@ -59,8 +59,16 @@ export const CustomDropdown = ({
 }: CustomDropdownProps) => {
   const [isOpen, setIsOpen] = useState(false);
   const [coords, setCoords] = useState({ top: 0, left: 0, width: 0 });
+  // Keyboard model: focus never enters the portaled menu. The trigger keeps
+  // focus and steers a highlighted option via aria-activedescendant - the
+  // select-only combobox pattern - so Tab order, Escape and screen readers
+  // all behave without fighting the portal.
+  const [activeIndex, setActiveIndex] = useState(-1);
+  const typeahead = useRef({ buffer: "", at: 0 });
   const dropdownRef = useRef<HTMLDivElement>(null);
   const triggerRef = useRef<HTMLButtonElement>(null);
+  const listboxId = `${name}-listbox`;
+  const optionId = (i: number) => `${name}-option-${i}`;
 
   // Get selected option label
   const selectedOption = options.find((opt) => opt.value === value);
@@ -130,6 +138,78 @@ export const CustomDropdown = ({
     if (!isOpen) setQuery("");
   }, [isOpen]);
 
+  // Opening highlights the current selection (or the first option).
+  useEffect(() => {
+    if (!isOpen) {
+      setActiveIndex(-1);
+      return;
+    }
+    const idx = filteredOptions.findIndex((o) => o.value === value);
+    setActiveIndex(idx >= 0 ? idx : 0);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isOpen, query]);
+
+  // The highlighted option follows the keyboard into view.
+  useEffect(() => {
+    if (!isOpen || activeIndex < 0) return;
+    // Optional-called: jsdom (tests) has no scrollIntoView.
+    document
+      .getElementById(optionId(activeIndex))
+      ?.scrollIntoView?.({ block: "nearest" });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeIndex, isOpen]);
+
+  const optionText = (o: DropdownOption) =>
+    o.searchText ?? (typeof o.label === "string" ? o.label : o.value);
+
+  const moveActive = (delta: number) => {
+    if (filteredOptions.length === 0) return;
+    setActiveIndex((prev) => {
+      const from = prev < 0 ? (delta > 0 ? -1 : 0) : prev;
+      return (from + delta + filteredOptions.length) % filteredOptions.length;
+    });
+  };
+
+  /** Shared by the trigger and the search input while the menu is open. */
+  const handleOpenMenuKeys = (e: React.KeyboardEvent): boolean => {
+    switch (e.key) {
+      case "ArrowDown":
+        e.preventDefault();
+        moveActive(1);
+        return true;
+      case "ArrowUp":
+        e.preventDefault();
+        moveActive(-1);
+        return true;
+      case "Home":
+        e.preventDefault();
+        setActiveIndex(0);
+        return true;
+      case "End":
+        e.preventDefault();
+        setActiveIndex(filteredOptions.length - 1);
+        return true;
+      case "Enter":
+        e.preventDefault();
+        if (activeIndex >= 0 && filteredOptions[activeIndex]) {
+          handleSelect(filteredOptions[activeIndex].value);
+          triggerRef.current?.focus();
+        }
+        return true;
+      case "Escape":
+        e.preventDefault();
+        setIsOpen(false);
+        triggerRef.current?.focus();
+        return true;
+      case "Tab":
+        // Tabbing away closes rather than leaving a menu stranded on screen.
+        setIsOpen(false);
+        return false;
+      default:
+        return false;
+    }
+  };
+
   const handleSelect = (optionValue: string) => {
     if (disabled) return;
     onChange(optionValue);
@@ -138,11 +218,37 @@ export const CustomDropdown = ({
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (disabled) return;
-    if (e.key === "Enter" || e.key === " ") {
+
+    if (!isOpen) {
+      if (["Enter", " ", "ArrowDown", "ArrowUp"].includes(e.key)) {
+        e.preventDefault();
+        setIsOpen(true);
+      }
+      return;
+    }
+
+    if (handleOpenMenuKeys(e)) return;
+
+    if (e.key === " " && !showSearch) {
       e.preventDefault();
-      setIsOpen(!isOpen);
-    } else if (e.key === "Escape") {
-      setIsOpen(false);
+      if (activeIndex >= 0 && filteredOptions[activeIndex]) {
+        handleSelect(filteredOptions[activeIndex].value);
+      }
+      return;
+    }
+
+    // Type-ahead for short lists (long ones have the search box): letters
+    // accumulate for half a second and jump to the first match.
+    if (!showSearch && e.key.length === 1 && /\S/.test(e.key)) {
+      const now = Date.now();
+      const t = typeahead.current;
+      t.buffer = now - t.at > 500 ? e.key : t.buffer + e.key;
+      t.at = now;
+      const needle = t.buffer.toLowerCase();
+      const idx = filteredOptions.findIndex((o) =>
+        optionText(o).toLowerCase().startsWith(needle),
+      );
+      if (idx >= 0) setActiveIndex(idx);
     }
   };
 
@@ -156,7 +262,7 @@ export const CustomDropdown = ({
         width: coords.width,
         left: coords.left,
         top: openUpward
-          ? coords.top - (options.length * 40 + (hideHeader ? 0 : 44)) - 8 + window.scrollY
+          ? coords.top - (options.length * 44 + (hideHeader ? 0 : 44)) - 8 + window.scrollY
           : coords.top + 36 + window.scrollY, // Fallback offsets adjusted for window scroll
         position: "absolute",
       }}
@@ -178,26 +284,34 @@ export const CustomDropdown = ({
             autoFocus
             value={query}
             onChange={(e) => setQuery(e.target.value)}
+            onKeyDown={handleOpenMenuKeys}
             placeholder="Search…"
             aria-label={`Search ${label ?? "options"}`}
+            aria-controls={listboxId}
+            aria-activedescendant={
+              activeIndex >= 0 ? optionId(activeIndex) : undefined
+            }
             className="w-full rounded-md border border-gray-200 px-3 py-2 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
           />
         </div>
       )}
 
       {/* Options */}
-      <div className="max-h-60 overflow-y-auto">
+      <div id={listboxId} className="max-h-60 overflow-y-auto">
         {filteredOptions.length === 0 ? (
-          <p className="px-4 py-3 text-xs text-gray-400">No matches</p>
+          <p className="px-4 py-3 text-sm text-gray-400">No matches</p>
         ) : (
-          filteredOptions.map((option) => (
+          filteredOptions.map((option, i) => (
             <button
               key={option.value}
+              id={optionId(i)}
               type="button"
+              tabIndex={-1}
               onClick={() => handleSelect(option.value)}
+              onMouseEnter={() => setActiveIndex(i)}
               className={clsx(
-                "flex w-full items-center px-4 py-2.5 text-left text-xs transition-colors",
-                "hover:bg-gray-100 focus:bg-gray-100 focus:outline-none",
+                "flex w-full items-center px-4 py-3 min-h-[44px] text-left text-sm transition-colors focus:outline-none",
+                i === activeIndex && "bg-gray-100",
                 value === option.value
                   ? "bg-red-50 text-primary font-medium"
                   : "text-gray-700",
@@ -242,8 +356,13 @@ export const CustomDropdown = ({
             error && "focus:ring-red-500",
             !selectedOption && "text-gray-400"
           )}
+          role="combobox"
           aria-haspopup="listbox"
           aria-expanded={isOpen}
+          aria-controls={listboxId}
+          aria-activedescendant={
+            isOpen && activeIndex >= 0 ? optionId(activeIndex) : undefined
+          }
         >
           <span className={clsx(selectedOption ? "text-gray-900 font-medium" : "text-gray-400")}>
             {displayValue}

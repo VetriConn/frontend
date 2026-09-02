@@ -35,19 +35,19 @@ describe("CustomDropdown", () => {
     it("should show the placeholder when nothing is selected", () => {
       setup();
 
-      expect(screen.getByRole("button")).toHaveTextContent("Select work type");
+      expect(screen.getByRole("combobox")).toHaveTextContent("Select work type");
     });
 
     it("should show the selected option's label", () => {
       setup({ value: "hybrid" });
 
-      expect(screen.getByRole("button")).toHaveTextContent("Hybrid");
+      expect(screen.getByRole("combobox")).toHaveTextContent("Hybrid");
     });
 
-    it("should advertise itself as a listbox trigger", () => {
+    it("should advertise itself as a combobox for a listbox", () => {
       setup();
 
-      const trigger = screen.getByRole("button");
+      const trigger = screen.getByRole("combobox");
       expect(trigger).toHaveAttribute("aria-haspopup", "listbox");
       expect(trigger).toHaveAttribute("aria-expanded", "false");
     });
@@ -70,7 +70,7 @@ describe("CustomDropdown", () => {
     it("should open on click and list every option", async () => {
       const { user } = setup();
 
-      await user.click(screen.getByRole("button"));
+      await user.click(screen.getByRole("combobox"));
 
       expect(screen.getByRole("listbox")).toBeInTheDocument();
       expect(screen.getAllByRole("option")).toHaveLength(OPTIONS.length);
@@ -79,16 +79,16 @@ describe("CustomDropdown", () => {
     it("should mark the trigger expanded while open", async () => {
       const { user } = setup();
 
-      await user.click(screen.getByRole("button", { name: /Select work type/ }));
+      await user.click(screen.getByRole("combobox"));
 
       expect(
-        screen.getByRole("button", { name: /Select work type/ }),
+        screen.getByRole("combobox"),
       ).toHaveAttribute("aria-expanded", "true");
     });
 
     it("should close when the trigger is clicked again", async () => {
       const { user } = setup();
-      const trigger = screen.getByRole("button", { name: /Select work type/ });
+      const trigger = screen.getByRole("combobox");
 
       await user.click(trigger);
       await user.click(trigger);
@@ -99,7 +99,7 @@ describe("CustomDropdown", () => {
     it("should close when clicking outside", async () => {
       const { user } = setup();
 
-      await user.click(screen.getByRole("button", { name: /Select work type/ }));
+      await user.click(screen.getByRole("combobox"));
       expect(screen.getByRole("listbox")).toBeInTheDocument();
 
       await user.click(document.body);
@@ -110,7 +110,7 @@ describe("CustomDropdown", () => {
     it("should cap the option list height so long lists scroll", async () => {
       const { user } = setup();
 
-      await user.click(screen.getByRole("button"));
+      await user.click(screen.getByRole("combobox"));
 
       const list = screen.getByRole("option", { name: "Remote" }).parentElement;
       expect(list).toHaveClass("max-h-60", "overflow-y-auto");
@@ -121,7 +121,7 @@ describe("CustomDropdown", () => {
     it("should emit the chosen option's value", async () => {
       const { user, onChange } = setup();
 
-      await user.click(screen.getByRole("button"));
+      await user.click(screen.getByRole("combobox"));
       await user.click(screen.getByRole("option", { name: "Hybrid" }));
 
       expect(onChange).toHaveBeenCalledWith("hybrid");
@@ -130,7 +130,7 @@ describe("CustomDropdown", () => {
     it("should close after selecting", async () => {
       const { user } = setup();
 
-      await user.click(screen.getByRole("button"));
+      await user.click(screen.getByRole("combobox"));
       await user.click(screen.getByRole("option", { name: "Hybrid" }));
 
       expect(screen.queryByRole("listbox")).not.toBeInTheDocument();
@@ -139,7 +139,7 @@ describe("CustomDropdown", () => {
     it("should mark the current option as selected", async () => {
       const { user } = setup({ value: "remote" });
 
-      await user.click(screen.getByRole("button", { name: /Remote/ }));
+      await user.click(screen.getByRole("combobox"));
 
       expect(screen.getByRole("option", { name: "Remote" })).toHaveAttribute(
         "aria-selected",
@@ -156,7 +156,7 @@ describe("CustomDropdown", () => {
     it("should not open when disabled", async () => {
       const { user } = setup({ disabled: true });
 
-      await user.click(screen.getByRole("button"));
+      await user.click(screen.getByRole("combobox"));
 
       expect(screen.queryByRole("listbox")).not.toBeInTheDocument();
     });
@@ -164,7 +164,7 @@ describe("CustomDropdown", () => {
     it("should disable the trigger", () => {
       setup({ disabled: true });
 
-      expect(screen.getByRole("button")).toBeDisabled();
+      expect(screen.getByRole("combobox")).toBeDisabled();
     });
   });
 

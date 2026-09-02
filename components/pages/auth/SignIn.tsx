@@ -2,7 +2,6 @@
 import { useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
-import clsx from "clsx";
 import DottedBox7 from "@/public/images/dotted_box_7.svg";
 import DottedBox9 from "@/public/images/dotted_box_9.svg";
 import DottedBox4 from "@/public/images/dotted_box_4.svg";
@@ -11,6 +10,7 @@ import { signInSchema } from "@/lib/validation";
 import { useToaster } from "@/components/ui/Toaster";
 import { ZodError } from "zod";
 import { loginUser } from "@/lib/api";
+import { resendVerificationEmail } from "@/lib/api/auth";
 import { FormField } from "@/components/ui/FormField";
 import { PasswordField } from "@/components/ui/PasswordField";
 import TwoFactorChallengeDialog from "@/components/security/TwoFactorChallengeDialog";
@@ -26,6 +26,13 @@ export const SignIn = () => {
   const [rememberMe, setRememberMe] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+  // Set when sign-in fails because the address is unverified. A vanishing
+  // toast is not a recovery path - this drives a persistent notice with a
+  // resend button instead.
+  const [needsVerification, setNeedsVerification] = useState(false);
+  const [resendState, setResendState] = useState<"idle" | "sending" | "sent">(
+    "idle",
+  );
 
   // 2FA challenge state
   const [twoFactorOpen, setTwoFactorOpen] = useState(false);
@@ -96,11 +103,18 @@ export const SignIn = () => {
       } else {
         const errorMessage =
           error instanceof Error ? error.message : "Login failed";
-        showToast({
-          type: "error",
-          title: "Login Failed",
-          description: errorMessage,
-        });
+        if (/verify your email/i.test(errorMessage)) {
+          // Recoverable without support: show the persistent notice with the
+          // resend affordance rather than a toast that vanishes in seconds.
+          setNeedsVerification(true);
+          setResendState("idle");
+        } else {
+          showToast({
+            type: "error",
+            title: "Login failed",
+            description: errorMessage,
+          });
+        }
         if (
           errorMessage.toLowerCase().includes("invalid") ||
           errorMessage.toLowerCase().includes("incorrect")
@@ -139,6 +153,46 @@ export const SignIn = () => {
           {sessionExpired && (
             <div className="mb-4 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
               Your session expired. Please sign in again to continue.
+            </div>
+          )}
+          {needsVerification && (
+            <div
+              role="status"
+              className="mb-4 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800"
+            >
+              <p className="mb-2">
+                Your email address isn&apos;t verified yet. Check your inbox for
+                the verification link, or we can send a new one.
+              </p>
+              {resendState === "sent" ? (
+                <p className="font-medium">
+                  Sent. Check your inbox (and your spam folder).
+                </p>
+              ) : (
+                <button
+                  type="button"
+                  disabled={resendState === "sending" || !email.trim()}
+                  onClick={async () => {
+                    setResendState("sending");
+                    try {
+                      await resendVerificationEmail(email.trim());
+                      setResendState("sent");
+                    } catch {
+                      setResendState("idle");
+                      showToast({
+                        type: "error",
+                        title: "Couldn't resend the email",
+                        description: "Please try again in a moment.",
+                      });
+                    }
+                  }}
+                  className="font-semibold text-primary hover:underline disabled:opacity-60 disabled:cursor-not-allowed cursor-pointer bg-transparent border-none p-0 min-h-[44px]"
+                >
+                  {resendState === "sending"
+                    ? "Sending..."
+                    : "Resend verification email"}
+                </button>
+              )}
             </div>
           )}
           <form onSubmit={handleSubmit}>

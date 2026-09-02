@@ -327,6 +327,14 @@ export async function getMyApplications(): Promise<ApplicationItem[]> {
   return response.data?.applications || [];
 }
 
+/** Withdraw a submitted application (only while the employer hasn't decided). */
+export async function withdrawApplication(applicationId: string): Promise<void> {
+  await apiFetch<ApiEnvelope<unknown>>(
+    `${API_BASE_URL}/api/v1/applications/${applicationId}/withdraw`,
+    { method: "PATCH" },
+  );
+}
+
 // Save a job
 export async function saveJob(jobId: string): Promise<{ message: string }> {
   const response = await apiFetch<ApiEnvelope<{ jobId: string }>>(

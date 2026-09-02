@@ -2,7 +2,7 @@
 
 import React, { useState, useCallback, useMemo } from "react";
 import useSWR from "swr";
-import { getMyApplications } from "@/lib/api/jobs";
+import { getMyApplications, withdrawApplication } from "@/lib/api/jobs";
 import Link from "next/link";
 import {
   HiOutlineMapPin,
@@ -214,18 +214,69 @@ function EmployerDecisionBadge({
   );
 }
 
+/**
+ * Two-step withdraw: first press arms it, second confirms. Withdrawing takes
+ * the application out of the employer's inbox for good, so a single stray
+ * click must not do it.
+ */
+function WithdrawButton({ onWithdraw }: { onWithdraw: () => Promise<void> }) {
+  const [arming, setArming] = useState(false);
+  const [busy, setBusy] = useState(false);
+  if (!arming) {
+    return (
+      <button
+        type="button"
+        onClick={() => setArming(true)}
+        className="text-sm font-medium text-gray-500 hover:text-primary underline-offset-2 hover:underline bg-transparent border-none cursor-pointer p-0 min-h-[44px]"
+      >
+        Withdraw application
+      </button>
+    );
+  }
+  return (
+    <span className="inline-flex items-center gap-2 text-sm">
+      <span className="text-gray-600">Withdraw? The employer won&apos;t see it anymore.</span>
+      <button
+        type="button"
+        disabled={busy}
+        onClick={async () => {
+          setBusy(true);
+          try {
+            await onWithdraw();
+          } finally {
+            setBusy(false);
+            setArming(false);
+          }
+        }}
+        className="font-semibold text-primary bg-transparent border-none cursor-pointer p-0 min-h-[44px] disabled:opacity-60"
+      >
+        {busy ? "Withdrawing..." : "Yes, withdraw"}
+      </button>
+      <button
+        type="button"
+        onClick={() => setArming(false)}
+        className="font-medium text-gray-500 bg-transparent border-none cursor-pointer p-0 min-h-[44px]"
+      >
+        Keep it
+      </button>
+    </span>
+  );
+}
+
 function ApplicationCard({
   application,
   employerStatus,
   onStatusChange,
   onDelete,
   onEditNotes,
+  onWithdraw,
 }: {
   application: ApplicationEntry;
   employerStatus?: "pending" | "reviewed" | "accepted" | "rejected";
   onStatusChange: (id: string, status: ApplicationStatus) => void;
   onDelete: (id: string) => void;
   onEditNotes: (app: ApplicationEntry) => void;
+  onWithdraw?: () => Promise<void>;
 }) {
   const [showConfirmDelete, setShowConfirmDelete] = useState(false);
 
@@ -254,6 +305,7 @@ function ApplicationCard({
               <StatusBadge status={application.status} />
               {employerStatus && <EmployerDecisionBadge status={employerStatus} />}
               <SourceBadge source={application.source} />
+              {onWithdraw && <WithdrawButton onWithdraw={onWithdraw} />}
             </div>
 
             <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-gray-600 mb-2">
@@ -381,7 +433,7 @@ export default function AppliedJobsPage() {
 
   // The employer's real decisions, keyed by job identity. The tracker above is
   // self-managed; this is what actually happened on the other side.
-  const { data: realApplications } = useSWR(
+  const { data: realApplications, mutate: mutateRealApplications } = useSWR(
     "my-real-applications",
     getMyApplications,
     { revalidateOnFocus: false },
@@ -389,20 +441,49 @@ export default function AppliedJobsPage() {
   const employerStatusByJob = useMemo(() => {
     const map = new Map<
       string,
-      "pending" | "reviewed" | "accepted" | "rejected"
+      {
+        status: "pending" | "reviewed" | "accepted" | "rejected";
+        applicationId: string;
+      }
     >();
     for (const item of realApplications ?? []) {
+      const entry = { status: item.status, applicationId: item._id };
       const job = item.job_id;
-      if (typeof job === "string") map.set(job, item.status);
+      if (typeof job === "string") map.set(job, entry);
       else if (job) {
-        if (job._id) map.set(job._id, item.status);
-        if (job.id) map.set(job.id, item.status);
+        if (job._id) map.set(job._id, entry);
+        if (job.id) map.set(job.id, entry);
       }
     }
     return map;
   }, [realApplications]);
   const decisionFor = (jobId?: string) =>
-    jobId ? employerStatusByJob.get(jobId) : undefined;
+    jobId ? employerStatusByJob.get(jobId)?.status : undefined;
+  // The real application behind a tracker row, when it can still be taken
+  // back - withdrawing is only meaningful before the employer decides.
+  const withdrawableIdFor = (jobId?: string) => {
+    const entry = jobId ? employerStatusByJob.get(jobId) : undefined;
+    return entry && (entry.status === "pending" || entry.status === "reviewed")
+      ? entry.applicationId
+      : undefined;
+  };
+  const handleWithdraw = async (applicationId: string) => {
+    try {
+      await withdrawApplication(applicationId);
+      await mutateRealApplications();
+      showToast({
+        type: "success",
+        title: "Application withdrawn",
+        description: "The employer will no longer see it in their inbox.",
+      });
+    } catch {
+      showToast({
+        type: "error",
+        title: "Couldn't withdraw the application",
+        description: "Please try again in a moment.",
+      });
+    }
+  };
 
   const [activeTab, setActiveTab] = useState("all");
   const [showAddDialog, setShowAddDialog] = useState(false);
@@ -681,6 +762,15 @@ export default function AppliedJobsPage() {
                                   />
                                 </div>
                               )}
+                              {withdrawableIdFor(app.job_id) && (
+                                <div className="mt-1.5">
+                                  <WithdrawButton
+                                    onWithdraw={() =>
+                                      handleWithdraw(withdrawableIdFor(app.job_id)!)
+                                    }
+                                  />
+                                </div>
+                              )}
                             </td>
                             <td className="px-4 py-4">
                               <div className="flex items-center gap-2 text-sm text-gray-600">
@@ -751,6 +841,10 @@ export default function AppliedJobsPage() {
                       key={app.id}
                       application={app}
                       employerStatus={decisionFor(app.job_id)}
+                      onWithdraw={(() => {
+                        const id = withdrawableIdFor(app.job_id);
+                        return id ? () => handleWithdraw(id) : undefined;
+                      })()}
                       onStatusChange={handleStatusChange}
                       onDelete={handleDelete}
                       onEditNotes={handleEditNotes}

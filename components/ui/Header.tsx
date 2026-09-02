@@ -63,13 +63,24 @@ function AuthCta({
   const signedIn = resolved ? !!userProfile : hint === true;
 
   return (
-    <Link
-      href={signedIn ? "/dashboard" : "/signin"}
-      className={className}
-      onClick={onNavigate}
-    >
-      {signedIn ? "Dashboard" : "Sign In"}
-    </Link>
+    <>
+      {!signedIn && (
+        <Link
+          href="/signup"
+          className="font-open-sans text-sm md:text-base text-text font-semibold no-underline hover:text-primary transition-colors whitespace-nowrap"
+          onClick={onNavigate}
+        >
+          Create account
+        </Link>
+      )}
+      <Link
+        href={signedIn ? "/dashboard" : "/signin"}
+        className={className}
+        onClick={onNavigate}
+      >
+        {signedIn ? "Dashboard" : "Sign in"}
+      </Link>
+    </>
   );
 }
 
@@ -105,15 +116,17 @@ export const Header = () => {
 
   return (
     <nav className="flex justify-between items-center py-2 max-w-[1600px] mx-auto px-6 shadow-[0_6px_4px_-4px_#e8e8e8]">
-      <Image
-        src="/images/logo.png"
-        alt="Vetriconn"
-        width={360}
-        height={164}
-        priority
-        sizes="180px"
-        className="w-[180px] h-auto mobile:w-[140px]"
-      />
+      <Link href="/" aria-label="Vetriconn home" className="shrink-0">
+        <Image
+          src="/images/logo.png"
+          alt="Vetriconn"
+          width={360}
+          height={164}
+          priority
+          sizes="180px"
+          className="w-[180px] h-auto mobile:w-[140px]"
+        />
+      </Link>
       <button
         className={clsx(
           "hidden mobile:block bg-transparent border-none cursor-pointer z-[60] py-4 px-2.5 relative",

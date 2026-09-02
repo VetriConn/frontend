@@ -70,11 +70,14 @@ const Footer = () => {
             </div>
             <div className="flex flex-col">
               <div className={HEADING}>Company</div>
+              <a href="/jobs" className={LINK}>
+                Jobs
+              </a>
               <a href="/about" className={LINK}>
-                About Us
+                About
               </a>
               <a href="/faq" className={LINK}>
-                FAQs
+                FAQ
               </a>
             </div>
           </div>
@@ -83,7 +86,7 @@ const Footer = () => {
         {/* Copyright and social */}
         <div className="mt-6 md:mt-8 bg-[#e8e8e8] rounded-lg py-2 px-4 md:px-6 flex flex-col-reverse md:flex-row items-center justify-between gap-1 md:gap-0">
           <div className="font-open-sans text-xs md:text-sm font-normal text-primary text-center">
-            Vetriconn © 2025 All rights Reserved.
+            Vetriconn © {new Date().getFullYear()}. All rights reserved.
           </div>
           <div className="flex gap-2 md:gap-3">
             <a
@@ -96,7 +99,7 @@ const Footer = () => {
               <FaFacebookF aria-hidden="true" />
             </a>
             <a
-              href="https://www.linkedin.com/company/vetriconn-inc/?viewAsMember=true"
+              href="https://www.linkedin.com/company/vetriconn-inc/"
               aria-label="Vetriconn on LinkedIn"
               target="_blank"
               rel="noopener noreferrer"

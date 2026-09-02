@@ -175,10 +175,10 @@ export default function ApplyPage() {
               been removed.
             </p>
             <Link
-              href="/dashboard/jobs"
+              href="/dashboard/find-jobs"
               className="text-primary font-medium hover:underline no-underline"
             >
-              ← Browse Jobs
+              ← Browse jobs
             </Link>
           </div>
         </div>

@@ -425,7 +425,7 @@ export default async function JobsPage({
             {q && !fetchFailed && (
               <Link
                 href="/jobs"
-                className="inline-flex items-center gap-2 mt-6 text-primary font-semibold hover:text-red-700 transition-colors"
+                className="inline-flex items-center gap-2 mt-6 text-primary font-semibold hover:text-primary-hover transition-colors"
               >
                 Browse all jobs
                 <HiOutlineArrowRight className="w-4 h-4" aria-hidden="true" />
@@ -479,16 +479,16 @@ export default async function JobsPage({
           <div className="flex flex-col items-center gap-4">
             <Link
               href="/signup"
-              className="inline-flex items-center gap-2 bg-primary hover:bg-red-700 text-white font-semibold py-3.5 px-10 rounded-full transition-all shadow-sm group"
+              className="inline-flex items-center gap-2 bg-primary hover:bg-primary-hover text-white font-semibold py-3.5 px-10 rounded-full transition-all shadow-sm group"
             >
-              Get Started Free
+              Get started
               <HiOutlineArrowRight className="w-4 h-4 md:w-5 md:h-5 transition-transform group-hover:-rotate-45" aria-hidden="true" />
             </Link>
             <p className="text-sm font-medium text-gray-500">
               Already have an account?{" "}
               <Link
                 href="/signin"
-                className="text-primary hover:text-red-700 transition-all font-semibold group inline-flex items-center gap-1"
+                className="text-primary hover:text-primary-hover transition-all font-semibold group inline-flex items-center gap-1"
               >
                 Sign in
                 <HiOutlineArrowRight className="w-3 h-3 md:w-4 md:h-4 transition-transform group-hover:-rotate-45" aria-hidden="true" />

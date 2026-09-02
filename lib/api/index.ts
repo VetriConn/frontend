@@ -8,7 +8,6 @@ export {
   loginUser,
   logoutUser,
   registerUser,
-  uploadResume,
   resendVerificationEmail,
   requestPasswordReset,
   resetPasswordWithToken,

@@ -892,13 +892,6 @@ const JobDescriptor: React.FC<JobDescriptorProps> = ({
                       hired
                     </p>
                   </div>
-                  <div className="flex items-start gap-2.5">
-                    <HiOutlineCheckCircle className="w-4 h-4 md:w-5 md:h-5 text-emerald-500 shrink-0 mt-0.5" />
-                    <p className="text-xs text-gray-500 leading-relaxed">
-                      Be one of the first to apply - early applicants are 3x
-                      more likely to get noticed
-                    </p>
-                  </div>
                 </div>
               </div>
             </div>

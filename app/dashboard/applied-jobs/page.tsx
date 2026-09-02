@@ -1,6 +1,8 @@
 "use client";
 
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, useMemo } from "react";
+import useSWR from "swr";
+import { getMyApplications } from "@/lib/api/jobs";
 import Link from "next/link";
 import {
   HiOutlineMapPin,
@@ -180,13 +182,47 @@ function EmptyState({ onAdd }: { onAdd: () => void }) {
 
 // --- Application Card ---
 
+
+/**
+ * The employer's actual decision, from the real Application record - shown
+ * beside the self-managed tracker stage so "what the employer did" and "how
+ * I'm tracking it" stay visibly separate things. Until this existed, accept/
+ * reject decisions were saved server-side and never reached the candidate.
+ */
+function EmployerDecisionBadge({
+  status,
+}: {
+  status: "pending" | "reviewed" | "accepted" | "rejected";
+}) {
+  if (status === "pending") return null;
+  const styles = {
+    reviewed: "bg-indigo-50 text-indigo-700 ring-indigo-200/70",
+    accepted: "bg-emerald-50 text-emerald-700 ring-emerald-200/70",
+    rejected: "bg-gray-100 text-gray-600 ring-gray-200",
+  } as const;
+  const labels = {
+    reviewed: "Reviewed by employer",
+    accepted: "Accepted by employer",
+    rejected: "Employer moved on",
+  } as const;
+  return (
+    <span
+      className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold ring-1 ${styles[status]}`}
+    >
+      {labels[status]}
+    </span>
+  );
+}
+
 function ApplicationCard({
   application,
+  employerStatus,
   onStatusChange,
   onDelete,
   onEditNotes,
 }: {
   application: ApplicationEntry;
+  employerStatus?: "pending" | "reviewed" | "accepted" | "rejected";
   onStatusChange: (id: string, status: ApplicationStatus) => void;
   onDelete: (id: string) => void;
   onEditNotes: (app: ApplicationEntry) => void;
@@ -216,6 +252,7 @@ function ApplicationCard({
 
             <div className="flex flex-wrap items-center gap-3 mb-3">
               <StatusBadge status={application.status} />
+              {employerStatus && <EmployerDecisionBadge status={employerStatus} />}
               <SourceBadge source={application.source} />
             </div>
 
@@ -341,6 +378,31 @@ export default function AppliedJobsPage() {
     removeApplication,
   } = useApplications();
   const { showToast } = useToaster();
+
+  // The employer's real decisions, keyed by job identity. The tracker above is
+  // self-managed; this is what actually happened on the other side.
+  const { data: realApplications } = useSWR(
+    "my-real-applications",
+    getMyApplications,
+    { revalidateOnFocus: false },
+  );
+  const employerStatusByJob = useMemo(() => {
+    const map = new Map<
+      string,
+      "pending" | "reviewed" | "accepted" | "rejected"
+    >();
+    for (const item of realApplications ?? []) {
+      const job = item.job_id;
+      if (typeof job === "string") map.set(job, item.status);
+      else if (job) {
+        if (job._id) map.set(job._id, item.status);
+        if (job.id) map.set(job.id, item.status);
+      }
+    }
+    return map;
+  }, [realApplications]);
+  const decisionFor = (jobId?: string) =>
+    jobId ? employerStatusByJob.get(jobId) : undefined;
 
   const [activeTab, setActiveTab] = useState("all");
   const [showAddDialog, setShowAddDialog] = useState(false);
@@ -612,6 +674,13 @@ export default function AppliedJobsPage() {
                             </td>
                             <td className="px-4 py-4">
                               <StatusBadge status={app.status} />
+                              {decisionFor(app.job_id) && (
+                                <div className="mt-1.5">
+                                  <EmployerDecisionBadge
+                                    status={decisionFor(app.job_id)!}
+                                  />
+                                </div>
+                              )}
                             </td>
                             <td className="px-4 py-4">
                               <div className="flex items-center gap-2 text-xs text-gray-500">
@@ -681,6 +750,7 @@ export default function AppliedJobsPage() {
                     <ApplicationCard
                       key={app.id}
                       application={app}
+                      employerStatus={decisionFor(app.job_id)}
                       onStatusChange={handleStatusChange}
                       onDelete={handleDelete}
                       onEditNotes={handleEditNotes}

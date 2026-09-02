@@ -74,32 +74,6 @@ export async function registerUser(
   }
 }
 
-/**
- * Upload resume file
- * This should be called after successful registration
- */
-export async function uploadResume(
-  file: File,
-  _token: string,
-): Promise<ApiResponse<{ url: string; document: any }>> {
-  try {
-    const formData = new FormData();
-    formData.append("resume", file);
-
-    return await apiFetch<ApiResponse<{ url: string; document: any }>>(
-      getApiUrl("/api/v1/user/upload-resume"),
-      {
-        method: "POST",
-        body: formData,
-      },
-    );
-  } catch (error) {
-    return {
-      success: false,
-      message: error instanceof Error ? error.message : "Resume upload failed",
-    };
-  }
-}
 
 /**
  * Login user

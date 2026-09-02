@@ -23,7 +23,6 @@ export interface SignupFormData {
   years_of_experience: string;
 
   // Step 5 - Resume Upload (optional)
-  resumeFile: File | null;
 }
 
 /**
@@ -127,5 +126,4 @@ export const INITIAL_FORM_DATA: SignupFormData = {
   job_title: "",
   industry: "",
   years_of_experience: "",
-  resumeFile: null,
 };

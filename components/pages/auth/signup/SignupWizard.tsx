@@ -104,18 +104,7 @@ function signupReducer(
  * Serialize form data for session storage (handles File objects)
  */
 function serializeFormData(formData: SignupFormData): string {
-  const serializable = {
-    ...formData,
-    // File objects cannot be serialized, store metadata instead
-    resumeFile: formData.resumeFile
-      ? {
-          name: formData.resumeFile.name,
-          size: formData.resumeFile.size,
-          type: formData.resumeFile.type,
-        }
-      : null,
-  };
-  return JSON.stringify(serializable);
+  return JSON.stringify(formData);
 }
 
 /**
@@ -144,11 +133,7 @@ function loadStateFromStorage(): Partial<SignupWizardState> | null {
     return {
       currentStep: parsed.currentStep,
       highestCompletedStep: parsed.highestCompletedStep || 0,
-      formData: {
-        ...parsed.formData,
-        // File cannot be restored from storage, set to null
-        resumeFile: null,
-      },
+      formData: parsed.formData,
     };
   } catch {
     return null;

@@ -189,7 +189,6 @@ describe("Signup Validation Schemas", () => {
   describe("Step 5: Resume Upload Schema (Optional)", () => {
     it("should accept null resume file", () => {
       const result = step5Schema.safeParse({
-        resumeFile: null,
       });
       expect(result.success).toBe(true);
     });
@@ -204,7 +203,6 @@ describe("Signup Validation Schemas", () => {
         type: "application/pdf",
       });
       const result = step5Schema.safeParse({
-        resumeFile: file,
       });
       expect(result.success).toBe(true);
     });

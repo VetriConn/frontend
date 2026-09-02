@@ -86,7 +86,6 @@ export const step4Schema = z.object({
 
 // Step 5: Resume Upload
 export const step5Schema = z.object({
-  resumeFile: z.instanceof(File).nullable().optional(),
 });
 
 // Experience levels for dropdown (standardized format matching profile settings)

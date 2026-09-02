@@ -25,6 +25,7 @@ import {
 } from "@/hooks/useAdminJobQueue";
 import { useToaster } from "@/components/ui/Toaster";
 import ConfirmDialog from "./ConfirmDialog";
+import { formatDate } from "@/lib/date-utils";
 
 interface AdminJobDetailProps {
   jobId: string;
@@ -57,16 +58,6 @@ const STATUS_META: Record<
   },
 };
 
-const formatDate = (iso?: string) => {
-  if (!iso) return "-";
-  const d = new Date(iso);
-  if (Number.isNaN(d.getTime())) return iso;
-  return d.toLocaleDateString("en-US", {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-  });
-};
 
 /**
  * What a reviewer must confirm before a listing can go live. Ticking is

@@ -20,6 +20,7 @@ import {
   closeAdminTicket,
 } from "@/hooks/useAdminSupport";
 import { useToaster } from "@/components/ui/Toaster";
+import { formatDate } from "@/lib/date-utils";
 
 // ─── Pill styles (match the rest of the admin shell) ────────────────────────
 
@@ -37,11 +38,6 @@ const PRIORITY_TONE: Record<TicketPriority, string> = {
   critical: "bg-rose-600 text-white ring-rose-700/30",
 };
 
-const formatDate = (iso: string) => {
-  const d = new Date(iso);
-  if (Number.isNaN(d.getTime())) return iso;
-  return d.toISOString().slice(0, 10);
-};
 
 // ─── Component ───────────────────────────────────────────────────────────────
 

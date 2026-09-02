@@ -42,12 +42,32 @@ export function formatFullDateTime(value?: string | Date): string {
 }
 
 /**
- * Formats a date string into a simple localized date (e.g., "5/11/2026").
- * Returns "—" for missing or invalid values.
+ * Formats a date into the site's standard readable form ("Sept 2, 2026").
+ * Returns "-" for missing or invalid values.
+ *
+ * The locale is pinned so server and client render identically. This used to
+ * emit the bare numeric locale form ("9/2/2026"), which is why a dozen
+ * components grew their own copy — every one of them wanted this format.
  */
 export function formatDate(value?: string | Date): string {
   if (!value) return "-";
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return "-";
-  return date.toLocaleDateString();
+  return date.toLocaleDateString("en-CA", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  });
+}
+
+/**
+ * Month-and-year form for duration-style dates ("Sept 2026") — work
+ * experience ranges and the like. Returns "" when absent or invalid, so
+ * range-building call sites can compose without stray dashes.
+ */
+export function formatMonthYear(value?: string | Date): string {
+  if (!value) return "";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "";
+  return date.toLocaleDateString("en-CA", { month: "short", year: "numeric" });
 }

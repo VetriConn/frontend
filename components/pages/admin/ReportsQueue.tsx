@@ -38,16 +38,8 @@ import {
 } from "./AdminTablePanel";
 import KebabMenu, { type KebabAction } from "./KebabMenu";
 import { useToaster } from "@/components/ui/Toaster";
+import { formatDate } from "@/lib/date-utils";
 
-const formatDate = (iso: string) => {
-  const d = new Date(iso);
-  if (Number.isNaN(d.getTime())) return iso || "-";
-  return d.toLocaleDateString("en-US", {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-  });
-};
 
 const reasonTone = (reason: string): "rose" | "amber" | "gray" => {
   if (reason === "scam" || reason === "abuse") return "rose";

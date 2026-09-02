@@ -48,6 +48,7 @@ import {
   LANGUAGE_LABELS,
   BENEFIT_LABELS,
 } from "@/lib/job-fields";
+import { formatDate } from "@/lib/date-utils";
 import {
   JOB_TAG_CLASS,
   jobChipLabels,
@@ -291,17 +292,6 @@ const JobDescriptor: React.FC<JobDescriptorProps> = ({
   const hiringStages = (hiring_stages ?? []).filter(Boolean);
   const faqItems = (faqs ?? []).filter((f) => f.question && f.answer);
   const screeningCount = (screening_questions ?? []).length;
-
-  const formatDate = (value?: string) => {
-    if (!value) return "";
-    const parsed = new Date(value);
-    if (Number.isNaN(parsed.getTime())) return "";
-    return parsed.toLocaleDateString("en-CA", {
-      year: "numeric",
-      month: "short",
-      day: "numeric",
-    });
-  };
 
   // The "Is this job right for you?" cards. Each maps to a real attribute the
   // employer set, so the heart only lights up when the job genuinely meets that
@@ -754,12 +744,12 @@ const JobDescriptor: React.FC<JobDescriptorProps> = ({
                       {
                         icon: HiOutlineClock,
                         label: "Application Deadline",
-                        value: formatDate(application_deadline),
+                        value: application_deadline ? formatDate(application_deadline) : "",
                       },
                       {
                         icon: HiOutlineCalendarDays,
                         label: "Expected Start",
-                        value: formatDate(start_date),
+                        value: start_date ? formatDate(start_date) : "",
                       },
                     ] as {
                       icon: React.ComponentType<{ className?: string }>;

@@ -12,6 +12,7 @@ import {
   formatTime,
   formatFullDateTime,
   formatDate,
+  formatMonthYear,
 } from "@/lib/date-utils";
 
 const NOW = new Date("2026-05-11T12:00:00.000Z");
@@ -150,14 +151,25 @@ describe("date-utils", () => {
       expect(formatDate("2026-13-45")).toBe("-");
     });
 
-    it("should format a valid date as a locale date", () => {
+    it("should format a valid date in the site's readable form", () => {
       const date = new Date("2026-05-11T15:45:00.000Z");
-      expect(formatDate(date)).toBe(date.toLocaleDateString());
+      expect(formatDate(date)).toBe("May 11, 2026");
     });
 
     it("should accept an ISO string", () => {
-      const iso = "2026-05-11T15:45:00.000Z";
-      expect(formatDate(iso)).toBe(new Date(iso).toLocaleDateString());
+      expect(formatDate("2026-05-11T15:45:00.000Z")).toBe("May 11, 2026");
+    });
+  });
+
+  describe("formatMonthYear", () => {
+    it("should return an empty string for missing or invalid values", () => {
+      expect(formatMonthYear(undefined)).toBe("");
+      expect(formatMonthYear("")).toBe("");
+      expect(formatMonthYear("2026-13-45")).toBe("");
+    });
+
+    it("should format month and year only", () => {
+      expect(formatMonthYear("2026-05-11T15:45:00.000Z")).toBe("May 2026");
     });
   });
 });

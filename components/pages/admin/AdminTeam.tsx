@@ -52,29 +52,13 @@ import StepUpDialog, { type StepUpCreds } from "./StepUpDialog";
 import { useToaster } from "@/components/ui/Toaster";
 import { useUserProfile } from "@/hooks/useUserProfile";
 import { isSuperAdmin } from "@/lib/admin-permissions";
+import { formatDate, formatRelativeTime } from "@/lib/date-utils";
 
-const formatDate = (iso?: string) => {
-  if (!iso) return "-";
-  const d = new Date(iso);
-  if (Number.isNaN(d.getTime())) return iso;
-  return d.toLocaleDateString("en-US", {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-  });
-};
+// "Never" is the meaningful absence here (an invite not yet accepted),
+// which the shared helper's "Recently" fallback would misstate.
+const formatRelative = (iso?: string) => (iso ? formatRelativeTime(iso) : "Never");
 
-const formatRelative = (iso?: string) => {
-  if (!iso) return "Never";
-  const d = new Date(iso);
-  if (Number.isNaN(d.getTime())) return "Never";
-  const diff = Date.now() - d.getTime();
-  const hours = Math.floor(diff / 3600000);
-  const days = Math.floor(diff / 86400000);
-  if (hours < 24) return `${hours}h ago`;
-  if (days < 7) return `${days}d ago`;
-  return d.toLocaleDateString();
-};
+
 
 // ─── Step-up action (suspend/reinstate) ──────────────────────────────────────
 

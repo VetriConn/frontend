@@ -19,6 +19,7 @@ import {
 } from "@/hooks/useAdminNotifications";
 import { AdminPageHeader } from "./AdminTablePanel";
 import { useToaster } from "@/components/ui/Toaster";
+import { formatRelativeTime } from "@/lib/date-utils";
 
 const ICONS: Record<
   AdminNotificationType,
@@ -39,20 +40,6 @@ const ICON_TONE: Record<AdminNotificationType, string> = {
   post_flagged: "bg-rose-50 text-rose-600 ring-rose-100",
 };
 
-const formatRelative = (iso: string) => {
-  const d = new Date(iso);
-  if (Number.isNaN(d.getTime())) return iso;
-  const diff = Date.now() - d.getTime();
-  const mins = Math.floor(diff / 60000);
-  const hours = Math.floor(diff / 3600000);
-  const days = Math.floor(diff / 86400000);
-  if (mins < 1) return "Just now";
-  if (mins < 60) return `${mins}m ago`;
-  if (hours < 24) return `${hours} ${hours === 1 ? "hour" : "hours"} ago`;
-  if (days === 1) return "1 day ago";
-  if (days < 7) return `${days} days ago`;
-  return d.toLocaleDateString();
-};
 
 /**
  * Where a notification points, derived from its stable key
@@ -113,7 +100,7 @@ const NotificationRow = ({
           {n.message}
         </p>
         <p className="text-xs text-gray-500 mt-0.5">
-          {formatRelative(n.createdAt)}
+          {formatRelativeTime(n.createdAt)}
         </p>
       </div>
     </>

@@ -39,6 +39,7 @@ import KebabMenu, { type KebabAction } from "./KebabMenu";
 import TicketDetailDialog from "./TicketDetailDialog";
 import { useUserProfile } from "@/hooks/useUserProfile";
 import { useToaster } from "@/components/ui/Toaster";
+import { formatDate } from "@/lib/date-utils";
 
 // ─── Stat card (matches dashboard tone but value-tinted) ─────────────────────
 
@@ -101,11 +102,6 @@ const FILTER_OPTIONS: { value: FilterValue; label: string }[] = [
   { value: "critical_unresolved", label: "Critical (unresolved)" },
 ];
 
-const formatDate = (iso: string) => {
-  const d = new Date(iso);
-  if (Number.isNaN(d.getTime())) return iso;
-  return d.toISOString().slice(0, 10);
-};
 
 // ─── Page ────────────────────────────────────────────────────────────────────
 

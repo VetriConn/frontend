@@ -44,6 +44,7 @@ import DetailDrawer from "./DetailDrawer";
 import AdminJobDetail from "./AdminJobDetail";
 import ConfirmDialog from "./ConfirmDialog";
 import ScrapeJobsButton from "./ScrapeJobsButton";
+import { formatDate } from "@/lib/date-utils";
 
 const FILTERS: { value: AdminJobStatus | "all"; label: string }[] = [
   { value: "all", label: "All" },
@@ -58,17 +59,6 @@ const STATUS_TONE: Record<AdminJobStatus, "amber" | "emerald" | "rose"> = {
   rejected: "rose",
 };
 
-const formatDate = (iso?: string) => {
-  if (!iso) return "-";
-  const d = new Date(iso);
-  return Number.isNaN(d.getTime())
-    ? "-"
-    : d.toLocaleDateString("en-US", {
-        month: "short",
-        day: "numeric",
-        year: "numeric",
-      });
-};
 
 const StatCard = ({
   icon: Icon,

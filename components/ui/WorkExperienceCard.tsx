@@ -7,6 +7,7 @@ import {
   HiOutlineBriefcase,
 } from "react-icons/hi2";
 import { WorkExperience } from "@/types/api";
+import { formatMonthYear } from "@/lib/date-utils";
 
 interface WorkExperienceCardProps {
   experiences: WorkExperience[];
@@ -21,19 +22,9 @@ export const WorkExperienceCard: React.FC<WorkExperienceCardProps> = ({
   onEdit,
   onDelete,
 }) => {
-  const formatDate = (date?: string) => {
-    if (!date) return "";
-    try {
-      const d = new Date(date);
-      return d.toLocaleDateString("en-US", { year: "numeric", month: "short" });
-    } catch {
-      return date;
-    }
-  };
-
   const formatDateRange = (startDate?: string, endDate?: string) => {
-    const start = formatDate(startDate);
-    const end = formatDate(endDate);
+    const start = formatMonthYear(startDate);
+    const end = formatMonthYear(endDate);
 
     if (!startDate && !endDate) return "";
     if (!startDate) return end;

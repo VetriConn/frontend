@@ -25,6 +25,7 @@ import StepUpDialog, { type StepUpCreds } from "./StepUpDialog";
 import ConfirmDialog from "./ConfirmDialog";
 import { useToaster } from "@/components/ui/Toaster";
 import { safeHttpUrl } from "@/lib/safe-url";
+import { formatDate } from "@/lib/date-utils";
 
 const STATUS_TONE: Record<CompanyStatus, "amber" | "emerald" | "rose" | "gray"> = {
   pending: "amber",
@@ -33,13 +34,6 @@ const STATUS_TONE: Record<CompanyStatus, "amber" | "emerald" | "rose" | "gray"> 
   suspended: "gray",
 };
 
-const formatDate = (iso?: string) => {
-  if (!iso) return "-";
-  const d = new Date(iso);
-  return Number.isNaN(d.getTime())
-    ? "-"
-    : d.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
-};
 
 const Field = ({
   label,

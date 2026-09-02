@@ -39,6 +39,11 @@ import { isSuperAdmin } from "@/lib/admin-permissions";
 import { useUserProfile } from "@/hooks/useUserProfile";
 import TwoFactorSetupDialog from "@/components/security/TwoFactorSetupDialog";
 import DisableTwoFactorDialog from "@/components/security/DisableTwoFactorDialog";
+import { formatDate, formatRelativeTime } from "@/lib/date-utils";
+
+// "Never" is the meaningful absence (a job that has not run yet); the
+// shared helper's "Recently" fallback would claim the opposite.
+const formatRelative = (iso?: string) => (iso ? formatRelativeTime(iso) : "Never");
 
 /**
  * The admin's own account page — the staff counterpart to the member profile.
@@ -237,32 +242,7 @@ const QuickAction = ({
 
 // ─── Formatting ──────────────────────────────────────────────────────────────
 
-const formatRelative = (iso?: string) => {
-  if (!iso) return "Never";
-  const d = new Date(iso);
-  if (Number.isNaN(d.getTime())) return "Never";
-  const diff = Date.now() - d.getTime();
-  const mins = Math.floor(diff / 60000);
-  const hours = Math.floor(diff / 3600000);
-  const days = Math.floor(diff / 86400000);
-  if (mins < 1) return "Just now";
-  if (mins < 60) return `${mins}m ago`;
-  if (hours < 24) return `${hours}h ago`;
-  if (days < 7) return `${days}d ago`;
-  return d.toLocaleDateString();
-};
 
-const formatDate = (iso?: string) => {
-  if (!iso) return "";
-  const d = new Date(iso);
-  return Number.isNaN(d.getTime())
-    ? ""
-    : d.toLocaleDateString("en-US", {
-        month: "short",
-        day: "numeric",
-        year: "numeric",
-      });
-};
 
 /** Shorten a UA string to something a human can recognise their device by. */
 const describeDevice = (ua?: string) => {

@@ -16,6 +16,7 @@ import {
 import { useCompany, usePublicCompanyJobs } from "@/hooks/useCompanies";
 import { safeHttpUrl } from "@/lib/safe-url";
 import { fieldLabel, JOB_TYPE_LABELS, INDUSTRY_LABELS } from "@/lib/job-fields";
+import { formatDate } from "@/lib/date-utils";
 
 /**
  * Public company profile — the organisation's page on Vetriconn, the way a
@@ -27,13 +28,6 @@ import { fieldLabel, JOB_TYPE_LABELS, INDUSTRY_LABELS } from "@/lib/job-fields";
  * never shown here.
  */
 
-const formatDate = (iso?: string) => {
-  if (!iso) return "";
-  const d = new Date(iso);
-  return Number.isNaN(d.getTime())
-    ? ""
-    : d.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
-};
 
 const SectionCard = ({
   title,

@@ -1,8 +1,6 @@
-"use client";
 import BrushUnderline from "@/components/ui/BrushUnderline";
 import Eyebrow from "@/components/ui/Eyebrow";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import Image from "next/image";
 import {
   HiOutlineBriefcase,
@@ -12,20 +10,24 @@ import {
   HiOutlineAcademicCap,
   HiOutlineArrowRight,
   HiOutlineMagnifyingGlass,
+  HiOutlineChevronLeft,
+  HiOutlineChevronRight,
 } from "react-icons/hi2";
 import { Header } from "@/components/ui/Header";
 import Footer from "@/components/ui/Footer";
 import DottedBox from "@/public/images/dotted_box.svg";
-import { useJobs } from "@/hooks/useJobs";
+import { getJobs, type JobsPage } from "@/lib/api/jobs";
+import { mapJobsResponse } from "@/lib/job-mapper";
 import { Job } from "@/types/job";
 import { formatJobSalary } from "@/lib/job-display";
-import { Skeleton } from "@/components/ui/Skeleton";
 import {
   splitDescriptionParts,
   jobChipLabels,
   JOB_TAG_CLASS,
 } from "@/lib/job-display";
 import { fieldLabel, EXPERIENCE_LEVEL_LABELS } from "@/lib/job-fields";
+
+const PAGE_SIZE = 20;
 
 // ── Helpers ──────────────────────────────────────────────────────────
 
@@ -57,119 +59,125 @@ function cardPreview(job: Job): string {
   return source.slice(0, 3).join(" · ");
 }
 
-// ── Skeleton ─────────────────────────────────────────────────────────
-
-function CardSkeleton() {
-  return (
-    <div
-      className="bg-white border border-gray-200 rounded-lg md:rounded-xl p-4 md:p-6 flex flex-col gap-3"
-      aria-hidden="true"
-    >
-      <div className="h-5 md:h-6 w-[55%] bg-gray-200 rounded animate-shimmer" />
-      <div className="flex flex-wrap gap-2 md:gap-3">
-        <div className="h-3 md:h-4 w-20 md:w-24 bg-gray-200 rounded animate-shimmer" />
-        <div className="h-3 md:h-4 w-16 md:w-20 bg-gray-200 rounded animate-shimmer" />
-        <div className="h-3 md:h-4 w-18 md:w-22 bg-gray-200 rounded animate-shimmer" />
-      </div>
-      <div className="h-3 md:h-4 w-full bg-gray-200 rounded animate-shimmer" />
-      <div className="h-3 md:h-4 w-[70%] bg-gray-200 rounded animate-shimmer" />
-    </div>
-  );
+// Link back to this page with the query preserved. Page 1 keeps a clean URL.
+function pageHref(page: number, q?: string): string {
+  const params = new URLSearchParams();
+  if (q) params.set("q", q);
+  if (page > 1) params.set("page", String(page));
+  const qs = params.toString();
+  return qs ? `/jobs?${qs}` : "/jobs";
 }
 
 // ── Job Card ─────────────────────────────────────────────────────────
 
+// A plain link, rendered on the server: the whole card is crawlable and
+// keyboard-operable with zero client JS (the old version was a div with a
+// click handler, which also kept every job out of the page HTML).
 function JobCard({ job }: { job: Job }) {
-  const router = useRouter();
   const salary = formatSalary(job);
   const experience = getExperience(job);
   const preview = cardPreview(job);
 
   return (
-    <article
-      className="group bg-white border border-gray-200 rounded-xl p-5 sm:p-6 transition-shadow hover:shadow-md cursor-pointer"
-      onClick={() => router.push(`/jobs/${job.id}`)}
-      role="link"
-      tabIndex={0}
-      onKeyDown={(e) => {
-        if (e.key === "Enter" || e.key === " ") {
-          e.preventDefault();
-          router.push(`/jobs/${job.id}`);
-        }
-      }}
+    <Link
+      href={`/jobs/${job.id}`}
+      className="block no-underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:ring-offset-2 rounded-xl"
       aria-label={`${job.role} at ${job.company_name}`}
     >
-      {/* Title */}
-      <h3 className="font-semibold text-lg text-gray-900 mb-2 group-hover:text-primary transition-colors">
-        {job.role}
-      </h3>
+      <article className="group bg-white border border-gray-200 rounded-xl p-5 sm:p-6 transition-shadow hover:shadow-md h-full">
+        {/* Title */}
+        <h3 className="font-semibold text-lg text-gray-900 mb-2 group-hover:text-primary transition-colors">
+          {job.role}
+        </h3>
 
-      {/* Meta row */}
-      <div className="flex flex-wrap gap-x-4 gap-y-2 text-sm text-gray-500 mb-3">
-        <span className="inline-flex items-center gap-2">
-          <HiOutlineBuildingOffice2
-            className="w-4 h-4 md:w-5 md:h-5 text-gray-400"
-            aria-hidden="true"
-          />
-          {job.company_name}
-        </span>
-        <span className="inline-flex items-center gap-2">
-          <HiOutlineMapPin
-            className="w-4 h-4 md:w-5 md:h-5 text-gray-400"
-            aria-hidden="true"
-          />
-          {job.location || "Canada"}
-        </span>
-        {salary && (
+        {/* Meta row */}
+        <div className="flex flex-wrap gap-x-4 gap-y-2 text-sm text-gray-500 mb-3">
           <span className="inline-flex items-center gap-2">
-            <HiOutlineCurrencyDollar
+            <HiOutlineBuildingOffice2
               className="w-4 h-4 md:w-5 md:h-5 text-gray-400"
               aria-hidden="true"
             />
-            {salary}
+            {job.company_name}
           </span>
-        )}
-        {experience && (
           <span className="inline-flex items-center gap-2">
-            <HiOutlineAcademicCap
+            <HiOutlineMapPin
               className="w-4 h-4 md:w-5 md:h-5 text-gray-400"
               aria-hidden="true"
             />
-            {experience}
+            {job.location || "Canada"}
           </span>
-        )}
-      </div>
-
-      {/* Preview — what the role actually involves, when the listing states it */}
-      {preview && (
-        <p className="text-sm text-gray-600 line-clamp-2 leading-relaxed">
-          {preview}
-        </p>
-      )}
-
-      {/* Chips come from the category/type/arrangement columns, not tags, so
-          gate on what actually renders - a job with a type but no category
-          has empty tags yet still has chips. */}
-      {jobChipLabels(job).length > 0 && (
-        <div className="flex flex-wrap gap-2 mt-3">
-          {jobChipLabels(job)
-            .slice(0, 3)
-            .map((chip) => (
-              <span key={chip} className={JOB_TAG_CLASS}>
-                {chip}
-              </span>
-            ))}
+          {salary && (
+            <span className="inline-flex items-center gap-2">
+              <HiOutlineCurrencyDollar
+                className="w-4 h-4 md:w-5 md:h-5 text-gray-400"
+                aria-hidden="true"
+              />
+              {salary}
+            </span>
+          )}
+          {experience && (
+            <span className="inline-flex items-center gap-2">
+              <HiOutlineAcademicCap
+                className="w-4 h-4 md:w-5 md:h-5 text-gray-400"
+                aria-hidden="true"
+              />
+              {experience}
+            </span>
+          )}
         </div>
-      )}
-    </article>
+
+        {/* Preview — what the role actually involves, when the listing states it */}
+        {preview && (
+          <p className="text-sm text-gray-600 line-clamp-2 leading-relaxed">
+            {preview}
+          </p>
+        )}
+
+        {/* Chips come from the category/type/arrangement columns, not tags, so
+            gate on what actually renders - a job with a type but no category
+            has empty tags yet still has chips. */}
+        {jobChipLabels(job).length > 0 && (
+          <div className="flex flex-wrap gap-2 mt-3">
+            {jobChipLabels(job)
+              .slice(0, 3)
+              .map((chip) => (
+                <span key={chip} className={JOB_TAG_CLASS}>
+                  {chip}
+                </span>
+              ))}
+          </div>
+        )}
+      </article>
+    </Link>
   );
 }
 
 // ── Page ─────────────────────────────────────────────────────────────
 
-export default function JobsPage() {
-  const { jobs: apiJobs, isLoading } = useJobs({ limit: 20 });
-  const jobs = apiJobs;
+// Server-rendered: the job list is in the HTML (this is the SEO- and
+// traffic-critical page), search is a plain GET form, and pagination is plain
+// links — all of it works before a byte of JavaScript loads.
+export default async function JobsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ q?: string; page?: string }>;
+}) {
+  const params = await searchParams;
+  const q = params.q?.trim() || undefined;
+  const page = Math.max(1, Number(params.page) || 1);
+
+  let result: JobsPage = { jobs: [] };
+  let fetchFailed = false;
+  try {
+    result = await getJobs({ page, limit: PAGE_SIZE, search: q });
+  } catch {
+    fetchFailed = true;
+  }
+
+  const jobs = result.jobs.map(mapJobsResponse);
+  const totalItems = result.pagination?.totalItems ?? jobs.length;
+  const totalPages = result.pagination?.totalPages ?? 1;
+  const searchingMore = result.searchingMore === true;
 
   return (
     <div className="min-h-screen flex flex-col bg-gray-50">
@@ -263,7 +271,7 @@ export default function JobsPage() {
                 className="object-cover w-full h-auto"
                 sizes="(max-width: 850px) 50vw, 25vw"
                 priority
-                style={{ aspectRatio: '4/3' }}
+                style={{ aspectRatio: "4/3" }}
               />
             </div>
 
@@ -276,7 +284,7 @@ export default function JobsPage() {
                 className="object-cover w-full h-auto"
                 sizes="(max-width: 850px) 50vw, 25vw"
                 priority
-                style={{ aspectRatio: '4/3' }}
+                style={{ aspectRatio: "4/3" }}
               />
             </div>
 
@@ -289,7 +297,7 @@ export default function JobsPage() {
                 className="object-cover w-full h-auto"
                 sizes="(max-width: 850px) 80vw, 30vw"
                 loading="lazy"
-                style={{ aspectRatio: '4/3' }}
+                style={{ aspectRatio: "4/3" }}
               />
             </div>
 
@@ -315,43 +323,72 @@ export default function JobsPage() {
       </section>
 
       {/* Job listings */}
-      <main id="job-listings" className="flex-1 max-w-5xl w-full mx-auto px-4 sm:px-6 py-10 sm:py-14 scroll-mt-24">
-        <div className="flex items-center justify-between mb-8">
-          <div>
-            <Eyebrow className="mb-1.5">Open roles</Eyebrow>
-            <h2 className="heading-2">
-              Recently posted<span className="text-primary">.</span>
-            </h2>
-            <p className="text-sm text-gray-500 mt-1">
-              {isLoading
-                ? "Loading opportunities…"
-                : `${jobs.length} ${jobs.length === 1 ? "opportunity" : "opportunities"} available`}
-            </p>
-          </div>
-          <Link
-            href="/signin"
-            className="hidden sm:inline-flex items-center gap-2 text-sm font-medium text-primary hover:text-red-700 transition-all group"
-          >
-            <HiOutlineMagnifyingGlass className="w-4 h-4 md:w-5 md:h-5 transition-transform group-hover:-rotate-45" aria-hidden="true" />
-            Advanced Search
-          </Link>
+      <main
+        id="job-listings"
+        className="flex-1 max-w-5xl w-full mx-auto px-4 sm:px-6 py-10 sm:py-14 scroll-mt-24"
+      >
+        <div className="mb-8">
+          <Eyebrow className="mb-1.5">Open roles</Eyebrow>
+          <h2 className="heading-2">
+            {q ? (
+              <>
+                Results for &ldquo;{q}&rdquo;
+                <span className="text-primary">.</span>
+              </>
+            ) : (
+              <>
+                Recently posted<span className="text-primary">.</span>
+              </>
+            )}
+          </h2>
+          <p className="text-sm text-gray-500 mt-1">
+            {fetchFailed
+              ? "We couldn't load jobs just now."
+              : `${totalItems} ${totalItems === 1 ? "opportunity" : "opportunities"} available`}
+          </p>
         </div>
 
-        {/* Loading skeletons */}
-        {isLoading && (
-          <div
-            className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6"
-            aria-busy="true"
-            aria-label="Loading jobs"
-          >
-            {Array.from({ length: 6 }).map((_, i) => (
-              <CardSkeleton key={i} />
-            ))}
+        {/* Search — a plain GET form, so it works without JavaScript and the
+            resulting URL is shareable and crawlable. */}
+        <form
+          action="/jobs"
+          method="get"
+          role="search"
+          className="mb-8 flex gap-3 mobile:flex-col"
+        >
+          <div className="relative flex-1">
+            <HiOutlineMagnifyingGlass
+              className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400"
+              aria-hidden="true"
+            />
+            <input
+              type="search"
+              name="q"
+              defaultValue={q ?? ""}
+              placeholder="Search by role, company, or keyword"
+              aria-label="Search jobs"
+              className="w-full min-h-[52px] pl-11 pr-4 text-base bg-white border border-gray-200 rounded-full outline-none focus:border-primary focus:ring-2 focus:ring-primary/10"
+            />
           </div>
+          <button
+            type="submit"
+            className="inline-flex items-center justify-center gap-2 bg-primary hover:bg-primary-hover text-white font-semibold py-3 px-8 min-h-[52px] rounded-full transition-colors shadow-sm whitespace-nowrap focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:ring-offset-2"
+          >
+            Search
+          </button>
+        </form>
+
+        {/* The board is thin for this query and the scraper is fetching more
+            from the source in the background. */}
+        {searchingMore && (
+          <p className="text-sm text-gray-500 -mt-4 mb-6">
+            We&apos;re checking more sources for this search. Check back in a
+            minute for more results.
+          </p>
         )}
 
         {/* Job grid */}
-        {!isLoading && jobs.length > 0 && (
+        {jobs.length > 0 && (
           <div
             className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6"
             role="list"
@@ -365,24 +402,74 @@ export default function JobsPage() {
           </div>
         )}
 
-        {/* Empty state (unlikely with dummy fallback, but safe) */}
-        {!isLoading && jobs.length === 0 && (
+        {/* Empty state */}
+        {jobs.length === 0 && (
           <div className="text-center py-16">
             <HiOutlineBriefcase className="w-16 h-16 text-gray-300 mx-auto mb-4" />
             <h3 className="text-lg font-semibold text-gray-700 mb-2">
-              No jobs available right now
+              {fetchFailed
+                ? "We couldn't load jobs right now"
+                : q
+                  ? `No jobs match "${q}"`
+                  : "No jobs available right now"}
             </h3>
             <p className="text-gray-500 max-w-md mx-auto">
-              Check back soon - new opportunities are posted regularly.
+              {fetchFailed
+                ? "Something went wrong on our end. Please try again in a moment."
+                : q
+                  ? "Try a different word, or browse everything that's open."
+                  : "Check back soon - new opportunities are posted regularly."}
             </p>
+            {q && !fetchFailed && (
+              <Link
+                href="/jobs"
+                className="inline-flex items-center gap-2 mt-6 text-primary font-semibold hover:text-red-700 transition-colors"
+              >
+                Browse all jobs
+                <HiOutlineArrowRight className="w-4 h-4" aria-hidden="true" />
+              </Link>
+            )}
           </div>
+        )}
+
+        {/* Pagination — plain links so back/forward, sharing, and crawlers all
+            work. Buttons are 52px targets to match the rest of the site. */}
+        {totalPages > 1 && (
+          <nav
+            aria-label="Job list pages"
+            className="mt-10 flex items-center justify-between gap-4"
+          >
+            {page > 1 ? (
+              <Link
+                href={`${pageHref(page - 1, q)}#job-listings`}
+                className="inline-flex items-center gap-2 min-h-[52px] px-6 rounded-full border border-gray-200 bg-white text-sm font-semibold text-gray-700 hover:border-primary hover:text-primary transition-colors no-underline"
+              >
+                <HiOutlineChevronLeft className="w-4 h-4" aria-hidden="true" />
+                Previous
+              </Link>
+            ) : (
+              <span aria-hidden="true" />
+            )}
+            <p className="text-sm text-gray-500">
+              Page {page} of {totalPages}
+            </p>
+            {page < totalPages ? (
+              <Link
+                href={`${pageHref(page + 1, q)}#job-listings`}
+                className="inline-flex items-center gap-2 min-h-[52px] px-6 rounded-full border border-gray-200 bg-white text-sm font-semibold text-gray-700 hover:border-primary hover:text-primary transition-colors no-underline"
+              >
+                Next
+                <HiOutlineChevronRight className="w-4 h-4" aria-hidden="true" />
+              </Link>
+            ) : (
+              <span aria-hidden="true" />
+            )}
+          </nav>
         )}
 
         {/* CTA banner */}
         <div className="mt-12 bg-white border border-gray-200 rounded-xl p-8 sm:p-10 text-center">
-          <h3 className="heading-3 mb-3">
-            Ready to take the next step?
-          </h3>
+          <h3 className="heading-3 mb-3">Ready to take the next step?</h3>
           <p className="text-gray-600 max-w-lg mx-auto mb-6">
             Create your free Vetriconn account to access full job details, save
             listings, and apply with one click.

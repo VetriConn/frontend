@@ -369,7 +369,9 @@ html.high-contrast .bg-primary {
   outline-offset: 2px;
 }
 
-/* Skip-to-content: visually hidden until focused, then a clear banner. */
+/* Skip-to-content: invisible to mouse users, always. Only real keyboard
+   tabbing (:focus-visible) reveals it — clicks and programmatic focus never
+   do — and it disappears again the moment focus moves on. */
 .skip-link {
   position: absolute;
   left: -9999px;
@@ -381,7 +383,7 @@ html.high-contrast .bg-primary {
   border-radius: 0 0 8px 0;
   font-weight: 600;
 }
-.skip-link:focus {
+.skip-link:focus-visible {
   left: 0;
 }
 

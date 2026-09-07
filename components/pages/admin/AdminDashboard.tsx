@@ -1,5 +1,6 @@
-import { AdminStatCard } from "./AdminTablePanel";
 "use client";
+
+import { AdminStatCard } from "./AdminTablePanel";
 
 import Link from "next/link";
 import clsx from "clsx";

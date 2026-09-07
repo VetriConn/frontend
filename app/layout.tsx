@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import localFont from "next/font/local";
 import "./globals.css";
 import { ToasterProvider } from "@/components/ui/Toaster";
+import SWRProvider from "@/components/providers/SWRProvider";
 import { JsonLd } from "@/components/seo/JsonLd";
 import { AccessibilityProvider } from "@/hooks/useAccessibility";
 import {
@@ -124,9 +125,11 @@ export default function RootLayout({
         <a href="#main-content" className="skip-link">
           Skip to main content
         </a>
-        <ToasterProvider>
-          <AccessibilityProvider>{children}</AccessibilityProvider>
-        </ToasterProvider>
+        <SWRProvider>
+          <ToasterProvider>
+            <AccessibilityProvider>{children}</AccessibilityProvider>
+          </ToasterProvider>
+        </SWRProvider>
       </body>
     </html>
   );

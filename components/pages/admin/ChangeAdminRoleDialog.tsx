@@ -1,9 +1,13 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useUserProfile } from "@/hooks/useUserProfile";
 import clsx from "clsx";
 import { useModalFocus } from "@/hooks/useModalFocus";
+import StepUpFields, {
+  EMPTY_STEP_UP,
+  toStepUpCreds,
+  type StepUpFieldsValue,
+} from "./StepUpFields";
 import { HiOutlineAdjustmentsHorizontal } from "react-icons/hi2";
 import {
   ADMIN_ROLES,
@@ -39,28 +43,22 @@ const ChangeAdminRoleDialog = ({
   onClose,
   onConfirm,
 }: ChangeAdminRoleDialogProps) => {
-  // The profile already knows whether this admin has 2FA — asking "if 2FA
-  // is on" made them verify something we can check ourselves.
-  const { userProfile } = useUserProfile();
-  const twoFactorOn = !!userProfile?.two_factor_enabled;
   const [role, setRole] = useState<AdminMemberRole>(currentRole);
-  const [password, setPassword] = useState("");
-  const [totp, setTotp] = useState("");
+  const [creds, setCreds] = useState<StepUpFieldsValue>(EMPTY_STEP_UP);
 
   const panelRef = useModalFocus(open, onClose, { closeDisabled: busy });
 
   useEffect(() => {
     if (open) {
       setRole(currentRole);
-      setPassword("");
-      setTotp("");
+      setCreds(EMPTY_STEP_UP);
     }
   }, [open, currentRole]);
 
   if (!open) return null;
 
   const changed = role !== currentRole;
-  const canSubmit = changed && password.length > 0 && !busy;
+  const canSubmit = changed && creds.password.length > 0 && !busy;
 
   return (
     <div
@@ -121,39 +119,12 @@ const ChangeAdminRoleDialog = ({
             </div>
           </fieldset>
 
-          <div className="space-y-3 pt-1 border-t border-gray-100">
-            <p className="text-[11px] text-gray-500 pt-3">
-              Confirm it&apos;s you to change access.
-            </p>
-            <label className="block">
-              <span className="text-xs font-semibold text-gray-700">
-                Your password
-              </span>
-              <input
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                autoComplete="current-password"
-                className="mt-1.5 w-full px-3 py-2.5 text-sm border border-gray-200 rounded-xl outline-none focus:border-primary focus:ring-2 focus:ring-primary/30"
-              />
-            </label>
-            {twoFactorOn && (
-            <label className="block">
-              <span className="text-xs font-semibold text-gray-700">
-                Authentication code
-                              </span>
-              <input
-                type="text"
-                inputMode="numeric"
-                value={totp}
-                onChange={(e) => setTotp(e.target.value)}
-                placeholder="123456"
-              required
-                autoComplete="one-time-code"
-                className="mt-1.5 w-full px-3 py-2.5 text-sm border border-gray-200 rounded-xl outline-none focus:border-primary focus:ring-2 focus:ring-primary/30 tracking-widest"
-              />
-            </label>
-            )}
+          <div className="pt-4 border-t border-gray-100">
+            <StepUpFields
+              value={creds}
+              onChange={setCreds}
+              note="Confirm it's you to change access."
+            />
           </div>
         </div>
 
@@ -167,7 +138,7 @@ const ChangeAdminRoleDialog = ({
           </button>
           <button
             onClick={() =>
-              onConfirm(role, { password, totp_code: totp.trim() || undefined })
+              onConfirm(role, toStepUpCreds(creds))
             }
             disabled={!canSubmit}
             className="inline-flex items-center gap-2 px-3.5 py-2 rounded-lg text-sm font-semibold text-white bg-primary hover:bg-primary-hover disabled:opacity-50 disabled:cursor-not-allowed"

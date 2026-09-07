@@ -350,8 +350,8 @@ export default function AboutPage() {
             Ready to <span className="text-primary">get started</span>?
           </h2>
           <p className="body-text text-lg max-w-2xl mx-auto mb-8 mobile:text-base mobile:mb-6">
-            Join thousands of Canadian retirees and veterans who are finding
-            purpose, income, and connection through Vetriconn.
+            Made for Canadian retirees and veterans looking for purpose,
+            income, and connection on their own terms.
           </p>
           <div className="flex items-center justify-center">
             <Link

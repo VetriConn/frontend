@@ -240,6 +240,31 @@ const CreateJobPosting = ({
     [],
   );
 
+  /**
+   * A failed validation used to render red text and nothing else — no
+   * announcement, no focus move — so keyboard and screen-reader users heard
+   * silence when Continue refused to advance. The toast region is aria-live,
+   * and focus lands on the first field that needs attention (every field's
+   * id matches its error key).
+   */
+  const announceErrors = useCallback(
+    (newErrors: FormErrors) => {
+      const failed = Object.keys(newErrors);
+      if (failed.length === 0) return;
+      showToast({
+        type: "error",
+        title: "Check the highlighted fields",
+        description: Object.values(newErrors)[0],
+      });
+      const first = document.getElementById(failed[0]);
+      if (first) {
+        first.scrollIntoView?.({ block: "center", behavior: "smooth" });
+        (first as HTMLElement).focus?.({ preventScroll: true });
+      }
+    },
+    [showToast],
+  );
+
   const validateStep = useCallback((): boolean => {
     const newErrors: FormErrors = {};
 
@@ -271,6 +296,7 @@ const CreateJobPosting = ({
           newErrors.responsibilities = "Add at least one responsibility";
       }
       setErrors(newErrors);
+      announceErrors(newErrors);
       return Object.keys(newErrors).length === 0;
     }
 
@@ -302,8 +328,9 @@ const CreateJobPosting = ({
     }
 
     setErrors(newErrors);
+    announceErrors(newErrors);
     return Object.keys(newErrors).length === 0;
-  }, [builderMode, currentStep, formData]);
+  }, [builderMode, currentStep, formData, announceErrors]);
 
   const handleContinue = useCallback(() => {
     if (!validateStep()) return;

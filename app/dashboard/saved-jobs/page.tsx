@@ -127,7 +127,7 @@ function SavedJobCard({
       <div className="mt-4 pt-4 border-t border-gray-200 flex flex-col gap-2">
         <Link
           href={`/jobs/${job.id}`}
-          className="inline-flex items-center justify-center gap-2 px-4 py-2 min-h-44 bg-primary hover:bg-primary-hover text-white font-semibold text-sm rounded-lg transition-colors no-underline"
+          className="inline-flex items-center justify-center gap-2 px-4 py-2 min-h-[44px] bg-primary hover:bg-primary-hover text-white font-semibold text-sm rounded-lg transition-colors no-underline"
         >
           <HiOutlineArrowTopRightOnSquare className="w-4 h-4" />
           Apply Now
@@ -137,13 +137,13 @@ function SavedJobCard({
           <div className="flex items-center gap-2">
             <button
               onClick={() => onRemove(job.id)}
-              className="flex-1 px-4 py-2 min-h-44 text-sm font-medium text-red-600 bg-red-50 border border-red-200 rounded-lg hover:bg-red-100 transition-colors"
+              className="flex-1 px-4 py-2 min-h-[44px] text-sm font-medium text-red-600 bg-red-50 border border-red-200 rounded-lg hover:bg-red-100 transition-colors"
             >
               Remove
             </button>
             <button
               onClick={() => setShowConfirmDelete(false)}
-              className="flex-1 px-4 py-2 min-h-44 text-sm font-medium text-gray-600 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
+              className="flex-1 px-4 py-2 min-h-[44px] text-sm font-medium text-gray-600 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
             >
               Cancel
             </button>
@@ -151,7 +151,7 @@ function SavedJobCard({
         ) : (
           <button
             onClick={() => setShowConfirmDelete(true)}
-            className="inline-flex items-center justify-center gap-1.5 px-4 py-2 min-h-44 text-sm text-gray-600 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+            className="inline-flex items-center justify-center gap-1.5 px-4 py-2 min-h-[44px] text-sm text-gray-600 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
           >
             <HiOutlineBookmarkSlash className="w-4 h-4" />
             Remove from Saved
@@ -289,14 +289,14 @@ export default function SavedJobsPage() {
                         <div className="flex items-center justify-end gap-2">
                           <Link
                             href={`/jobs/${job.id}`}
-                            className="p-2 min-h-44 min-w-44 text-primary hover:text-primary-hover hover:bg-red-50 rounded-lg transition-colors inline-flex items-center justify-center"
+                            className="p-2 min-h-[44px] min-w-[44px] text-primary hover:text-primary-hover hover:bg-red-50 rounded-lg transition-colors inline-flex items-center justify-center"
                             aria-label="Apply to job"
                           >
                             <HiOutlineArrowTopRightOnSquare className="w-4 h-4" />
                           </Link>
                           <button
                             onClick={() => handleRemove(job.id)}
-                            className="p-2 min-h-44 min-w-44 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                            className="p-2 min-h-[44px] min-w-[44px] text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
                             aria-label="Remove from saved jobs"
                           >
                             <HiOutlineTrash className="w-4 h-4" />

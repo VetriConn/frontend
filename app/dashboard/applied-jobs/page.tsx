@@ -492,6 +492,33 @@ export default function AppliedJobsPage() {
     }
   };
 
+  // Reconcile the self-managed tracker with what actually happened: an
+  // employer decision (or a withdrawal made elsewhere) updates the matching
+  // tracker row, which otherwise sat on "Applied" forever while the badge
+  // beside it told the real story.
+  const RECONCILED: Partial<Record<string, ApplicationStatus>> = useMemo(
+    () => ({ accepted: "offer", rejected: "rejected", withdrawn: "withdrawn" }),
+    [],
+  );
+  React.useEffect(() => {
+    if (!isLoaded || !realApplications) return;
+    for (const app of applications) {
+      if (app.source !== "vetriconn" || !app.job_id) continue;
+      const real = employerStatusByJob.get(app.job_id);
+      const target = real && RECONCILED[real.status];
+      if (target && app.status !== target && app.status !== "withdrawn") {
+        updateStatus(app.id, target);
+      }
+    }
+  }, [
+    isLoaded,
+    realApplications,
+    applications,
+    employerStatusByJob,
+    updateStatus,
+    RECONCILED,
+  ]);
+
   const [activeTab, setActiveTab] = useState("all");
   const [showAddDialog, setShowAddDialog] = useState(false);
   const [showNotesDialog, setShowNotesDialog] = useState(false);
@@ -795,7 +822,7 @@ export default function AppliedJobsPage() {
                                 />
                                 <button
                                   onClick={() => handleEditNotes(app)}
-                                  className="p-2 min-h-44 min-w-44 text-gray-600 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
+                                  className="p-2 min-h-[44px] min-w-[44px] text-gray-600 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
                                   aria-label={
                                     app.notes ? "Edit notes" : "Add notes"
                                   }
@@ -815,7 +842,7 @@ export default function AppliedJobsPage() {
                                         ? "noopener noreferrer"
                                         : undefined
                                     }
-                                    className="p-2 min-h-44 min-w-44 text-primary hover:text-primary-hover hover:bg-red-50 rounded-lg transition-colors"
+                                    className="p-2 min-h-[44px] min-w-[44px] text-primary hover:text-primary-hover hover:bg-red-50 rounded-lg transition-colors"
                                     aria-label="View job posting"
                                   >
                                     {app.job_id ? (
@@ -827,7 +854,7 @@ export default function AppliedJobsPage() {
                                 )}
                                 <button
                                   onClick={() => handleDelete(app.id)}
-                                  className="p-2 min-h-44 min-w-44 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                                  className="p-2 min-h-[44px] min-w-[44px] text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
                                   aria-label="Remove application"
                                 >
                                   <HiOutlineTrash className="w-4 h-4" />

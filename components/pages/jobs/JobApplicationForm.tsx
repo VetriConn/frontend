@@ -277,6 +277,20 @@ export default function JobApplicationForm({
       });
       return;
     }
+    // The backend requires all three; catching it here spares the user a
+    // round trip that used to fail without a word.
+    if (
+      !formData.fullName.trim() ||
+      !formData.email.trim() ||
+      !formData.phone.trim()
+    ) {
+      showToast({
+        type: "error",
+        title: "Add your contact details",
+        description: "Your name, email, and phone number are needed so the employer can reach you.",
+      });
+      return;
+    }
     setIsSubmitting(true);
     try {
       const apiFormData = new FormData();
@@ -318,9 +332,19 @@ export default function JobApplicationForm({
       await removeApplicationDraft(job.id);
       setIsSubmitting(false);
       setSubmitted(true);
-    } catch {
+    } catch (err) {
+      // The spinner stopping with no explanation read as "I applied" when
+      // nothing was saved. The server's message names the actual problem
+      // (already applied, listing no longer available, missing field).
       setIsSubmitting(false);
-      // Could show error toast here
+      showToast({
+        type: "error",
+        title: "Your application wasn't submitted",
+        description:
+          err instanceof Error && err.message
+            ? err.message
+            : "Something went wrong. Please try again.",
+      });
     }
   };
 

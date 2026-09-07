@@ -196,7 +196,7 @@ const FindJobsDashboard = () => {
             {/* Location — province codes match the state_province column the
                 backend filters on. CustomDropdown like every other select on
                 the dashboard; this page kept the last native ones. */}
-            <div className="min-w-44">
+            <div className="min-w-[44px]">
               <CustomDropdown
                 label="Location"
                 name="dashboard-location"

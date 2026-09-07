@@ -10,6 +10,7 @@ import {
 } from "@/lib/api";
 import { useToaster } from "@/components/ui/Toaster";
 import { AuthGuard } from "@/components/auth/AuthGuard";
+import { useModalFocus } from "@/hooks/useModalFocus";
 import {
   HiOutlineBriefcase,
   HiOutlineCalendar,
@@ -82,6 +83,13 @@ export default function ManageJobsPage() {
     }
   };
 
+  // Deletion is permanent and closes every open application on the posting,
+  // so it is the one action here that must never ride on a single stray
+  // click - the trash icon arms this dialog instead of deleting.
+  const [deleting, setDeleting] = useState<{ id: string; role: string } | null>(
+    null,
+  );
+
   const handleDelete = async (jobId: string) => {
     setBusyJobId(jobId);
     try {
@@ -89,8 +97,8 @@ export default function ManageJobsPage() {
       await mutate();
       showToast({
         type: "success",
-        title: "Job deleted",
-        description: "The job posting was removed",
+        title: "Posting deleted",
+        description: "Applicants with open applications have been notified.",
       });
     } catch (err) {
       showToast({
@@ -269,10 +277,12 @@ export default function ManageJobsPage() {
                               </button>
                             )}
                             <button
-                              onClick={() => handleDelete(job._id)}
+                              onClick={() =>
+                                setDeleting({ id: job._id, role: job.role })
+                              }
                               disabled={busyJobId === job._id}
                               className="p-1.5 rounded-lg text-gray-400 hover:text-red-600 hover:bg-red-50 transition-colors"
-                              title="Delete Job"
+                              title="Delete posting"
                             >
                               <HiOutlineTrash className="w-5 h-5" />
                             </button>
@@ -331,11 +341,85 @@ export default function ManageJobsPage() {
               className="inline-flex items-center gap-2 bg-primary text-white px-6 py-3 rounded-lg font-medium hover:bg-primary-hover transition-colors"
             >
               <HiOutlinePlusCircle className="w-5 h-5" />
-              Post Your First Job
+              Post a Job
             </Link>
           </div>
         )}
       </div>
+
+      {deleting && (
+        <DeletePostingDialog
+          role={deleting.role}
+          busy={busyJobId === deleting.id}
+          onCancel={() => setDeleting(null)}
+          onConfirm={async () => {
+            await handleDelete(deleting.id);
+            setDeleting(null);
+          }}
+        />
+      )}
     </AuthGuard>
+  );
+}
+
+/**
+ * Deleting a posting is permanent and closes every open application on it,
+ * so it asks first — every other destructive action in the app already did.
+ */
+function DeletePostingDialog({
+  role,
+  busy,
+  onCancel,
+  onConfirm,
+}: {
+  role: string;
+  busy: boolean;
+  onCancel: () => void;
+  onConfirm: () => Promise<void>;
+}) {
+  const panelRef = useModalFocus(true, onCancel, { closeDisabled: busy });
+  return (
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="delete-posting-title"
+      className="fixed inset-0 z-50 flex items-center justify-center p-4"
+    >
+      <div className="absolute inset-0 bg-black/50" onClick={onCancel} />
+      <div
+        ref={panelRef}
+        className="relative w-full max-w-md bg-white rounded-2xl shadow-xl border border-gray-200 p-6"
+      >
+        <h2
+          id="delete-posting-title"
+          className="text-lg font-semibold text-gray-900"
+        >
+          Delete this posting?
+        </h2>
+        <p className="mt-2 text-gray-600">
+          &ldquo;{role}&rdquo; will be removed permanently. Anyone with an open
+          application will be told the listing is gone. This can&apos;t be
+          undone.
+        </p>
+        <div className="mt-6 flex items-center justify-end gap-2">
+          <button
+            type="button"
+            onClick={onCancel}
+            disabled={busy}
+            className="px-4 py-2.5 min-h-[44px] rounded-lg text-sm font-semibold text-gray-700 hover:bg-gray-100 disabled:opacity-50"
+          >
+            Cancel
+          </button>
+          <button
+            type="button"
+            onClick={onConfirm}
+            disabled={busy}
+            className="px-4 py-2.5 min-h-[44px] rounded-lg text-sm font-semibold text-white bg-rose-600 hover:bg-rose-700 disabled:opacity-50"
+          >
+            {busy ? "Deleting…" : "Delete posting"}
+          </button>
+        </div>
+      </div>
+    </div>
   );
 }

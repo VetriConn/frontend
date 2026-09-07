@@ -175,6 +175,7 @@ export default function Inbox() {
         <div className="flex-1 bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden flex min-h-0">
           <ConversationList
             conversations={filteredConversations}
+            hiddenOnMobile={!!selectedId}
             selectedId={resolvedSelectedId}
             onSelect={(id) => {
               setSelectedId(id);
@@ -186,12 +187,21 @@ export default function Inbox() {
             onClearSearch={() => setSearchQuery("")}
           />
 
-          <div className="flex-1 flex flex-col min-w-0 bg-gray-50/30 h-full">
+          {/* Mobile is one pane at a time: the list until a thread is
+              explicitly opened, then the conversation with a back button.
+              Both panes used to render side by side, which computed the chat
+              to 0px width on phones. */}
+          <div
+            className={`${
+              selectedId ? "flex" : "hidden md:flex"
+            } flex-1 flex-col min-w-0 bg-gray-50/30 h-full`}
+          >
             {selectedConvo && selectedThread ? (
               <>
                 <ChatHeader
                   name={selectedConvo.name}
                   subtitle={selectedConvo.subtitle}
+                  onBack={() => setSelectedId("")}
                   // Contact details only exist on the hiring side, where they
                   // came from the application the person submitted.
                   email={

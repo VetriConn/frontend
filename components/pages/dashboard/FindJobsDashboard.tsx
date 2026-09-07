@@ -151,19 +151,21 @@ const FindJobsDashboard = () => {
     router.push(`/dashboard/find-jobs?q=${encodeURIComponent(term)}`);
   };
 
-  if (isLoading) {
-    return <DashboardSkeleton />;
-  }
-
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-screen-xl mx-auto px-6 py-8">
         {/* Header — a rotating, localized greeting; "Find Your Next
             Opportunity" moved up here from the search card it used to title. */}
         <div className="mb-5">
-          <h1 className="text-2xl md:text-4xl font-bold text-gray-900">
-            {greeting}
-          </h1>
+          {isLoading ? (
+            /* Only the greeting waits for the profile now - the search shell
+               below is profile-independent and renders immediately. */
+            <div className="h-8 md:h-10 w-72 max-w-full rounded bg-gray-100 animate-pulse" />
+          ) : (
+            <h1 className="text-2xl md:text-4xl font-bold text-gray-900">
+              {greeting}
+            </h1>
+          )}
           <p className="text-gray-600 mt-1">Find Your Next Opportunity</p>
         </div>
 
@@ -283,7 +285,7 @@ const FindJobsDashboard = () => {
 
         {/* The profile nudge shows only while incomplete AND not snoozed;
             once complete, the ready-to-apply card takes its place. */}
-        {isProfileComplete ? (
+        {isLoading ? null : isProfileComplete ? (
           <ReadyToApplyCard />
         ) : reminderVisible ? (
           <CompleteProfileCard

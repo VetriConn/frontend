@@ -262,7 +262,9 @@ export default async function JobsPage({
               aria-hidden="true"
             />
 
-            {/* Image 1 — top-left, tilted left */}
+            {/* Image 1 — top-left, tilted left. The only tile with priority:
+                these are decorative collage tiles, and preloading two of them
+                competed with the page's real LCP content for bandwidth. */}
             <div className="absolute left-0 top-0 w-[48%] h-[55%] -rotate-3 rounded-2xl overflow-hidden shadow-lg z-[3]">
               <Image
                 src="/images/jobs_hero.jpg"
@@ -283,7 +285,6 @@ export default async function JobsPage({
                 fill
                 className="object-cover w-full h-auto"
                 sizes="(max-width: 850px) 50vw, 25vw"
-                priority
                 style={{ aspectRatio: "4/3" }}
               />
             </div>

@@ -174,36 +174,6 @@ const SearchResultsPage = () => {
 
   // Handle page change
   const resultsRef = useRef<HTMLDivElement>(null);
-  const shellRef = useRef<HTMLDivElement>(null);
-
-  /**
-   * Fill exactly the space the dashboard layout leaves, no more.
-   *
-   * The shared layout puts a navbar, breadcrumbs and its own padding above
-   * this page, so a plain h-screen here overflows the window by precisely that
-   * chrome — which is what made the whole page scroll instead of just the
-   * list. Measured rather than hardcoded because the chrome differs by
-   * breakpoint, and the layout is shared with pages that still scroll the
-   * window, so it cannot be reshaped from here.
-   */
-  const [shellHeight, setShellHeight] = useState<string>("100vh");
-
-  useEffect(() => {
-    const measure = () => {
-      const shell = shellRef.current;
-      if (!shell) return;
-      const top = shell.getBoundingClientRect().top + window.scrollY;
-      const layoutMain = shell.closest("main");
-      const bottomPad = layoutMain
-        ? parseFloat(getComputedStyle(layoutMain).paddingBottom) || 0
-        : 0;
-      setShellHeight(`${Math.max(320, window.innerHeight - top - bottomPad)}px`);
-    };
-
-    measure();
-    window.addEventListener("resize", measure);
-    return () => window.removeEventListener("resize", measure);
-  }, []);
 
   const handlePageChange = useCallback((nextPage: number) => {
     setCurrentPage(nextPage);
@@ -257,11 +227,16 @@ const SearchResultsPage = () => {
   // The page itself no longer grows with the results. The header and the
   // filters hold their place and only the list scrolls, so the controls stay
   // reachable however far down the list you are.
+  //
+  // The height is pure CSS: 100dvh minus the dashboard chrome above and below
+  // (sticky navbar 89px + breadcrumbs 41px + layout main's py-6/py-8), so
+  // there is no post-mount remeasure (the shell used to render at 100vh and
+  // then jump) and no resize listener. dvh tracks the mobile URL-bar collapse
+  // that vh ignores. The constants live in the shared layout — if its chrome
+  // changes, retune these two calc()s.
   return (
     <div
-      ref={shellRef}
-      style={{ height: shellHeight }}
-      className="flex flex-col bg-gray-50 overflow-hidden"
+      className="flex flex-col bg-gray-50 overflow-hidden h-[max(320px,calc(100dvh-178px))] md:h-[max(320px,calc(100dvh-194px))]"
     >
       {/* Main Content */}
       <main id="main-content" className="flex-1 min-h-0 flex flex-col" tabIndex={-1}>

@@ -31,6 +31,7 @@ import {
   AdminStatCard,
   AdminStatRow,
   AdminLoadError,
+  AdminPagination,
 } from "./AdminTablePanel";
 import KebabMenu, { type KebabAction } from "./KebabMenu";
 import ConfirmDialog from "./ConfirmDialog";
@@ -40,7 +41,9 @@ import { formatDate } from "@/lib/date-utils";
 
 const UserManagement = () => {
   const router = useRouter();
-  const { users, isLoading, isError, mutate } = useAdminUsers();
+  const [page, setPage] = useState(1);
+  const { users, total, totalPages, isLoading, isError, mutate } =
+    useAdminUsers(page);
   const { counts } = useAdminMemberCounts();
   const { showToast } = useToaster();
   const [target, setTarget] = useState<AdminUser | null>(null);
@@ -67,12 +70,13 @@ const UserManagement = () => {
           description: `${target.full_name} can sign in again.`,
         });
       }
-      const next = users.map((u) =>
-        u.id === target.id
-          ? { ...u, status: isSuspending ? "suspended" : "active" }
-          : u,
+      const next = users.map(
+        (u): AdminUser =>
+          u.id === target.id
+            ? { ...u, status: isSuspending ? "suspended" : "active" }
+            : u,
       );
-      await mutate(next as AdminUser[], false);
+      await mutate({ users: next, total, totalPages }, false);
       setTarget(null);
     } catch {
       showToast({ type: "error", title: "Couldn't update user" });
@@ -186,6 +190,14 @@ const UserManagement = () => {
             icon={HiOutlineUsers}
           />
         )}
+        <AdminPagination
+          pagination={{
+            currentPage: page,
+            totalPages,
+            totalItems: total,
+          }}
+          onPage={setPage}
+        />
       </AdminTablePanel>
 
       <ConfirmDialog

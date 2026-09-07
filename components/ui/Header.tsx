@@ -11,8 +11,11 @@ import { readAuthHint, setAuthHint } from "@/lib/auth-hint";
  * The public header's one call to action.
  *
  * It offered "Sign In" to everybody, including people already signed in — who
- * do not need it and whose actual destination is their dashboard. Held blank
- * while the profile resolves so the label does not flip a moment after paint.
+ * do not need it and whose actual destination is their dashboard. The
+ * signed-out pair is the server-rendered default (most public-page visitors
+ * are signed out, and holding the slot blank cost a visible pop-in); a
+ * localStorage hint corrects returning signed-in users on the first client
+ * tick, and the resolved profile is authoritative when it lands.
  */
 /**
  * Remembers whether the last resolved profile was signed in, so a reload can
@@ -45,21 +48,9 @@ function AuthCta({
     setAuthHint(!!userProfile);
   }, [resolved, userProfile]);
 
-  // A hung or sleeping API must not hold the header hostage. Without a
-  // remembered state we wait a beat for the real answer, then fall back to the
-  // signed-out label — the safe default on a public page, and still corrected
-  // the moment the profile resolves.
-  const [waitedTooLong, setWaitedTooLong] = useState(false);
-  useEffect(() => {
-    if (resolved || hint !== null) return;
-    const timer = window.setTimeout(() => setWaitedTooLong(true), 1200);
-    return () => window.clearTimeout(timer);
-  }, [resolved, hint]);
-
-  if (!resolved && hint === null && !waitedTooLong) {
-    return <span className={clsx(className, "invisible")} aria-hidden="true" />;
-  }
-
+  // Signed-out is the render-now default: no placeholder, no timer. The hint
+  // flips returning signed-in users on the first client tick; the profile
+  // response settles it for everyone else.
   const signedIn = resolved ? !!userProfile : hint === true;
 
   return (
@@ -75,7 +66,10 @@ function AuthCta({
       )}
       <Link
         href={signedIn ? "/dashboard" : "/signin"}
-        className={className}
+        // The fixed minimum keeps the pill's width stable when the label swaps
+        // between "Sign in" and "Dashboard", so a late resolve can't shift
+        // the nav.
+        className={clsx(className, "min-w-[7.5rem]")}
         onClick={onNavigate}
       >
         {signedIn ? "Dashboard" : "Sign in"}

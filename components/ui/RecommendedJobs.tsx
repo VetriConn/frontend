@@ -12,6 +12,7 @@ import {
 } from "react-icons/hi2";
 import { getRecommendedJobs } from "@/lib/api";
 import { useUserProfile } from "@/hooks/useUserProfile";
+import { RecommendedJobsSkeleton } from "@/components/ui/Skeleton";
 import clsx from "clsx";
 import { fieldLabel, JOB_TYPE_LABELS } from "@/lib/job-fields";
 import {
@@ -141,7 +142,6 @@ export const RecommendedJobs: React.FC = () => {
   });
 
   if (isLoading) {
-    const { RecommendedJobsSkeleton } = require("@/components/ui/Skeleton");
     return <RecommendedJobsSkeleton />;
   }
 

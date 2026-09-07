@@ -39,8 +39,10 @@ export const SITE_CONFIG: SiteConfig = {
   name: "Vetriconn",
   description:
     "Find meaningful jobs for retirees and veterans in Canada. Part-time, full-time, and volunteer opportunities for seniors and experienced professionals.",
-  url: "https://vetriconn.ca",
-  ogImage: "https://vetriconn.ca/og-image.png",
+  // www, matching CORS, emails, and the deployed site - the apex here made
+  // every canonical tag disagree with the domain everything else uses.
+  url: "https://www.vetriconn.ca",
+  ogImage: "https://www.vetriconn.ca/og-image.png",
   twitterHandle: "@vetriconn",
   locale: "en_CA",
   keywords: [

@@ -7,7 +7,6 @@ import {
   HiOutlineBriefcase,
   HiOutlineBuildingOffice2,
   HiOutlineExclamationTriangle,
-  HiOutlineShieldCheck,
   HiOutlineFlag,
 } from "react-icons/hi2";
 import {
@@ -27,7 +26,6 @@ const ICONS: Record<
 > = {
   job_submitted: HiOutlineBriefcase,
   employer_registered: HiOutlineBuildingOffice2,
-  employer_verified: HiOutlineShieldCheck,
   user_report: HiOutlineExclamationTriangle,
   post_flagged: HiOutlineFlag,
 };
@@ -35,7 +33,6 @@ const ICONS: Record<
 const ICON_TONE: Record<AdminNotificationType, string> = {
   job_submitted: "bg-rose-50 text-rose-600 ring-rose-100",
   employer_registered: "bg-indigo-50 text-indigo-600 ring-indigo-100",
-  employer_verified: "bg-emerald-50 text-emerald-600 ring-emerald-100",
   user_report: "bg-amber-50 text-amber-600 ring-amber-100",
   post_flagged: "bg-rose-50 text-rose-600 ring-rose-100",
 };

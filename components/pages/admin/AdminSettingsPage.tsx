@@ -14,7 +14,6 @@ import {
   HiOutlineExclamationTriangle,
   HiOutlinePencilSquare,
   HiOutlineUser,
-  HiOutlineBell,
   HiOutlineLockClosed,
   HiOutlineComputerDesktop,
   HiOutlineEnvelope,
@@ -25,7 +24,6 @@ import {
   useAdminSettings,
   updateAdminProfile,
   updateAdminPassword,
-  updateAdminNotifications,
 } from "@/hooks/useAdminSettings";
 import {
   adminListOwnSessions,
@@ -161,47 +159,6 @@ const EditButton = ({
   </button>
 );
 
-const Toggle = ({
-  checked,
-  onChange,
-  label,
-  description,
-  disabled,
-}: {
-  checked: boolean;
-  onChange: (v: boolean) => void;
-  label: string;
-  description?: string;
-  disabled?: boolean;
-}) => (
-  <div className="flex items-start justify-between gap-4 py-3.5">
-    <div className="min-w-0">
-      <p className="text-sm font-semibold text-gray-900">{label}</p>
-      {description && (
-        <p className="text-xs text-gray-500 mt-0.5">{description}</p>
-      )}
-    </div>
-    <button
-      role="switch"
-      aria-checked={checked}
-      aria-label={label}
-      disabled={disabled}
-      onClick={() => onChange(!checked)}
-      className={clsx(
-        "shrink-0 relative w-11 h-6 rounded-full transition-colors outline-none focus-visible:ring-2 focus-visible:ring-primary/40 disabled:opacity-50",
-        checked ? "bg-primary" : "bg-gray-300",
-      )}
-    >
-      <span
-        className={clsx(
-          "absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform",
-          checked && "translate-x-5",
-        )}
-      />
-    </button>
-  </div>
-);
-
 const QuickAction = ({
   href,
   onClick,
@@ -301,14 +258,8 @@ const AdminSettingsPage = () => {
     new_password: "",
     confirm_password: "",
   });
-  const [notifications, setNotifications] = useState({
-    email_alerts: true,
-    new_job_submissions: true,
-    user_reports: true,
-  });
   const [savingProfile, setSavingProfile] = useState(false);
   const [savingPassword, setSavingPassword] = useState(false);
-  const [savingNotifications, setSavingNotifications] = useState(false);
 
   useEffect(() => {
     if (!settings) return;
@@ -318,7 +269,6 @@ const AdminSettingsPage = () => {
       email: settings.email,
       current_password: "",
     });
-    setNotifications(settings.notifications);
   }, [settings]);
 
   const fullName =
@@ -413,31 +363,6 @@ const AdminSettingsPage = () => {
     }
   };
 
-  // Notification toggles save on change — no separate submit for three switches.
-  const handleToggleNotification = async (
-    key: keyof typeof notifications,
-    value: boolean,
-  ) => {
-    const next = { ...notifications, [key]: value };
-    setNotifications(next);
-    setSavingNotifications(true);
-    try {
-      await updateAdminNotifications(next);
-      await mutate(
-        settings ? { ...settings, notifications: next } : settings,
-        false,
-      );
-    } catch (err) {
-      setNotifications(notifications);
-      showToast({
-        type: "error",
-        title: "Couldn't update notifications",
-        description: err instanceof Error ? err.message : undefined,
-      });
-    } finally {
-      setSavingNotifications(false);
-    }
-  };
 
   const handleTwoFactorChange = async () => {
     setTwoFactorSetupOpen(false);
@@ -844,38 +769,9 @@ const AdminSettingsPage = () => {
             )}
           </SectionCard>
 
-          {/* ── Notifications ── */}
-          <SectionCard
-            title="Notification Preferences"
-            icon={HiOutlineBell}
-            description="Changes save automatically."
-          >
-            <div className="divide-y divide-gray-100 -my-3.5">
-              <Toggle
-                label="Email Notifications"
-                description="Receive email alerts for important events"
-                checked={notifications.email_alerts}
-                disabled={savingNotifications}
-                onChange={(v) => handleToggleNotification("email_alerts", v)}
-              />
-              <Toggle
-                label="New Job Submissions"
-                description="Get notified when new jobs need review"
-                checked={notifications.new_job_submissions}
-                disabled={savingNotifications}
-                onChange={(v) =>
-                  handleToggleNotification("new_job_submissions", v)
-                }
-              />
-              <Toggle
-                label="User Reports"
-                description="Get notified about user-submitted reports"
-                checked={notifications.user_reports}
-                disabled={savingNotifications}
-                onChange={(v) => handleToggleNotification("user_reports", v)}
-              />
-            </div>
-          </SectionCard>
+          {/* Notification-preference toggles removed: they stored values
+              nothing read, and the emails they promised do not exist. They
+              come back when a consumer does (R3 #27). */}
         </div>
 
         {/* ── Quick actions ── */}

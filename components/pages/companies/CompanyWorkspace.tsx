@@ -58,6 +58,25 @@ export const CompanyWorkspace = ({ companyId }: { companyId: string }) => {
         {company.name}
       </h1>
 
+      {company.status === "suspended" && (
+        <div className="mb-6 rounded-xl border border-amber-200 bg-amber-50 p-5">
+          <h2 className="text-sm font-semibold text-amber-900 mb-1">
+            This company is suspended
+          </h2>
+          <p className="text-sm text-amber-800 leading-relaxed">
+            Your listings are off the board and new postings are paused
+            {company.suspension_reason
+              ? ` - reason given: ${company.suspension_reason}`
+              : ""}
+            . If you believe this is a mistake, write to us through the{" "}
+            <Link href="/#contact-section" className="underline">
+              contact form
+            </Link>{" "}
+            and our team will take another look.
+          </p>
+        </div>
+      )}
+
       <div className="flex flex-col gap-6">
         <CompanyProfileEditor
           company={company}

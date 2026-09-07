@@ -468,17 +468,6 @@ export async function adminUpdateSettingsPassword(body: {
   await apiFetch(`${ADMIN_URL}/settings/password`, jsonRequest("PATCH", body));
 }
 
-export async function adminUpdateSettingsNotifications(body: {
-  email_alerts: boolean;
-  new_job_submissions: boolean;
-  user_reports: boolean;
-}): Promise<void> {
-  await apiFetch(
-    `${ADMIN_URL}/settings/notifications`,
-    jsonRequest("PATCH", body),
-  );
-}
-
 // ─── Summary counts for the list pages' stat cards ───────────────────────────
 
 export interface AdminMemberCounts {

@@ -148,10 +148,13 @@ export const MyCompanies = () => {
 
   if (isLoading) return <DashboardSkeleton />;
 
-  // The server rejects a second application while one is pending or approved,
-  // so only offer the CTA when there's genuinely nothing in flight.
+  // The server rejects a second application only when THIS user OWNS a
+  // pending/approved company. Gating on mere membership hid the CTA from
+  // everyone ever invited to someone else's hiring team.
   const hasBlockingApplication = companies.some(
-    (c) => c.status === "pending" || c.status === "approved",
+    (c) =>
+      (c.status === "pending" || c.status === "approved") &&
+      String(c.owner_id) === userProfile?.id,
   );
 
   return (

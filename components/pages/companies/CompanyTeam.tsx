@@ -182,6 +182,15 @@ export const CompanyTeam = ({
   const handleRemove = async (member: CompanyMember) => {
     if (!member.user_id) return;
 
+    // A single stray click must not eject a teammate - same rule as every
+    // other destructive action in the app.
+    const who = member.invited_email || "this teammate";
+    const confirmed = window.confirm(
+      `Remove ${who} from ${company.name}?\n\n` +
+        "They will lose access to the company's jobs and applicants immediately.",
+    );
+    if (!confirmed) return;
+
     setRemovingId(member.user_id);
     try {
       await removeMember(company._id, member.user_id);

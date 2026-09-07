@@ -56,6 +56,8 @@ export interface Company {
   members: CompanyMember[];
 
   status: CompanyStatus;
+  /** Why moderation suspended the company - members see this in the workspace. */
+  suspension_reason?: string;
   approved_at?: string;
   rejected_at?: string;
   rejection_reason?: string;

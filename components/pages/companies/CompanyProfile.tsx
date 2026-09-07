@@ -166,7 +166,10 @@ export const CompanyProfile = ({ companyId }: { companyId: string }) => {
                 <h1 className="text-2xl md:text-3xl font-bold text-gray-900">
                   {company.name}
                 </h1>
-                {company.status === "approved" && (
+                {/* "Verified" is the deliberate business-verification
+                    decision (admin verify action), not the approval that
+                    every listed company has by definition. */}
+                {company.authorized_rep_verified && (
                   <span className="inline-flex items-center gap-1 text-xs font-semibold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200/70">
                     <HiOutlineCheckBadge className="w-3.5 h-3.5" />
                     Verified

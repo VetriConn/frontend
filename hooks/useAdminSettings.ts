@@ -3,7 +3,6 @@ import {
   adminGetSettings,
   adminUpdateSettingsProfile,
   adminUpdateSettingsPassword,
-  adminUpdateSettingsNotifications,
 } from "@/lib/api/admin";
 
 export interface AdminAccountSettings {
@@ -65,8 +64,3 @@ export async function updateAdminPassword(
   await adminUpdateSettingsPassword(payload);
 }
 
-export async function updateAdminNotifications(
-  payload: AdminNotificationsPayload,
-): Promise<void> {
-  await adminUpdateSettingsNotifications(payload);
-}

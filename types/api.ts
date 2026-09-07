@@ -377,14 +377,20 @@ export interface ApplicationItem {
 
 // Job Seeker Messaging Types
 export type NotificationType =
+  // Mirrors backend NOTIFICATION_TYPES (types/Notification.ts) exactly -
+  // the old union carried three types nothing ever sends and missed six
+  // that render daily.
   | "application_sent"
   | "application_received"
   | "application_reviewed"
+  | "application_status_changed"
   | "job_match"
+  | "new_application"
+  | "new_message"
+  | "job_approved"
+  | "job_rejected"
+  | "saved_search_matches"
   | "profile_reminder"
-  | "profile_viewed"
-  | "new_reply"
-  | "employer_message"
   | "system";
 
 export interface NotificationItem {

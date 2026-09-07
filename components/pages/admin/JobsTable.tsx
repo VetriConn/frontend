@@ -12,8 +12,6 @@ import {
   HiOutlineCheck,
   HiOutlineXMark,
   HiOutlineExclamationTriangle,
-  HiOutlineChevronLeft,
-  HiOutlineChevronRight,
 } from "react-icons/hi2";
 import {
   useAdminJobCounts,
@@ -38,6 +36,7 @@ import {
   AdminEmptyState,
   StatusPill,
   AdminStatCard,
+  AdminPagination,
 } from "./AdminTablePanel";
 import KebabMenu, { type KebabAction } from "./KebabMenu";
 import DetailDrawer from "./DetailDrawer";
@@ -334,32 +333,7 @@ const JobsTable = () => {
           />
         )}
 
-        {pagination && pagination.totalPages > 1 && (
-          <div className="flex items-center justify-between gap-4 px-5 md:px-6 py-3 border-t border-gray-100">
-            <p className="text-xs text-gray-500 tabular-nums">
-              Page {pagination.currentPage} of {pagination.totalPages} ·{" "}
-              {pagination.totalItems} total
-            </p>
-            <div className="flex items-center gap-2">
-              <button
-                onClick={() => setPage((p) => Math.max(1, p - 1))}
-                disabled={!pagination.hasPrev}
-                className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg border border-gray-200 bg-white text-xs font-semibold text-gray-700 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed"
-              >
-                <HiOutlineChevronLeft className="w-4 h-4" />
-                Prev
-              </button>
-              <button
-                onClick={() => setPage((p) => p + 1)}
-                disabled={!pagination.hasNext}
-                className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg border border-gray-200 bg-white text-xs font-semibold text-gray-700 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed"
-              >
-                Next
-                <HiOutlineChevronRight className="w-4 h-4" />
-              </button>
-            </div>
-          </div>
-        )}
+        <AdminPagination pagination={pagination} onPage={setPage} />
       </AdminTablePanel>
 
       <DetailDrawer

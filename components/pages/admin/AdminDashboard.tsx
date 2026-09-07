@@ -15,42 +15,6 @@ import {
 } from "react-icons/hi2";
 import { useAdminOverview } from "@/hooks/useAdminOverview";
 
-type StatTone = "amber" | "emerald" | "indigo" | "rose";
-
-interface StatCardProps {
-  label: string;
-  value: number | string;
-  delta?: { value: string; positive?: boolean };
-  icon: React.ComponentType<{ className?: string }>;
-  tone: StatTone;
-}
-
-const TONE_STYLES: Record<
-  StatTone,
-  { iconBg: string; iconText: string; ring: string }
-> = {
-  amber: {
-    iconBg: "bg-amber-50",
-    iconText: "text-amber-600",
-    ring: "ring-amber-100",
-  },
-  emerald: {
-    iconBg: "bg-emerald-50",
-    iconText: "text-emerald-600",
-    ring: "ring-emerald-100",
-  },
-  indigo: {
-    iconBg: "bg-indigo-50",
-    iconText: "text-indigo-600",
-    ring: "ring-indigo-100",
-  },
-  rose: {
-    iconBg: "bg-rose-50",
-    iconText: "text-rose-600",
-    ring: "ring-rose-100",
-  },
-};
-
 
 type ActivityStatus = "pending" | "approved" | "rejected";
 

@@ -2,6 +2,10 @@
 
 import { ReactNode } from "react";
 import clsx from "clsx";
+import {
+  HiOutlineChevronLeft,
+  HiOutlineChevronRight,
+} from "react-icons/hi2";
 import Link from "next/link";
 import {
   HiOutlineEye,
@@ -384,3 +388,55 @@ export const AdminStatCard = ({
 export const AdminStatRow = ({ children }: { children: React.ReactNode }) => (
   <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-5">{children}</div>
 );
+
+/** Pagination shape the backend's paginated() envelope returns. */
+export interface AdminPaginationMeta {
+  currentPage: number;
+  totalPages: number;
+  totalItems: number;
+  hasPrev?: boolean;
+  hasNext?: boolean;
+}
+
+/**
+ * The footer pager every admin table shares. Reports and support tickets
+ * used to fetch page 1 of 10 with no controls at all - rows past ten were
+ * unreachable while the header counters showed the true totals.
+ */
+export const AdminPagination = ({
+  pagination,
+  onPage,
+}: {
+  pagination?: AdminPaginationMeta | null;
+  onPage: (page: number) => void;
+}) => {
+  if (!pagination || pagination.totalPages <= 1) return null;
+  const { currentPage, totalPages, totalItems } = pagination;
+  const hasPrev = pagination.hasPrev ?? currentPage > 1;
+  const hasNext = pagination.hasNext ?? currentPage < totalPages;
+  return (
+    <div className="flex items-center justify-between gap-4 px-5 md:px-6 py-3 border-t border-gray-100">
+      <p className="text-xs text-gray-500 tabular-nums">
+        Page {currentPage} of {totalPages} · {totalItems} total
+      </p>
+      <div className="flex items-center gap-2">
+        <button
+          onClick={() => onPage(Math.max(1, currentPage - 1))}
+          disabled={!hasPrev}
+          className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg border border-gray-200 bg-white text-xs font-semibold text-gray-700 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed"
+        >
+          <HiOutlineChevronLeft className="w-4 h-4" />
+          Prev
+        </button>
+        <button
+          onClick={() => onPage(currentPage + 1)}
+          disabled={!hasNext}
+          className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg border border-gray-200 bg-white text-xs font-semibold text-gray-700 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed"
+        >
+          Next
+          <HiOutlineChevronRight className="w-4 h-4" />
+        </button>
+      </div>
+    </div>
+  );
+};

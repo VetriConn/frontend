@@ -10,13 +10,20 @@ import {
 
 export type { AdminReport, ReportStatus, ReportTargetType };
 
-export function useAdminReports(status: ReportStatus, type?: ReportTargetType) {
-  const { data, error, isLoading, mutate } = useSWR<AdminReport[]>(
-    ["admin-reports", status, type ?? "all"],
-    async () => (await adminListReports({ status, type })).reports,
+export function useAdminReports(
+  status: ReportStatus,
+  type?: ReportTargetType,
+  page = 1,
+) {
+  // page/limit used to be dropped here: the queue fetched page 1 of 10 and
+  // rows past ten were unreachable while the counters showed true totals.
+  const { data, error, isLoading, mutate } = useSWR(
+    ["admin-reports", status, type ?? "all", page],
+    async () => adminListReports({ status, type, page, limit: 20 }),
   );
   return {
-    reports: data ?? [],
+    reports: data?.reports ?? [],
+    pagination: data?.pagination,
     isLoading,
     isError: !!error,
     mutate,

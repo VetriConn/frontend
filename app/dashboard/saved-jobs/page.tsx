@@ -116,10 +116,12 @@ function SavedJobCard({
         {/* Saved Date */}
         <div>
           <div className="text-sm font-medium text-gray-600 mb-1">Saved</div>
-          <div className="flex items-center gap-1.5 text-sm text-gray-600">
-            <HiOutlineCalendarDays className="w-3.5 h-3.5" />
-            {job.savedDate}
-          </div>
+          {job.savedDate && (
+            <div className="flex items-center gap-1.5 text-sm text-gray-600">
+              <HiOutlineCalendarDays className="w-3.5 h-3.5" />
+              {job.savedDate}
+            </div>
+          )}
         </div>
       </div>
 
@@ -181,7 +183,10 @@ export default function SavedJobsPage() {
       // one. Every saved job used to claim "Flexible" here regardless.
       jobType: fieldLabel(JOB_TYPE_LABELS, job.job_type) ?? "",
       salary,
-      savedDate: "Recently",
+      // No saved-at timestamp exists in the data model; claiming
+      // "Recently" for every job was a fabrication. Show nothing until
+      // the date is actually stored.
+      savedDate: "",
     };
   });
 

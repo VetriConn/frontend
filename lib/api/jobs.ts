@@ -369,15 +369,25 @@ export async function unsaveJob(jobId: string): Promise<{ message: string }> {
 }
 
 export async function getSavedJobs(): Promise<JobsResponse[]> {
-  const response = await apiFetch<
-    PaginatedApiEnvelope<{
-      jobs: JobsResponse[];
-    }>
-  >(`${API_BASE_URL}/api/v1/auth/saved-jobs`, {
-    method: "GET",
-  });
-
-  return response.data?.jobs || [];
+  // The default request took page 1 of 10 and discarded the pagination
+  // meta, silently hiding every saved job past the tenth. A person's saved
+  // list is small; fetch it whole (100/page, following pages just in case).
+  const all: JobsResponse[] = [];
+  let page = 1;
+  let totalPages = 1;
+  do {
+    const response = await apiFetch<
+      PaginatedApiEnvelope<{
+        jobs: JobsResponse[];
+      }>
+    >(`${API_BASE_URL}/api/v1/auth/saved-jobs?page=${page}&limit=100`, {
+      method: "GET",
+    });
+    all.push(...(response.data?.jobs || []));
+    totalPages = response.pagination?.totalPages ?? 1;
+    page += 1;
+  } while (page <= totalPages);
+  return all;
 }
 
 export async function getRecommendedJobs(): Promise<JobsResponse[]> {

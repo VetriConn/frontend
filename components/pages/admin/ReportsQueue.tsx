@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import clsx from "clsx";
 import {
@@ -35,6 +35,7 @@ import {
   StatusPill,
   AdminStatCard,
   AdminStatRow,
+  AdminPagination,
 } from "./AdminTablePanel";
 import KebabMenu, { type KebabAction } from "./KebabMenu";
 import { useToaster } from "@/components/ui/Toaster";
@@ -63,9 +64,12 @@ const TYPE_TABS: { value: ReportTargetType | "all"; label: string }[] = [
 const ReportsQueue = () => {
   const [status, setStatus] = useState<ReportStatus>("open");
   const [type, setType] = useState<ReportTargetType | "all">("all");
-  const { reports, isLoading, mutate } = useAdminReports(
+  const [page, setPage] = useState(1);
+  useEffect(() => setPage(1), [status, type]);
+  const { reports, pagination, isLoading, mutate } = useAdminReports(
     status,
     type === "all" ? undefined : type,
+    page,
   );
   const { counts, total: openTotal, mutate: mutateCounts } = useReportCounts();
   const { showToast } = useToaster();
@@ -296,6 +300,7 @@ const ReportsQueue = () => {
             icon={HiOutlineFlag}
           />
         )}
+        <AdminPagination pagination={pagination} onPage={setPage} />
       </AdminTablePanel>
     </div>
   );

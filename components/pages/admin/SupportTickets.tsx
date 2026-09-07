@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import clsx from "clsx";
 import {
   HiOutlineLifebuoy,
@@ -34,6 +34,7 @@ import {
   AdminRowSkeleton,
   AdminEmptyState,
   AdminStatCard,
+  AdminPagination,
 } from "./AdminTablePanel";
 import KebabMenu, { type KebabAction } from "./KebabMenu";
 import TicketDetailDialog from "./TicketDetailDialog";
@@ -42,14 +43,6 @@ import { useToaster } from "@/components/ui/Toaster";
 import { formatDate } from "@/lib/date-utils";
 
 // ─── Stat card (matches dashboard tone but value-tinted) ─────────────────────
-
-type StatTone = "indigo" | "amber" | "rose";
-
-const STAT_TEXT: Record<StatTone, string> = {
-  indigo: "text-indigo-600",
-  amber: "text-amber-600",
-  rose: "text-rose-600",
-};
 
 
 // ─── Pill styles ─────────────────────────────────────────────────────────────
@@ -85,11 +78,15 @@ const FILTER_OPTIONS: { value: FilterValue; label: string }[] = [
 // ─── Page ────────────────────────────────────────────────────────────────────
 
 const SupportTickets = () => {
-  const { tickets, isLoading, mutate } = useAdminSupportTickets();
+  const [page, setPage] = useState(1);
+  const { tickets, pagination, isLoading, mutate } = useAdminSupportTickets(page);
   const { userProfile } = useUserProfile();
   const { showToast } = useToaster();
   const [filter, setFilter] = useState<FilterValue>("all");
   const [scope, setScope] = useState<TicketScope>("all");
+  // A filter change starts back at page 1 - page 3 of a different filter
+  // is meaningless.
+  useEffect(() => setPage(1), [filter, scope]);
   const [openTicketId, setOpenTicketId] = useState<string | null>(null);
 
   const currentAdmin = useMemo(
@@ -138,7 +135,10 @@ const SupportTickets = () => {
 
   const handleTicketChange = async (next: AdminTicket) => {
     await mutate(
-      tickets.map((t) => (t.id === next.id ? next : t)),
+      {
+        tickets: tickets.map((t) => (t.id === next.id ? next : t)),
+        pagination,
+      },
       false,
     );
   };
@@ -384,6 +384,7 @@ const SupportTickets = () => {
             }
           />
         )}
+        <AdminPagination pagination={pagination} onPage={setPage} />
       </AdminTablePanel>
 
       <TicketDetailDialog

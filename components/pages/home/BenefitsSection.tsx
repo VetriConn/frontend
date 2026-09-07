@@ -1,5 +1,3 @@
-"use client";
-
 import Eyebrow from "@/components/ui/Eyebrow";
 import Reveal from "@/components/ui/Reveal";
 import Image from "next/image";

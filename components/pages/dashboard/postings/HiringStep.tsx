@@ -15,6 +15,7 @@ import {
   type JobFaq,
 } from "@/lib/job-fields";
 import { CustomDropdown } from "@/components/ui/CustomDropdown";
+import { inputClasses } from "./formKit";
 
 /**
  * Phase-2 builder step: the screening questionnaire, a public FAQ, and the
@@ -26,8 +27,6 @@ import { CustomDropdown } from "@/components/ui/CustomDropdown";
  * the wizard shell stays readable by importing just <StepHiring/>.
  */
 
-const inputClasses =
-  "w-full px-3 py-2 md:px-4 md:py-3 border border-gray-200 rounded-lg text-sm md:text-base focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent bg-white";
 
 const WEIGHT_LABELS: Record<number, string> = {
   1: "1 - Nice to have",

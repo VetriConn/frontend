@@ -1,6 +1,8 @@
 "use client";
 
 import { Fragment, useState, useMemo } from "react";
+import type { ApplicationItem } from "@/types/api";
+import type { ScreeningQuestion } from "@/lib/job-fields";
 import { ListLoadError } from "@/components/ui/ListLoadError";
 import Link from "next/link";
 import useSWR from "swr";
@@ -108,11 +110,16 @@ function MatchCell({
  * employer's preferred answers, plus the free-text parts of the application.
  * This is what makes the Match % explainable — never a gate, just context.
  */
-function ApplicantDetail({ app }: { app: any }) {
+/** The populated candidate object, or undefined when not populated. */
+function candidateOf(app: ApplicationItem) {
+  return typeof app.user_id === "object" ? app.user_id : undefined;
+}
+
+function ApplicantDetail({ app }: { app: ApplicationItem }) {
   const questions =
     typeof app.job_id === "object" ? app.job_id?.screening_questions ?? [] : [];
   const answersById = new Map<string, string[]>(
-    (app.screening_answers ?? []).map((a: any) => [a.question_id, a.answer]),
+    (app.screening_answers ?? []).map((a) => [a.question_id, a.answer]),
   );
 
   const details: { label: string; value?: string }[] = [
@@ -135,7 +142,7 @@ function ApplicantDetail({ app }: { app: any }) {
           </p>
         ) : (
           <ul className="space-y-3">
-            {questions.map((q: any) => {
+            {questions.map((q: ScreeningQuestion) => {
               const answer = answersById.get(q.id) ?? [];
               const state = screeningAnswerState(
                 q.preferred_answers ?? [],
@@ -204,7 +211,7 @@ function ApplicantDetail({ app }: { app: any }) {
               Skills
             </h4>
             <div className="flex flex-wrap gap-1.5">
-              {app.selected_skills.map((skill: string) => (
+              {(app.selected_skills ?? []).map((skill) => (
                 <span
                   key={skill}
                   className="rounded-full bg-white border border-gray-200 px-2.5 py-0.5 text-sm text-gray-700"
@@ -262,7 +269,7 @@ export default function ApplicationsPage() {
   const [expandedId, setExpandedId] = useState<string | null>(null);
 
   const filteredApplications = useMemo(() => {
-    const filtered = applications.filter((app: any) => {
+    const filtered = applications.filter((app) => {
       // 1. Status Filter
       if (selectedStatus !== "all" && app.status !== selectedStatus) {
         return false;
@@ -271,10 +278,10 @@ export default function ApplicationsPage() {
       // 2. Search Query
       if (searchQuery.trim()) {
         const query = searchQuery.toLowerCase();
-        const candidateName = (app.user_id?.full_name || app.full_name || "").toLowerCase();
-        const candidateEmail = (app.user_id?.email || app.email || "").toLowerCase();
-        const jobRole = (app.job_id?.role || "job posting").toLowerCase();
-        const companyName = (app.job_id?.company_name || "").toLowerCase();
+        const candidateName = (candidateOf(app)?.full_name || app.full_name || "").toLowerCase();
+        const candidateEmail = (candidateOf(app)?.email || app.email || "").toLowerCase();
+        const jobRole = (typeof app.job_id === "object" ? app.job_id.role : "job posting").toLowerCase();
+        const companyName = (typeof app.job_id === "object" ? app.job_id.company_name : "").toLowerCase();
 
         return (
           candidateName.includes(query) ||
@@ -291,7 +298,7 @@ export default function ApplicationsPage() {
     // to the bottom but stay listed — rank & flag, never hide). Default keeps
     // newest first.
     if (sortBy === "match") {
-      return [...filtered].sort((a: any, b: any) => {
+      return [...filtered].sort((a, b) => {
         const sa = typeof a.screening_score === "number" ? a.screening_score : -1;
         const sb = typeof b.screening_score === "number" ? b.screening_score : -1;
         return sb - sa;
@@ -302,7 +309,7 @@ export default function ApplicationsPage() {
 
   const counts = useMemo(() => {
     const res = { all: applications.length, pending: 0, reviewed: 0, accepted: 0, rejected: 0 };
-    applications.forEach((app: any) => {
+    applications.forEach((app) => {
       if (app.status in res) {
         res[app.status as keyof typeof res]++;
       }
@@ -474,7 +481,7 @@ export default function ApplicationsPage() {
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-200">
-                      {filteredApplications.map((app: any) => (
+                      {filteredApplications.map((app) => (
                         <Fragment key={app._id}>
                         <tr
                           className="hover:bg-gray-50/50 transition-colors"
@@ -482,14 +489,14 @@ export default function ApplicationsPage() {
                           <td className="px-6 py-4">
                             <div className="flex items-center gap-3">
                               <div className="w-10 h-10 rounded-full bg-red-50 flex items-center justify-center text-primary font-bold text-sm overflow-hidden shrink-0">
-                                {app.user_id?.picture ? (
+                                {candidateOf(app)?.picture ? (
                                   <img
-                                    src={app.user_id.picture}
-                                    alt={app.user_id.full_name || app.full_name}
+                                    src={candidateOf(app)!.picture}
+                                    alt={candidateOf(app)?.full_name || app.full_name}
                                     className="w-full h-full object-cover"
                                   />
                                 ) : (
-                                  (app.user_id?.full_name || app.full_name || "U").charAt(0).toUpperCase()
+                                  (candidateOf(app)?.full_name || app.full_name || "U").charAt(0).toUpperCase()
                                 )}
                               </div>
                               <div>
@@ -497,10 +504,10 @@ export default function ApplicationsPage() {
                                   href={`/dashboard/applications/${app._id}`}
                                   className="text-sm font-semibold text-gray-900 no-underline hover:text-primary"
                                 >
-                                  {app.user_id?.full_name || app.full_name || "Unknown User"}
+                                  {candidateOf(app)?.full_name || app.full_name || "Unknown User"}
                                 </Link>
                                 <p className="text-sm text-gray-600">
-                                  {app.user_id?.email || app.email || "No email provided"}
+                                  {candidateOf(app)?.email || app.email || "No email provided"}
                                 </p>
                               </div>
                             </div>
@@ -583,7 +590,12 @@ export default function ApplicationsPage() {
                                   value={app.status}
                                   disabled={busyApplicationId === app._id}
                                   hideHeader
-                                  onChange={(val) => handleStatusChange(app._id, val as any)}
+                                  onChange={(val) =>
+                                    handleStatusChange(
+                                      app._id,
+                                      val as "reviewed" | "accepted" | "rejected",
+                                    )
+                                  }
                                   options={[
                                     { value: "pending", label: "Pending" },
                                     { value: "reviewed", label: "Reviewed" },

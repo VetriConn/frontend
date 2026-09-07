@@ -336,7 +336,10 @@ export interface JobsResponse {
 
 export interface ApplicationItem {
   _id: string;
-  user_id: string;
+  /** Populated with the candidate's card fields on the employer list. */
+  user_id:
+    | string
+    | { _id: string; full_name?: string; email?: string; picture?: string };
   job_id:
     | string
     | {

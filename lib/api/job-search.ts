@@ -190,6 +190,7 @@ export interface TrackerEntryResponse {
   location: string;
   status: "saved" | "applied" | "viewed" | "interview" | "offer" | "rejected" | "withdrawn";
   notes: string;
+  url?: string;
   applied_at?: string;
   createdAt: string;
   updatedAt: string;
@@ -223,6 +224,7 @@ export async function createTrackerEntry(data: {
   location?: string;
   status?: string;
   notes?: string;
+  url?: string;
   applied_at?: string;
 }): Promise<TrackerEntryResponse> {
   const response = await apiFetch<

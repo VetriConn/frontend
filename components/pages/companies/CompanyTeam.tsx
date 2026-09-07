@@ -12,6 +12,7 @@ import {
 import {
   inviteMember,
   removeMember,
+  revokeCompanyInvite,
   transferOwnership,
   type Company,
   type CompanyMember,
@@ -136,6 +137,45 @@ export const CompanyTeam = ({
       });
     } finally {
       setTransferringId(null);
+    }
+  };
+
+  // Pending invites used to be action-less: a mistyped address sat as
+  // "Invite pending" until it expired, un-cancellable, and blocked
+  // re-inviting the correct one.
+  const handleRevokeInvite = async (member: CompanyMember, resend: boolean) => {
+    if (!member.invited_email) return;
+    setRemovingId(member.invited_email);
+    try {
+      await revokeCompanyInvite(company._id, member.invited_email);
+      if (resend) {
+        await inviteMember(
+          company._id,
+          member.invited_email,
+          (member.role === "owner" ? "admin" : member.role) as "admin" | "recruiter",
+        );
+        showToast({
+          type: "success",
+          title: "Invite resent",
+          description: `A fresh invite is on its way to ${member.invited_email}.`,
+        });
+      } else {
+        showToast({
+          type: "success",
+          title: "Invite cancelled",
+          description: `${member.invited_email} can be re-invited any time.`,
+        });
+      }
+      onChanged();
+    } catch (err) {
+      showToast({
+        type: "error",
+        title: resend ? "Couldn't resend the invite" : "Couldn't cancel the invite",
+        description:
+          err instanceof Error ? err.message : "Please try again in a moment.",
+      });
+    } finally {
+      setRemovingId(null);
     }
   };
 
@@ -302,6 +342,28 @@ export const CompanyTeam = ({
                 >
                   <HiOutlineTrash className="w-4 h-4" />
                 </button>
+              )}
+
+              {canInvite && isInvited && member.invited_email && (
+                <>
+                  <button
+                    type="button"
+                    onClick={() => handleRevokeInvite(member, true)}
+                    disabled={removingId === member.invited_email}
+                    className="text-sm font-medium text-gray-500 hover:text-primary underline-offset-2 hover:underline bg-transparent border-none cursor-pointer min-h-[44px] disabled:opacity-50"
+                  >
+                    Resend
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleRevokeInvite(member, false)}
+                    disabled={removingId === member.invited_email}
+                    aria-label={`Cancel invite to ${member.invited_email}`}
+                    className="text-sm font-medium text-gray-500 hover:text-rose-600 underline-offset-2 hover:underline bg-transparent border-none cursor-pointer min-h-[44px] disabled:opacity-50"
+                  >
+                    Cancel invite
+                  </button>
+                </>
               )}
             </li>
           );

@@ -122,6 +122,7 @@ export {
   uploadCompanyLogo,
   uploadCompanyBanner,
   inviteMember,
+  revokeCompanyInvite,
   acceptInvite,
   removeMember,
   transferOwnership,

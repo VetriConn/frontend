@@ -175,6 +175,17 @@ export const uploadCompanyBanner = (companyId: string, file: File) =>
 // ── Team ────────────────────────────────────────────────────────────────────
 
 /** Invite a teammate by email. Sends a token that expires in seven days. */
+/** Cancel a pending invite so the address can be re-invited or corrected. */
+export async function revokeCompanyInvite(
+  companyId: string,
+  email: string,
+): Promise<void> {
+  await apiFetch<ApiEnvelope<{ email: string }>>(
+    `${COMPANIES_URL}/${companyId}/invites/revoke`,
+    jsonRequest("POST", { email }),
+  );
+}
+
 export async function inviteMember(
   companyId: string,
   email: string,

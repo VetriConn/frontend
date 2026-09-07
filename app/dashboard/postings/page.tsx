@@ -4,11 +4,7 @@ import Link from "next/link";
 import { ListLoadError } from "@/components/ui/ListLoadError";
 import { useState, useMemo } from "react";
 import useSWR from "swr";
-import {
-  deletePosting,
-  getMyPostings,
-  updatePosting,
-} from "@/lib/api";
+import { deletePosting, getMyPostings, updatePosting } from "@/lib/api";
 import { useToaster } from "@/components/ui/Toaster";
 import { AuthGuard } from "@/components/auth/AuthGuard";
 import { useModalFocus } from "@/hooks/useModalFocus";
@@ -27,7 +23,6 @@ import {
   HiOutlineChevronRight,
 } from "react-icons/hi2";
 import { formatDate } from "@/lib/date-utils";
-
 
 // ─── Page Component ──────────────────────────────────────────────────────────
 
@@ -82,8 +77,7 @@ export default function ManageJobsPage() {
       showToast({
         type: "error",
         title: "Update failed",
-        description:
-          err instanceof Error ? err.message : "Couldn't update job",
+        description: err instanceof Error ? err.message : "Couldn't update job",
       });
     } finally {
       setBusyJobId(null);
@@ -111,8 +105,7 @@ export default function ManageJobsPage() {
       showToast({
         type: "error",
         title: "Delete failed",
-        description:
-          err instanceof Error ? err.message : "Couldn't delete job",
+        description: err instanceof Error ? err.message : "Couldn't delete job",
       });
     } finally {
       setBusyJobId(null);
@@ -142,9 +135,7 @@ export default function ManageJobsPage() {
         </div>
 
         {showLoadError ? (
-
           <ListLoadError what="your postings" onRetry={() => mutate()} />
-
         ) : isLoading ? (
           <div className="flex flex-col items-center justify-center py-20">
             <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-primary mb-4"></div>
@@ -209,17 +200,35 @@ export default function ManageJobsPage() {
                             // there is nothing for the employer to fix.
                             const badge =
                               job.status === "draft"
-                                ? { label: "Draft", cls: "bg-gray-100 text-gray-600" }
+                                ? {
+                                    label: "Draft",
+                                    cls: "bg-gray-100 text-gray-600",
+                                  }
                                 : moderation === "rejected"
-                                  ? { label: "Rejected", cls: "bg-rose-50 text-rose-700" }
-                                  : job.unpublished_reason === "company_suspended"
-                                    ? { label: "On hold", cls: "bg-amber-50 text-amber-700" }
-                                    : moderation === "approved"
-                                      ? { label: "Published", cls: "bg-green-50 text-green-700" }
-                                      : {
-                                          label: "Awaiting approval",
-                                          cls: "bg-yellow-50 text-yellow-700",
-                                        };
+                                  ? {
+                                      label: "Rejected",
+                                      cls: "bg-rose-50 text-rose-700",
+                                    }
+                                  : job.unpublished_reason === "expired"
+                                    ? {
+                                        label: "Expired",
+                                        cls: "bg-gray-100 text-gray-600",
+                                      }
+                                    : job.unpublished_reason ===
+                                        "company_suspended"
+                                      ? {
+                                          label: "On hold",
+                                          cls: "bg-amber-50 text-amber-700",
+                                        }
+                                      : moderation === "approved"
+                                        ? {
+                                            label: "Published",
+                                            cls: "bg-green-50 text-green-700",
+                                          }
+                                        : {
+                                            label: "Awaiting approval",
+                                            cls: "bg-yellow-50 text-yellow-700",
+                                          };
                             return (
                               <span
                                 className={`inline-flex px-2.5 py-0.5 rounded-full text-sm font-medium ${badge.cls}`}

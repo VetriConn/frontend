@@ -66,6 +66,12 @@ import { SelectField } from "./formKit";
  * this file used to carry all of it at once (2,100+ lines, #47).
  */
 
+/** ISO datetime (or plain date) → the YYYY-MM-DD an <input type="date"> shows. */
+function toDateInputValue(value: string | undefined): string {
+  if (!value) return "";
+  return value.slice(0, 10);
+}
+
 const CreateJobPosting = ({
   variant = "full",
 }: {
@@ -165,8 +171,10 @@ const CreateJobPosting = ({
       benefits: job.benefits ?? [],
       certifications: (job.certifications ?? []).join(", "),
       openings: job.openings ? String(job.openings) : "",
-      application_deadline: job.application_deadline ?? "",
-      start_date: job.start_date ?? "",
+      // The API ships these as ISO datetimes now that they are real dates;
+      // <input type="date"> only accepts the calendar part.
+      application_deadline: toDateInputValue(job.application_deadline),
+      start_date: toDateInputValue(job.start_date),
       screening_questions: job.screening_questions ?? [],
       faqs: job.faqs ?? [],
       hiring_stages: job.hiring_stages ?? [],

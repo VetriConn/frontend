@@ -97,11 +97,11 @@ export function getExternalApplyUrl(job: SourceFields): string | null {
  * How a job states its pay.
  *
  * Job Bank quotes most roles hourly, and an hourly rate has no meaningful
- * annual figure to store — the scraper leaves `salary.number` at 0 and keeps
- * the source's wording in `salary_text`. That means **hourly roles are
+ * annual figure to store — the scraper leaves `salary.number` absent and
+ * keeps the source's wording in `salary_text`. That means **hourly roles are
  * invisible to any filter or sort over `salary.number`**: the backend's
  * `minSalary`/`maxSalary` filter and `sortBy=salary` both operate on that
- * field, so an hourly job matches a minimum of 0 and nothing else.
+ * field, and a document without it matches no range.
  *
  * Neither filter nor sort is currently exposed in the UI. Whoever wires them
  * up needs to decide what happens to hourly roles rather than letting them

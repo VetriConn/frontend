@@ -415,7 +415,7 @@ export interface PostedJobSummary {
   moderation_status?: "pending" | "approved" | "rejected";
   /** Platform hold: the owning company is suspended; the listing is off the board. */
   /** "none" when there is no hold; the platform-hold axis is always present. */
-  unpublished_reason?: "none" | "company_suspended";
+  unpublished_reason?: "none" | "company_suspended" | "expired";
   rejected_at?: string;
   /** Why moderation turned it down — shown so the employer can fix and resubmit. */
   rejection_reason?: string;

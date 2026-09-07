@@ -43,7 +43,7 @@ const AdminCommunityPostDetail = ({ postId }: Props) => {
       showToast({ type: "success", title: "Post removed" });
       await mutate(posts.filter((p) => p.id !== post.id), false);
     } catch {
-      showToast({ type: "error", title: "Could not remove post" });
+      showToast({ type: "error", title: "Couldn't remove post" });
     } finally {
       setBusy(false);
     }

@@ -55,7 +55,7 @@ export default function ApplicationDraftsPage() {
         showToast({
           type: "error",
           title: "Delete failed",
-          description: "Could not delete the draft. Please try again.",
+          description: "Couldn't delete the draft. Please try again.",
         });
       }
     },

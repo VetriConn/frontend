@@ -74,7 +74,7 @@ const UserManagement = () => {
       await mutate(next as AdminUser[], false);
       setTarget(null);
     } catch {
-      showToast({ type: "error", title: "Could not update user" });
+      showToast({ type: "error", title: "Couldn't update user" });
     } finally {
       setBusy(false);
     }

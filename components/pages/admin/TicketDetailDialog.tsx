@@ -96,7 +96,7 @@ const TicketDetailDialog = ({
       }, 0);
       showToast({ type: "success", title: "Reply sent" });
     } catch {
-      showToast({ type: "error", title: "Could not send reply" });
+      showToast({ type: "error", title: "Couldn't send reply" });
     } finally {
       setBusy(null);
     }
@@ -110,7 +110,7 @@ const TicketDetailDialog = ({
       onTicketChange({ ...ticket, status: "resolved" });
       showToast({ type: "success", title: "Marked as resolved" });
     } catch {
-      showToast({ type: "error", title: "Could not update ticket" });
+      showToast({ type: "error", title: "Couldn't update ticket" });
     } finally {
       setBusy(null);
     }
@@ -124,7 +124,7 @@ const TicketDetailDialog = ({
       onTicketChange({ ...ticket, status: "closed" });
       showToast({ type: "success", title: "Ticket closed" });
     } catch {
-      showToast({ type: "error", title: "Could not close ticket" });
+      showToast({ type: "error", title: "Couldn't close ticket" });
     } finally {
       setBusy(null);
     }

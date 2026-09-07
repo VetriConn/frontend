@@ -156,7 +156,7 @@ const AdminNotifications = () => {
         false,
       );
     } catch {
-      showToast({ type: "error", title: "Could not mark as read" });
+      showToast({ type: "error", title: "Couldn't mark as read" });
     }
   };
 
@@ -169,7 +169,7 @@ const AdminNotifications = () => {
       );
       showToast({ type: "success", title: "All caught up" });
     } catch {
-      showToast({ type: "error", title: "Could not update notifications" });
+      showToast({ type: "error", title: "Couldn't update notifications" });
     }
   };
 

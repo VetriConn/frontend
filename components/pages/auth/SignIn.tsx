@@ -97,7 +97,7 @@ export const SignIn = () => {
         setErrors(errorMessages);
         showToast({
           type: "error",
-          title: "Validation Error",
+          title: "Check your details",
           description: "Please fix the errors and try again",
         });
       } else {

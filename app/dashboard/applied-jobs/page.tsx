@@ -90,6 +90,8 @@ function StatusDropdown({
   onStatusChange: (status: ApplicationStatus) => void;
 }) {
   const [isOpen, setIsOpen] = useState(false);
+  const triggerRef = React.useRef<HTMLButtonElement>(null);
+  const menuRef = React.useRef<HTMLDivElement>(null);
 
   const statuses: ApplicationStatus[] = [
     "saved",
@@ -101,11 +103,54 @@ function StatusDropdown({
     "withdrawn",
   ];
 
+  // The KebabMenu keyboard contract, in place: this menu was mouse-only —
+  // no roles, no Escape, no arrows — beside a codebase that had already
+  // fixed exactly this pattern twice.
+  const close = (returnFocus = true) => {
+    setIsOpen(false);
+    if (returnFocus) triggerRef.current?.focus();
+  };
+  const moveFocus = (delta: number) => {
+    const items = Array.from(
+      menuRef.current?.querySelectorAll<HTMLButtonElement>('[role="menuitem"]') ?? [],
+    );
+    if (!items.length) return;
+    const at = items.indexOf(document.activeElement as HTMLButtonElement);
+    const next = (at + delta + items.length) % items.length;
+    items[next].focus();
+  };
+  const handleMenuKeys = (e: React.KeyboardEvent) => {
+    if (e.key === "Escape") {
+      e.preventDefault();
+      close();
+    } else if (e.key === "ArrowDown") {
+      e.preventDefault();
+      moveFocus(1);
+    } else if (e.key === "ArrowUp") {
+      e.preventDefault();
+      moveFocus(-1);
+    } else if (e.key === "Tab") {
+      // Return focus to the trigger and let Tab proceed from there -
+      // closing with focus on an unmounting item strands it on <body>.
+      close();
+    }
+  };
+  React.useEffect(() => {
+    if (isOpen) {
+      menuRef.current
+        ?.querySelector<HTMLButtonElement>('[role="menuitem"]')
+        ?.focus();
+    }
+  }, [isOpen]);
+
   return (
     <div className="relative">
       <button
+        ref={triggerRef}
         onClick={() => setIsOpen(!isOpen)}
-        className="inline-flex items-center gap-1 text-sm text-gray-600 hover:text-gray-700 cursor-pointer transition-colors"
+        aria-haspopup="menu"
+        aria-expanded={isOpen}
+        className="inline-flex items-center gap-1 text-sm text-gray-600 hover:text-gray-700 cursor-pointer transition-colors min-h-[44px]"
       >
         Update status
         <HiOutlineChevronDown
@@ -116,19 +161,26 @@ function StatusDropdown({
         <>
           <div
             className="fixed inset-0 z-40"
-            onClick={() => setIsOpen(false)}
+            onClick={() => close(false)}
           />
-          <div className="absolute right-0 top-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg min-w-[160px] py-1 z-50">
+          <div
+            ref={menuRef}
+            role="menu"
+            aria-label="Update status"
+            onKeyDown={handleMenuKeys}
+            className="absolute right-0 top-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg min-w-[160px] py-1 z-50"
+          >
             {statuses.map((status) => {
               const config = APPLICATION_STATUS_CONFIG[status];
               return (
                 <button
                   key={status}
+                  role="menuitem"
                   onClick={() => {
                     onStatusChange(status);
-                    setIsOpen(false);
+                    close();
                   }}
-                  className={`w-full text-left px-4 py-2 text-sm transition-colors cursor-pointer ${
+                  className={`w-full text-left px-4 py-2 min-h-[44px] text-sm transition-colors cursor-pointer ${
                     currentStatus === status
                       ? "bg-red-50 text-primary font-medium"
                       : "text-gray-700 hover:bg-gray-50"
@@ -229,9 +281,21 @@ function EmployerDecisionBadge({
 function WithdrawButton({ onWithdraw }: { onWithdraw: () => Promise<void> }) {
   const [arming, setArming] = useState(false);
   const [busy, setBusy] = useState(false);
+  // Arming unmounts the button that had focus; without a handoff, keyboard
+  // focus fell to <body> and the confirm was never announced. The handoff
+  // works both ways: disarming returns focus to the collapsed button.
+  const confirmRef = React.useRef<HTMLButtonElement>(null);
+  const armRef = React.useRef<HTMLButtonElement>(null);
+  const wasArming = React.useRef(false);
+  React.useEffect(() => {
+    if (arming) confirmRef.current?.focus();
+    else if (wasArming.current) armRef.current?.focus();
+    wasArming.current = arming;
+  }, [arming]);
   if (!arming) {
     return (
       <button
+        ref={armRef}
         type="button"
         onClick={() => setArming(true)}
         className="text-sm font-medium text-gray-500 hover:text-primary underline-offset-2 hover:underline bg-transparent border-none cursor-pointer p-0 min-h-[44px]"
@@ -241,9 +305,20 @@ function WithdrawButton({ onWithdraw }: { onWithdraw: () => Promise<void> }) {
     );
   }
   return (
-    <span className="inline-flex items-center gap-2 text-sm">
+    <span
+      role="alertdialog"
+      aria-label="Confirm withdrawal"
+      onKeyDown={(e) => {
+        if (e.key === "Escape") {
+          e.preventDefault();
+          setArming(false);
+        }
+      }}
+      className="inline-flex items-center gap-2 text-sm"
+    >
       <span className="text-gray-600">Withdraw? The employer won&apos;t see it anymore.</span>
       <button
+        ref={confirmRef}
         type="button"
         disabled={busy}
         onClick={async () => {
@@ -552,20 +627,32 @@ export default function AppliedJobsPage() {
   });
 
   const handleAddSubmit = useCallback(
-    (e: React.FormEvent) => {
+    async (e: React.FormEvent) => {
       e.preventDefault();
       if (!addForm.company.trim() || !addForm.position.trim()) return;
 
-      addApplication({
-        company: addForm.company,
-        position: addForm.position,
-        location: addForm.location || undefined,
-        url: addForm.url || undefined,
-        notes: addForm.notes || undefined,
-        applied_date: addForm.applied_date || new Date().toISOString(),
-        status: "applied",
-        source: "external",
-      });
+      // Success is claimed only after the save lands. This used to toast,
+      // close the dialog and wipe the form before the request resolved - a
+      // failed save silently lost everything typed.
+      try {
+        await addApplication({
+          company: addForm.company,
+          position: addForm.position,
+          location: addForm.location || undefined,
+          url: addForm.url || undefined,
+          notes: addForm.notes || undefined,
+          applied_date: addForm.applied_date || new Date().toISOString(),
+          status: "applied",
+          source: "external",
+        });
+      } catch {
+        showToast({
+          type: "error",
+          title: "Couldn't log the application",
+          description: "Nothing was saved. Your entries are still here - try again.",
+        });
+        return;
+      }
 
       showToast({
         type: "success",
@@ -1011,7 +1098,7 @@ export default function AppliedJobsPage() {
               autoFocus
             />
             <p className="text-sm text-gray-500 mt-2">
-              Notes are saved locally and only visible to you.
+              Only you can see your notes.
             </p>
           </div>
         </EditDialog>

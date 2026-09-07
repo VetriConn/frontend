@@ -119,7 +119,7 @@ const AdminTeam = () => {
     } catch {
       showToast({
         type: "error",
-        title: "Could not send invite",
+        title: "Couldn't send invite",
         description: "Check your password/2FA code and try again.",
       });
     } finally {
@@ -136,7 +136,7 @@ const AdminTeam = () => {
         description: `${invite.email}`,
       });
     } catch {
-      showToast({ type: "error", title: "Could not resend invite" });
+      showToast({ type: "error", title: "Couldn't resend invite" });
     }
   };
 
@@ -146,7 +146,7 @@ const AdminTeam = () => {
       await mutate();
       showToast({ type: "success", title: "Invite revoked" });
     } catch {
-      showToast({ type: "error", title: "Could not revoke invite" });
+      showToast({ type: "error", title: "Couldn't revoke invite" });
     }
   };
 
@@ -167,7 +167,7 @@ const AdminTeam = () => {
     } catch {
       showToast({
         type: "error",
-        title: "Could not change role",
+        title: "Couldn't change role",
         description: "Check your password/2FA code and try again.",
       });
     } finally {
@@ -192,7 +192,7 @@ const AdminTeam = () => {
     } catch {
       showToast({
         type: "error",
-        title: "Could not update admin",
+        title: "Couldn't update admin",
         description: "Check your password/2FA code and try again.",
       });
     } finally {

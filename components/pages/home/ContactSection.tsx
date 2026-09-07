@@ -70,7 +70,7 @@ export const ContactSection = ({ id }: ContactSectionProps) => {
       });
       showToast({
         type: "success",
-        title: "Message Sent!",
+        title: "Message sent",
         description: "Thank you for contacting us. We'll get back to you soon.",
       });
       setFormData({ full_name: "", email: "", message: "" });
@@ -82,7 +82,7 @@ export const ContactSection = ({ id }: ContactSectionProps) => {
       setSubmitStatus({ type: "error", message: errorMessage });
       showToast({
         type: "error",
-        title: "Message Failed to Send",
+        title: "Couldn't send your message",
         description: errorMessage,
       });
     } finally {

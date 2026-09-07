@@ -122,7 +122,7 @@ const navItemsForEveryone: NavItem[] = [
  */
 const PROFILE_LINKS: NavLink[] = [
   {
-    name: "View Profile",
+    name: "My Profile",
     href: "/dashboard/profile",
     icon: <HiOutlineUser className="w-5 h-5 text-gray-400" />,
   },
@@ -162,7 +162,7 @@ const ACCOUNT_LINKS: NavLink[] = [
     icon: <HiOutlineBell className="w-5 h-5 text-gray-400" />,
   },
   {
-    name: "View Profile",
+    name: "My Profile",
     href: "/dashboard/profile",
     icon: <HiOutlineUser className="w-5 h-5 text-gray-400" />,
   },
@@ -337,7 +337,7 @@ const DashboardNavbar = () => {
     } catch {
       showToast({
         type: "error",
-        title: "Logout failed",
+        title: "Couldn't sign you out",
         description: "Please try again",
       });
     }

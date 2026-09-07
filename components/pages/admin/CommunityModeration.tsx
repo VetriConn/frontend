@@ -61,7 +61,7 @@ const CommunityModeration = () => {
       mutateCounts();
       setTarget(null);
     } catch {
-      showToast({ type: "error", title: "Could not remove post" });
+      showToast({ type: "error", title: "Couldn't remove post" });
     } finally {
       setBusy(false);
     }
@@ -81,7 +81,7 @@ const CommunityModeration = () => {
       await mutate();
       mutateCounts();
     } catch {
-      showToast({ type: "error", title: "Could not update post" });
+      showToast({ type: "error", title: "Couldn't update post" });
     }
   };
 

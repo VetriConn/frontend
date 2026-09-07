@@ -81,7 +81,7 @@ const ReportsQueue = () => {
       });
       await Promise.all([mutate(), mutateCounts()]);
     } catch {
-      showToast({ type: "error", title: "Could not update report" });
+      showToast({ type: "error", title: "Couldn't update report" });
     } finally {
       setBusyId(null);
     }

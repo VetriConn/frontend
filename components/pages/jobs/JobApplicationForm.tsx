@@ -47,8 +47,10 @@ interface JobApplicationFormProps {
   userProfile?: CanonicalUserProfile | null;
 }
 
-// Skills pool — in a real app, these would come from the job posting or backend
-const AVAILABLE_SKILLS = [
+// Fallback pool for listings that state no skills of their own. When the
+// posting lists skills, THOSE are the chips - picking from a generic list
+// unrelated to the job told the employer nothing.
+const FALLBACK_SKILLS = [
   "Customer Service",
   "Phone Communication",
   "Problem Solving",
@@ -62,6 +64,15 @@ const AVAILABLE_SKILLS = [
   "Public Speaking",
   "Analytical Thinking",
 ];
+
+/** The job's own stated skills, split from its free-text field. */
+function jobSkillPool(raw?: string): string[] {
+  if (!raw) return [];
+  return raw
+    .split(/[\n,;]+/)
+    .map((v) => v.trim())
+    .filter(Boolean);
+}
 
 const SCHEDULE_OPTIONS = [
   { value: "", label: "Select your preference..." },
@@ -133,7 +144,16 @@ export default function JobApplicationForm({
           setFormData((prev) => ({
             ...prev,
             relevantExperience: draft.relevantExperience || prev.relevantExperience,
-            selectedSkills: draft.selectedSkills || prev.selectedSkills,
+            // Only picks still in the rendered pool: the employer may have
+            // edited the listing's skills since the draft was saved, and an
+            // invisible, un-deselectable pick must not ride into the
+            // submission.
+            selectedSkills: (draft.selectedSkills || prev.selectedSkills).filter(
+              (skill) => {
+                const pool = jobSkillPool(job.skills);
+                return (pool.length > 0 ? pool : FALLBACK_SKILLS).includes(skill);
+              },
+            ),
             earliestStartDate: draft.earliestStartDate || prev.earliestStartDate,
             preferredSchedule: draft.preferredSchedule || prev.preferredSchedule,
             workLocationPreference:
@@ -373,7 +393,7 @@ export default function JobApplicationForm({
       showToast({
         type: "error",
         title: "Save failed",
-        description: "Could not save draft. Please try again.",
+        description: "Couldn't save draft. Please try again.",
       });
     }
   };
@@ -581,14 +601,18 @@ export default function JobApplicationForm({
 
             <div>
               <label className="block text-sm font-semibold text-gray-900 mb-1.5 md:mb-2">
-                Select Your Skills
+                Select your skills
               </label>
-              <p className="text-xs text-gray-400 mb-3">
-                Choose any skills that apply to you. This helps us understand
-                your strengths.
+              <p className="text-xs text-gray-500 mb-3">
+                {jobSkillPool(job.skills).length > 0
+                  ? "These are the skills the employer listed - pick the ones you have."
+                  : "Choose any skills that apply to you."}
               </p>
               <div className="flex flex-wrap gap-2.5">
-                {AVAILABLE_SKILLS.map((skill) => {
+                {(jobSkillPool(job.skills).length > 0
+                  ? jobSkillPool(job.skills)
+                  : FALLBACK_SKILLS
+                ).map((skill) => {
                   const selected = formData.selectedSkills.includes(skill);
                   return (
                     <button

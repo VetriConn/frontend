@@ -322,7 +322,7 @@ export function SignupWizard() {
         // Show toast notification for error
         showToast({
           type: "error",
-          title: "Registration Failed",
+          title: "Couldn't create your account",
           description:
             response.message || "Please check your information and try again.",
         });

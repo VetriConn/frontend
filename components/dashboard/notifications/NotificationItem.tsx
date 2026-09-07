@@ -42,7 +42,15 @@ export function NotificationItem({
 
       {/* Content */}
       {notification.link ? (
-        <Link href={notification.link} className="flex-1 min-w-0 block hover:no-underline">
+        <Link
+          href={notification.link}
+          // Opening a notification is reading it - the unread dot used to
+          // survive the click and only a hover-hidden button could clear it.
+          onClick={() => {
+            if (!notification.is_read) onMarkAsRead(notification._id);
+          }}
+          className="flex-1 min-w-0 block hover:no-underline"
+        >
           <h4
             className={`text-sm leading-snug mb-1 ${
               notification.is_read
@@ -79,21 +87,25 @@ export function NotificationItem({
         </div>
       )}
 
-      {/* Actions — visible on hover */}
-      <div className="flex items-center gap-1 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity pt-1">
+      {/* Actions - always rendered at reduced emphasis, full on hover or
+          keyboard focus. opacity-0 hover-reveal made them nonexistent for
+          touch and keyboard users. */}
+      <div className="flex items-center gap-1 shrink-0 opacity-60 group-hover:opacity-100 focus-within:opacity-100 transition-opacity pt-1">
         {!notification.is_read && (
           <button
             onClick={() => onMarkAsRead(notification._id)}
-            className="p-1.5 rounded-md text-gray-400 hover:text-emerald-600 hover:bg-emerald-50 transition-colors"
+            className="p-2.5 min-h-[44px] min-w-[44px] flex items-center justify-center rounded-md text-gray-400 hover:text-emerald-600 hover:bg-emerald-50 transition-colors"
             title="Mark as read"
+            aria-label="Mark as read"
           >
             <HiOutlineCheck className="w-4 h-4" />
           </button>
         )}
         <button
           onClick={() => onDelete(notification._id)}
-          className="p-1.5 rounded-md text-gray-400 hover:text-red-600 hover:bg-red-50 transition-colors"
+          className="p-2.5 min-h-[44px] min-w-[44px] flex items-center justify-center rounded-md text-gray-400 hover:text-red-600 hover:bg-red-50 transition-colors"
           title="Delete"
+          aria-label="Delete notification"
         >
           <HiOutlineTrash className="w-4 h-4" />
         </button>

@@ -60,7 +60,7 @@ export function ResetPassword() {
       setSuccess(true);
       showToast({
         type: "success",
-        title: "Password Reset",
+        title: "Password reset",
         description: "Your password has been reset. You can now sign in.",
       });
 
@@ -70,7 +70,7 @@ export function ResetPassword() {
         err instanceof Error ? err.message : "Unable to reset password";
       showToast({
         type: "error",
-        title: "Reset Failed",
+        title: "Couldn't reset your password",
         description: message,
       });
     } finally {

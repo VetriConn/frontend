@@ -65,7 +65,7 @@ const TwoFactorSetupDialog = ({
       })
       .catch((err: Error) => {
         if (cancelled) return;
-        setSetupLoadError(err.message || "Could not start setup.");
+        setSetupLoadError(err.message || "Couldn't start setup.");
       });
 
     return () => {

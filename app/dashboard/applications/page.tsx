@@ -1,6 +1,7 @@
 "use client";
 
 import { Fragment, useState, useMemo } from "react";
+import { ListLoadError } from "@/components/ui/ListLoadError";
 import Link from "next/link";
 import useSWR from "swr";
 import {
@@ -245,10 +246,14 @@ export default function ApplicationsPage() {
     null,
   );
   const {
-    data: applications = [],
+    data,
     isLoading,
+    error: loadError,
     mutate,
   } = useSWR("employer-applications", getReceivedApplications);
+  // Failed first load only - see the postings page.
+  const showLoadError = !!loadError && data === undefined;
+  const applications = data ?? [];
 
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedStatus, setSelectedStatus] = useState<string>("all");
@@ -325,7 +330,7 @@ export default function ApplicationsPage() {
         description:
           err instanceof Error
             ? err.message
-            : "Could not update application status",
+            : "Couldn't update application status",
       });
     } finally {
       setBusyApplicationId(null);
@@ -352,7 +357,11 @@ export default function ApplicationsPage() {
           </p>
         </div>
 
-        {isLoading ? (
+        {showLoadError ? (
+
+          <ListLoadError what="applications" onRetry={() => mutate()} />
+
+        ) : isLoading ? (
           <div className="flex flex-col items-center justify-center py-20">
             <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-primary mb-4"></div>
             <p className="text-sm text-gray-600 font-medium">

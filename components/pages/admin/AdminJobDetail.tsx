@@ -109,10 +109,20 @@ const AdminJobDetail = ({ jobId, onChanged }: AdminJobDetailProps) => {
       showToast({
         type: "success",
         title: "Job approved",
-        description: `${job.role} is now live.`,
+        // Approval is the verdict, not the publish switch: a draft stays a
+        // draft and a suspension hold keeps the listing down.
+        description: `${job.role} is approved.`,
       });
-    } catch {
-      showToast({ type: "error", title: "Could not approve job" });
+    } catch (err) {
+      // The 409 from a stale expected_version carries the message that
+      // matters ("this job changed since you loaded it") - swallowing it
+      // defeated the whole precondition.
+      showToast({
+        type: "error",
+        title: "Couldn't approve job",
+        description: err instanceof Error ? err.message : undefined,
+      });
+      await mutate();
     } finally {
       setBusy(null);
     }
@@ -137,8 +147,13 @@ const AdminJobDetail = ({ jobId, onChanged }: AdminJobDetailProps) => {
         description: `${job.role} was rejected.`,
       });
       setRejectOpen(false);
-    } catch {
-      showToast({ type: "error", title: "Could not reject job" });
+    } catch (err) {
+      showToast({
+        type: "error",
+        title: "Couldn't reject job",
+        description: err instanceof Error ? err.message : undefined,
+      });
+      await mutate();
     } finally {
       setBusy(null);
     }
@@ -163,8 +178,13 @@ const AdminJobDetail = ({ jobId, onChanged }: AdminJobDetailProps) => {
         description: `${job.role} is no longer live.`,
       });
       setUnpublishOpen(false);
-    } catch {
-      showToast({ type: "error", title: "Could not unpublish listing" });
+    } catch (err) {
+      showToast({
+        type: "error",
+        title: "Couldn't unpublish listing",
+        description: err instanceof Error ? err.message : undefined,
+      });
+      await mutate();
     } finally {
       setBusy(null);
     }

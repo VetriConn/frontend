@@ -346,7 +346,7 @@ const AdminSettingsPage = () => {
     } catch (err) {
       showToast({
         type: "error",
-        title: "Could not update profile",
+        title: "Couldn't update profile",
         description: err instanceof Error ? err.message : undefined,
       });
     } finally {
@@ -386,7 +386,7 @@ const AdminSettingsPage = () => {
     } catch (err) {
       showToast({
         type: "error",
-        title: "Could not change password",
+        title: "Couldn't change password",
         description: err instanceof Error ? err.message : undefined,
       });
     } finally {
@@ -412,7 +412,7 @@ const AdminSettingsPage = () => {
       setNotifications(notifications);
       showToast({
         type: "error",
-        title: "Could not update notifications",
+        title: "Couldn't update notifications",
         description: err instanceof Error ? err.message : undefined,
       });
     } finally {
@@ -434,7 +434,7 @@ const AdminSettingsPage = () => {
     } catch (err) {
       showToast({
         type: "error",
-        title: "Could not sign out session",
+        title: "Couldn't sign out session",
         description: err instanceof Error ? err.message : undefined,
       });
     }

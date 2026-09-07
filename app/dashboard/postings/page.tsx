@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { ListLoadError } from "@/components/ui/ListLoadError";
 import { useState, useMemo } from "react";
 import useSWR from "swr";
 import {
@@ -37,10 +38,16 @@ export default function ManageJobsPage() {
   const itemsPerPage = 10;
 
   const {
-    data: jobs = [],
+    data,
     isLoading,
+    error: loadError,
     mutate,
   } = useSWR("employer-jobs-manage", getMyPostings);
+  // The error card is for a FAILED FIRST LOAD only. On a failed background
+  // revalidation SWR keeps the last good data - swapping a populated list
+  // for an error card over a network blip would be worse than the blip.
+  const showLoadError = !!loadError && data === undefined;
+  const jobs = data ?? [];
 
   // Pagination calculations
   const totalPages = Math.ceil(jobs.length / itemsPerPage);
@@ -76,7 +83,7 @@ export default function ManageJobsPage() {
         type: "error",
         title: "Update failed",
         description:
-          err instanceof Error ? err.message : "Could not update job",
+          err instanceof Error ? err.message : "Couldn't update job",
       });
     } finally {
       setBusyJobId(null);
@@ -105,7 +112,7 @@ export default function ManageJobsPage() {
         type: "error",
         title: "Delete failed",
         description:
-          err instanceof Error ? err.message : "Could not delete job",
+          err instanceof Error ? err.message : "Couldn't delete job",
       });
     } finally {
       setBusyJobId(null);
@@ -134,7 +141,11 @@ export default function ManageJobsPage() {
           </Link>
         </div>
 
-        {isLoading ? (
+        {showLoadError ? (
+
+          <ListLoadError what="your postings" onRetry={() => mutate()} />
+
+        ) : isLoading ? (
           <div className="flex flex-col items-center justify-center py-20">
             <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-primary mb-4"></div>
             <p className="text-sm text-gray-600 font-medium">Loading jobs...</p>

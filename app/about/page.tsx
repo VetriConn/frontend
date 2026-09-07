@@ -13,7 +13,6 @@ import Eyebrow from "@/components/ui/Eyebrow";
 const commitments = [
   "Featuring job postings tailored specifically for retirees and veterans.",
   "Automating job matches based on individual experience and interests.",
-  "Offering hands-on support with resume building and application processes.",
   "Promoting opportunities for community involvement and volunteer work.",
 ];
 
@@ -28,7 +27,7 @@ const benefits = [
   {
     title: "Roles that come to you",
     description:
-      "Tell us the work and hours you want. Matching jobs arrive as they're posted.",
+      "Tell us the work and hours you want. We'll email you new jobs that match.",
     cta: "Learn More",
     href: "/jobs",
   },

@@ -159,7 +159,7 @@ const SupportTickets = () => {
         description: t.subject,
       });
     } catch {
-      showToast({ type: "error", title: "Could not claim ticket" });
+      showToast({ type: "error", title: "Couldn't claim ticket" });
     }
   };
 
@@ -169,7 +169,7 @@ const SupportTickets = () => {
       await handleTicketChange({ ...t, status: "resolved" });
       showToast({ type: "success", title: "Ticket resolved", description: t.subject });
     } catch {
-      showToast({ type: "error", title: "Could not resolve ticket" });
+      showToast({ type: "error", title: "Couldn't resolve ticket" });
     }
   };
 

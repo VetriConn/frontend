@@ -21,7 +21,7 @@ const benefits: Benefit[] = [
   {
     title: "Roles that come to you",
     description:
-      "Tell us the work and hours you want. Matching jobs arrive as they're posted.",
+      "Tell us the work and hours you want. We'll email you new jobs that match.",
     image: "/images/hero/8.jpg",
     imageAlt: "Connected professionals collaborating",
   },

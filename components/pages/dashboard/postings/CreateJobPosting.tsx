@@ -487,7 +487,7 @@ const CreateJobPosting = ({
         err instanceof Error ? err.message : "Failed to save draft";
       showToast({
         type: "error",
-        title: "Could not save draft",
+        title: "Couldn't save draft",
         description: message,
       });
     } finally {

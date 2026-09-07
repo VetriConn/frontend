@@ -161,7 +161,7 @@ export async function adminBulkApproveJobs(ids: string[]): Promise<void> {
     {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ ids }),
+      body: JSON.stringify({ jobIds: ids }),
     },
   );
 }
@@ -176,7 +176,7 @@ export async function adminBulkRejectJobs(
     {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ ids, reason }),
+      body: JSON.stringify({ jobIds: ids, reason }),
     },
   );
 }
@@ -254,6 +254,11 @@ export async function getJobs(options?: {
     headers: {
       "Content-Type": "application/json",
     },
+    // Server-side (/jobs SSR) this lets Next cache each results page briefly,
+    // matching the backend's own edge-cache design; the board changes on a
+    // 6-hour scrape and human moderation, so 60s staleness is invisible.
+    // In the browser fetch ignores the `next` key entirely.
+    next: { revalidate: 60 },
   });
 
   // Backend wraps jobs in { success, data, pagination }. The pagination block

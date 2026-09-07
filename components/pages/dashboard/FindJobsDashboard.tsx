@@ -175,12 +175,16 @@ const FindJobsDashboard = () => {
           <div className="flex flex-wrap items-end gap-3 md:gap-4">
             {/* Job Search */}
             <div className="flex-1 min-w-56">
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">
+              <label
+                htmlFor="dashboard-job-search"
+                className="block text-sm font-medium text-gray-700 mb-1.5"
+              >
                 Job Search
               </label>
               <div className="relative">
                 <HiMagnifyingGlass className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5 pointer-events-none" />
                 <input
+                  id="dashboard-job-search"
                   type="text"
                   placeholder="Search jobs by title or keyword"
                   value={searchQuery}
@@ -209,10 +213,17 @@ const FindJobsDashboard = () => {
 
             {/* Work Type */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">
+              <span
+                id="dashboard-work-type-label"
+                className="block text-sm font-medium text-gray-700 mb-1.5"
+              >
                 Work Type
-              </label>
-              <div className="flex gap-1 rounded-lg bg-gray-100 p-1">
+              </span>
+              <div
+                role="group"
+                aria-labelledby="dashboard-work-type-label"
+                className="flex gap-1 rounded-lg bg-gray-100 p-1"
+              >
                 {WORK_TYPES.map((wt) => (
                   <button
                     key={wt.value}

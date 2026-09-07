@@ -62,7 +62,12 @@ const StepUpDialog = ({
   const canSubmit = creds.password.length > 0 && reasonOk && !busy;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 animate-fadeIn">
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="step-up-title"
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 animate-fadeIn"
+    >
       <div className="absolute inset-0 bg-black/50" onClick={onClose} />
       <div
         ref={panelRef}
@@ -73,7 +78,7 @@ const StepUpDialog = ({
             <HiOutlineShieldCheck className="w-5 h-5" />
           </div>
           <div className="min-w-0">
-            <h3 className="text-base font-semibold text-gray-900">{title}</h3>
+            <h3 id="step-up-title" className="text-base font-semibold text-gray-900">{title}</h3>
             {description && (
               <p className="text-xs text-gray-500 mt-0.5">{description}</p>
             )}

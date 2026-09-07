@@ -57,7 +57,7 @@ const AdminUserDetail = ({ userId }: Props) => {
       await mutate(next as AdminUser[], false);
       setConfirmOpen(false);
     } catch {
-      showToast({ type: "error", title: "Could not update user" });
+      showToast({ type: "error", title: "Couldn't update user" });
     } finally {
       setBusy(false);
     }

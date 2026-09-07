@@ -3,19 +3,19 @@ import Reveal from "@/components/ui/Reveal";
 
 const steps = [
   {
-    title: "Create Your Free Account",
+    title: "Create your free account",
     description:
       "Sign up in seconds to access job opportunities tailored to your skills and experience.",
   },
   {
-    title: "Upload Your Credentials",
+    title: "Upload your credentials",
     description:
       "Easily upload your resume and any required certifications to complete your profile.",
   },
   {
-    title: "Get Matched and Notified",
+    title: "Get matched and notified",
     description:
-      "Receive instant alerts when jobs that fit your profile go live - never miss an opportunity.",
+      "Save a search and we'll email you new matching jobs - no need to keep checking back.",
   },
 ];
 

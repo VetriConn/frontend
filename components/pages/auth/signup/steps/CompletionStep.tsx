@@ -66,7 +66,7 @@ export function CompletionStep({
         // User has verified! Auto-redirect to signin
         showToast({
           type: "success",
-          title: "Email Verified!",
+          title: "Email verified",
           description: "Redirecting you to sign in...",
         });
         
@@ -161,7 +161,7 @@ export function CompletionStep({
     if (resendAttempts >= MAX_ATTEMPTS) {
       showToast({
         type: "error",
-        title: "Maximum Attempts Reached",
+        title: "Too many attempts",
         description:
           "You've reached the maximum resend limit. Please contact support if you need help.",
       });
@@ -177,7 +177,7 @@ export function CompletionStep({
 
       showToast({
         type: "success",
-        title: "Email Sent!",
+        title: "Email sent",
         description:
           "Verification email has been resent. Please check your inbox.",
       });
@@ -188,7 +188,7 @@ export function CompletionStep({
     } catch (error) {
       showToast({
         type: "error",
-        title: "Failed to Resend",
+        title: "Couldn't resend the email",
         description:
           error instanceof Error
             ? error.message

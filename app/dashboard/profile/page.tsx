@@ -181,7 +181,7 @@ export default function ProfilePage() {
       showToast({
         type: "error",
         title: "Update failed",
-        description: "Could not update contact info. Please try again.",
+        description: "Couldn't update contact info. Please try again.",
       });
     }
   };
@@ -210,7 +210,7 @@ export default function ProfilePage() {
       showToast({
         type: "error",
         title: "Update failed",
-        description: "Could not update public profile. Please try again.",
+        description: "Couldn't update public profile. Please try again.",
       });
     }
   };
@@ -241,7 +241,7 @@ export default function ProfilePage() {
         type: "error",
         title: "Update failed",
         description:
-          "Could not update professional information. Please try again.",
+          "Couldn't update professional information. Please try again.",
       });
     }
   };
@@ -278,7 +278,7 @@ export default function ProfilePage() {
         showToast({
           type: "error",
           title: "Delete failed",
-          description: "Could not delete work experience. Please try again.",
+          description: "Couldn't delete work experience. Please try again.",
         });
       }
     },
@@ -309,7 +309,7 @@ export default function ProfilePage() {
       showToast({
         type: "error",
         title: "Save failed",
-        description: "Could not save work experience. Please try again.",
+        description: "Couldn't save work experience. Please try again.",
       });
     }
   };
@@ -346,7 +346,7 @@ export default function ProfilePage() {
         showToast({
           type: "error",
           title: "Delete failed",
-          description: "Could not delete education. Please try again.",
+          description: "Couldn't delete education. Please try again.",
         });
       }
     },
@@ -377,7 +377,7 @@ export default function ProfilePage() {
       showToast({
         type: "error",
         title: "Save failed",
-        description: "Could not save education. Please try again.",
+        description: "Couldn't save education. Please try again.",
       });
     }
   };
@@ -425,7 +425,7 @@ export default function ProfilePage() {
       showToast({
         type: "error",
         title: "Upload failed",
-        description: "Could not upload document. Please try again.",
+        description: "Couldn't upload document. Please try again.",
       });
     } finally {
       setUploadedFile(null);
@@ -468,7 +468,7 @@ export default function ProfilePage() {
       showToast({
         type: "error",
         title: "Delete failed",
-        description: "Could not delete document. Please try again.",
+        description: "Couldn't delete document. Please try again.",
       });
     } finally {
       setDeletingDocId(null);
@@ -567,7 +567,7 @@ export default function ProfilePage() {
       showToast({
         type: "error",
         title: "Update failed",
-        description: "Could not update skills. Please try again.",
+        description: "Couldn't update skills. Please try again.",
       });
     }
   };

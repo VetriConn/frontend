@@ -162,7 +162,7 @@ export const ProfilePhotoModal: React.FC<ProfilePhotoModalProps> = ({
         videoRef.current.srcObject = stream;
       }
     } catch {
-      setError("Could not access camera. Please check permissions.");
+      setError("Couldn't access camera. Please check permissions.");
       setMode("update-choice");
     }
   };

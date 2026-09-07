@@ -68,7 +68,7 @@ const DisableTwoFactorDialog = ({
       setError(
         err instanceof Error
           ? err.message
-          : "Could not disable two-step verification.",
+          : "Couldn't disable two-step verification.",
       );
     } finally {
       setBusy(false);

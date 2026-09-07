@@ -266,7 +266,6 @@ export const CustomDropdown = ({
           : coords.top + 36 + window.scrollY, // Fallback offsets adjusted for window scroll
         position: "absolute",
       }}
-      role="listbox"
     >
       {/* Header */}
       {!hideHeader && (
@@ -296,8 +295,9 @@ export const CustomDropdown = ({
         </div>
       )}
 
-      {/* Options */}
-      <div id={listboxId} className="max-h-60 overflow-y-auto">
+      {/* Options — this element is the listbox; the popover around it also
+          holds the search textbox, which must not sit inside the role. */}
+      <div id={listboxId} role="listbox" className="max-h-60 overflow-y-auto">
         {filteredOptions.length === 0 ? (
           <p className="px-4 py-3 text-sm text-gray-400">No matches</p>
         ) : (
@@ -360,6 +360,10 @@ export const CustomDropdown = ({
           aria-haspopup="listbox"
           aria-expanded={isOpen}
           aria-controls={listboxId}
+          aria-invalid={error ? true : undefined}
+          aria-describedby={
+            error ? `${name}-error` : helperText ? `${name}-helper` : undefined
+          }
           aria-activedescendant={
             isOpen && activeIndex >= 0 ? optionId(activeIndex) : undefined
           }
@@ -376,12 +380,12 @@ export const CustomDropdown = ({
 
       {/* Helper Text */}
       {helperText && !error && (
-        <p className={FIELD_HELPER}>{helperText}</p>
+        <p id={`${name}-helper`} className={FIELD_HELPER}>{helperText}</p>
       )}
 
       {/* Error Message */}
       {error && (
-        <p className={FIELD_ERROR} role="alert">
+        <p id={`${name}-error`} className={FIELD_ERROR} role="alert">
           {error}
         </p>
       )}

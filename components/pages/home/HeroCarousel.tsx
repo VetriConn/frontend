@@ -61,7 +61,7 @@ export const HeroCarousel = () => {
             onClick={() => setIsUserPaused((paused) => !paused)}
             aria-pressed={isUserPaused}
             className={`absolute bottom-3 left-3 z-10 w-11 h-11 rounded-full bg-white/90 shadow-md border border-gray-200 flex items-center justify-center text-gray-700 hover:text-primary transition-[color,opacity] focus-visible:opacity-100 ${
-              isUserPaused ? "opacity-100" : "opacity-0 group-hover:opacity-100"
+              isUserPaused ? "opacity-100" : "opacity-0 group-hover:opacity-100 pointer-coarse:opacity-60"
             }`}
             aria-label={
               isUserPaused ? "Resume image rotation" : "Pause image rotation"

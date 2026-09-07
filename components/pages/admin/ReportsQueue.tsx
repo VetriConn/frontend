@@ -21,6 +21,9 @@ import {
   type ReportStatus,
   type ReportTargetType,
 } from "@/hooks/useAdminReports";
+import { adminRemoveCompanyMember } from "@/lib/api/admin";
+import { canSeeAdminSurface } from "@/lib/admin-permissions";
+import { useUserProfile } from "@/hooks/useUserProfile";
 import {
   AdminPageHeader,
   AdminTablePanel,
@@ -73,6 +76,7 @@ const ReportsQueue = () => {
     page,
   );
   const { counts, total: openTotal, mutate: mutateCounts } = useReportCounts();
+  const { userProfile } = useUserProfile();
   const { showToast } = useToaster();
   const [busyId, setBusyId] = useState<string | null>(null);
 
@@ -92,7 +96,45 @@ const ReportsQueue = () => {
     }
   };
 
+  // Removing a reported member is the action this queue exists for - the
+  // moderation endpoint had zero callers, leaving resolve/dismiss as the
+  // only buttons and the report a dead end (R3 #25).
+  const removeReportedMember = async (r: AdminReport) => {
+    if (!r.member) return;
+    const confirmed = window.confirm(
+      `Remove ${r.member.name || "this member"} from the company's hiring team?\n\n` +
+        "They lose access to its jobs and applicants immediately. The report will be marked resolved.",
+    );
+    if (!confirmed) return;
+    setBusyId(r.id);
+    try {
+      await adminRemoveCompanyMember(r.target_id, r.member.id);
+      await resolveAdminReport(r.id, "resolved");
+      showToast({ type: "success", title: "Member removed and report resolved" });
+      await Promise.all([mutate(), mutateCounts()]);
+    } catch (err) {
+      showToast({
+        type: "error",
+        title: "Couldn't remove the member",
+        description: err instanceof Error ? err.message : undefined,
+      });
+    } finally {
+      setBusyId(null);
+    }
+  };
+
   const rowActions = (r: AdminReport): KebabAction[] => [
+    ...(r.target_type === "company_member" && r.member && r.status === "open"
+      ? [
+          {
+            label: "Remove from company",
+            icon: HiOutlineXMark,
+            danger: true,
+            onClick: () => removeReportedMember(r),
+            disabled: busyId === r.id,
+          } satisfies KebabAction,
+        ]
+      : []),
     {
       label: "Resolve",
       icon: HiOutlineCheck,
@@ -224,7 +266,13 @@ const ReportsQueue = () => {
                   <AdminTableRow key={r.id}>
                     <AdminTableTd className="font-semibold text-gray-900">
                       <div className="flex flex-col gap-0.5">
-                        {r.target_href ? (
+                        {r.target_href &&
+                        canSeeAdminSurface(
+                          userProfile,
+                          r.target_href.startsWith("/admin/jobs")
+                            ? "/admin/jobs"
+                            : "/admin/companies",
+                        ) ? (
                           <Link
                             href={r.target_href}
                             className="hover:text-primary"
@@ -232,6 +280,9 @@ const ReportsQueue = () => {
                             {r.target_label}
                           </Link>
                         ) : (
+                          // Moderators can act on the report but cannot open
+                          // the review surface behind it - a link that 403s
+                          // is worse than plain text.
                           <span>{r.target_label}</span>
                         )}
                         <span className="text-[11px] font-medium text-gray-400">

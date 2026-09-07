@@ -302,6 +302,21 @@ export interface AdminReport {
   resolvedAt?: string;
 }
 
+/**
+ * Remove a member from a company's hiring team (moderation action -
+ * company.members.moderate, which moderators hold). Built in the backend
+ * from day one; this is its first frontend caller (R3 #25).
+ */
+export async function adminRemoveCompanyMember(
+  companyId: string,
+  userId: string,
+): Promise<void> {
+  await apiFetch(
+    `${API_BASE_URL}/api/v1/companies/admin/${companyId}/members/${userId}`,
+    { method: "DELETE" },
+  );
+}
+
 export async function adminListReports(params?: {
   status?: ReportStatus;
   type?: ReportTargetType;

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import { useThreadSocket } from "@/hooks/useThreadSocket";
 import useSWR from "swr";
 import { useUserProfile } from "@/hooks/useUserProfile";
 import {
@@ -58,6 +59,13 @@ export default function Inbox() {
   } = useSWR(resolvedSelectedId ? ["thread", resolvedSelectedId] : null, () =>
     getThreadMessages(resolvedSelectedId),
   );
+
+  // Live updates: the open conversation refreshes when the other side sends
+  // or reads, via the Socket.IO room the backend already maintains.
+  useThreadSocket(resolvedSelectedId || undefined, () => {
+    void mutateThread();
+    void mutateThreads();
+  });
 
   const selectedThread = useMemo(
     () => threads.find((t) => t.application_id === resolvedSelectedId),

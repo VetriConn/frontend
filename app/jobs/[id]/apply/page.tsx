@@ -1,5 +1,6 @@
 "use client";
 import React, { useEffect } from "react";
+import { removeApplicationDraft } from "@/lib/applicationDrafts";
 import Link from "next/link";
 import dynamic from "next/dynamic";
 import { useJob } from "@/hooks/useJob";
@@ -162,17 +163,20 @@ export default function ApplyPage() {
   }
 
   if (jobError && !displayJob) {
+    // A draft for a listing that no longer exists would keep resurfacing an
+    // apply path that dead-ends; clear it quietly (harmless if none).
+    void removeApplicationDraft(jobId).catch(() => {});
     return (
       <>
         <DashboardNavbar />
         <div className="min-h-screen bg-gray-50 flex items-center justify-center p-6">
           <div className="bg-white rounded-xl border border-gray-200 p-10 text-center max-w-md w-full">
             <h2 className="text-xl font-bold text-gray-900 mb-2">
-              Job Not Found
+              This job is no longer available
             </h2>
             <p className="text-sm text-gray-500 mb-6">
-              The job you&apos;re trying to apply for doesn&apos;t exist or has
-              been removed.
+              The listing was filled or removed. If you had a draft here,
+              we&apos;ve cleared it.
             </p>
             <Link
               href="/dashboard/find-jobs"

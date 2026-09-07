@@ -1,6 +1,8 @@
 "use client";
 
 import Link from "next/link";
+import { useEffect, useState } from "react";
+import { CustomDropdown } from "@/components/ui/CustomDropdown";
 import clsx from "clsx";
 import { HiOutlineArrowLeft, HiOutlineDocumentText } from "react-icons/hi2";
 import {
@@ -22,6 +24,7 @@ import {
   AdminEmptyState,
   StatusPill,
   AdminLoadError,
+  AdminPagination,
 } from "./AdminTablePanel";
 
 const formatTimestamp = (iso: string) => {
@@ -51,8 +54,28 @@ const renderMetadata = (meta?: AuditLogEntry["metadata"]) => {
   );
 };
 
+// The event families an admin actually hunts for - a full enum dump would
+// be noise; "all" plus these covers the review workflows.
+const EVENT_FILTERS: { value: string; label: string }[] = [
+  { value: "", label: "All events" },
+  { value: "LOGIN_SUCCESS", label: "Sign-ins" },
+  { value: "LOGIN_FAILURE", label: "Failed sign-ins" },
+  { value: "PASSWORD_CHANGE", label: "Password changes" },
+  { value: "JOB_APPROVED", label: "Job approvals" },
+  { value: "JOB_REJECTED", label: "Job rejections" },
+  { value: "COMPANY_SUSPENDED", label: "Company suspensions" },
+  { value: "ADMIN_INVITED", label: "Admin invites" },
+  { value: "RATE_LIMIT_EXCEEDED", label: "Rate limits" },
+];
+
 const AuditLog = () => {
-  const { entries, isLoading, isError, mutate } = useAdminAuditLog();
+  const [eventType, setEventType] = useState("");
+  const [page, setPage] = useState(1);
+  useEffect(() => setPage(1), [eventType]);
+  const { entries, pagination, isLoading, isError, mutate } = useAdminAuditLog({
+    eventType: eventType || undefined,
+    page,
+  });
 
   return (
     <div className="max-w-7xl mx-auto space-y-6">
@@ -68,6 +91,18 @@ const AuditLog = () => {
         title="Audit Log"
         description="Every admin action that mutates platform data."
       />
+
+      <div className="max-w-xs">
+        <CustomDropdown
+          name="audit-event-type"
+          label="Event type"
+          hideHeader
+          value={eventType}
+          onChange={setEventType}
+          options={EVENT_FILTERS}
+          placeholder="All events"
+        />
+      </div>
 
       <AdminTablePanel>
         <AdminTable>
@@ -120,6 +155,7 @@ const AuditLog = () => {
             icon={HiOutlineDocumentText}
           />
         )}
+        <AdminPagination pagination={pagination} onPage={setPage} />
       </AdminTablePanel>
     </div>
   );

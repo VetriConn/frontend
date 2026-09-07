@@ -39,14 +39,43 @@ function toEntry(log: AdminAuditLog): AuditLogEntry {
 export function useAdminAuditLog(params?: {
   eventType?: string;
   userId?: string;
+  page?: number;
 }) {
-  const { data, error, isLoading, mutate } = useSWR<AuditLogEntry[]>(
-    ["admin-audit-logs", params?.eventType ?? "", params?.userId ?? ""],
-    async () =>
-      (await adminListAuditLogs({ ...params, limit: 100 })).logs.map(toEntry),
+  // Paged at 50 with the pagination surfaced - the old fixed limit:100
+  // showed "the last 100 events, ever" of a collection every login writes
+  // to, with no way to go further back.
+  const { data, error, isLoading, mutate } = useSWR(
+    [
+      "admin-audit-logs",
+      params?.eventType ?? "",
+      params?.userId ?? "",
+      params?.page ?? 1,
+    ],
+    async () => {
+      const res = await adminListAuditLogs({
+        eventType: params?.eventType,
+        userId: params?.userId,
+        page: params?.page ?? 1,
+        limit: 50,
+      });
+      // This endpoint returns {total, page, limit} rather than the standard
+      // pagination envelope; adapt to the shared pager's shape.
+      const totalPages = Math.max(1, Math.ceil(res.total / res.limit));
+      return {
+        entries: res.logs.map(toEntry),
+        pagination: {
+          currentPage: res.page,
+          totalPages,
+          totalItems: res.total,
+          hasPrev: res.page > 1,
+          hasNext: res.page < totalPages,
+        },
+      };
+    },
   );
   return {
-    entries: data ?? [],
+    entries: data?.entries ?? [],
+    pagination: data?.pagination,
     isLoading,
     isError: !!error,
     mutate,

@@ -350,7 +350,7 @@ export interface ApplicationItem {
         skills?: string;
         qualifications?: string[];
       };
-  status: "pending" | "reviewed" | "accepted" | "rejected";
+  status: "pending" | "reviewed" | "accepted" | "rejected" | "interview" | "offer" | "withdrawn";
   full_name: string;
   email: string;
   phone: string;

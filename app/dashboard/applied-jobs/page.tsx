@@ -2,6 +2,7 @@
 
 import React, { useState, useCallback, useMemo } from "react";
 import useSWR from "swr";
+import type { ApplicationItem } from "@/types/api";
 import { getMyApplications, withdrawApplication } from "@/lib/api/jobs";
 import Link from "next/link";
 import {
@@ -192,18 +193,24 @@ function EmptyState({ onAdd }: { onAdd: () => void }) {
 function EmployerDecisionBadge({
   status,
 }: {
-  status: "pending" | "reviewed" | "accepted" | "rejected";
+  status: ApplicationItem["status"];
 }) {
   if (status === "pending") return null;
   const styles = {
     reviewed: "bg-indigo-50 text-indigo-700 ring-indigo-200/70",
     accepted: "bg-emerald-50 text-emerald-700 ring-emerald-200/70",
+    interview: "bg-indigo-50 text-indigo-700 ring-indigo-200/70",
+    offer: "bg-emerald-50 text-emerald-700 ring-emerald-200/70",
     rejected: "bg-gray-100 text-gray-600 ring-gray-200",
+    withdrawn: "bg-gray-100 text-gray-600 ring-gray-200",
   } as const;
   const labels = {
     reviewed: "Reviewed by employer",
     accepted: "Accepted by employer",
+    interview: "Interview stage",
+    offer: "Offer received",
     rejected: "Employer moved on",
+    withdrawn: "You withdrew",
   } as const;
   return (
     <span
@@ -272,7 +279,7 @@ function ApplicationCard({
   onWithdraw,
 }: {
   application: ApplicationEntry;
-  employerStatus?: "pending" | "reviewed" | "accepted" | "rejected";
+  employerStatus?: ApplicationItem["status"];
   onStatusChange: (id: string, status: ApplicationStatus) => void;
   onDelete: (id: string) => void;
   onEditNotes: (app: ApplicationEntry) => void;
@@ -441,10 +448,7 @@ export default function AppliedJobsPage() {
   const employerStatusByJob = useMemo(() => {
     const map = new Map<
       string,
-      {
-        status: "pending" | "reviewed" | "accepted" | "rejected";
-        applicationId: string;
-      }
+      { status: ApplicationItem["status"]; applicationId: string }
     >();
     for (const item of realApplications ?? []) {
       const entry = { status: item.status, applicationId: item._id };
@@ -467,10 +471,13 @@ export default function AppliedJobsPage() {
       ? entry.applicationId
       : undefined;
   };
-  const handleWithdraw = async (applicationId: string) => {
+  const handleWithdraw = async (applicationId: string, trackerId?: string) => {
     try {
       await withdrawApplication(applicationId);
       await mutateRealApplications();
+      // The tracker row is self-managed state; without this it kept saying
+      // "Applied" and counting toward Active after the withdrawal.
+      if (trackerId) updateStatus(trackerId, "withdrawn");
       showToast({
         type: "success",
         title: "Application withdrawn",
@@ -766,7 +773,7 @@ export default function AppliedJobsPage() {
                                 <div className="mt-1.5">
                                   <WithdrawButton
                                     onWithdraw={() =>
-                                      handleWithdraw(withdrawableIdFor(app.job_id)!)
+                                      handleWithdraw(withdrawableIdFor(app.job_id)!, app.id)
                                     }
                                   />
                                 </div>
@@ -843,7 +850,7 @@ export default function AppliedJobsPage() {
                       employerStatus={decisionFor(app.job_id)}
                       onWithdraw={(() => {
                         const id = withdrawableIdFor(app.job_id);
-                        return id ? () => handleWithdraw(id) : undefined;
+                        return id ? () => handleWithdraw(id, app.id) : undefined;
                       })()}
                       onStatusChange={handleStatusChange}
                       onDelete={handleDelete}

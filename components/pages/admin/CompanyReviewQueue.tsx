@@ -40,6 +40,7 @@ import {
   AdminEmptyState,
   StatusPill,
   AdminStatCard,
+  AdminLoadError,
 } from "./AdminTablePanel";
 import KebabMenu, { type KebabAction } from "./KebabMenu";
 import DetailDrawer from "./DetailDrawer";
@@ -76,7 +77,7 @@ export const CompanyReviewQueue = () => {
   const [status, setStatus] = useState<CompanyStatus | "all">("all");
   const [page, setPage] = useState(1);
 
-  const { companies, pagination, isLoading, mutate } = useAdminCompanies(
+  const { companies, pagination, isLoading, isError, mutate } = useAdminCompanies(
     status,
     page,
   );
@@ -352,7 +353,10 @@ export const CompanyReviewQueue = () => {
           </AdminTableBody>
         </AdminTable>
 
-        {!isLoading && companies.length === 0 && (
+        {!isLoading && isError && (
+          <AdminLoadError what="companies" onRetry={() => mutate()} />
+        )}
+        {!isLoading && !isError && companies.length === 0 && (
           <AdminEmptyState
             title="No companies"
             description={

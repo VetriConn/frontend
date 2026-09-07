@@ -440,3 +440,35 @@ export const AdminPagination = ({
     </div>
   );
 };
+
+/**
+ * A failed table fetch, said plainly. Every queue used to render its
+ * cheerful empty state ("No users yet") over a 403 or a network error -
+ * for tiers without access that read as an empty platform.
+ */
+export const AdminLoadError = ({
+  what,
+  onRetry,
+}: {
+  /** e.g. "reports" */
+  what: string;
+  onRetry?: () => void;
+}) => (
+  <div className="px-6 py-14 text-center">
+    <p className="text-sm font-semibold text-gray-900 mb-1">
+      Couldn&apos;t load {what}
+    </p>
+    <p className="text-sm text-gray-500 mb-4">
+      You may not have access to this queue, or the request failed.
+    </p>
+    {onRetry && (
+      <button
+        type="button"
+        onClick={onRetry}
+        className="inline-flex items-center px-4 py-2 min-h-[44px] rounded-lg border border-gray-200 bg-white text-sm font-semibold text-gray-700 hover:bg-gray-50"
+      >
+        Try again
+      </button>
+    )}
+  </div>
+);

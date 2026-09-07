@@ -36,6 +36,7 @@ import {
   AdminStatCard,
   AdminStatRow,
   AdminPagination,
+  AdminLoadError,
 } from "./AdminTablePanel";
 import KebabMenu, { type KebabAction } from "./KebabMenu";
 import { useToaster } from "@/components/ui/Toaster";
@@ -66,7 +67,7 @@ const ReportsQueue = () => {
   const [type, setType] = useState<ReportTargetType | "all">("all");
   const [page, setPage] = useState(1);
   useEffect(() => setPage(1), [status, type]);
-  const { reports, pagination, isLoading, mutate } = useAdminReports(
+  const { reports, pagination, isLoading, isError, mutate } = useAdminReports(
     status,
     type === "all" ? undefined : type,
     page,
@@ -287,7 +288,10 @@ const ReportsQueue = () => {
                 ))}
           </AdminTableBody>
         </AdminTable>
-        {!isLoading && reports.length === 0 && (
+        {!isLoading && isError && (
+          <AdminLoadError what="reports" onRetry={() => mutate()} />
+        )}
+        {!isLoading && !isError && reports.length === 0 && (
           <AdminEmptyState
             title={
               status === "open" ? "No open reports" : `No ${status} reports`

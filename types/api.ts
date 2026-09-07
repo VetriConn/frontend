@@ -182,6 +182,8 @@ export interface UserProfile {
 
   // Admin elevation flag — only meaningful when role === "admin".
   is_super_admin?: boolean;
+  /** Resolved admin tier — drives which console surfaces are shown. */
+  admin_role?: "super_admin" | "reviewer" | "moderator" | "billing";
 
   // Two-factor enabled (set by /2fa/verify, cleared by /2fa/disable).
   two_factor_enabled?: boolean;

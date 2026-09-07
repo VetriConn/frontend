@@ -30,6 +30,7 @@ import {
   StatusPill,
   AdminStatCard,
   AdminStatRow,
+  AdminLoadError,
 } from "./AdminTablePanel";
 import KebabMenu, { type KebabAction } from "./KebabMenu";
 import ConfirmDialog from "./ConfirmDialog";
@@ -39,7 +40,7 @@ import { formatDate } from "@/lib/date-utils";
 
 const UserManagement = () => {
   const router = useRouter();
-  const { users, isLoading, mutate } = useAdminUsers();
+  const { users, isLoading, isError, mutate } = useAdminUsers();
   const { counts } = useAdminMemberCounts();
   const { showToast } = useToaster();
   const [target, setTarget] = useState<AdminUser | null>(null);
@@ -175,7 +176,10 @@ const UserManagement = () => {
                 ))}
           </AdminTableBody>
         </AdminTable>
-        {!isLoading && users.length === 0 && (
+        {!isLoading && isError && (
+          <AdminLoadError what="users" onRetry={() => mutate()} />
+        )}
+        {!isLoading && !isError && users.length === 0 && (
           <AdminEmptyState
             title="No users yet"
             description="Job seekers will appear here once they create an account."

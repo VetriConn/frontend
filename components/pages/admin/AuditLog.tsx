@@ -21,6 +21,7 @@ import {
   AdminRowSkeleton,
   AdminEmptyState,
   StatusPill,
+  AdminLoadError,
 } from "./AdminTablePanel";
 
 const formatTimestamp = (iso: string) => {
@@ -51,7 +52,7 @@ const renderMetadata = (meta?: AuditLogEntry["metadata"]) => {
 };
 
 const AuditLog = () => {
-  const { entries, isLoading } = useAdminAuditLog();
+  const { entries, isLoading, isError, mutate } = useAdminAuditLog();
 
   return (
     <div className="max-w-7xl mx-auto space-y-6">
@@ -109,7 +110,10 @@ const AuditLog = () => {
                 ))}
           </AdminTableBody>
         </AdminTable>
-        {!isLoading && entries.length === 0 && (
+        {!isLoading && isError && (
+          <AdminLoadError what="the audit log" onRetry={() => mutate()} />
+        )}
+        {!isLoading && !isError && entries.length === 0 && (
           <AdminEmptyState
             title="No audit entries yet"
             description="Admin actions will be recorded here as they happen."

@@ -44,6 +44,7 @@ import {
   RowActions,
   StatusPill,
   AdminStatCard,
+  AdminLoadError,
 } from "./AdminTablePanel";
 import KebabMenu, { type KebabAction } from "./KebabMenu";
 import InviteAdminDialog from "./InviteAdminDialog";
@@ -68,7 +69,7 @@ const AdminTeam = () => {
   const { userProfile } = useUserProfile();
   const isSuper = isSuperAdmin(userProfile);
 
-  const { members, invites, isLoading, mutate } = useAdminTeam();
+  const { members, invites, isLoading, isError, mutate } = useAdminTeam();
   const { showToast } = useToaster();
 
   const [inviteOpen, setInviteOpen] = useState(false);
@@ -336,7 +337,10 @@ const AdminTeam = () => {
                   ))}
             </AdminTableBody>
           </AdminTable>
-          {!isLoading && members.length === 0 && (
+          {!isLoading && isError && (
+            <AdminLoadError what="the team" onRetry={() => mutate()} />
+          )}
+          {!isLoading && !isError && members.length === 0 && (
             <AdminEmptyState
               title="No admins yet"
               description="Invite your first admin to get started."
@@ -411,7 +415,7 @@ const AdminTeam = () => {
                   ))}
             </AdminTableBody>
           </AdminTable>
-          {!isLoading && invites.length === 0 && (
+          {!isLoading && !isError && invites.length === 0 && (
             <AdminEmptyState
               title="No invites"
               description="When you invite admins, they'll show up here."

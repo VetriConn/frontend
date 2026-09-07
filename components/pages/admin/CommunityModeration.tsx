@@ -31,6 +31,7 @@ import {
   StatusPill,
   AdminStatCard,
   AdminStatRow,
+  AdminLoadError,
 } from "./AdminTablePanel";
 import KebabMenu, { type KebabAction } from "./KebabMenu";
 import DetailDrawer from "./DetailDrawer";
@@ -40,7 +41,7 @@ import { formatDate } from "@/lib/date-utils";
 
 
 const CommunityModeration = () => {
-  const { posts, isLoading, mutate } = useAdminCommunity();
+  const { posts, isLoading, isError, mutate } = useAdminCommunity();
   const { counts, mutate: mutateCounts } = useAdminContentCounts();
   const [viewing, setViewing] = useState<AdminCommunityPost | null>(null);
   const { showToast } = useToaster();
@@ -189,7 +190,10 @@ const CommunityModeration = () => {
                 ))}
           </AdminTableBody>
         </AdminTable>
-        {!isLoading && posts.length === 0 && (
+        {!isLoading && isError && (
+          <AdminLoadError what="community posts" onRetry={() => mutate()} />
+        )}
+        {!isLoading && !isError && posts.length === 0 && (
           <AdminEmptyState
             title="Community posting isn't live yet"
             description="There's no way for members to publish posts on Vetriconn yet, so this queue stays empty. It will fill in once community posting ships."

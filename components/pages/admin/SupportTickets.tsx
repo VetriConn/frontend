@@ -35,6 +35,7 @@ import {
   AdminEmptyState,
   AdminStatCard,
   AdminPagination,
+  AdminLoadError,
 } from "./AdminTablePanel";
 import KebabMenu, { type KebabAction } from "./KebabMenu";
 import TicketDetailDialog from "./TicketDetailDialog";
@@ -79,7 +80,7 @@ const FILTER_OPTIONS: { value: FilterValue; label: string }[] = [
 
 const SupportTickets = () => {
   const [page, setPage] = useState(1);
-  const { tickets, pagination, isLoading, mutate } = useAdminSupportTickets(page);
+  const { tickets, pagination, isLoading, isError, mutate } = useAdminSupportTickets(page);
   const { userProfile } = useUserProfile();
   const { showToast } = useToaster();
   const [filter, setFilter] = useState<FilterValue>("all");
@@ -363,7 +364,10 @@ const SupportTickets = () => {
                 ))}
           </AdminTableBody>
         </AdminTable>
-        {!isLoading && visible.length === 0 && (
+        {!isLoading && isError && (
+          <AdminLoadError what="support tickets" onRetry={() => mutate()} />
+        )}
+        {!isLoading && !isError && visible.length === 0 && (
           <AdminEmptyState
             title={
               filter === "all"

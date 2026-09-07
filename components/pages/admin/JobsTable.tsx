@@ -37,6 +37,7 @@ import {
   StatusPill,
   AdminStatCard,
   AdminPagination,
+  AdminLoadError,
 } from "./AdminTablePanel";
 import KebabMenu, { type KebabAction } from "./KebabMenu";
 import DetailDrawer from "./DetailDrawer";
@@ -70,7 +71,7 @@ const JobsTable = () => {
   const [status, setStatus] = useState<AdminJobStatus | "all">("all");
   const [page, setPage] = useState(1);
 
-  const { jobs, pagination, isLoading, mutate } = useAdminJobQueue(status, page);
+  const { jobs, pagination, isLoading, isError, mutate } = useAdminJobQueue(status, page);
   const { counts, mutate: mutateCounts } = useAdminJobCounts();
   const { showToast } = useToaster();
 
@@ -321,7 +322,10 @@ const JobsTable = () => {
           </AdminTableBody>
         </AdminTable>
 
-        {!isLoading && jobs.length === 0 && (
+        {!isLoading && isError && (
+          <AdminLoadError what="jobs" onRetry={() => mutate()} />
+        )}
+        {!isLoading && !isError && jobs.length === 0 && (
           <AdminEmptyState
             title="No jobs"
             description={

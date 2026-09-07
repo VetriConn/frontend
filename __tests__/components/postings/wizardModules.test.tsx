@@ -69,6 +69,7 @@ describe("job builder modules", () => {
         formData={INITIAL_FORM_DATA}
         errors={{}}
         onChange={noop}
+        onToggle={noop}
       />,
     );
     expect(screen.getByLabelText(/city/i)).toBeInTheDocument();

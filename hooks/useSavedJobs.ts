@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import useSWR from "swr";
 import { getSavedJobs, saveJob, unsaveJob } from "@/lib/api";
+import { useUserProfile } from "@/hooks/useUserProfile";
 import type { JobsResponse } from "@/types/api";
 
 /**
@@ -21,11 +22,16 @@ const identitiesOf = (job: JobsResponse): string[] =>
   [job.id, job._id].filter((value): value is string => Boolean(value));
 
 export function useSavedJobs() {
+  // Keyed off the resolved session: this hook mounts on public pages (the
+  // job detail Save button), where every anonymous view used to fire a
+  // guaranteed-401 request. Signed-out visitors now make no request at all —
+  // the key stays null until the profile resolves to a signed-in user.
+  const { userProfile } = useUserProfile();
   const {
     data: savedJobs = [],
     isLoading,
     mutate,
-  } = useSWR("/auth/saved-jobs", getSavedJobs);
+  } = useSWR(userProfile ? "/auth/saved-jobs" : null, getSavedJobs);
 
   const [pendingSavedIds, setPendingSavedIds] = useState<Set<string>>(
     new Set(),

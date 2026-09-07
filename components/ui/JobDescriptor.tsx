@@ -172,8 +172,19 @@ const JobDescriptor: React.FC<JobDescriptorProps> = ({
     (!!poster_id && poster_id === userProfile?.id) ||
     (!!company_id && companies.some((company) => company._id === company_id));
 
+  // Both lookups answer "has THIS account already applied / drafted?" — a
+  // question that has no answer without an account. They used to fire
+  // unconditionally, so every anonymous view of a job page paid two
+  // guaranteed-401 requests (and logged a console error for the draft one).
+  // Now they wait for the profile to resolve and only run signed in.
   useEffect(() => {
     let isMounted = true;
+
+    if (profileLoading) return;
+    if (!isSignedIn) {
+      setHasApplied(false);
+      return;
+    }
 
     const loadApplications = async () => {
       try {
@@ -190,7 +201,7 @@ const JobDescriptor: React.FC<JobDescriptorProps> = ({
 
         setHasApplied(alreadyApplied);
       } catch {
-        // ignore - unauthenticated users can still view the page
+        // ignore - a failed lookup only hides the "already applied" hint
       }
     };
 
@@ -199,10 +210,17 @@ const JobDescriptor: React.FC<JobDescriptorProps> = ({
     return () => {
       isMounted = false;
     };
-  }, [id]);
+  }, [id, isSignedIn, profileLoading]);
 
   useEffect(() => {
     let cancelled = false;
+
+    if (profileLoading) return;
+    if (!isSignedIn) {
+      setHasDraft(false);
+      return;
+    }
+
     async function checkDraft() {
       try {
         const result = await hasApplicationDraft(id);
@@ -217,7 +235,7 @@ const JobDescriptor: React.FC<JobDescriptorProps> = ({
     return () => {
       cancelled = true;
     };
-  }, [id]);
+  }, [id, isSignedIn, profileLoading]);
 
   const handleToggleSave = async () => {
     if (isMutating(id)) return;

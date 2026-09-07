@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { adminCompanyCounts } from "@/lib/api/companies";
 import useSWR from "swr";
+import { useUserProfile } from "@/hooks/useUserProfile";
 import {
   getPublicCompanyJobs,
   type PublicCompanyJob,
@@ -14,8 +15,11 @@ import {
 
 /** Companies the signed-in user is an active member of. */
 export function useMyCompanies() {
+  // Null key while signed out: the hook also mounts on public pages (the
+  // job page's own-listing check), where the request can only ever 401.
+  const { userProfile } = useUserProfile();
   const { data, error, isLoading, mutate } = useSWR(
-    "/companies/me",
+    userProfile ? "/companies/me" : null,
     getMyCompanies,
   );
 
@@ -38,13 +42,17 @@ export function useCompany(
   initialData?: Company | null,
 ) {
   // Seeded from the server render on the public page: paints from the ISR
-  // copy instantly while the default mount revalidate runs in the background
-  // — that request is what corrects a suspension within seconds when the ISR
-  // page is still inside its revalidate window. Member views pass no seed.
+  // copy instantly while one background request revalidates it — that
+  // request is what corrects a suspension within seconds when the ISR page
+  // is still inside its revalidate window. Explicit revalidateOnMount: SWR
+  // skips the mount revalidate by default when fallbackData is set. Member
+  // views pass no seed.
   const { data, error, isLoading, mutate } = useSWR(
     companyId ? `/companies/${companyId}` : null,
     () => getCompanyById(companyId!),
-    initialData ? { fallbackData: initialData } : undefined,
+    initialData
+      ? { fallbackData: initialData, revalidateOnMount: true }
+      : undefined,
   );
 
   return {
@@ -107,7 +115,9 @@ export function usePublicCompanyJobs(
   const { data, error, isLoading } = useSWR(
     companyId ? `/companies/${companyId}/open-jobs?page=${page}&limit=${limit}` : null,
     () => getPublicCompanyJobs(companyId!, page, limit),
-    initialData ? { fallbackData: initialData } : undefined,
+    initialData
+      ? { fallbackData: initialData, revalidateOnMount: true }
+      : undefined,
   );
 
   // Listings accumulate as the visitor pages, so "load more" appends rather

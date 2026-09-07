@@ -159,6 +159,7 @@ export default function JobApplicationForm({
             workLocationPreference:
               draft.workLocationPreference || prev.workLocationPreference,
             additionalInfo: draft.additionalInfo || prev.additionalInfo,
+            screeningAnswers: draft.screeningAnswers ?? prev.screeningAnswers,
           }));
         }
       } catch (err) {
@@ -381,6 +382,9 @@ export default function JobApplicationForm({
         preferredSchedule: formData.preferredSchedule,
         workLocationPreference: formData.workLocationPreference,
         additionalInfo: formData.additionalInfo,
+        // The answers are the part of a long application most worth saving -
+        // "Draft saved" used to silently drop them.
+        screeningAnswers: formData.screeningAnswers,
         savedAt: new Date().toISOString(),
       });
       showToast({

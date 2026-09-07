@@ -21,6 +21,7 @@ export interface ApplicationDraftResponse {
   preferred_schedule: string;
   work_location_preference: string;
   additional_info: string;
+  screening_answers?: Record<string, string[]>;
   createdAt: string;
   updatedAt: string;
 }
@@ -61,6 +62,7 @@ export async function upsertDraft(
     preferred_schedule?: string;
     work_location_preference?: string;
     additional_info?: string;
+    screening_answers?: Record<string, string[]>;
   },
 ): Promise<ApplicationDraftResponse> {
   const response = await apiFetch<

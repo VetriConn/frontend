@@ -281,10 +281,9 @@ export default function SavedSearchesPage() {
                     About Job Alerts
                   </p>
                   <p className="text-sm text-red-600 leading-relaxed">
-                    When you enable alerts, we&apos;ll save your preference.
-                    Email notifications for new matching jobs are coming soon  - 
-                    for now, you can quickly re-run your searches from this
-                    page.
+                    With alerts on, we email you new jobs matching this
+                    search once a week. You can also re-run any search from
+                    this page whenever you like.
                   </p>
                 </div>
               </div>

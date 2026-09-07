@@ -51,14 +51,15 @@ export function AccessibilityProvider({ children }: { children: ReactNode }) {
   const [state, setState] = useState<AccessibilityState>(defaults);
   const [mounted, setMounted] = useState(false);
 
-  // These preferences belong to the signed-in app, not the public marketing
-  // and auth pages — those have fixed, deliberately composed layouts that
-  // should look the same for everyone. The provider stays at the root so the
-  // settings screen can read and write them, but the DOM effects below only
-  // take hold inside /dashboard; elsewhere the document renders at its
-  // defaults regardless of what's stored.
+  // These preferences belong to the pages people READ, not the composed
+  // marketing/auth layouts. That's the dashboard AND the public job pages -
+  // the "dashboard-only" gate turned text size and contrast off on exactly
+  // the pages a seeker spends longest on: the board, a job's detail, and
+  // the application form.
   const pathname = usePathname();
-  const inApp = pathname?.startsWith("/dashboard") ?? false;
+  const inApp =
+    (pathname?.startsWith("/dashboard") || pathname?.startsWith("/jobs")) ??
+    false;
 
   // Load persisted preferences on mount
   useEffect(() => {

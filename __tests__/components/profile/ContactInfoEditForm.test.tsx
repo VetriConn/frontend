@@ -40,10 +40,12 @@ const runValidate = () => {
 
 describe("ContactInfoEditForm", () => {
   describe("rendering", () => {
-    it("should render phone, city and country fields", () => {
+    it("should render phone, city and country fields", async () => {
       render(<ContactInfoEditForm initialData={baseData} />);
 
-      expect(screen.getByRole("textbox", { name: /Phone Number/ })).toBeInTheDocument();
+      // The phone control arrives via the shared lazy chunk (PhoneField.lazy),
+      // so it appears a tick after first render.
+      expect(await screen.findByRole("textbox", { name: /Phone Number/ })).toBeInTheDocument();
       expect(screen.getByLabelText(/City/)).toBeInTheDocument();
       expect(screen.getByLabelText(/Country/)).toBeInTheDocument();
     });

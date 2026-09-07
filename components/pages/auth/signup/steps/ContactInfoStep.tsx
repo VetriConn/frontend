@@ -2,7 +2,7 @@
 
 import { StepProps } from "@/types/signup";
 import { FormField } from "@/components/ui/FormField";
-import { PhoneField } from "@/components/ui/PhoneField";
+import { PhoneField } from "@/components/ui/PhoneField.lazy";
 import { CustomDropdown } from "@/components/ui/CustomDropdown";
 import { CountrySelect } from "@/components/ui/CountrySelect";
 import {

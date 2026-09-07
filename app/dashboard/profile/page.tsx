@@ -2,7 +2,7 @@
 
 import React, { useState, useCallback, useEffect } from "react";
 import { CustomDropdown } from "@/components/ui/CustomDropdown";
-import { INDUSTRY_OPTIONS, EXPERIENCE_LEVELS } from "@/lib/validation";
+import { INDUSTRY_OPTIONS, EXPERIENCE_LEVELS } from "@/lib/profile-options";
 import { useUserProfile } from "@/hooks/useUserProfile";
 import { usePatchProfile } from "@/hooks/usePatchProfile";
 import { safeHttpUrl } from "@/lib/safe-url";

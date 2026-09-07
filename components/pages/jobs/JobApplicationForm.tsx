@@ -32,7 +32,7 @@ import {
 } from "@/lib/applicationDrafts";
 import { useToaster } from "@/components/ui/Toaster";
 import { CustomDropdown } from "@/components/ui/CustomDropdown";
-import { PhoneInputControl } from "@/components/ui/PhoneField";
+import { PhoneInputControl } from "@/components/ui/PhoneField.lazy";
 
 // Canonical profile shape subset used for pre-filling application form
 import type { UserProfile } from "@/types/api";

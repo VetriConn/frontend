@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import { FormField } from "@/components/ui/FormField";
-import { PhoneField, validatePhone } from "@/components/ui/PhoneField";
+import { PhoneField, validatePhone } from "@/components/ui/PhoneField.lazy";
 import { CustomDropdown } from "@/components/ui/CustomDropdown";
 import { CountrySelect } from "@/components/ui/CountrySelect";
 import { regionsFor, hasRegions, regionLabelFor } from "@/lib/regions";

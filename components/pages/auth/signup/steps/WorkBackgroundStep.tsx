@@ -3,7 +3,7 @@
 import { StepProps } from "@/types/signup";
 import { FormField } from "@/components/ui/FormField";
 import { CustomDropdown } from "@/components/ui/CustomDropdown";
-import { EXPERIENCE_LEVELS, INDUSTRY_OPTIONS } from "@/lib/validation";
+import { EXPERIENCE_LEVELS, INDUSTRY_OPTIONS } from "@/lib/profile-options";
 import { WizardNav } from "../WizardNav";
 import { StepHeader } from "../StepHeader";
 

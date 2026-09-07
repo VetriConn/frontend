@@ -1,12 +1,8 @@
 "use client";
 
 import React from "react";
-import flags from "react-phone-number-input/flags";
 import { CustomDropdown } from "./CustomDropdown";
 import { COUNTRY_OPTIONS } from "@/lib/countries";
-
-type FlagComponent = React.ComponentType<{ title?: string }>;
-const flagMap = flags as unknown as Record<string, FlagComponent | undefined>;
 
 interface CountrySelectProps {
   value: string;
@@ -31,21 +27,26 @@ export const CountrySelect: React.FC<CountrySelectProps> = ({
   required = false,
   error,
 }) => {
-  const options = COUNTRY_OPTIONS.map(({ code, name: countryName }) => {
-    const Flag = flagMap[code];
-    return {
-      value: countryName,
-      searchText: countryName,
-      label: (
-        <span className="flex items-center gap-2.5">
-          <span className="inline-block w-5 shrink-0 overflow-hidden rounded-[2px] leading-none [&>svg]:block [&>svg]:h-auto [&>svg]:w-full">
-            {Flag ? <Flag title={countryName} /> : null}
-          </span>
-          <span>{countryName}</span>
+  // Flags are static assets (public/flags, see scripts/copy-flags.mjs), not
+  // bundled components — the browser only fetches the few actually scrolled
+  // into view. Decorative next to the visible name, hence the empty alt.
+  const options = COUNTRY_OPTIONS.map(({ code, name: countryName }) => ({
+    value: countryName,
+    searchText: countryName,
+    label: (
+      <span className="flex items-center gap-2.5">
+        <span className="inline-block w-5 shrink-0 overflow-hidden rounded-[2px] leading-none">
+          <img
+            src={`/flags/${code}.svg`}
+            alt=""
+            loading="lazy"
+            className="block h-auto w-full"
+          />
         </span>
-      ),
-    };
-  });
+        <span>{countryName}</span>
+      </span>
+    ),
+  }));
 
   return (
     <CustomDropdown

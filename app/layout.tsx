@@ -20,14 +20,18 @@ import {
  * bytes ship every time, and nothing leaves the origin.
  *
  * Outfit and Open Sans are variable fonts, so one file covers their whole
- * weight range. Lato has no variable cut, so its four weights are separate.
- * Latin subset only — around 140KB for all three.
+ * weight range. Lato has no variable cut; only the 400/700 weights anything
+ * renders are shipped (300/900 were dead bytes on every page).
+ * Latin subset only.
  */
 
 const outfit = localFont({
   src: [{ path: "./fonts/outfit-100-900.woff2", weight: "100 900", style: "normal" }],
   variable: "--font-outfit",
   display: "swap",
+  // Used by a single accent span on the home page — not worth a preload
+  // <link> on every route. The file downloads only where the face applies.
+  preload: false,
 });
 
 const openSans = localFont({
@@ -38,10 +42,8 @@ const openSans = localFont({
 
 const lato = localFont({
   src: [
-    { path: "./fonts/lato-300.woff2", weight: "300", style: "normal" },
     { path: "./fonts/lato-400.woff2", weight: "400", style: "normal" },
     { path: "./fonts/lato-700.woff2", weight: "700", style: "normal" },
-    { path: "./fonts/lato-900.woff2", weight: "900", style: "normal" },
   ],
   variable: "--font-lato",
   display: "swap",

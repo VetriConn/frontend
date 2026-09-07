@@ -14,7 +14,10 @@ import FindJobsDashboard from "@/components/pages/dashboard/FindJobsDashboard";
 // serial waterfall). The dynamic() wrapper is gone for the same reason: this
 // component IS the route, so splitting it only added a round trip.
 if (typeof window !== "undefined") {
-  void preload("/jobs/recommended", getRecommendedJobs);
+  // catch: an expired session 401s here before any component consumes the
+  // promise, which would otherwise surface as an unhandled rejection. SWR
+  // keeps the original promise, so the mounted hook still sees the error.
+  preload("/jobs/recommended", getRecommendedJobs).catch(() => {});
 }
 
 /**

@@ -46,6 +46,7 @@
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "autoprefixer": "^10.4.23",
+    "country-flag-icons": "1.6.20",
     "eslint": "^9",
     "eslint-config-next": "15.3.2",
     "fast-check": "^4.7.0",

@@ -48,6 +48,9 @@ export function useAdminUsers(page = 1) {
         totalPages: Math.max(1, Math.ceil(res.total / ADMIN_USERS_PAGE_SIZE)),
       };
     },
+    // Page flips keep the previous rows on screen instead of collapsing the
+    // table to a skeleton (matches useJobs/useUserProfile).
+    { keepPreviousData: true },
   );
   return {
     users: data?.users ?? [],

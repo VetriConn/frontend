@@ -10,7 +10,6 @@ import {
   toOptions,
 } from "@/lib/job-fields";
 import { pickGreeting } from "@/lib/greeting";
-import { DashboardSkeleton } from "@/components/ui/Skeleton";
 import { CustomDropdown } from "@/components/ui/CustomDropdown";
 import { HiMagnifyingGlass } from "react-icons/hi2";
 

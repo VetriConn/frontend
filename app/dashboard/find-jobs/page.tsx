@@ -6,7 +6,7 @@ import React, {
   useCallback,
   useMemo,
   useRef,
-  useEffect,
+  
 } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -229,14 +229,17 @@ const SearchResultsPage = () => {
   // reachable however far down the list you are.
   //
   // The height is pure CSS: 100dvh minus the dashboard chrome above and below
-  // (sticky navbar 89px + breadcrumbs 41px + layout main's py-6/py-8), so
-  // there is no post-mount remeasure (the shell used to render at 100vh and
-  // then jump) and no resize listener. dvh tracks the mobile URL-bar collapse
-  // that vh ignores. The constants live in the shared layout — if its chrome
-  // changes, retune these two calc()s.
+  // — 66px of fixed parts (logo 64px + two borders) plus the rem-sized parts
+  // (navbar/breadcrumb padding, breadcrumb line, layout main's py-6/py-8:
+  // 7rem, 8rem at md). Split px/rem so the app's own accessibility text-size
+  // setting (which scales the root font-size, and with it all that rem
+  // chrome) keeps the shell exactly fitting instead of overflowing. No
+  // post-mount remeasure, no resize listener; dvh tracks the mobile URL-bar
+  // collapse that vh ignores. The constants live in the shared layout — if
+  // its chrome changes, retune these two calc()s.
   return (
     <div
-      className="flex flex-col bg-gray-50 overflow-hidden h-[max(320px,calc(100dvh-178px))] md:h-[max(320px,calc(100dvh-194px))]"
+      className="flex flex-col bg-gray-50 overflow-hidden h-[max(320px,calc(100dvh-66px-7rem))] md:h-[max(320px,calc(100dvh-66px-8rem))]"
     >
       {/* Main Content */}
       <main id="main-content" className="flex-1 min-h-0 flex flex-col" tabIndex={-1}>

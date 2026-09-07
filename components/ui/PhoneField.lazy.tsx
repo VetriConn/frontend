@@ -32,14 +32,28 @@ export const PhoneInputControl = dynamic(
 // by the time a phone value exists to validate (typed into the lazily
 // rendered field above) the real implementation is in place. Until then only
 // the dependency-free required-empty check runs — the format check re-fires
-// on the next change/submit once loaded.
+// on the next change/submit once loaded. A failed chunk load (flaky network,
+// deploy mid-session) clears the in-flight marker so the next validate call
+// retries instead of leaving format validation off for the page's lifetime.
 let impl: typeof validatePhoneSync | null = null;
-void import("./PhoneField").then((m) => {
-  impl = m.validatePhone;
-});
+let loading: Promise<void> | null = null;
+
+function loadValidator(): void {
+  if (impl || loading) return;
+  loading = import("./PhoneField").then(
+    (m) => {
+      impl = m.validatePhone;
+    },
+    () => {
+      loading = null;
+    },
+  );
+}
+loadValidator();
 
 export const validatePhone: typeof validatePhoneSync = (value, opts) => {
   if (impl) return impl(value, opts);
+  loadValidator();
   const trimmed = value?.trim() ?? "";
   if (!trimmed && opts?.required) return "Phone number is required";
   return undefined;

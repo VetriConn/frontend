@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   HiOutlineUsers,
@@ -46,6 +46,13 @@ const UserManagement = () => {
     useAdminUsers(page);
   const { counts } = useAdminMemberCounts();
   const { showToast } = useToaster();
+
+  // If the total shrinks under the current page (last row of the last page
+  // acted on elsewhere), fall back to the real last page instead of
+  // dead-ending on an empty table.
+  useEffect(() => {
+    if (!isLoading && page > totalPages) setPage(totalPages);
+  }, [isLoading, page, totalPages]);
   const [target, setTarget] = useState<AdminUser | null>(null);
   const [busy, setBusy] = useState(false);
 

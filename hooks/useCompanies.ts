@@ -37,14 +37,14 @@ export function useCompany(
   companyId: string | undefined,
   initialData?: Company | null,
 ) {
-  // Seeded from the server render on the public page: the data is already on
-  // screen, so mounting must not refetch it. Member views pass no seed.
+  // Seeded from the server render on the public page: paints from the ISR
+  // copy instantly while the default mount revalidate runs in the background
+  // — that request is what corrects a suspension within seconds when the ISR
+  // page is still inside its revalidate window. Member views pass no seed.
   const { data, error, isLoading, mutate } = useSWR(
     companyId ? `/companies/${companyId}` : null,
     () => getCompanyById(companyId!),
-    initialData
-      ? { fallbackData: initialData, revalidateOnMount: false }
-      : undefined,
+    initialData ? { fallbackData: initialData } : undefined,
   );
 
   return {
@@ -107,9 +107,7 @@ export function usePublicCompanyJobs(
   const { data, error, isLoading } = useSWR(
     companyId ? `/companies/${companyId}/open-jobs?page=${page}&limit=${limit}` : null,
     () => getPublicCompanyJobs(companyId!, page, limit),
-    initialData
-      ? { fallbackData: initialData, revalidateOnMount: false }
-      : undefined,
+    initialData ? { fallbackData: initialData } : undefined,
   );
 
   // Listings accumulate as the visitor pages, so "load more" appends rather

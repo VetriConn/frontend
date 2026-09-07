@@ -274,7 +274,7 @@ export interface JobsResponse {
     };
   };
   tags?: string[];
-  full_description?: string;
+  summary?: string;
   responsibilities?: string[];
   qualifications?: string[];
   applicationLink?: string;
@@ -414,7 +414,8 @@ export interface PostedJobSummary {
   /** Admin moderation state — a published job is only live once approved. */
   moderation_status?: "pending" | "approved" | "rejected";
   /** Platform hold: the owning company is suspended; the listing is off the board. */
-  unpublished_reason?: "company_suspended";
+  /** "none" when there is no hold; the platform-hold axis is always present. */
+  unpublished_reason?: "none" | "company_suspended";
   rejected_at?: string;
   /** Why moderation turned it down — shown so the employer can fix and resubmit. */
   rejection_reason?: string;
@@ -425,7 +426,7 @@ export interface PostedJobSummary {
 
 export interface PostedJobDetail extends PostedJobSummary {
   description?: string;
-  full_description?: string;
+  summary?: string;
   tags?: string[];
   qualifications?: string[];
   responsibilities?: string[];

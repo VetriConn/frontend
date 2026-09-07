@@ -131,7 +131,7 @@ const CreateJobPosting = ({
       job_category: job.job_category ?? "",
       job_type: job.job_type ?? "",
       work_arrangement: job.work_arrangement ?? "",
-      description: job.full_description || job.description || "",
+      description: job.description || "",
       responsibilities: (job.responsibilities ?? []).join("\n"),
       requirements: (job.qualifications ?? []).join("\n"),
       experience_level: job.experience_level ?? "",
@@ -509,7 +509,12 @@ const CreateJobPosting = ({
       // New jobs (and content edits to live ones) sit in the moderation queue
       // before they appear on the board — say so, don't claim "live". An
       // approved job can also be held (company suspended): approved ≠ live.
-      if (saved.moderation_status === "approved" && !saved.unpublished_reason) {
+      // The hold axis is always present ("none" when clear), so test the hold
+      // itself rather than the field's truthiness.
+      if (
+        saved.moderation_status === "approved" &&
+        saved.unpublished_reason !== "company_suspended"
+      ) {
         showToast({
           type: "success",
           title: "Job updated",

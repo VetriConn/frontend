@@ -24,7 +24,10 @@ export function mapJobsResponse(job: JobsResponse): Job {
     salary: job.salary,
     salary_range: job.salary_range,
     tags: (job.tags ?? []).map((tag) => ({ name: tag })),
-    full_description: job.full_description || job.description || "",
+    // Lists ship `summary` (derived) and omit the body; detail pages ship
+    // `description`. Falling back keeps one mapper for both payloads.
+    description: job.description,
+    summary: job.summary || job.description || "",
     responsibilities: job.responsibilities ?? [],
     qualifications: job.qualifications ?? [],
     applicationLink: job.applicationLink,

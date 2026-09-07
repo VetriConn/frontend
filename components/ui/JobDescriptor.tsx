@@ -111,7 +111,7 @@ const JobDescriptor: React.FC<JobDescriptorProps> = ({
   salary,
   salary_range,
   tags,
-  full_description,
+  description,
   responsibilities,
   qualifications,
   applicationLink,
@@ -461,12 +461,12 @@ const JobDescriptor: React.FC<JobDescriptorProps> = ({
             </div>
 
             {/* About This Role */}
-            {full_description && (
+            {description && (
               <section className="mb-8">
                 <h2 className="text-xl md:text-3xl font-bold text-gray-900 mb-3">
                   About This Role
                 </h2>
-                <DescriptionBody text={full_description} />
+                <DescriptionBody text={description} />
               </section>
             )}
 

@@ -49,10 +49,20 @@ describe("mapJobsResponse", () => {
     expect(job.payment_type).toBe("hourly");
   });
 
-  it("falls back full_description to description", () => {
+  it("falls back summary to the body when the payload has no summary", () => {
     expect(
-      mapJobsResponse({ ...base, description: "the only body" }).full_description,
+      mapJobsResponse({ ...base, description: "the only body" }).summary,
     ).toBe("the only body");
+  });
+
+  it("prefers the server-derived summary for cards", () => {
+    expect(
+      mapJobsResponse({
+        ...base,
+        description: "the full body",
+        summary: "short preview",
+      }).summary,
+    ).toBe("short preview");
   });
 
   it("defaults responsibilities and qualifications to arrays", () => {

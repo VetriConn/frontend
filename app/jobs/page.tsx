@@ -55,7 +55,7 @@ function cardPreview(job: Job): string {
       ? job.responsibilities
       : job.qualifications.length > 0
         ? job.qualifications
-        : splitDescriptionParts(job.full_description);
+        : splitDescriptionParts(job.summary);
   return source.slice(0, 3).join(" · ");
 }
 

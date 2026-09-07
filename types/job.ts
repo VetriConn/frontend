@@ -41,7 +41,10 @@ export interface Job {
     };
   };
   tags: Tag[];
-  full_description: string;
+  /** Full posting body — detail pages only; list payloads omit it. */
+  description?: string;
+  /** Card preview text, derived server-side from the body. */
+  summary: string;
   responsibilities: string[];
   qualifications: string[];
   applicationLink?: string; // Optional application link

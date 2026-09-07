@@ -241,7 +241,7 @@ export function generateJobMetadata(job: Job): Metadata {
   const title = `${job.role} at ${job.company_name} | Vetriconn`;
 
   // Create a description from job data, truncated to fit meta description limits
-  const rawDescription = job.full_description || "";
+  const rawDescription = job.description || job.summary || "";
   const truncatedDescription =
     rawDescription.length > 140
       ? `${rawDescription.substring(0, 137)}...`
@@ -312,7 +312,7 @@ export function generateJobPostingSchema(job: Job): JobPosting {
     "@context": "https://schema.org",
     "@type": "JobPosting",
     title: job.role,
-    description: job.full_description,
+    description: job.description || job.summary,
     datePosted: new Date().toISOString().split("T")[0],
     hiringOrganization: {
       "@type": "Organization",

@@ -180,7 +180,7 @@ export const JobResultsList = ({
               location={job.location}
               jobType={getJobType(job)}
               salary={formatSalary(job)}
-              description={job.full_description}
+              description={job.summary}
               onApply={onApply}
             />
           </div>

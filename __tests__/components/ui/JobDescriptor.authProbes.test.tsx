@@ -55,7 +55,7 @@ const JOB: Job = {
   company_logo: "",
   location: "Sherbrooke",
   tags: [],
-  full_description: "Prepare and cook complete meals.",
+  summary: "Prepare and cook complete meals.",
   responsibilities: [],
   qualifications: [],
 };

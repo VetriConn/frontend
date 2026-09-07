@@ -15,7 +15,8 @@ import {
 } from "react-icons/hi2";
 import { useCompany, usePublicCompanyJobs } from "@/hooks/useCompanies";
 import { safeHttpUrl } from "@/lib/safe-url";
-import { fieldLabel, JOB_TYPE_LABELS, INDUSTRY_LABELS } from "@/lib/job-fields";
+import { fieldLabel, JOB_TYPE_LABELS } from "@/lib/job-fields";
+import { companyIndustryLabel } from "@/lib/company-fields";
 import { formatDate } from "@/lib/date-utils";
 
 /**
@@ -122,7 +123,7 @@ export const CompanyProfile = ({ companyId }: { companyId: string }) => {
     .join(", ");
   const website = safeHttpUrl(company.website);
   const industry =
-    fieldLabel(INDUSTRY_LABELS, company.industry) ?? company.industry;
+    companyIndustryLabel(company.industry);
 
   return (
     <div className="max-w-5xl mx-auto px-4 md:px-6 py-6 md:py-8 space-y-6">

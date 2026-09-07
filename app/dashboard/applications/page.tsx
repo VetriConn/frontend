@@ -345,7 +345,7 @@ export default function ApplicationsPage() {
       <div className="max-w-7xl mx-auto">
         <div className="mb-8">
           <h1 className="text-2xl font-bold text-gray-900 mb-1">
-            Applications & Applicants
+            Applicants
           </h1>
           <p className="text-gray-600">
             Review and manage candidates who have applied to your job postings.

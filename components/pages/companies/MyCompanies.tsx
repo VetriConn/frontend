@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { companyIndustryLabel } from "@/lib/company-fields";
 import clsx from "clsx";
 import {
   HiOutlineBuildingOffice2,
@@ -97,7 +98,7 @@ const CompanyCard = ({
           </div>
 
           <p className="text-sm text-gray-500">
-            {[company.industry, [company.city, company.country].filter(Boolean).join(", ")]
+            {[companyIndustryLabel(company.industry), [company.city, company.country].filter(Boolean).join(", ")]
               .filter(Boolean)
               .join(" · ") || "No details added yet"}
           </p>

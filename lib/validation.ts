@@ -114,16 +114,3 @@ export const INDUSTRY_OPTIONS = [
   { value: "Other", label: "Other" },
 ];
 
-// Company industry options for employers (standardized format matching company profile)
-export const COMPANY_INDUSTRY_OPTIONS = [
-  { value: "technology", label: "Technology & Consulting" },
-  { value: "healthcare", label: "Healthcare" },
-  { value: "education", label: "Education" },
-  { value: "finance", label: "Finance & Banking" },
-  { value: "retail", label: "Retail & E-commerce" },
-  { value: "manufacturing", label: "Manufacturing" },
-  { value: "construction", label: "Construction" },
-  { value: "hospitality", label: "Hospitality & Tourism" },
-  { value: "nonprofit", label: "Non-profit & Social Services" },
-  { value: "other", label: "Other" },
-];

@@ -110,10 +110,10 @@ export default function ManageJobsPage() {
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
           <div>
             <h1 className="text-2xl font-bold text-gray-900 mb-1">
-              Manage Job Postings
+              My Postings
             </h1>
             <p className="text-gray-600">
-              You have {totalJobs} total job posting
+              You have {totalJobs} posting
               {totalJobs !== 1 && "s"}.
             </p>
           </div>
@@ -122,7 +122,7 @@ export default function ManageJobsPage() {
             className="inline-flex items-center justify-center gap-2 bg-primary text-white px-5 py-2.5 rounded-lg font-medium hover:bg-primary-hover transition-colors shadow-sm shadow-primary/20"
           >
             <HiOutlinePlusCircle className="w-5 h-5" />
-            Post New Job
+            Post a Job
           </Link>
         </div>
 
@@ -320,7 +320,7 @@ export default function ManageJobsPage() {
               <HiOutlineBriefcase className="w-8 h-8 text-gray-300" />
             </div>
             <h3 className="text-lg font-semibold text-gray-900 mb-2">
-              No jobs posted yet
+              No postings yet
             </h3>
             <p className="text-sm text-gray-600 max-w-sm mx-auto mb-8">
               Post your first job opening to start receiving applications from

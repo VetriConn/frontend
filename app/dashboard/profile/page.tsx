@@ -1,6 +1,8 @@
 "use client";
 
 import React, { useState, useCallback, useEffect } from "react";
+import { CustomDropdown } from "@/components/ui/CustomDropdown";
+import { INDUSTRY_OPTIONS, EXPERIENCE_LEVELS } from "@/lib/validation";
 import { useUserProfile } from "@/hooks/useUserProfile";
 import { usePatchProfile } from "@/hooks/usePatchProfile";
 import { safeHttpUrl } from "@/lib/safe-url";
@@ -991,81 +993,29 @@ export default function ProfilePage() {
                 placeholder="e.g. Operations Manager, Logistics Supervisor"
               />
             </div>
-            <div>
-              <label className="block text-sm font-semibold text-gray-900 mb-1.5 md:mb-2">
-                Industry
-              </label>
-              <select
-                value={professionalInfoForm.industry}
-                onChange={(e) =>
-                  setProfessionalInfoForm((p) => ({
-                    ...p,
-                    industry: e.target.value,
-                  }))
-                }
-                className="form-input"
-              >
-                <option value="">Select industry</option>
-                <option value="Government & Public Administration">
-                  Government &amp; Public Administration
-                </option>
-                <option value="Defence & Military">
-                  Defence &amp; Military
-                </option>
-                <option value="Healthcare & Medical">
-                  Healthcare &amp; Medical
-                </option>
-                <option value="Information Technology">
-                  Information Technology
-                </option>
-                <option value="Engineering">Engineering</option>
-                <option value="Logistics & Supply Chain">
-                  Logistics &amp; Supply Chain
-                </option>
-                <option value="Education & Training">
-                  Education &amp; Training
-                </option>
-                <option value="Construction & Trades">
-                  Construction &amp; Trades
-                </option>
-                <option value="Finance & Accounting">
-                  Finance &amp; Accounting
-                </option>
-                <option value="Law Enforcement & Security">
-                  Law Enforcement &amp; Security
-                </option>
-                <option value="Transportation">Transportation</option>
-                <option value="Telecommunications">Telecommunications</option>
-                <option value="Manufacturing">Manufacturing</option>
-                <option value="Non-profit & Community">
-                  Non-profit &amp; Community
-                </option>
-                <option value="Other">Other</option>
-              </select>
-            </div>
-            <div>
-              <label className="block text-sm font-semibold text-gray-900 mb-1.5 md:mb-2">
-                Years of Experience
-              </label>
-              <select
-                value={professionalInfoForm.years_of_experience}
-                onChange={(e) =>
-                  setProfessionalInfoForm((p) => ({
-                    ...p,
-                    years_of_experience: e.target.value,
-                  }))
-                }
-                className="form-input"
-              >
-                <option value="">Select experience</option>
-                <option value="0-2 years">0–2 years</option>
-                <option value="3-5 years">3–5 years</option>
-                <option value="6-10 years">6–10 years</option>
-                <option value="11-15 years">11–15 years</option>
-                <option value="16-20 years">16–20 years</option>
-                <option value="20+ years">20+ years</option>
-              </select>
-            </div>
+            <CustomDropdown
+              label="Industry"
+              name="profile-industry"
+              placeholder="Select industry"
+              value={professionalInfoForm.industry}
+              onChange={(value) =>
+                setProfessionalInfoForm((p) => ({ ...p, industry: value }))
+              }
+              options={INDUSTRY_OPTIONS}
+            />
+            <CustomDropdown
+              label="Years of Experience"
+              name="profile-experience-years"
+              placeholder="Select experience"
+              value={professionalInfoForm.years_of_experience}
+              onChange={(value) =>
+                setProfessionalInfoForm((p) => ({
+                  ...p,
+                  years_of_experience: value,
+                }))
+              }
+              options={EXPERIENCE_LEVELS}
+            />
           </div>
         </EditDialog>
 

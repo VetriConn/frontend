@@ -624,7 +624,7 @@ export default function AppliedJobsPage() {
         <div className="flex items-start justify-between mb-2 mobile:flex-col mobile:gap-3">
           <div>
             <h1 className="font-lato text-xl md:text-3xl font-bold text-gray-900">
-              Application Tracker
+              Applied Jobs
             </h1>
             <p className="text-gray-600 text-sm mt-1">
               Track all your job applications in one place.

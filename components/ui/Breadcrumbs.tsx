@@ -5,24 +5,26 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { HiOutlineChevronRight, HiOutlineHome } from "react-icons/hi2";
 
-// Map route segments to user-friendly labels
+// Map route segments to labels — the SAME labels the nav uses, so a page
+// never wears one name in the menu and another in the breadcrumb.
 const ROUTE_LABELS: Record<string, string> = {
   dashboard: "Dashboard",
   profile: "My Profile",
   settings: "Account Settings",
+  "find-jobs": "Browse Jobs",
   "applied-jobs": "Applied Jobs",
   "saved-jobs": "Saved Jobs",
   "saved-searches": "Saved Searches",
   "application-drafts": "Application Drafts",
-  jobs: "Browse Jobs",
   notifications: "Notifications",
   community: "Community",
   inbox: "Inbox",
-  "companies": "Companies",
+  companies: "Companies",
   "post-job": "Post a Job",
-  applications: "Applications",
-  messages: "Messages",
-  billing: "Billing & Subscription",
+  postings: "My Postings",
+  drafts: "Drafts",
+  applications: "Applicants",
+  billing: "Billing",
 };
 
 export const Breadcrumbs: React.FC = () => {

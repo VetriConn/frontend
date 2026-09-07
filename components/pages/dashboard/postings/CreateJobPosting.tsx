@@ -1239,7 +1239,7 @@ function StepReview({ formData }: { formData: JobFormData }) {
   return (
     <div>
       <h2 className="text-2xl font-bold text-gray-900 mb-1">
-        Review Your Job Listing
+        Review Your Posting
       </h2>
       <p className="text-sm md:text-base text-gray-600 mb-6">
         Review all the details before submitting. This is how candidates will
@@ -1996,7 +1996,7 @@ const CreateJobPosting = ({
             </div>
             <div>
               <h1 className="text-2xl md:text-4xl font-bold text-gray-900">
-                {editingJobId ? "Continue Draft" : "Create Job Posting"}
+                {editingJobId ? "Edit Your Posting" : "Post a Job"}
               </h1>
               <p className="text-sm text-gray-600">
                 Step {currentStep} of {totalSteps}

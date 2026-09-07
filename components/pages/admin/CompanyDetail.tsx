@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { companyIndustryLabel } from "@/lib/company-fields";
 import { useState } from "react";
 import useSWR from "swr";
 import {
@@ -207,7 +208,7 @@ const CompanyDetail = ({
               )}
             </div>
             <p className="text-sm text-gray-500 mt-1">
-              {company.tagline || company.industry || "-"}
+              {company.tagline || companyIndustryLabel(company.industry) || "-"}
             </p>
           </div>
           <div className="flex items-center gap-2 shrink-0">
@@ -303,7 +304,7 @@ const CompanyDetail = ({
           Submitted details
         </h2>
         <dl className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-5">
-          <Field label="Industry" value={company.industry} />
+          <Field label="Industry" value={companyIndustryLabel(company.industry)} />
           <Field label="Company size" value={company.size} />
           <Field label="Location" value={location} />
           <Field

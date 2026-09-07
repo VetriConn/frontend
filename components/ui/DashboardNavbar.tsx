@@ -27,7 +27,6 @@ import {
   HiOutlineClipboardDocument,
   HiOutlineDocumentText,
   HiOutlineUserGroup,
-  HiOutlineGlobeAlt,
   HiOutlineCreditCard,
 } from "react-icons/hi2";
 import { getInitials } from "@/lib/initials";
@@ -83,17 +82,17 @@ const navItemsForEveryone: NavItem[] = [
     icon: <HiOutlineBuildingOffice2 className="w-5 h-5" />,
     dropdown: [
       {
-        name: "Post New Job",
+        name: "Post a Job",
         href: "/dashboard/post-job",
         icon: <HiOutlinePlusCircle className="w-5 h-5 text-primary" />,
       },
       {
-        name: "Manage Job Postings",
+        name: "My Postings",
         href: "/dashboard/postings",
         icon: <HiOutlineDocumentText className="w-5 h-5 text-gray-400" />,
       },
       {
-        name: "Manage Job Drafts",
+        name: "Drafts",
         href: "/dashboard/drafts",
         icon: <HiOutlineClipboardDocument className="w-5 h-5 text-gray-400" />,
       },
@@ -116,32 +115,16 @@ const navItemsForEveryone: NavItem[] = [
   },
 ];
 
-/** The account's own things — always visible, at the top. */
+/**
+ * The account's own things. Job-search destinations live in the Find Jobs
+ * menu only — this menu used to duplicate four of them, so the same page was
+ * on sale in two places under the same label.
+ */
 const PROFILE_LINKS: NavLink[] = [
   {
     name: "View Profile",
     href: "/dashboard/profile",
     icon: <HiOutlineUser className="w-5 h-5 text-gray-400" />,
-  },
-  {
-    name: "Applied Jobs",
-    href: "/dashboard/applied-jobs",
-    icon: <HiOutlineBriefcase className="w-5 h-5 text-gray-400" />,
-  },
-  {
-    name: "Application Drafts",
-    href: "/dashboard/application-drafts",
-    icon: <HiOutlineClipboardDocument className="w-5 h-5 text-gray-400" />,
-  },
-  {
-    name: "Saved Jobs",
-    href: "/dashboard/saved-jobs",
-    icon: <HiOutlineBookmark className="w-5 h-5 text-gray-400" />,
-  },
-  {
-    name: "Saved Searches",
-    href: "/dashboard/saved-searches",
-    icon: <HiOutlineMagnifyingGlass className="w-5 h-5 text-gray-400" />,
   },
   {
     name: "Account Settings",
@@ -153,18 +136,25 @@ const PROFILE_LINKS: NavLink[] = [
 /** Company things, folded away — an account only has these if it joined one. */
 const COMPANY_LINKS: NavLink[] = [
   {
-    name: "View Public Company Page",
+    // The page is the private "my companies" list, so say that — "View
+    // Public Company Page" promised a public page it doesn't open.
+    name: "Companies",
     href: "/dashboard/companies",
-    icon: <HiOutlineGlobeAlt className="w-5 h-5 text-gray-400" />,
+    icon: <HiOutlineBuildingOffice2 className="w-5 h-5 text-gray-400" />,
   },
   {
-    name: "Billing / Subscription",
+    name: "Billing",
     href: "/dashboard/billing",
     icon: <HiOutlineCreditCard className="w-5 h-5 text-gray-400" />,
   },
 ];
 
-/** Account-level destinations, listed once each. */
+/**
+ * Account-level destinations for the mobile drawer, one entry each. Inbox and
+ * Companies are NOT here — the drawer already lists them via navItems, and
+ * this list used to re-add both (Inbox under a second name, "Messages").
+ * Billing is here because the drawer has no profile dropdown to carry it.
+ */
 const ACCOUNT_LINKS: NavLink[] = [
   {
     name: "Notifications",
@@ -172,19 +162,14 @@ const ACCOUNT_LINKS: NavLink[] = [
     icon: <HiOutlineBell className="w-5 h-5 text-gray-400" />,
   },
   {
-    name: "Messages",
-    href: "/dashboard/inbox",
-    icon: <HiOutlineInbox className="w-5 h-5 text-gray-400" />,
-  },
-  {
-    name: "Companies",
-    href: "/dashboard/companies",
-    icon: <HiOutlineBuildingOffice2 className="w-5 h-5 text-gray-400" />,
-  },
-  {
     name: "View Profile",
     href: "/dashboard/profile",
     icon: <HiOutlineUser className="w-5 h-5 text-gray-400" />,
+  },
+  {
+    name: "Billing",
+    href: "/dashboard/billing",
+    icon: <HiOutlineCreditCard className="w-5 h-5 text-gray-400" />,
   },
   {
     name: "Account Settings",

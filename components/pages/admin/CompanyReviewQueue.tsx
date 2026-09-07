@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { companyIndustryLabel } from "@/lib/company-fields";
 import { useSearchParams } from "next/navigation";
 import clsx from "clsx";
 import {
@@ -328,7 +329,7 @@ export const CompanyReviewQueue = () => {
                       </div>
                     </AdminTableTd>
                     <AdminTableTd className="text-gray-600">
-                      {company.industry || "-"}
+                      {companyIndustryLabel(company.industry) || "-"}
                     </AdminTableTd>
                     <AdminTableTd className="text-gray-600">
                       {[company.city, company.country]

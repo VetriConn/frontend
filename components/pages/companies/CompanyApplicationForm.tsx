@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { COMPANY_INDUSTRY_OPTIONS } from "@/lib/company-fields";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { HiOutlineBuildingOffice2 } from "react-icons/hi2";
@@ -18,25 +19,6 @@ import { CountrySelect } from "@/components/ui/CountrySelect";
  * company's profile editor. The application lands as `pending` and an admin
  * reviews it, so this deliberately sets that expectation before submitting.
  */
-
-const INDUSTRY_OPTIONS = [
-  { value: "technology", label: "Technology & Consulting" },
-  { value: "healthcare", label: "Healthcare" },
-  { value: "finance", label: "Finance & Banking" },
-  { value: "education", label: "Education" },
-  { value: "manufacturing", label: "Manufacturing" },
-  { value: "retail", label: "Retail & E-Commerce" },
-  { value: "construction", label: "Construction" },
-  { value: "hospitality", label: "Hospitality & Tourism" },
-  { value: "media", label: "Media & Entertainment" },
-  { value: "transportation", label: "Transportation & Logistics" },
-  { value: "energy", label: "Energy & Utilities" },
-  { value: "agriculture", label: "Agriculture" },
-  { value: "legal", label: "Legal Services" },
-  { value: "nonprofit", label: "Nonprofit & NGO" },
-  { value: "government", label: "Government" },
-  { value: "other", label: "Other" },
-];
 
 const COMPANY_SIZE_OPTIONS = [
   { value: "1-10", label: "1–10 employees" },
@@ -207,7 +189,7 @@ export const CompanyApplicationForm = () => {
           placeholder="Select an industry"
           value={form.industry}
           onChange={(value) => setField("industry", value)}
-          options={INDUSTRY_OPTIONS}
+          options={COMPANY_INDUSTRY_OPTIONS}
         />
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-x-4">

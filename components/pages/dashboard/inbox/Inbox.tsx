@@ -154,7 +154,7 @@ export default function Inbox() {
       <div className="max-w-[1400px] mx-auto w-full h-full flex flex-col px-4 md:px-6 py-4 md:py-6">
         <div className="mb-4 md:mb-6 shrink-0">
           <h1 className="text-xl md:text-2xl font-bold text-gray-900">
-            Messages
+            Inbox
           </h1>
           <p className="text-sm text-gray-600 mt-1">
             Conversations about jobs you applied to and jobs you posted

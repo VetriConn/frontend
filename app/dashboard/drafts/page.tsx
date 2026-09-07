@@ -25,7 +25,7 @@ export default function ManageDraftsPage() {
       <div className="max-w-200 mx-auto">
         <div className="flex items-center justify-between mb-6">
           <h1 className="text-2xl font-bold text-gray-900">
-            Manage Job Drafts
+            Drafts
           </h1>
           <Link
             href="/dashboard/post-job"

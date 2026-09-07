@@ -1,12 +1,18 @@
 "use client";
 import React, { useMemo, useState } from "react";
 import dynamic from "next/dynamic";
+import { useRouter } from "next/navigation";
 import { useUserProfile } from "@/hooks/useUserProfile";
-import { PROVINCES } from "@/lib/job-fields";
+import {
+  PROVINCES,
+  EXPERIENCE_LEVELS,
+  EXPERIENCE_LEVEL_LABELS,
+  toOptions,
+} from "@/lib/job-fields";
 import { pickGreeting } from "@/lib/greeting";
 import { DashboardSkeleton } from "@/components/ui/Skeleton";
-import { HiOutlineMapPin } from "react-icons/hi2";
-import { HiMagnifyingGlass, HiChevronDown } from "react-icons/hi2";
+import { CustomDropdown } from "@/components/ui/CustomDropdown";
+import { HiMagnifyingGlass } from "react-icons/hi2";
 
 // Dynamically import profile cards for better optimization
 const CompleteProfileCard = dynamic(
@@ -53,11 +59,23 @@ const FILTER_FIELD =
   "w-full min-h-[44px] px-3 py-2 border border-gray-200 rounded-lg bg-white text-sm " +
   "focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary";
 
+// Every work arrangement the vocabulary has — this row used to omit
+// "hybrid", making hybrid jobs unreachable from the dashboard filter.
 const WORK_TYPES = [
   { value: "all", label: "All" },
   { value: "remote", label: "Remote" },
+  { value: "hybrid", label: "Hybrid" },
   { value: "onsite", label: "On-site" },
 ] as const;
+
+// One option list with the same labels the find-jobs filter panel derives
+// from the shared vocabulary — not a hand-typed near-copy.
+const EXPERIENCE_OPTIONS = toOptions(EXPERIENCE_LEVELS, EXPERIENCE_LEVEL_LABELS);
+
+const LOCATION_OPTIONS = [
+  { value: "", label: "All locations" },
+  ...PROVINCES.map((p) => ({ value: p.code, label: p.name })),
+];
 
 // The profile nudge, once dismissed, stays gone for three days — the full
 // reminder lives permanently on the profile page, so there's no need to keep
@@ -76,12 +94,13 @@ const POPULAR_SEARCHES = [
 ];
 
 const FindJobsDashboard = () => {
+  const router = useRouter();
   const { userProfile, profileCompletion, isLoading } = useUserProfile();
 
   // Search and filter state
   const [searchQuery, setSearchQuery] = useState("");
   const [location, setLocation] = useState("");
-  const [workType, setWorkType] = useState<"all" | "remote" | "onsite">("all");
+  const [workType, setWorkType] = useState<"all" | "remote" | "hybrid" | "onsite">("all");
   const [experienceLevel, setExperienceLevel] = useState("");
 
   // A rotating, time-and-country greeting — a fresh one each visit. Falls back
@@ -125,11 +144,11 @@ const FindJobsDashboard = () => {
     // nothing.
     if (workType !== "all") params.set("arrangement", workType);
     if (experienceLevel) params.set("experience", experienceLevel);
-    window.location.href = `/dashboard/find-jobs${params.toString() ? `?${params.toString()}` : ""}`;
+    router.push(`/dashboard/find-jobs${params.toString() ? `?${params.toString()}` : ""}`);
   };
 
   const quickSearch = (term: string) => {
-    window.location.href = `/dashboard/find-jobs?q=${encodeURIComponent(term)}`;
+    router.push(`/dashboard/find-jobs?q=${encodeURIComponent(term)}`);
   };
 
   if (isLoading) {
@@ -174,30 +193,18 @@ const FindJobsDashboard = () => {
               </div>
             </div>
 
-            {/* Location */}
+            {/* Location — province codes match the state_province column the
+                backend filters on. CustomDropdown like every other select on
+                the dashboard; this page kept the last native ones. */}
             <div className="min-w-44">
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">
-                Location
-              </label>
-              <div className="relative">
-                <HiOutlineMapPin className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5 pointer-events-none" />
-                <select
-                  value={location}
-                  onChange={(e) => setLocation(e.target.value)}
-                  className={`${FILTER_FIELD} pl-10 pr-9 appearance-none cursor-pointer`}
-                >
-                  {/* Province codes match the state_province column the
-                      backend filters on. Name slugs matched nothing, and
-                      "Remote" is a work arrangement, not a location. */}
-                  <option value="">All Locations</option>
-                  {PROVINCES.map((province) => (
-                    <option key={province.code} value={province.code}>
-                      {province.name}
-                    </option>
-                  ))}
-                </select>
-                <HiChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4 pointer-events-none" />
-              </div>
+              <CustomDropdown
+                label="Location"
+                name="dashboard-location"
+                placeholder="All locations"
+                value={location}
+                onChange={setLocation}
+                options={LOCATION_OPTIONS}
+              />
             </div>
 
             {/* Work Type */}
@@ -226,24 +233,14 @@ const FindJobsDashboard = () => {
 
             {/* Experience Level */}
             <div className="min-w-40">
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">
-                Experience Level
-              </label>
-              <div className="relative">
-                <select
-                  value={experienceLevel}
-                  onChange={(e) => setExperienceLevel(e.target.value)}
-                  className={`${FILTER_FIELD} pr-9 appearance-none cursor-pointer`}
-                >
-                  <option value="">All Levels</option>
-                  <option value="entry">Entry Level</option>
-                  <option value="mid">Mid Level</option>
-                  <option value="senior">Senior Level</option>
-                  <option value="lead">Lead</option>
-                  <option value="executive">Executive</option>
-                </select>
-                <HiChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4 pointer-events-none" />
-              </div>
+              <CustomDropdown
+                label="Experience Level"
+                name="dashboard-experience"
+                placeholder="All levels"
+                value={experienceLevel}
+                onChange={setExperienceLevel}
+                options={[{ value: "", label: "All levels" }, ...EXPERIENCE_OPTIONS]}
+              />
             </div>
 
             {/* Find Jobs */}

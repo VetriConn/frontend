@@ -9,7 +9,7 @@ export default function BillingPage() {
       <div className="max-w-[1200px] mx-auto">
         <div className="mb-8">
           <h1 className="text-2xl font-bold text-gray-900 mb-1">
-            Billing &amp; Subscription
+            Billing
           </h1>
           <p className="text-gray-600">
             Manage your subscription plan, payment methods, and billing history.
@@ -21,7 +21,7 @@ export default function BillingPage() {
             <HiOutlineCreditCard className="w-8 h-8" />
           </div>
           <h2 className="text-xl font-semibold text-gray-900 mb-2">
-            Billing Coming Soon
+            Billing is coming soon
           </h2>
           <p className="text-gray-600 max-w-md mx-auto">
             Subscription management and payment features are under development.

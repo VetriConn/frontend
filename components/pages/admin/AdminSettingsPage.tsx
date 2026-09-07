@@ -292,6 +292,9 @@ const AdminSettingsPage = () => {
     first_name: "",
     last_name: "",
     email: "",
+    // Only needed when the email changes - the backend refuses a silent
+    // sign-in-address change from a possibly hijacked session.
+    current_password: "",
   });
   const [password, setPassword] = useState({
     current_password: "",
@@ -313,6 +316,7 @@ const AdminSettingsPage = () => {
       first_name: settings.first_name,
       last_name: settings.last_name,
       email: settings.email,
+      current_password: "",
     });
     setNotifications(settings.notifications);
   }, [settings]);
@@ -336,10 +340,25 @@ const AdminSettingsPage = () => {
     password.new_password.length >= 8 &&
     password.new_password === password.confirm_password;
 
+  const emailChanged = !!settings && profile.email !== settings.email;
+
   const handleSaveProfile = async () => {
+    if (emailChanged && !profile.current_password) {
+      showToast({
+        type: "error",
+        title: "Password needed",
+        description: "Enter your current password to change your sign-in email.",
+      });
+      return;
+    }
     setSavingProfile(true);
     try {
-      await updateAdminProfile(profile);
+      await updateAdminProfile({
+        first_name: profile.first_name,
+        last_name: profile.last_name,
+        email: profile.email,
+        ...(emailChanged ? { current_password: profile.current_password } : {}),
+      });
       await mutate(settings ? { ...settings, ...profile } : settings, false);
       setEditingProfile(false);
       showToast({ type: "success", title: "Profile updated" });
@@ -553,6 +572,7 @@ const AdminSettingsPage = () => {
                       first_name: settings.first_name,
                       last_name: settings.last_name,
                       email: settings.email,
+                      current_password: "",
                     });
                   }
                   setEditingProfile((v) => !v);
@@ -589,6 +609,24 @@ const AdminSettingsPage = () => {
                     }
                   />
                 </Field>
+                {emailChanged && (
+                  <Field label="Current password">
+                    <Input
+                      type="password"
+                      autoComplete="current-password"
+                      value={profile.current_password}
+                      onChange={(e) =>
+                        setProfile((p) => ({
+                          ...p,
+                          current_password: e.target.value,
+                        }))
+                      }
+                    />
+                    <p className="mt-1.5 text-xs text-gray-500">
+                      Needed because you&apos;re changing your sign-in email.
+                    </p>
+                  </Field>
+                )}
                 <div className="flex justify-end">
                   <button
                     onClick={handleSaveProfile}

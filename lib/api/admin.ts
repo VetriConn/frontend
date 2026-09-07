@@ -455,6 +455,8 @@ export async function adminUpdateSettingsProfile(body: {
   first_name: string;
   last_name: string;
   email: string;
+  /** Required by the backend when the email is being changed. */
+  current_password?: string;
 }): Promise<void> {
   await apiFetch(`${ADMIN_URL}/settings/profile`, jsonRequest("PATCH", body));
 }

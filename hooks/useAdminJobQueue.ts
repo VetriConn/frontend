@@ -5,6 +5,7 @@ import {
   adminRejectJob,
   getJobById,
   type AdminJobRaw,
+  adminJobCounts,
 } from "@/lib/api/jobs";
 import { formatJobSalary } from "@/lib/job-display";
 import { fieldLabel, JOB_TYPE_LABELS } from "@/lib/job-fields";
@@ -156,4 +157,10 @@ export async function unpublishAdminJob(
   expectedVersion?: number,
 ): Promise<void> {
   await adminRejectJob(id, reason, expectedVersion);
+}
+
+/** Moderation counts for the jobs page's summary cards, one shared fetch. */
+export function useAdminJobCounts() {
+  const { data: counts, mutate } = useSWR("admin-job-counts", adminJobCounts);
+  return { counts, mutate };
 }

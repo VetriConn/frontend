@@ -33,6 +33,7 @@ import {
   AdminTableTd,
   AdminRowSkeleton,
   AdminEmptyState,
+  AdminStatCard,
 } from "./AdminTablePanel";
 import KebabMenu, { type KebabAction } from "./KebabMenu";
 import TicketDetailDialog from "./TicketDetailDialog";
@@ -50,27 +51,6 @@ const STAT_TEXT: Record<StatTone, string> = {
   rose: "text-rose-600",
 };
 
-const StatCard = ({
-  label,
-  value,
-  tone,
-}: {
-  label: string;
-  value: number;
-  tone: StatTone;
-}) => (
-  <div className="bg-white rounded-2xl border border-gray-200/80 p-5 shadow-[0_1px_2px_rgba(15,23,42,0.04)]">
-    <p className="text-[13px] font-medium text-gray-500">{label}</p>
-    <p
-      className={clsx(
-        "mt-2 text-3xl font-bold tracking-tight tabular-nums",
-        STAT_TEXT[tone],
-      )}
-    >
-      {value}
-    </p>
-  </div>
-);
 
 // ─── Pill styles ─────────────────────────────────────────────────────────────
 
@@ -227,9 +207,9 @@ const SupportTickets = () => {
 
       {/* Stats */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 md:gap-5">
-        <StatCard label="Total Tickets" value={stats.total} tone="indigo" />
-        <StatCard label="Open Tickets" value={stats.open} tone="amber" />
-        <StatCard
+        <AdminStatCard label="Total Tickets" value={stats.total} tone="indigo" />
+        <AdminStatCard label="Open Tickets" value={stats.open} tone="amber" />
+        <AdminStatCard
           label="Critical Unresolved"
           value={stats.criticalUnresolved}
           tone="rose"

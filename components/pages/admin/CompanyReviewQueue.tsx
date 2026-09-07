@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
-import useSWR from "swr";
 import clsx from "clsx";
 import {
   HiOutlineBuildingOffice2,
@@ -21,11 +20,11 @@ import {
   adminRejectCompany,
   adminSuspendCompany,
   adminReinstateCompany,
-  adminCompanyCounts,
   type Company,
   type CompanyStatus,
 } from "@/lib/api/companies";
-import { useAdminCompanies } from "@/hooks/useCompanies";
+import {
+  useAdminCompanyCounts, useAdminCompanies } from "@/hooks/useCompanies";
 import { useToaster } from "@/components/ui/Toaster";
 import {
   AdminPageHeader,
@@ -39,6 +38,7 @@ import {
   AdminRowSkeleton,
   AdminEmptyState,
   StatusPill,
+  AdminStatCard,
 } from "./AdminTablePanel";
 import KebabMenu, { type KebabAction } from "./KebabMenu";
 import DetailDrawer from "./DetailDrawer";
@@ -66,44 +66,6 @@ const STATUS_TONE: Record<CompanyStatus, "amber" | "emerald" | "rose" | "gray"> 
 
 // ─── Stat card ────────────────────────────────────────────────────────────────
 
-const StatCard = ({
-  icon: Icon,
-  label,
-  value,
-  tone,
-}: {
-  icon: React.ComponentType<{ className?: string }>;
-  label: string;
-  value: number | string;
-  tone: "amber" | "emerald" | "indigo" | "gray";
-}) => {
-  const map = {
-    amber: "bg-amber-50 text-amber-600 ring-amber-100",
-    emerald: "bg-emerald-50 text-emerald-600 ring-emerald-100",
-    indigo: "bg-indigo-50 text-indigo-600 ring-indigo-100",
-    gray: "bg-gray-100 text-gray-600 ring-gray-200",
-  } as const;
-  return (
-    <div className="bg-white rounded-2xl border border-gray-200/80 p-5 shadow-[0_1px_2px_rgba(15,23,42,0.04)]">
-      <div className="flex items-start justify-between gap-3">
-        <div>
-          <p className="text-[13px] font-medium text-gray-500">{label}</p>
-          <p className="mt-2 text-3xl font-bold text-gray-900 tracking-tight tabular-nums">
-            {value}
-          </p>
-        </div>
-        <div
-          className={clsx(
-            "w-11 h-11 rounded-xl ring-1 flex items-center justify-center shrink-0",
-            map[tone],
-          )}
-        >
-          <Icon className="w-5 h-5" />
-        </div>
-      </div>
-    </div>
-  );
-};
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
@@ -117,10 +79,7 @@ export const CompanyReviewQueue = () => {
     status,
     page,
   );
-  const { data: counts, mutate: mutateCounts } = useSWR(
-    "admin-company-counts",
-    adminCompanyCounts,
-  );
+  const { counts, mutate: mutateCounts } = useAdminCompanyCounts();
   const { showToast } = useToaster();
 
   const [busyId, setBusyId] = useState<string | null>(null);
@@ -261,25 +220,25 @@ export const CompanyReviewQueue = () => {
 
       {/* Summary cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-5">
-        <StatCard
+        <AdminStatCard
           icon={HiOutlineClock}
           label="Pending"
           value={counts?.pending ?? "-"}
           tone="amber"
         />
-        <StatCard
+        <AdminStatCard
           icon={HiOutlineCheckCircle}
           label="Approved"
           value={counts?.approved ?? "-"}
           tone="emerald"
         />
-        <StatCard
+        <AdminStatCard
           icon={HiOutlinePauseCircle}
           label="Suspended"
           value={counts?.suspended ?? "-"}
           tone="gray"
         />
-        <StatCard
+        <AdminStatCard
           icon={HiOutlineBuildingOffice2}
           label="Total"
           value={counts?.total ?? "-"}

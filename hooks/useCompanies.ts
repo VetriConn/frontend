@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { adminCompanyCounts } from "@/lib/api/companies";
 import useSWR from "swr";
 import {
   getPublicCompanyJobs,
@@ -116,4 +117,13 @@ export function usePublicCompanyJobs(
     isLoading: isLoading && page === 1,
     isError: !!error,
   };
+}
+
+/** Vetting counts for the company review queue's summary cards. */
+export function useAdminCompanyCounts() {
+  const { data: counts, mutate } = useSWR(
+    "admin-company-counts",
+    adminCompanyCounts,
+  );
+  return { counts, mutate };
 }

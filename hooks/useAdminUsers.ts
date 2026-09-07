@@ -4,6 +4,7 @@ import {
   adminSuspendMember,
   adminReinstateMember,
   type AdminMember,
+  adminMemberCounts,
 } from "@/lib/api/admin";
 
 export type AdminUserStatus = "active" | "suspended";
@@ -50,4 +51,13 @@ export async function suspendAdminUser(
 
 export async function reinstateAdminUser(id: string): Promise<void> {
   await adminReinstateMember(id);
+}
+
+/** Member counts for the users page's summary cards. */
+export function useAdminMemberCounts() {
+  const { data: counts, mutate } = useSWR(
+    "admin-member-counts",
+    adminMemberCounts,
+  );
+  return { counts, mutate };
 }

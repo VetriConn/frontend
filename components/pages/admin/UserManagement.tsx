@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import useSWR from "swr";
 import {
   HiOutlineUsers,
   HiOutlineUserCircle,
@@ -10,8 +9,8 @@ import {
   HiOutlineEye,
   HiOutlineCheckCircle,
 } from "react-icons/hi2";
-import { adminMemberCounts } from "@/lib/api/admin";
 import {
+  useAdminMemberCounts,
   useAdminUsers,
   suspendAdminUser,
   reinstateAdminUser,
@@ -41,10 +40,7 @@ import { formatDate } from "@/lib/date-utils";
 const UserManagement = () => {
   const router = useRouter();
   const { users, isLoading, mutate } = useAdminUsers();
-  const { data: counts } = useSWR(
-    "admin-member-counts",
-    adminMemberCounts,
-  );
+  const { counts } = useAdminMemberCounts();
   const { showToast } = useToaster();
   const [target, setTarget] = useState<AdminUser | null>(null);
   const [busy, setBusy] = useState(false);

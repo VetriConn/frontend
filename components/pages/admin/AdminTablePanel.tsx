@@ -314,34 +314,68 @@ const STAT_TONES: Record<StatTone, string> = {
   gray: "bg-gray-100 text-gray-600 ring-gray-200",
 };
 
-/** The summary card that heads every admin list page. */
+/** Value color for the icon-less variant, where the tone tints the number. */
+const STAT_VALUE_TEXT: Record<StatTone, string> = {
+  amber: "text-amber-600",
+  emerald: "text-emerald-600",
+  rose: "text-rose-600",
+  indigo: "text-indigo-600",
+  gray: "text-gray-900",
+};
+
+/**
+ * The summary card that heads every admin list page — the ONE implementation.
+ * (It used to be re-written locally in five components, each drifting a
+ * little; the variants folded back in as optional props.)
+ */
 export const AdminStatCard = ({
   icon: Icon,
   label,
   value,
   tone,
+  delta,
 }: {
-  icon: React.ComponentType<{ className?: string }>;
+  /** Icon chip. Without one, the tone tints the value instead. */
+  icon?: React.ComponentType<{ className?: string }>;
   label: string;
   value: number | string;
   tone: StatTone;
+  /** Small trend note under the value (dashboard cards). */
+  delta?: { value: string; positive?: boolean };
 }) => (
-  <div className="bg-white rounded-2xl border border-gray-200/80 p-5 shadow-[0_1px_2px_rgba(15,23,42,0.04)]">
+  <div className="bg-white rounded-2xl border border-gray-200/80 p-5 shadow-[0_1px_2px_rgba(15,23,42,0.04)] hover:shadow-[0_8px_24px_-12px_rgba(15,23,42,0.15)] transition-shadow">
     <div className="flex items-start justify-between gap-3">
       <div className="min-w-0">
         <p className="text-[13px] font-medium text-gray-500">{label}</p>
-        <p className="mt-2 text-3xl font-bold text-gray-900 tracking-tight tabular-nums">
+        <p
+          className={clsx(
+            "mt-2 text-3xl font-bold tracking-tight tabular-nums",
+            Icon ? "text-gray-900" : STAT_VALUE_TEXT[tone],
+          )}
+        >
           {value}
         </p>
-      </div>
-      <div
-        className={clsx(
-          "w-11 h-11 rounded-xl ring-1 flex items-center justify-center shrink-0",
-          STAT_TONES[tone],
+        {delta && (
+          <p
+            className={clsx(
+              "mt-1.5 inline-flex items-center gap-1 text-xs font-medium",
+              delta.positive ? "text-emerald-600" : "text-gray-500",
+            )}
+          >
+            {delta.value}
+          </p>
         )}
-      >
-        <Icon className="w-5 h-5" />
       </div>
+      {Icon && (
+        <div
+          className={clsx(
+            "w-11 h-11 rounded-xl ring-1 flex items-center justify-center shrink-0",
+            STAT_TONES[tone],
+          )}
+        >
+          <Icon className="w-5 h-5" />
+        </div>
+      )}
     </div>
   </div>
 );

@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import useSWR from "swr";
 import {
   HiOutlineChatBubbleLeftRight,
   HiOutlineEye,
@@ -10,8 +9,8 @@ import {
   HiOutlineArrowUturnLeft,
   HiOutlineCheckCircle,
 } from "react-icons/hi2";
-import { adminContentCounts } from "@/lib/api/admin";
 import {
+  useAdminContentCounts,
   useAdminCommunity,
   removeAdminCommunityPost,
   flagAdminCommunityPost,
@@ -42,10 +41,7 @@ import { formatDate } from "@/lib/date-utils";
 
 const CommunityModeration = () => {
   const { posts, isLoading, mutate } = useAdminCommunity();
-  const { data: counts, mutate: mutateCounts } = useSWR(
-    "admin-content-counts",
-    adminContentCounts,
-  );
+  const { counts, mutate: mutateCounts } = useAdminContentCounts();
   const [viewing, setViewing] = useState<AdminCommunityPost | null>(null);
   const { showToast } = useToaster();
   const [target, setTarget] = useState<AdminCommunityPost | null>(null);

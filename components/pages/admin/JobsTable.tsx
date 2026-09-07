@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
-import useSWR from "swr";
 import clsx from "clsx";
 import {
   HiOutlineBriefcase,
@@ -17,6 +16,7 @@ import {
   HiOutlineChevronRight,
 } from "react-icons/hi2";
 import {
+  useAdminJobCounts,
   useAdminJobQueue,
   approveAdminJob,
   rejectAdminJob,
@@ -24,7 +24,6 @@ import {
   type AdminJob,
   type AdminJobStatus,
 } from "@/hooks/useAdminJobQueue";
-import { adminJobCounts } from "@/lib/api/jobs";
 import { useToaster } from "@/components/ui/Toaster";
 import {
   AdminPageHeader,
@@ -38,6 +37,7 @@ import {
   AdminRowSkeleton,
   AdminEmptyState,
   StatusPill,
+  AdminStatCard,
 } from "./AdminTablePanel";
 import KebabMenu, { type KebabAction } from "./KebabMenu";
 import DetailDrawer from "./DetailDrawer";
@@ -60,44 +60,6 @@ const STATUS_TONE: Record<AdminJobStatus, "amber" | "emerald" | "rose"> = {
 };
 
 
-const StatCard = ({
-  icon: Icon,
-  label,
-  value,
-  tone,
-}: {
-  icon: React.ComponentType<{ className?: string }>;
-  label: string;
-  value: number | string;
-  tone: "amber" | "emerald" | "rose" | "indigo";
-}) => {
-  const map = {
-    amber: "bg-amber-50 text-amber-600 ring-amber-100",
-    emerald: "bg-emerald-50 text-emerald-600 ring-emerald-100",
-    rose: "bg-rose-50 text-rose-600 ring-rose-100",
-    indigo: "bg-indigo-50 text-indigo-600 ring-indigo-100",
-  } as const;
-  return (
-    <div className="bg-white rounded-2xl border border-gray-200/80 p-5 shadow-[0_1px_2px_rgba(15,23,42,0.04)]">
-      <div className="flex items-start justify-between gap-3">
-        <div>
-          <p className="text-[13px] font-medium text-gray-500">{label}</p>
-          <p className="mt-2 text-3xl font-bold text-gray-900 tracking-tight tabular-nums">
-            {value}
-          </p>
-        </div>
-        <div
-          className={clsx(
-            "w-11 h-11 rounded-xl ring-1 flex items-center justify-center shrink-0",
-            map[tone],
-          )}
-        >
-          <Icon className="w-5 h-5" />
-        </div>
-      </div>
-    </div>
-  );
-};
 
 /**
  * Job moderation — one page for every listing, with standing as a filter
@@ -110,10 +72,7 @@ const JobsTable = () => {
   const [page, setPage] = useState(1);
 
   const { jobs, pagination, isLoading, mutate } = useAdminJobQueue(status, page);
-  const { data: counts, mutate: mutateCounts } = useSWR(
-    "admin-job-counts",
-    adminJobCounts,
-  );
+  const { counts, mutate: mutateCounts } = useAdminJobCounts();
   const { showToast } = useToaster();
 
   const [drawerId, setDrawerId] = useState<string | null>(null);
@@ -237,25 +196,25 @@ const JobsTable = () => {
       />
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-5">
-        <StatCard
+        <AdminStatCard
           icon={HiOutlineClock}
           label="Pending"
           value={counts?.pending ?? "-"}
           tone="amber"
         />
-        <StatCard
+        <AdminStatCard
           icon={HiOutlineCheckCircle}
           label="Approved"
           value={counts?.approved ?? "-"}
           tone="emerald"
         />
-        <StatCard
+        <AdminStatCard
           icon={HiOutlineXCircle}
           label="Rejected"
           value={counts?.rejected ?? "-"}
           tone="rose"
         />
-        <StatCard
+        <AdminStatCard
           icon={HiOutlineBriefcase}
           label="Total"
           value={counts?.total ?? "-"}

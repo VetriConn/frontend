@@ -1,6 +1,8 @@
 "use client";
 
 import Link from "next/link";
+import type { Company } from "@/lib/api";
+import type { getPublicCompanyJobs } from "@/lib/api";
 import {
   HiOutlineBuildingOffice2,
   HiOutlineMapPin,
@@ -76,8 +78,18 @@ const Detail = ({
   );
 };
 
-export const CompanyProfile = ({ companyId }: { companyId: string }) => {
-  const { company, isLoading, isError } = useCompany(companyId);
+export const CompanyProfile = ({
+  companyId,
+  initialCompany,
+  initialJobs,
+}: {
+  companyId: string;
+  /** Server-rendered seeds (public projection); absent when the ISR fetch
+   * failed, e.g. a pending company only its members may load. */
+  initialCompany?: Company | null;
+  initialJobs?: Awaited<ReturnType<typeof getPublicCompanyJobs>> | null;
+}) => {
+  const { company, isLoading, isError } = useCompany(companyId, initialCompany);
   const {
     jobs,
     total: jobsTotal,
@@ -85,7 +97,7 @@ export const CompanyProfile = ({ companyId }: { companyId: string }) => {
     loadMore,
     isLoadingMore,
     isLoading: jobsLoading,
-  } = usePublicCompanyJobs(companyId);
+  } = usePublicCompanyJobs(companyId, 20, initialJobs);
 
   if (isLoading) {
     return (

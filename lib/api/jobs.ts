@@ -288,6 +288,11 @@ export async function getJobById(jobId: string): Promise<JobsResponse> {
       headers: {
         "Content-Type": "application/json",
       },
+      // Server-side this lets Next cache each detail page for five minutes -
+      // the SEO-critical surface was fully dynamic, so every view AND every
+      // crawler hit paid live backend latency, cold starts included. In the
+      // browser fetch ignores the `next` key.
+      next: { revalidate: 300 },
     },
   );
 

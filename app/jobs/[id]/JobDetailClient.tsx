@@ -1,5 +1,6 @@
 "use client";
 import React from "react";
+import type { JobsResponse } from "@/types/api";
 import Link from "next/link";
 import JobDescriptor from "@/components/ui/JobDescriptor";
 import { Header } from "@/components/ui/Header";
@@ -11,13 +12,17 @@ import { JobDetailSkeleton } from "@/components/ui/Skeleton";
 interface JobDetailClientProps {
   jobId: string;
   initialJob: Job | null;
+  /** Raw server-fetched response, seeding SWR so the client never refetches
+   * data already on screen. */
+  initialJobRaw?: JobsResponse | null;
 }
 
 export default function JobDetailClient({
   jobId,
   initialJob,
+  initialJobRaw,
 }: JobDetailClientProps) {
-  const { job, isLoading, isError } = useJob(jobId);
+  const { job, isLoading, isError } = useJob(jobId, initialJobRaw);
 
   const displayJob = job || initialJob;
 

@@ -123,7 +123,9 @@ export async function getMyCompanies(): Promise<Company[]> {
 export async function getCompanyById(companyId: string): Promise<Company> {
   const response = await apiFetch<ApiEnvelope<Company>>(
     `${COMPANIES_URL}/${companyId}`,
-    { method: "GET" },
+    // `next` only applies server-side (the public page's ISR render); the
+    // browser ignores it, so member dashboards still fetch live.
+    { method: "GET", next: { revalidate: 300 } },
   );
   return response.data;
 }
@@ -252,7 +254,7 @@ export async function getPublicCompanyJobs(
 }> {
   const response = await apiFetch<PaginatedApiEnvelope<PublicCompanyJob[]>>(
     `${COMPANIES_URL}/${companyId}/open-jobs?page=${page}&limit=${limit}`,
-    { method: "GET" },
+    { method: "GET", next: { revalidate: 300 } },
   );
   return { jobs: response.data || [], pagination: response.pagination };
 }

@@ -33,10 +33,18 @@ export function useMyCompanies() {
   };
 }
 
-export function useCompany(companyId: string | undefined) {
+export function useCompany(
+  companyId: string | undefined,
+  initialData?: Company | null,
+) {
+  // Seeded from the server render on the public page: the data is already on
+  // screen, so mounting must not refetch it. Member views pass no seed.
   const { data, error, isLoading, mutate } = useSWR(
     companyId ? `/companies/${companyId}` : null,
     () => getCompanyById(companyId!),
+    initialData
+      ? { fallbackData: initialData, revalidateOnMount: false }
+      : undefined,
   );
 
   return {
@@ -91,11 +99,17 @@ export function useAdminCompanies(
 export function usePublicCompanyJobs(
   companyId: string | undefined,
   limit = 20,
+  initialData?: Awaited<ReturnType<typeof getPublicCompanyJobs>> | null,
 ) {
   const [page, setPage] = useState(1);
+  // The seed is page 1; later pages fetch normally (the accumulate effect
+  // dedups the fallback rows that briefly show while a next page loads).
   const { data, error, isLoading } = useSWR(
     companyId ? `/companies/${companyId}/open-jobs?page=${page}&limit=${limit}` : null,
     () => getPublicCompanyJobs(companyId!, page, limit),
+    initialData
+      ? { fallbackData: initialData, revalidateOnMount: false }
+      : undefined,
   );
 
   // Listings accumulate as the visitor pages, so "load more" appends rather

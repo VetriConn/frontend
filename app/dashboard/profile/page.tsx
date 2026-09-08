@@ -916,7 +916,7 @@ export default function ProfilePage() {
             )}
             <QuickActionsCard
               appliedJobsCount={userProfile.applied_jobs_count ?? 0}
-              savedJobsCount={userProfile.saved_jobs?.length ?? 0}
+              savedJobsCount={userProfile.saved_jobs_count ?? 0}
             />
           </div>
         </div>

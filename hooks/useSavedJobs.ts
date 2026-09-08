@@ -10,7 +10,8 @@ import type { JobsResponse } from "@/types/api";
  * A job answers to two identities: the slug (`id`, e.g. head-baker-91994a34)
  * and the Mongo `_id`. Which one a surface holds depends on where it got the
  * job — the browse card links by slug, the detail page is often reached by
- * _id — and `saved_jobs` stores only the canonical slug.
+ * _id — and the API answers either, resolving to the canonical _id server
+ * side (jobIdentityQuery).
  *
  * This hook used to index saved jobs by `id || _id`, so a page holding the
  * _id asked "is this saved?" against a set of slugs and was told no. The Save

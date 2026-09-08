@@ -171,7 +171,7 @@ export interface UserProfile {
   work_experience?: WorkExperience[];
   education?: Education[];
   certifications?: Certification[];
-  saved_jobs?: string[];
+  saved_jobs_count?: number;
   applied_jobs_count?: number;
   skills?: string[];
 
@@ -239,7 +239,7 @@ export interface UserProfileResponse {
       work_experience?: WorkExperience[];
       education?: Education[];
       certifications?: Certification[];
-      saved_jobs?: string[];
+      saved_jobs_count?: number;
       applied_jobs_count?: number;
       skills?: string[];
       attachments?: UserAttachment[];

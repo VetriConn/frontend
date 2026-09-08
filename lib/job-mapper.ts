@@ -21,8 +21,7 @@ export function mapJobsResponse(job: JobsResponse): Job {
     company_name: job.company_name,
     company_logo: job.company_logo || "",
     location: job.location || "",
-    salary: job.salary,
-    salary_range: job.salary_range,
+    compensation: job.compensation,
     tags: (job.tags ?? []).map((tag) => ({ name: tag })),
     // Lists ship `summary` (derived) and omit the body; detail pages ship
     // `description`. Falling back keeps one mapper for both payloads.
@@ -34,7 +33,6 @@ export function mapJobsResponse(job: JobsResponse): Job {
     source: job.source,
     source_name: job.source_name,
     external_url: job.external_url,
-    salary_text: job.salary_text,
     posted_as: job.posted_as,
     company_id: job.company_id,
     poster_id: job.poster_id,
@@ -45,8 +43,6 @@ export function mapJobsResponse(job: JobsResponse): Job {
     skills: job.skills,
     physical_demands: job.physical_demands,
     work_schedule: job.work_schedule,
-    payment_type: job.payment_type,
-    currency: job.currency,
     city: job.city,
     state_province: job.state_province,
     country: job.country,

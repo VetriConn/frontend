@@ -338,28 +338,29 @@ export function generateJobPostingSchema(job: Job): JobPosting {
     };
   }
 
-  // Salary. The unit comes from the employer's stated payment type — this
-  // hardcoded YEAR, which published every hourly listing to Google as an
-  // annual figure ($34.75 a year).
-  const salaryUnit = job.payment_type === "hourly" ? "HOUR" : "YEAR";
-  if (job.salary?.number) {
-    schema.baseSalary = {
-      "@type": "MonetaryAmount",
-      currency: job.salary.currency || "CAD",
-      value: job.salary.number,
-      unitText: salaryUnit,
-    };
-  } else if (
-    job.salary_range?.start_salary?.number ||
-    job.salary_range?.end_salary?.number
-  ) {
-    schema.baseSalary = {
-      "@type": "MonetaryAmount",
-      currency: job.salary_range.start_salary?.currency || "CAD",
-      minValue: job.salary_range.start_salary?.number,
-      maxValue: job.salary_range.end_salary?.number,
-      unitText: salaryUnit,
-    };
+  // Salary. The unit comes from the stated basis — this hardcoded YEAR, which
+  // published every hourly listing to Google as an annual figure ($34.75 a
+  // year). The basis travelling inside the compensation object is what makes
+  // the figure interpretable here at all.
+  const pay = job.compensation;
+  if (pay && (pay.min !== undefined || pay.max !== undefined)) {
+    const salaryUnit = pay.basis === "hourly" ? "HOUR" : "YEAR";
+    const currency = pay.currency || "CAD";
+    schema.baseSalary =
+      pay.min !== undefined && pay.max !== undefined
+        ? {
+            "@type": "MonetaryAmount",
+            currency,
+            minValue: pay.min,
+            maxValue: pay.max,
+            unitText: salaryUnit,
+          }
+        : {
+            "@type": "MonetaryAmount",
+            currency,
+            value: pay.min ?? pay.max,
+            unitText: salaryUnit,
+          };
   }
 
   // Employment type from the stored column, in schema.org's spelling.

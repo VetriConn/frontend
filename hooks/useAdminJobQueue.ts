@@ -58,17 +58,10 @@ export function toAdminJob(j: AdminJobRaw): AdminJob {
     location: j.location || "Canada",
     employment_type:
       fieldLabel(JOB_TYPE_LABELS, j.job_type) ?? (j.job_type || "-"),
-    salary_range:
-      formatJobSalary(
-        {
-          salary: j.salary,
-          salary_range: j.salary_range,
-          salary_text: j.salary_text,
-          payment_type: j.payment_type,
-        } as Parameters<typeof formatJobSalary>[0],
-        "full",
-      ) ?? undefined,
-    description: j.full_description || j.description || "",
+    // No cast needed now that pay is one object with one shape everywhere —
+    // this used to assemble four loose fields and assert the result matched.
+    salary_range: formatJobSalary({ compensation: j.compensation }, "full") ?? undefined,
+    description: j.description || "",
     requirements: j.qualifications ?? [],
     submittedAt: j.createdAt || "",
     approvedAt: j.approved_at,

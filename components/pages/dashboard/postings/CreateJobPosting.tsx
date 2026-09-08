@@ -143,18 +143,13 @@ const CreateJobPosting = ({
       experience_level: job.experience_level ?? "",
       skills: job.skills ?? "",
       physical_demands: job.physical_demands ?? "",
-      // Zero means "not specified" in storage, so it comes back as empty
-      // rather than as a claim the job pays nothing.
-      salary_min: job.salary_range?.start_salary?.number
-        ? String(job.salary_range.start_salary.number)
-        : job.salary?.number
-          ? String(job.salary.number)
-          : "",
-      salary_max: job.salary_range?.end_salary?.number
-        ? String(job.salary_range.end_salary.number)
-        : "",
-      payment_type: job.payment_type ?? "",
-      currency: job.currency ?? "CAD",
+      // An unstated figure is absent in storage, so it comes back as an empty
+      // box rather than as a claim the job pays nothing. The wizard keeps two
+      // separate inputs; the server folds them into one object on save.
+      salary_min: job.compensation?.min ? String(job.compensation.min) : "",
+      salary_max: job.compensation?.max ? String(job.compensation.max) : "",
+      payment_type: job.compensation?.basis ?? "",
+      currency: job.compensation?.currency ?? "CAD",
       city: job.city ?? "",
       state_province: job.state_province ?? "",
       country: job.country ?? "Canada",

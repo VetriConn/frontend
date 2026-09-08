@@ -11,7 +11,7 @@ const base: JobsResponse = {
   id: "head-baker-abc",
   role: "head baker",
   company_name: "L'ARTISAN",
-  salary: { symbol: "$", number: 0, currency: "CAD" },
+  compensation: { currency: "CAD" },
   createdAt: "2026-08-17T00:00:00Z",
   updatedAt: "2026-08-20T00:00:00Z",
 };
@@ -41,12 +41,13 @@ describe("mapJobsResponse", () => {
       job_type: "full-time",
       experience_level: "senior",
       work_arrangement: "onsite",
-      payment_type: "hourly",
+      compensation: { currency: "CAD", basis: "hourly", min: 25 },
     });
     expect(job.job_type).toBe("full-time");
     expect(job.experience_level).toBe("senior");
     expect(job.work_arrangement).toBe("onsite");
-    expect(job.payment_type).toBe("hourly");
+    expect(job.compensation?.basis).toBe("hourly");
+    expect(job.compensation?.min).toBe(25);
   });
 
   it("falls back summary to the body when the payload has no summary", () => {

@@ -23,22 +23,17 @@ export interface Job {
   company_name: string;
   company_logo: string;
   location: string; // Dedicated location field for filtering
-  salary?: {
-    symbol: string;
-    number: number;
+  /**
+   * What the role pays — one object, assembled server-side. The verbatim
+   * `text` is the only form that can express "$18.50 hourly"; `basis` is what
+   * makes `min`/`max` interpretable.
+   */
+  compensation?: {
+    min?: number;
+    max?: number;
     currency: string;
-  };
-  salary_range?: {
-    start_salary: {
-      symbol: string;
-      number?: number;
-      currency: string;
-    };
-    end_salary: {
-      symbol: string;
-      number?: number;
-      currency: string;
-    };
+    basis?: PaymentType;
+    text?: string;
   };
   tags: Tag[];
   /** Full posting body — detail pages only; list payloads omit it. */
@@ -58,11 +53,6 @@ export interface Job {
   /** Board the listing came from, e.g. "Job Bank". Shown on the badge. */
   source_name?: string;
   external_url?: string;
-  /**
-   * Salary exactly as the source wrote it, e.g. "$18.50 hourly". Preferred over
-   * the parsed numeric salary, which cannot represent hourly pay.
-   */
-  salary_text?: string;
 
   /** Whether the poster published as themselves or as a vetted Company Page. */
   posted_as?: "individual" | "company";
@@ -75,11 +65,9 @@ export interface Job {
   skills?: string;
   physical_demands?: PhysicalDemands;
   work_schedule?: WorkSchedule;
-  payment_type?: PaymentType;
   city?: string;
   state_province?: ProvinceCode;
   country?: string;
-  currency?: Currency;
   min_qualification?: MinQualification;
   security_clearance?: SecurityClearance;
   requires_drivers_license?: boolean;

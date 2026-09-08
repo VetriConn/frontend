@@ -256,22 +256,13 @@ export interface JobsResponse {
   company_name: string;
   company_logo?: string;
   location?: string;
-  salary: {
-    symbol: string;
-    number: number;
+  /** What the role pays — one object. See the Job type for the contract. */
+  compensation?: {
+    min?: number;
+    max?: number;
     currency: string;
-  };
-  salary_range?: {
-    start_salary: {
-      symbol: string;
-      number?: number;
-      currency: string;
-    };
-    end_salary: {
-      symbol: string;
-      number?: number;
-      currency: string;
-    };
+    basis?: PaymentType;
+    text?: string;
   };
   tags?: string[];
   summary?: string;
@@ -293,7 +284,6 @@ export interface JobsResponse {
   skills?: string;
   physical_demands?: PhysicalDemands;
   work_schedule?: WorkSchedule;
-  payment_type?: PaymentType;
   city?: string;
   state_province?: ProvinceCode;
   country?: string;
@@ -324,8 +314,6 @@ export interface JobsResponse {
   source?: "user" | "scraped";
   source_name?: string;
   external_url?: string;
-  /** Free-text salary straight from the source, e.g. "$18.50 hourly". */
-  salary_text?: string;
 
   // Company-posted jobs (vetted Company Pages).
   posted_as?: "individual" | "company";
@@ -431,22 +419,13 @@ export interface PostedJobDetail extends PostedJobSummary {
   qualifications?: string[];
   responsibilities?: string[];
   company_logo?: string;
-  salary?: {
-    number: number;
+  /** What the role pays — one object. See the Job type for the contract. */
+  compensation?: {
+    min?: number;
+    max?: number;
     currency: string;
-    symbol: string;
-  };
-  salary_range?: {
-    start_salary?: {
-      number?: number;
-      currency?: string;
-      symbol?: string;
-    };
-    end_salary?: {
-      number?: number;
-      currency?: string;
-      symbol?: string;
-    };
+    basis?: PaymentType;
+    text?: string;
   };
   /**
    * The structured fields behind the Post-a-Job form, as real columns —
@@ -462,7 +441,6 @@ export interface PostedJobDetail extends PostedJobSummary {
   skills?: string;
   physical_demands?: PhysicalDemands;
   work_schedule?: WorkSchedule;
-  payment_type?: PaymentType;
   city?: string;
   state_province?: ProvinceCode;
   country?: string;

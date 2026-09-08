@@ -108,9 +108,8 @@ const JobDescriptor: React.FC<JobDescriptorProps> = ({
   company_name,
   company_logo,
   location,
-  salary,
-  salary_range,
   tags,
+  compensation,
   description,
   responsibilities,
   qualifications,
@@ -118,7 +117,6 @@ const JobDescriptor: React.FC<JobDescriptorProps> = ({
   source,
   source_name,
   external_url,
-  salary_text,
   posted_as,
   company_id,
   poster_id,
@@ -129,7 +127,6 @@ const JobDescriptor: React.FC<JobDescriptorProps> = ({
   skills,
   physical_demands,
   work_schedule,
-  payment_type,
   min_qualification,
   security_clearance,
   requires_drivers_license,
@@ -263,8 +260,7 @@ const JobDescriptor: React.FC<JobDescriptorProps> = ({
 
   // Aggregated listings carry the source's own salary wording, which is the
   // only form that can express hourly pay correctly.
-  const getSalaryDisplay = () =>
-    formatJobSalary({ salary, salary_range, salary_text, payment_type });
+  const getSalaryDisplay = () => formatJobSalary({ compensation });
 
   const externalApplyUrl = getExternalApplyUrl({
     source,

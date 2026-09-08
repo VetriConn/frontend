@@ -10,6 +10,7 @@ import {
   PaginatedApiEnvelope,
 } from "./client";
 import type { ApplicationItem, JobsResponse } from "@/types/api";
+import type { PaymentType } from "@/lib/job-fields";
 
 /** Per-source outcome of one scraper run. */
 export interface ScraperSourceSummary {
@@ -48,15 +49,14 @@ export interface AdminJobRaw {
   company_logo?: string;
   location?: string;
   job_type?: string;
-  salary?: { number?: number; currency?: string; symbol?: string };
-  salary_range?: {
-    start_salary?: { number?: number };
-    end_salary?: { number?: number };
+  compensation?: {
+    min?: number;
+    max?: number;
+    currency: string;
+    basis?: PaymentType;
+    text?: string;
   };
-  salary_text?: string;
-  payment_type?: string;
   description?: string;
-  full_description?: string;
   responsibilities?: string[];
   qualifications?: string[];
   moderation_status?: "pending" | "approved" | "rejected";

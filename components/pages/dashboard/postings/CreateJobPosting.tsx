@@ -517,11 +517,12 @@ const CreateJobPosting = ({
       // New jobs (and content edits to live ones) sit in the moderation queue
       // before they appear on the board — say so, don't claim "live". An
       // approved job can also be held (company suspended): approved ≠ live.
-      // The hold axis is always present ("none" when clear), so test the hold
-      // itself rather than the field's truthiness.
+      // Any hold means the listing is not on the board, whatever the verdict
+      // says — claiming "live" while an expiry or suspension hold is set
+      // tells the employer the save worked when the job is still invisible.
       if (
         saved.moderation_status === "approved" &&
-        saved.unpublished_reason !== "company_suspended"
+        (saved.unpublished_reason ?? "none") === "none"
       ) {
         showToast({
           type: "success",

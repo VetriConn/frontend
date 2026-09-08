@@ -27,6 +27,10 @@ import {
 import { screeningAnswerState } from "@/lib/candidate-match";
 import { formatDate } from "@/lib/date-utils";
 import { CustomDropdown } from "@/components/ui/CustomDropdown";
+import { Pagination } from "@/components/ui/Pagination";
+
+/** Applicants per page. The endpoint caps at MAX_PAGE_SIZE (100). */
+const APPLICATIONS_PER_PAGE = 25;
 
 
 
@@ -252,15 +256,22 @@ export default function ApplicationsPage() {
   const [busyApplicationId, setBusyApplicationId] = useState<string | null>(
     null,
   );
+  const [page, setPage] = useState(1);
   const {
     data,
     isLoading,
     error: loadError,
     mutate,
-  } = useSWR("employer-applications", getReceivedApplications);
+  } = useSWR(["employer-applications", page], () =>
+    getReceivedApplications(page, APPLICATIONS_PER_PAGE),
+  );
   // Failed first load only - see the postings page.
   const showLoadError = !!loadError && data === undefined;
-  const applications = data ?? [];
+  // Server-paged: the endpoint returns one page, so the filters and counters
+  // below describe the page on screen, not the whole history.
+  const applications = data?.applications ?? [];
+  const totalPages = data?.pagination?.totalPages ?? 1;
+  const totalItems = data?.pagination?.totalItems ?? applications.length;
 
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedStatus, setSelectedStatus] = useState<string>("all");
@@ -621,6 +632,16 @@ export default function ApplicationsPage() {
                       ))}
                     </tbody>
                   </table>
+                </div>
+                {/* Server-paged: without this the employer saw only the first
+                    page and nothing said so. */}
+                <div className="px-4 py-3 border-t border-gray-100">
+                  <Pagination
+                    page={page}
+                    totalPages={totalPages}
+                    onPageChange={setPage}
+                    summary={`${totalItems} application${totalItems === 1 ? "" : "s"} in total`}
+                  />
                 </div>
               </div>
             ) : (

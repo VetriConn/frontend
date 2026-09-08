@@ -129,11 +129,22 @@ export const CompanyWorkspace = ({ companyId }: { companyId: string }) => {
                   ? { label: "Draft", cls: "bg-gray-100 text-gray-600" }
                   : moderation === "rejected"
                     ? { label: "Rejected", cls: "bg-rose-50 text-rose-700" }
-                    : job.unpublished_reason === "company_suspended"
-                      ? { label: "On hold", cls: "bg-amber-50 text-amber-700" }
-                      : moderation === "approved"
-                        ? { label: "Published", cls: "bg-green-50 text-green-700" }
-                        : { label: "Awaiting approval", cls: "bg-yellow-50 text-yellow-700" };
+                    : job.unpublished_reason === "expired"
+                      ? { label: "Expired", cls: "bg-gray-100 text-gray-600" }
+                      : job.unpublished_reason === "company_suspended"
+                        ? {
+                            label: "On hold",
+                            cls: "bg-amber-50 text-amber-700",
+                          }
+                        : moderation === "approved"
+                          ? {
+                              label: "Published",
+                              cls: "bg-green-50 text-green-700",
+                            }
+                          : {
+                              label: "Awaiting approval",
+                              cls: "bg-yellow-50 text-yellow-700",
+                            };
               return (
                 <li
                   key={job._id}

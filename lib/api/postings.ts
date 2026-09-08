@@ -93,12 +93,35 @@ export async function getMyPostings(): Promise<PostedJobSummary[]> {
   return response.data?.jobs || [];
 }
 
-export async function getReceivedApplications(): Promise<ApplicationItem[]> {
-  const response = await apiFetch<
-    ApiEnvelope<{ applications: ApplicationItem[] }>
-  >(`${API_BASE_URL}/api/v1/jobs/mine/applications`, { method: "GET" });
+export interface ReceivedApplicationsPage {
+  applications: ApplicationItem[];
+  pagination?: {
+    currentPage: number;
+    totalPages: number;
+    totalItems: number;
+    hasPrev?: boolean;
+    hasNext?: boolean;
+  };
+}
 
-  return response.data?.applications || [];
+/**
+ * The employer's applicants, one page at a time. This used to return every
+ * application ever received in one unbounded response; the endpoint now pages,
+ * so a caller that ignores the page parameter silently sees only the first.
+ */
+export async function getReceivedApplications(
+  page = 1,
+  limit = 25,
+): Promise<ReceivedApplicationsPage> {
+  const response = await apiFetch<ApiEnvelope<ReceivedApplicationsPage>>(
+    `${API_BASE_URL}/api/v1/jobs/mine/applications?page=${page}&limit=${limit}`,
+    { method: "GET" },
+  );
+
+  return {
+    applications: response.data?.applications || [],
+    pagination: response.data?.pagination,
+  };
 }
 
 /** A candidate's professional profile, as surfaced to the reviewing employer. */

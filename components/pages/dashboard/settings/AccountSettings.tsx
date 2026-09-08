@@ -1142,7 +1142,7 @@ export default function AccountSettings() {
                         </button>
                       </div>
                       {confirmPassword.length > 0 && !passwordsMatch && (
-                        <p className="text-sm text-red-500 mt-1.5">
+                        <p className="text-sm text-red-700 mt-1.5">
                           Passwords do not match.
                         </p>
                       )}

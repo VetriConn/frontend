@@ -33,7 +33,14 @@ export const FIELD_LABEL =
 export const FIELD_HELPER = "text-xs text-gray-500 mt-1";
 
 /** Error text below the box. */
-export const FIELD_ERROR = "text-xs text-red-500 mt-1";
+/**
+ * Form errors: red-700 at text-sm, not red-500 at text-xs.
+ *
+ * red-500 on white is 3.76:1 — below AA — and 12px is the smallest text in
+ * the product carrying the most important message on the page. This is the
+ * one style where both dimensions were working against the reader.
+ */
+export const FIELD_ERROR = "text-sm text-red-700 mt-1";
 
 /** Spacing around a whole field, so a form stacks evenly. */
 export const FIELD_WRAPPER = "flex flex-col gap-1 mb-4";

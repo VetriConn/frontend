@@ -437,7 +437,7 @@ export const PhoneField = ({
       {error && (
         <p
           id={errorId}
-          className="text-xs text-red-500 mt-1"
+          className="text-sm text-red-700 mt-1"
           role="alert"
           aria-live="polite"
         >

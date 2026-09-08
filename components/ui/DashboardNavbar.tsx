@@ -615,8 +615,15 @@ const DashboardNavbar = () => {
           "fixed top-0 right-0 bottom-0 w-80 bg-white border-l border-gray-200 shadow-xl z-50 lg:hidden overflow-y-auto transition-transform duration-300 ease-in-out",
           isMobileMenuOpen ? "translate-x-0" : "translate-x-full",
         )}
+        // Translating a panel off-screen leaves it in the tab order and
+        // readable by screen readers, so every link inside sat between the
+        // page and the footer while the drawer looked closed — and aria-modal
+        // claimed the rest of the page was inert the whole time. `inert`
+        // removes it properly; aria-modal is only true while it is one.
+        inert={!isMobileMenuOpen}
+        aria-hidden={!isMobileMenuOpen}
         role="dialog"
-        aria-modal="true"
+        aria-modal={isMobileMenuOpen}
         aria-label="Mobile navigation menu"
       >
         {/* Close-button header — sticky so it stays reachable while scrolling. */}

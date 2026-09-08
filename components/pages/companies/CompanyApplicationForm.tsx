@@ -302,7 +302,7 @@ export const CompanyApplicationForm = () => {
             {form.about_company.length.toLocaleString()} / 2,000 characters
           </p>
           {errors.about_company && (
-            <p className="text-xs text-red-500 mt-1" role="alert">
+            <p className="text-sm text-red-700 mt-1" role="alert">
               {errors.about_company}
             </p>
           )}
@@ -334,7 +334,7 @@ export const CompanyApplicationForm = () => {
           </span>
         </label>
         {errors.authorized && (
-          <p className="text-xs text-red-500 mb-4" role="alert">
+          <p className="text-sm text-red-700 mb-4" role="alert">
             {errors.authorized}
           </p>
         )}

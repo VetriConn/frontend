@@ -87,7 +87,7 @@ export function SelectField({
 
 export function FieldError({ message }: { message?: string }) {
   if (!message) return null;
-  return <p className="text-sm text-red-500 mt-1">{message}</p>;
+  return <p className="text-sm text-red-700 mt-1">{message}</p>;
 }
 
 /**

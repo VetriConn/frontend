@@ -435,8 +435,12 @@ const CreateJobPosting = ({
         .map((c) => c.trim())
         .filter(Boolean),
       openings: formData.openings ? Number(formData.openings) : undefined,
-      application_deadline: formData.application_deadline || undefined,
-      start_date: formData.start_date || undefined,
+      // Sent verbatim, empty string and all. `|| undefined` here dropped the
+      // key from the JSON body, and the server reads an absent key as "leave
+      // this column alone" — so clearing the date and saving looked like it
+      // worked and changed nothing. An empty string is the removal.
+      application_deadline: formData.application_deadline,
+      start_date: formData.start_date,
       // Phase-2 fields, cleaned: drop blank rows and trim, so an empty editor
       // row never reaches the server (which would reject it) or a listing.
       screening_questions: cleanScreeningQuestions(formData.screening_questions),

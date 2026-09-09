@@ -14,6 +14,7 @@ import {
   type PaginatedApiEnvelope,
 } from "./client";
 import type { PostedJobSummary } from "@/types/api";
+import type { Compensation } from "@/types/job";
 
 export type CompanyRole = "owner" | "admin" | "recruiter";
 export type CompanyMemberStatus = "invited" | "active";
@@ -266,11 +267,13 @@ export interface PublicCompanyJob {
   location?: string;
   job_type?: string;
   work_arrangement?: string;
-  salary?: { number?: number; currency?: string };
-  salary_range?: { min?: number; max?: number };
-  salary_text?: string;
-  payment_type?: string;
-  currency?: string;
+  /**
+   * Pay, as one object. This declared the five columns it replaced —
+   * `salary`, `salary_range`, `salary_text`, `payment_type` and `currency` —
+   * for a while after they stopped existing, so anything that read them here
+   * would have type-checked and rendered nothing.
+   */
+  compensation?: Compensation;
   createdAt?: string;
 }
 

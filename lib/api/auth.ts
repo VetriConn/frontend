@@ -9,7 +9,12 @@ import { setAuthHint } from "../auth-hint";
 import { SignupFormData } from "@/types/signup";
 import type { LoginResponse } from "@/types/api";
 
-export interface ApiResponse<T = any> {
+/**
+ * A response from an auth endpoint. `never` as the argument is how an
+ * endpoint that returns no payload says so — `{}` said "any non-nullish
+ * value", which is the opposite.
+ */
+export interface ApiResponse<T = unknown> {
   success: boolean;
   message: string;
   data?: T;
@@ -113,7 +118,10 @@ export async function loginUser(
       },
     );
 
-    const requires2FA = (response.data as any)?.requires_2fa === true || response.requires2FA === true;
+    // The server reports the detour inside `data`; `requires2FA` is the flag
+    // this function synthesises for its own callers, so both are checked.
+    const requires2FA =
+      response.data?.requires_2fa === true || response.requires2FA === true;
 
     if (requires2FA) {
       return {
@@ -162,9 +170,9 @@ export async function logoutUser(): Promise<{
  */
 export async function resendVerificationEmail(
   email: string,
-): Promise<ApiResponse<{}>> {
+): Promise<ApiResponse<never>> {
   try {
-    return await apiFetch<ApiResponse<{}>>(
+    return await apiFetch<ApiResponse<never>>(
       getApiUrl(API_CONFIG.ENDPOINTS.AUTH.RESEND_VERIFICATION),
       {
         method: "POST",
@@ -190,9 +198,9 @@ export async function resendVerificationEmail(
  */
 export async function requestPasswordReset(
   email: string,
-): Promise<ApiResponse<{}>> {
+): Promise<ApiResponse<never>> {
   try {
-    return await apiFetch<ApiResponse<{}>>(
+    return await apiFetch<ApiResponse<never>>(
       getApiUrl(API_CONFIG.ENDPOINTS.AUTH.FORGOT_PASSWORD),
       {
         method: "POST",
@@ -219,9 +227,9 @@ export async function requestPasswordReset(
 export async function resetPasswordWithToken(
   token: string,
   newPassword: string,
-): Promise<ApiResponse<{}>> {
+): Promise<ApiResponse<never>> {
   try {
-    return await apiFetch<ApiResponse<{}>>(
+    return await apiFetch<ApiResponse<never>>(
       getApiUrl(API_CONFIG.ENDPOINTS.AUTH.RESET_PASSWORD),
       {
         method: "POST",

@@ -313,7 +313,7 @@ export function SignupWizard() {
         // Handle validation errors
         if (response.errors) {
           const errorMap: Record<string, string> = {};
-          response.errors.forEach((err: any) => {
+          response.errors.forEach((err) => {
             errorMap[err.field] = err.message;
           });
           dispatch({ type: "SET_ERRORS", payload: errorMap });

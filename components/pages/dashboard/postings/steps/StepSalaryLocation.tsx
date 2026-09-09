@@ -19,6 +19,52 @@ import {
   type FormErrors,
 } from "../jobForm";
 
+/**
+ * A date field with a way back out of it.
+ *
+ * `<input type="date">` is inconsistent about letting go of a value: Chrome
+ * offers a clear button, Safari offers nothing at all, and neither is
+ * discoverable. Since these two dates are the ones an employer most often
+ * needs to withdraw — a deadline that has moved, a start date that is now
+ * "whenever we find the right person" — the control is spelled out rather
+ * than left to the browser.
+ */
+function ClearableDate({
+  id,
+  label,
+  value,
+  onChange,
+}: {
+  id: "application_deadline" | "start_date";
+  label: string;
+  value: string;
+  onChange: (field: keyof JobFormData, value: string) => void;
+}) {
+  return (
+    <div>
+      <div className="flex items-baseline justify-between gap-2">
+        <FieldLabel htmlFor={id}>{label}</FieldLabel>
+        {value && (
+          <button
+            type="button"
+            onClick={() => onChange(id, "")}
+            className="text-sm text-gray-600 underline underline-offset-2 hover:text-primary mb-1.5 md:mb-2"
+          >
+            Clear<span className="sr-only"> {label.toLowerCase()}</span>
+          </button>
+        )}
+      </div>
+      <input
+        id={id}
+        type="date"
+        value={value}
+        onChange={(e) => onChange(id, e.target.value)}
+        className={inputClasses}
+      />
+    </div>
+  );
+}
+
 export function StepSalaryLocation({
   formData,
   errors,
@@ -146,30 +192,18 @@ export function StepSalaryLocation({
               className={inputClasses}
             />
           </div>
-          <div>
-            <FieldLabel htmlFor="application_deadline">
-              Application Deadline
-            </FieldLabel>
-            <input
-              id="application_deadline"
-              type="date"
-              value={formData.application_deadline}
-              onChange={(e) =>
-                onChange("application_deadline", e.target.value)
-              }
-              className={inputClasses}
-            />
-          </div>
-          <div>
-            <FieldLabel htmlFor="start_date">Expected Start</FieldLabel>
-            <input
-              id="start_date"
-              type="date"
-              value={formData.start_date}
-              onChange={(e) => onChange("start_date", e.target.value)}
-              className={inputClasses}
-            />
-          </div>
+          <ClearableDate
+            id="application_deadline"
+            label="Application Deadline"
+            value={formData.application_deadline}
+            onChange={onChange}
+          />
+          <ClearableDate
+            id="start_date"
+            label="Expected Start"
+            value={formData.start_date}
+            onChange={onChange}
+          />
         </div>
       </div>
     </div>

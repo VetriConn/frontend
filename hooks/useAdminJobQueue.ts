@@ -21,7 +21,8 @@ export interface AdminJob {
   company_logo?: string;
   location: string;
   employment_type: string;
-  salary_range?: string;
+  /** Pay, already formatted for display — not the removed salary_range column. */
+  pay?: string;
   description: string;
   requirements: string[];
   submittedAt: string; // ISO
@@ -60,7 +61,7 @@ export function toAdminJob(j: AdminJobRaw): AdminJob {
       fieldLabel(JOB_TYPE_LABELS, j.job_type) ?? (j.job_type || "-"),
     // No cast needed now that pay is one object with one shape everywhere —
     // this used to assemble four loose fields and assert the result matched.
-    salary_range: formatJobSalary({ compensation: j.compensation }, "full") ?? undefined,
+    pay: formatJobSalary({ compensation: j.compensation }, "full") ?? undefined,
     description: j.description || "",
     requirements: j.qualifications ?? [],
     submittedAt: j.createdAt || "",

@@ -292,10 +292,10 @@ const AdminJobDetail = ({ jobId, onChanged }: AdminJobDetailProps) => {
               <HiOutlineBriefcase className="w-4 h-4 text-gray-400" />
               {job.employment_type}
             </span>
-            {job.salary_range && (
+            {job.pay && (
               <span className="inline-flex items-center gap-1.5">
                 <HiOutlineBanknotes className="w-4 h-4 text-gray-400" />
-                {job.salary_range}
+                {job.pay}
               </span>
             )}
           </div>

@@ -30,16 +30,6 @@ function EmailVerificationContent() {
   const [message, setMessage] = useState("");
   const token = searchParams.get("token");
 
-  useEffect(() => {
-    if (!token) {
-      setStatus("error");
-      setMessage("Invalid verification link. No token provided.");
-      return;
-    }
-
-    verifyEmail(token);
-  }, [token]);
-
   const verifyEmail = async (token: string) => {
     try {
       const response = await fetch(getApiUrl("/api/v1/auth/verify-email"), {
@@ -76,6 +66,17 @@ function EmailVerificationContent() {
       setMessage("An error occurred during verification. Please try again.");
     }
   };
+
+  useEffect(() => {
+    if (!token) {
+      setStatus("error");
+      setMessage("Invalid verification link. No token provided.");
+      return;
+    }
+
+    verifyEmail(token);
+  }, [token]);
+
 
   return (
     <>

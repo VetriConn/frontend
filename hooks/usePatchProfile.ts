@@ -1,10 +1,11 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { patchUserProfile } from "@/lib/api";
+import type { ProfileUpdate } from "@/lib/api/profile";
 import { useToaster } from "@/components/ui/Toaster";
-import type { UserProfile, UserProfileResponse } from "@/types/api";
+import type { UserProfileResponse } from "@/types/api";
 
-function getProfileUpdateToastContent(data: Partial<UserProfile>) {
+function getProfileUpdateToastContent(data: ProfileUpdate) {
   const keys = Object.keys(data);
 
   const matchesExactly = (...expectedKeys: string[]) =>
@@ -69,7 +70,7 @@ function getProfileUpdateToastContent(data: Partial<UserProfile>) {
 }
 
 interface UsePatchProfileReturn {
-  patchProfile: (data: Partial<UserProfile>) => Promise<UserProfileResponse>;
+  patchProfile: (data: ProfileUpdate) => Promise<UserProfileResponse>;
   isLoading: boolean;
   error: string | null;
 }
@@ -83,7 +84,7 @@ export function usePatchProfile(
   const router = useRouter();
 
   const patchProfile = async (
-    data: Partial<UserProfile>,
+    data: ProfileUpdate,
   ): Promise<UserProfileResponse> => {
     setIsLoading(true);
     setError(null);

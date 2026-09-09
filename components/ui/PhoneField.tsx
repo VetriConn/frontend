@@ -8,6 +8,7 @@ import PhoneInput, {
   parsePhoneNumber,
 } from "react-phone-number-input";
 import "react-phone-number-input/style.css";
+import { RequiredMark } from "./RequiredMark";
 
 /**
  * Country-aware phone input, in two pieces:
@@ -413,7 +414,7 @@ export const PhoneField = ({
         {optional && (
           <span className="text-gray-400 font-normal ml-1">(optional)</span>
         )}
-        {required && <span className="text-red-500 ml-1">*</span>}
+        {required && <RequiredMark />}
       </label>
 
       <PhoneInputControl

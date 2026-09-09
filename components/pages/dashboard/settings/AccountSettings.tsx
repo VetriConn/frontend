@@ -335,11 +335,14 @@ export default function AccountSettings() {
       });
       setDownloadSuccess(true);
       setTimeout(() => setDownloadSuccess(false), 5000);
-    } catch (err: any) {
+    } catch (err) {
       showToast({
         type: "error",
         title: "Export failed",
-        description: err.message || "Failed to export your data. Please try again.",
+        description:
+          err instanceof Error
+            ? err.message
+            : "Failed to export your data. Please try again.",
       });
     } finally {
       setIsDownloading(false);

@@ -47,9 +47,44 @@ export async function getUserProfile(): Promise<UserProfileResponse> {
   }
 }
 
+/**
+ * What PATCH /auth/profile actually accepts.
+ *
+ * This was `Partial<UserProfile>` — the RESPONSE shape — so TypeScript was
+ * happy to let a caller send `picture`, `password`, `id`, `role`, `email`,
+ * `saved_jobs_count` or `emailVerified`. The endpoint's schema is strict and
+ * rejects every one of them, so each would have been a 400 at runtime that
+ * nothing caught at the keyboard. `picture` is the one that matters: it is
+ * refused deliberately, because accepting a client-supplied asset URL is
+ * what let one account point at another's image and then delete it.
+ *
+ * Keep this list matching the server's profileUpdateSchema.
+ */
+export type ProfileUpdate = Partial<
+  Pick<
+    UserProfile,
+    | "full_name"
+    | "bio"
+    | "phone_number"
+    | "city"
+    | "state_province"
+    | "country"
+    | "job_title"
+    | "industry"
+    | "years_of_experience"
+    | "promotional_emails"
+    | "looking_for"
+    | "skills"
+    | "socials"
+    | "work_experience"
+    | "education"
+    | "certifications"
+  >
+>;
+
 // PATCH user profile (partial update for profile page)
 export async function patchUserProfile(
-  profileData: Partial<UserProfile>,
+  profileData: ProfileUpdate,
 ): Promise<UserProfileResponse> {
   return await apiFetch<UserProfileResponse>(
     `${API_BASE_URL}${API_CONFIG.ENDPOINTS.USER.UPDATE_PROFILE}`,

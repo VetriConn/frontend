@@ -45,19 +45,21 @@ export default function ManageJobsPage() {
   const jobs = data ?? [];
 
   // Pagination calculations
-  const totalPages = Math.ceil(jobs.length / itemsPerPage);
-  const paginatedJobs = useMemo(() => {
-    const startIndex = (currentPage - 1) * itemsPerPage;
-    return jobs.slice(startIndex, startIndex + itemsPerPage);
-  }, [jobs, currentPage]);
-
-  // Reset to page 1 when jobs change
   const totalJobs = jobs.length;
-  useMemo(() => {
-    if (currentPage > totalPages && totalPages > 0) {
-      setCurrentPage(totalPages);
-    }
-  }, [totalJobs, currentPage, totalPages]);
+  const totalPages = Math.ceil(totalJobs / itemsPerPage);
+
+  // The page actually shown, clamped to what exists. This used to be a
+  // setCurrentPage call inside a useMemo, which React is explicit about: a
+  // memo callback may be evaluated more than once and setting state from it
+  // can loop. Deleting the last posting on page 3 also left `currentPage` at
+  // 3 for a render before the correction landed, which is a blank list.
+  // Clamping here means the out-of-range value never reaches the slice.
+  const page = Math.min(currentPage, Math.max(totalPages, 1));
+
+  const paginatedJobs = useMemo(() => {
+    const startIndex = (page - 1) * itemsPerPage;
+    return jobs.slice(startIndex, startIndex + itemsPerPage);
+  }, [jobs, page]);
 
   const handleToggleStatus = async (
     jobId: string,
@@ -319,23 +321,23 @@ export default function ManageJobsPage() {
             {totalPages > 1 && (
               <div className="mt-6 flex items-center justify-between">
                 <p className="text-sm text-gray-600 font-medium">
-                  Showing page {currentPage} of {totalPages}
+                  Showing page {page} of {totalPages}
                 </p>
                 <div className="flex items-center gap-2">
                   <button
                     onClick={() =>
-                      setCurrentPage((prev) => Math.max(1, prev - 1))
+                      setCurrentPage(Math.max(1, page - 1))
                     }
-                    disabled={currentPage === 1}
+                    disabled={page === 1}
                     className="p-2 rounded-lg border border-gray-200 text-gray-600 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                   >
                     <HiOutlineChevronLeft className="w-5 h-5" />
                   </button>
                   <button
                     onClick={() =>
-                      setCurrentPage((prev) => Math.min(totalPages, prev + 1))
+                      setCurrentPage(Math.min(totalPages, page + 1))
                     }
-                    disabled={currentPage === totalPages}
+                    disabled={page === totalPages}
                     className="p-2 rounded-lg border border-gray-200 text-gray-600 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                   >
                     <HiOutlineChevronRight className="w-5 h-5" />

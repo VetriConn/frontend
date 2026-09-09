@@ -1,4 +1,5 @@
 import Image from "next/image";
+import Link from "next/link";
 // One family for both, matching the contact section. These were Line Awesome
 // and Feather respectively — two weights, two corner radii, and neither of
 // them the official mark.
@@ -70,15 +71,15 @@ const Footer = () => {
             </div>
             <div className="flex flex-col">
               <div className={HEADING}>Company</div>
-              <a href="/jobs" className={LINK}>
+              <Link href="/jobs" className={LINK}>
                 Jobs
-              </a>
-              <a href="/about" className={LINK}>
+              </Link>
+              <Link href="/about" className={LINK}>
                 About
-              </a>
-              <a href="/faq" className={LINK}>
+              </Link>
+              <Link href="/faq" className={LINK}>
                 FAQ
-              </a>
+              </Link>
             </div>
           </div>
         </div>

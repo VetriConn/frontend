@@ -34,15 +34,23 @@ export interface ApiResponse<T = unknown> {
 export interface LoginResponse {
   success: boolean;
   message: string;
+  /**
+   * Two different payloads share this key, because the server sends one or
+   * the other. A completed login carries the user and token; a login that
+   * stops for 2FA carries only `requires_2fa`, which was missing from this
+   * type and read through an `as any` at the call site — so nothing would
+   * have noticed if the server renamed it.
+   */
   data?: {
-    user: {
+    user?: {
       id: string;
       email: string;
       first_name?: string;
       last_name?: string;
       role?: string;
     };
-    token: string;
+    token?: string;
+    requires_2fa?: boolean;
   };
   /** Set when the user has 2FA enabled. Frontend must call /2fa/challenge
    * with the partial-session token before a full session is issued. */
@@ -174,8 +182,6 @@ export interface UserProfile {
   saved_jobs_count?: number;
   applied_jobs_count?: number;
   skills?: string[];
-
-  // Job-seeking status
 
   // Email verification fields
   emailVerified?: boolean;

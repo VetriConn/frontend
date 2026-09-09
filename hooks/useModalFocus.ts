@@ -33,10 +33,18 @@ export function useModalFocus(
 
   // Latest-value refs keep the effect keyed on isOpen alone: re-running it
   // on every onClose identity change would re-fire initial focus mid-use.
+  //
+  // Written in an effect rather than during render. A render can be started
+  // and thrown away, and a ref written on the discarded attempt keeps the
+  // value from a render that never committed. Both refs are only ever read
+  // from event handlers, which run after commit, so there is nothing to
+  // gain from writing them earlier.
   const closeRef = useRef(onClose);
-  closeRef.current = onClose;
   const closeDisabledRef = useRef(!!options.closeDisabled);
-  closeDisabledRef.current = !!options.closeDisabled;
+  useEffect(() => {
+    closeRef.current = onClose;
+    closeDisabledRef.current = !!options.closeDisabled;
+  });
 
   useEffect(() => {
     if (!isOpen) return;

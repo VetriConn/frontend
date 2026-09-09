@@ -36,6 +36,10 @@ export default function RouteError({
           >
             Try again
           </button>
+          {/* eslint-disable-next-line @next/next/no-html-link-for-pages --
+              A hard navigation on purpose. This is the error boundary, so
+              the client state that produced the error is exactly what a
+              soft <Link> navigation would carry over to the next page. */}
           <a
             href="/"
             className="inline-flex items-center justify-center px-6 py-3 min-h-[48px] rounded-full border border-gray-300 text-gray-800 font-semibold hover:bg-gray-50 transition-colors no-underline"

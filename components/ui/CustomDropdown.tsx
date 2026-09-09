@@ -12,6 +12,7 @@ import {
   FIELD_ERROR,
   FIELD_WRAPPER,
 } from "./fieldStyles";
+import { RequiredMark } from "./RequiredMark";
 
 interface DropdownOption {
   value: string;
@@ -333,7 +334,7 @@ export const CustomDropdown = ({
       {label && (
         <label htmlFor={name} className={FIELD_LABEL}>
           {label}
-          {required && <span className="text-red-500 ml-1">*</span>}
+          {required && <RequiredMark />}
         </label>
       )}
 

@@ -12,10 +12,27 @@ import type {
   SecurityClearance,
   Language,
   Benefit,
-  Currency,
   ScreeningQuestion,
   JobFaq,
 } from "@/lib/job-fields";
+
+/**
+ * What a role pays — one object, assembled server-side.
+ *
+ * The verbatim `text` is the only form that can express "$18.50 hourly";
+ * `basis` is what makes `min`/`max` interpretable, and without it the scam
+ * heuristic read every salaried figure as an hourly rate. Named rather than
+ * inlined per-consumer, because the five columns this replaced are still
+ * being found written out by hand in types that describe payloads the server
+ * stopped sending.
+ */
+export interface Compensation {
+  min?: number;
+  max?: number;
+  currency: string;
+  basis?: PaymentType;
+  text?: string;
+}
 
 export interface Job {
   id: string;
@@ -23,18 +40,8 @@ export interface Job {
   company_name: string;
   company_logo: string;
   location: string; // Dedicated location field for filtering
-  /**
-   * What the role pays — one object, assembled server-side. The verbatim
-   * `text` is the only form that can express "$18.50 hourly"; `basis` is what
-   * makes `min`/`max` interpretable.
-   */
-  compensation?: {
-    min?: number;
-    max?: number;
-    currency: string;
-    basis?: PaymentType;
-    text?: string;
-  };
+  /** What the role pays. See {@link Compensation}. */
+  compensation?: Compensation;
   tags: Tag[];
   /** Full posting body — detail pages only; list payloads omit it. */
   description?: string;

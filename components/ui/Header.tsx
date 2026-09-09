@@ -151,6 +151,10 @@ export const Header = () => {
         <Link href="/faq" className={navLinkClass(pathname === "/faq")}>
           FAQ
         </Link>
+        {/* eslint-disable-next-line @next/next/no-html-link-for-pages --
+            An in-page anchor, not a route. On the home page the click is
+            intercepted and scrolled; from anywhere else the browser needs
+            the fragment to land on, which <Link> would strip. */}
         <a
           href="/#contact-section"
           className={navLinkClass(false)}
@@ -221,6 +225,8 @@ export const Header = () => {
           >
             FAQ
           </Link>
+          {/* eslint-disable-next-line @next/next/no-html-link-for-pages --
+              Same in-page anchor, mobile drawer copy. */}
           <a
             href="/#contact-section"
             className={clsx(

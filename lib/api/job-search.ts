@@ -81,7 +81,7 @@ export async function upsertDraft(
 }
 
 export async function deleteDraft(jobId: string): Promise<void> {
-  await apiFetch<ApiEnvelope<{}>>(
+  await apiFetch<ApiEnvelope<never>>(
     `${API_BASE_URL}/api/v1/application-drafts/${jobId}`,
     { method: "DELETE" },
   );
@@ -159,7 +159,7 @@ export async function updateSavedSearch(
 }
 
 export async function deleteSavedSearch(id: string): Promise<void> {
-  await apiFetch<ApiEnvelope<{}>>(
+  await apiFetch<ApiEnvelope<never>>(
     `${API_BASE_URL}/api/v1/saved-searches/${id}`,
     { method: "DELETE" },
   );
@@ -264,7 +264,7 @@ export async function updateTrackerEntry(
 }
 
 export async function deleteTrackerEntry(id: string): Promise<void> {
-  await apiFetch<ApiEnvelope<{}>>(
+  await apiFetch<ApiEnvelope<never>>(
     `${API_BASE_URL}/api/v1/application-tracker/${id}`,
     { method: "DELETE" },
   );

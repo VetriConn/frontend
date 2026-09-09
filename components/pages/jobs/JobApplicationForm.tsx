@@ -33,6 +33,7 @@ import {
 import { useToaster } from "@/components/ui/Toaster";
 import { CustomDropdown } from "@/components/ui/CustomDropdown";
 import { PhoneInputControl } from "@/components/ui/PhoneField.lazy";
+import { ScreeningQuestionField } from "./ScreeningQuestionField";
 
 // Canonical profile shape subset used for pre-filling application form
 import type { UserProfile } from "@/types/api";
@@ -763,91 +764,14 @@ export default function JobApplicationForm({
             optional={!screeningQuestions.some((q) => q.required)}
           >
             <div className="space-y-6">
-              {screeningQuestions.map((q) => {
-                const value = formData.screeningAnswers[q.id] ?? [];
-                return (
-                  <div key={q.id}>
-                    <label className="block text-sm font-semibold text-gray-900 mb-2">
-                      {q.question}
-                      {q.required && (
-                        <span className="text-red-500 ml-0.5">*</span>
-                      )}
-                    </label>
-
-                    {q.type === "short_text" && (
-                      <textarea
-                        value={value[0] ?? ""}
-                        onChange={(e) =>
-                          setScreeningAnswer(
-                            q.id,
-                            e.target.value ? [e.target.value] : [],
-                          )
-                        }
-                        rows={3}
-                        className="form-input resize-none"
-                        placeholder="Type your answer..."
-                      />
-                    )}
-
-                    {(q.type === "yes_no" ||
-                      q.type === "single_choice") && (
-                      <div className="flex flex-wrap gap-2">
-                        {(q.type === "yes_no"
-                          ? ["yes", "no"]
-                          : q.options ?? []
-                        ).map((opt) => {
-                          const on = value.includes(opt);
-                          return (
-                            <button
-                              key={opt}
-                              type="button"
-                              aria-pressed={on}
-                              onClick={() => setScreeningAnswer(q.id, [opt])}
-                              className={`min-h-[44px] rounded-lg border px-4 py-2 text-sm font-medium capitalize transition-colors ${
-                                on
-                                  ? "border-primary bg-primary text-white"
-                                  : "border-gray-300 bg-white text-gray-700 hover:border-primary hover:text-primary"
-                              }`}
-                            >
-                              {opt}
-                            </button>
-                          );
-                        })}
-                      </div>
-                    )}
-
-                    {q.type === "multi_choice" && (
-                      <div className="flex flex-wrap gap-2">
-                        {(q.options ?? []).map((opt) => {
-                          const on = value.includes(opt);
-                          return (
-                            <button
-                              key={opt}
-                              type="button"
-                              aria-pressed={on}
-                              onClick={() =>
-                                setScreeningAnswer(
-                                  q.id,
-                                  on
-                                    ? value.filter((v) => v !== opt)
-                                    : [...value, opt],
-                                )
-                              }
-                              className={`min-h-[44px] rounded-lg border px-4 py-2 text-sm font-medium transition-colors ${
-                                on
-                                  ? "border-primary bg-primary text-white"
-                                  : "border-gray-300 bg-white text-gray-700 hover:border-primary hover:text-primary"
-                              }`}
-                            >
-                              {opt}
-                            </button>
-                          );
-                        })}
-                      </div>
-                    )}
-                  </div>
-                );
-              })}
+              {screeningQuestions.map((q) => (
+                <ScreeningQuestionField
+                  key={q.id}
+                  question={q}
+                  value={formData.screeningAnswers[q.id] ?? []}
+                  onChange={(values) => setScreeningAnswer(q.id, values)}
+                />
+              ))}
             </div>
           </SectionCard>
         )}

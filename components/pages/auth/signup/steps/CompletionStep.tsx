@@ -236,7 +236,7 @@ export function CompletionStep({
         <div className="flex items-start gap-3">
           <HiCheckCircle className="w-5 h-5 text-primary mt-0.5 flex-shrink-0" />
           <p className="text-sm text-gray-700">
-            Check your spam folder if you don't see it in your inbox
+            Check your spam folder if you don&rsquo;t see it in your inbox
           </p>
         </div>
         <div className="flex items-start gap-3">
@@ -255,7 +255,7 @@ export function CompletionStep({
 
       {/* Resend Email Section */}
       <div className="text-center space-y-3">
-        <p className="text-sm text-gray-600">Didn't receive the email?</p>
+        <p className="text-sm text-gray-600">Didn&rsquo;t receive the email?</p>
 
         {resendAttempts >= MAX_ATTEMPTS ? (
           <div className="text-sm text-red-600">

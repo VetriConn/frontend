@@ -2,6 +2,7 @@
 
 import React from "react";
 import { CustomDropdown } from "@/components/ui/CustomDropdown";
+import { RequiredMark } from "@/components/ui/RequiredMark";
 import { CountrySelect } from "@/components/ui/CountrySelect";
 import { regionsFor, hasRegions, regionLabelFor } from "@/lib/regions";
 import type { JobFormData } from "./jobForm";
@@ -34,7 +35,7 @@ export function FieldLabel({
       className="block text-sm font-medium text-gray-700 mb-1.5 md:mb-2"
     >
       {children}
-      {required && <span className="text-red-500 ml-0.5">*</span>}
+      {required && <RequiredMark className="ml-0.5" />}
     </label>
   );
 }

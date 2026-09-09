@@ -504,11 +504,14 @@ export default function ProfilePage() {
         title: "Photo updated",
         description: "Your profile picture has been updated successfully.",
       });
-    } catch (err: any) {
+    } catch (err) {
       showToast({
         type: "error",
         title: "Upload failed",
-        description: err.message || "Failed to upload photo. Please check your connection and try again.",
+        description:
+          err instanceof Error
+            ? err.message
+            : "Failed to upload photo. Please check your connection and try again.",
       });
       throw new Error("Failed to upload photo.");
     } finally {

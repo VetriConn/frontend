@@ -29,7 +29,9 @@ interface RecommendedJobCardProps {
   company_name: string;
   location: string;
   work_type?: string;
-  salary_range: string;
+  /** Pay, already formatted. Named for the column it came from long after
+   *  that column stopped existing. */
+  pay: string;
 }
 
 const RecommendedJobCard: React.FC<RecommendedJobCardProps> = ({
@@ -38,7 +40,7 @@ const RecommendedJobCard: React.FC<RecommendedJobCardProps> = ({
   company_name,
   location,
   work_type,
-  salary_range,
+  pay,
 }) => {
   return (
     <article
@@ -87,7 +89,7 @@ const RecommendedJobCard: React.FC<RecommendedJobCardProps> = ({
 
         <div className={clsx(CARD_META_ROW, "text-primary font-medium")}>
           <HiCurrencyDollar className="w-4 h-4 shrink-0" />
-          <span>{salary_range}</span>
+          <span>{pay}</span>
         </div>
       </Link>
 
@@ -137,7 +139,7 @@ export const RecommendedJobs: React.FC = () => {
       location: (job.location || "Canada").replace(/^location\s+/i, ""),
       // The card has always had a clock row for this; nothing populated it.
       work_type: fieldLabel(JOB_TYPE_LABELS, job.job_type) ?? undefined,
-      salary_range: salaryRange,
+      pay: salaryRange,
     };
   });
 

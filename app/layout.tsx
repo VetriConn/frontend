@@ -108,14 +108,21 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <head>
         <meta charSet="UTF-8" />
-        <meta name="theme-color" content="#e53e3e" />
+        {/* Tracks --color-primary in globals.css; it was left on the old
+            #e53e3e when that token moved to a shade that passes AA. */}
+        <meta name="theme-color" content="#c53030" />
         <link rel="icon" href="/logo.svg" />
         <JsonLd data={organizationSchema} />
         <JsonLd data={webSiteSchema} />
-        {/* Blocking script to prevent FOUC for accessibility settings */}
+        {/* Applies the saved text size and contrast before first paint, so
+            someone who needs larger text never watches the page redraw at
+            the size they rejected. It carried its own copy of the old route
+            gate; the gate is gone from both places at once, since a copy
+            that drifts from hooks/useAccessibility is a flash of the wrong
+            layout on exactly the routes that differ. */}
         <script
           dangerouslySetInnerHTML={{
-            __html: `(function(){try{if(!(location.pathname.startsWith('/dashboard')||location.pathname.startsWith('/jobs')))return;var s=JSON.parse(localStorage.getItem('vetriconn-accessibility')||'{}');if(s.highContrast)document.documentElement.classList.add('high-contrast');if(s.textSize&&s.textSize!=='normal'){var m={'large':'112%','extra-large':'125%'};if(m[s.textSize])document.documentElement.style.fontSize=m[s.textSize]}}catch(e){}})();`,
+            __html: `(function(){try{var s=JSON.parse(localStorage.getItem('vetriconn-accessibility')||'{}');if(s.highContrast)document.documentElement.classList.add('high-contrast');if(s.textSize&&s.textSize!=='normal'){var m={'large':'112%','extra-large':'125%'};if(m[s.textSize])document.documentElement.style.fontSize=m[s.textSize]}}catch(e){}})();`,
           }}
         />
       </head>

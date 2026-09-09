@@ -6,9 +6,13 @@ import {
   PROFILE_COMPLETION_FIELDS,
 } from "@/lib/profile-utils";
 
+/** The one SWR key for the signed-in profile. Shared so a seed written by
+ *  the sign-in flow lands where this hook reads. */
+export const PROFILE_KEY = "/auth/profile";
+
 export function useUserProfile() {
   const { data, error, mutate, isLoading } = useSWR(
-    "/auth/profile",
+    PROFILE_KEY,
     getUserProfile,
     {
       // The header renders off this, so every revalidation repaints the auth

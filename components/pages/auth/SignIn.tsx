@@ -18,6 +18,8 @@ import TwoFactorChallengeDialog from "@/components/security/TwoFactorChallengeDi
 import {
   RETURN_URL_PARAM,
   resolvePostAuthPath,
+  homePathForRole,
+  sanitizeReturnUrl,
   withReturnUrl,
 } from "@/lib/auth-redirect";
 
@@ -47,8 +49,10 @@ export const SignIn = () => {
   // Someone arriving from a company invite needs to land back on the invite,
   // not the dashboard. Unsafe values fall back to the dashboard.
   const rawReturnUrl = searchParams.get(RETURN_URL_PARAM);
-  const postAuthPath = resolvePostAuthPath(rawReturnUrl);
-  const isReturningSomewhere = postAuthPath !== "/dashboard";
+  // Whether a usable destination was carried in, rather than comparing the
+  // resolved path against "/dashboard" — that literal stopped meaning "no
+  // return url" the moment admins started landing on /admin.
+  const isReturningSomewhere = sanitizeReturnUrl(rawReturnUrl) !== null;
   const sessionExpired = searchParams.get("reason") === "session-expired";
 
   // Carry the destination through if they need an account first.
@@ -56,21 +60,36 @@ export const SignIn = () => {
     ? withReturnUrl("/signup", rawReturnUrl)
     : "/signup";
 
-  const { resetSessionCache } = useSessionCache();
+  const { startSession } = useSessionCache();
 
-  const finishSignIn = () => {
-    // Before anything renders as the new user. SWR keys are URLs, not
-    // identities, so whatever the previous account cached is still sitting
-    // there and would be served to this one.
-    void resetSessionCache(true);
+  /**
+   * @param roleHint The role from the login response, which is authoritative
+   * and instant. Absent on the 2FA path, where startSession's fetch supplies
+   * it instead.
+   */
+  const finishSignIn = async (roleHint?: string) => {
     showToast({
       type: "success",
       title: "Login successful",
       description: isReturningSomewhere
         ? "Welcome back! Taking you back to where you left off..."
-        : "Welcome back! Redirecting to dashboard...",
+        : "Welcome back!",
     });
-    setTimeout(() => router.push(postAuthPath), 1200);
+
+    // Drops the previous account's cache and seeds this one's profile, so the
+    // destination renders the right person immediately.
+    let role = roleHint;
+    try {
+      role = (await startSession()) ?? roleHint;
+    } catch {
+      // The destination fetches for itself; the hint still routes us there.
+    }
+
+    // Role-aware, and this is the fix for the flash: pushing everyone to
+    // /dashboard sent admins to the job-seeker dashboard, where AuthGuard
+    // could only bounce them once the profile had loaded. An explicit
+    // ?redirect= still wins — that is someone returning to a specific page.
+    router.push(resolvePostAuthPath(rawReturnUrl, homePathForRole(role)));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -89,7 +108,7 @@ export const SignIn = () => {
       }
 
       if (response.success && response.data) {
-        finishSignIn();
+        await finishSignIn(response.data.user?.role);
       } else {
         throw new Error(response.error || "Login failed");
       }
@@ -333,7 +352,7 @@ export const SignIn = () => {
         onVerified={() => {
           setTwoFactorOpen(false);
           setPartialToken(undefined);
-          finishSignIn();
+          void finishSignIn();
         }}
       />
     </div>

@@ -2,6 +2,8 @@
 
 import { useCallback } from "react";
 import { useSWRConfig } from "swr";
+import { getUserProfile } from "@/lib/api";
+import { PROFILE_KEY } from "./useUserProfile";
 
 /**
  * Drop every cached response when the signed-in identity changes.
@@ -31,12 +33,17 @@ import { useSWRConfig } from "swr";
  */
 export function useSessionCache(): {
   /**
-   * @param revalidate Refetch mounted keys immediately. True on sign-in, so
-   * components that stay mounted across the navigation (the header, chiefly)
-   * repaint as the new user instead of sitting empty. False on sign-out,
+   * @param revalidate Refetch mounted keys immediately. False on sign-out,
    * where every refetch would only earn a 401.
    */
   resetSessionCache: (revalidate: boolean) => Promise<unknown>;
+  /**
+   * Sign-in: drop the previous account, then fetch and seed the new profile
+   * before anything renders off it. Returns the new role, which decides where
+   * the session starts — routing on a stale or absent role is what made an
+   * admin watch the job-seeker dashboard load first.
+   */
+  startSession: () => Promise<string | undefined>;
 } {
   const { mutate } = useSWRConfig();
 
@@ -47,5 +54,18 @@ export function useSessionCache(): {
     [mutate],
   );
 
-  return { resetSessionCache };
+  const startSession = useCallback(async (): Promise<string | undefined> => {
+    // No revalidate: the seed below is the fetch, and asking twice would race.
+    await mutate(() => true, undefined, { revalidate: false });
+
+    const profile = await getUserProfile();
+    // Written under the key useUserProfile reads, so the destination page
+    // renders the right person on its first frame rather than its loading
+    // state — and keepPreviousData has nothing stale left to fall back on.
+    await mutate(PROFILE_KEY, profile, { revalidate: false });
+
+    return profile.data?.user?.role;
+  }, [mutate]);
+
+  return { resetSessionCache, startSession };
 }

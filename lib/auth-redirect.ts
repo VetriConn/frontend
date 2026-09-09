@@ -16,6 +16,25 @@ export const RETURN_URL_PARAM = "redirect";
 
 export const DEFAULT_POST_AUTH_PATH = "/dashboard";
 
+export const ADMIN_POST_AUTH_PATH = "/admin";
+
+/**
+ * Where a session begins, for the role that owns it.
+ *
+ * Sign-in used to push everyone to /dashboard. For an admin that is the
+ * job-seeker dashboard, which AuthGuard then bounces to /admin — but only
+ * once the profile has loaded, because until then `isAdmin` is false and the
+ * guard's `!isAdmin` test passes. So an admin watched the seeker dashboard
+ * render, sat on it for as long as /auth/profile took to answer, and was then
+ * moved. It read as the previous account's UI persisting; it was the wrong
+ * page, arrived at deliberately.
+ *
+ * The role is on the login response already, so there is nothing to wait for.
+ */
+export function homePathForRole(role: string | undefined): string {
+  return role === "admin" ? ADMIN_POST_AUTH_PATH : DEFAULT_POST_AUTH_PATH;
+}
+
 /**
  * Reduce a raw `redirect` param to a safe in-app path, or null.
  *

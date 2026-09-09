@@ -10,6 +10,7 @@ import { signInSchema } from "@/lib/validation";
 import { useToaster } from "@/components/ui/Toaster";
 import { ZodError } from "zod";
 import { loginUser } from "@/lib/api";
+import { useSessionCache } from "@/hooks/useSessionCache";
 import { resendVerificationEmail } from "@/lib/api/auth";
 import { FormField } from "@/components/ui/FormField";
 import { PasswordField } from "@/components/ui/PasswordField";
@@ -55,7 +56,13 @@ export const SignIn = () => {
     ? withReturnUrl("/signup", rawReturnUrl)
     : "/signup";
 
+  const { resetSessionCache } = useSessionCache();
+
   const finishSignIn = () => {
+    // Before anything renders as the new user. SWR keys are URLs, not
+    // identities, so whatever the previous account cached is still sitting
+    // there and would be served to this one.
+    void resetSessionCache(true);
     showToast({
       type: "success",
       title: "Login successful",

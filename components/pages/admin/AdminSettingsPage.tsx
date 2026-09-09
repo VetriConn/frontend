@@ -14,7 +14,6 @@ import {
   HiOutlineExclamationTriangle,
   HiOutlinePencilSquare,
   HiOutlineUser,
-  HiOutlineBell,
   HiOutlineLockClosed,
   HiOutlineComputerDesktop,
   HiOutlineEnvelope,
@@ -25,7 +24,6 @@ import {
   useAdminSettings,
   updateAdminProfile,
   updateAdminPassword,
-  updateAdminNotifications,
 } from "@/hooks/useAdminSettings";
 import {
   adminListOwnSessions,
@@ -39,6 +37,11 @@ import { isSuperAdmin } from "@/lib/admin-permissions";
 import { useUserProfile } from "@/hooks/useUserProfile";
 import TwoFactorSetupDialog from "@/components/security/TwoFactorSetupDialog";
 import DisableTwoFactorDialog from "@/components/security/DisableTwoFactorDialog";
+import { formatDate, formatRelativeTime } from "@/lib/date-utils";
+
+// "Never" is the meaningful absence (a job that has not run yet); the
+// shared helper's "Recently" fallback would claim the opposite.
+const formatRelative = (iso?: string) => (iso ? formatRelativeTime(iso) : "Never");
 
 /**
  * The admin's own account page — the staff counterpart to the member profile.
@@ -55,7 +58,7 @@ import DisableTwoFactorDialog from "@/components/security/DisableTwoFactorDialog
 const Input = (props: React.InputHTMLAttributes<HTMLInputElement>) => (
   <input
     {...props}
-    className="w-full px-3.5 py-2.5 text-sm border border-gray-200 rounded-xl bg-white outline-none focus:border-primary focus:ring-2 focus:ring-primary/10 transition disabled:bg-gray-50 disabled:text-gray-500"
+    className="w-full px-3.5 py-2.5 text-sm border border-gray-200 rounded-xl bg-white outline-none focus:border-primary focus:ring-2 focus:ring-primary/30 transition disabled:bg-gray-50 disabled:text-gray-500"
   />
 );
 
@@ -156,47 +159,6 @@ const EditButton = ({
   </button>
 );
 
-const Toggle = ({
-  checked,
-  onChange,
-  label,
-  description,
-  disabled,
-}: {
-  checked: boolean;
-  onChange: (v: boolean) => void;
-  label: string;
-  description?: string;
-  disabled?: boolean;
-}) => (
-  <div className="flex items-start justify-between gap-4 py-3.5">
-    <div className="min-w-0">
-      <p className="text-sm font-semibold text-gray-900">{label}</p>
-      {description && (
-        <p className="text-xs text-gray-500 mt-0.5">{description}</p>
-      )}
-    </div>
-    <button
-      role="switch"
-      aria-checked={checked}
-      aria-label={label}
-      disabled={disabled}
-      onClick={() => onChange(!checked)}
-      className={clsx(
-        "shrink-0 relative w-11 h-6 rounded-full transition-colors outline-none focus-visible:ring-2 focus-visible:ring-primary/40 disabled:opacity-50",
-        checked ? "bg-primary" : "bg-gray-300",
-      )}
-    >
-      <span
-        className={clsx(
-          "absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform",
-          checked && "translate-x-5",
-        )}
-      />
-    </button>
-  </div>
-);
-
 const QuickAction = ({
   href,
   onClick,
@@ -237,32 +199,7 @@ const QuickAction = ({
 
 // ─── Formatting ──────────────────────────────────────────────────────────────
 
-const formatRelative = (iso?: string) => {
-  if (!iso) return "Never";
-  const d = new Date(iso);
-  if (Number.isNaN(d.getTime())) return "Never";
-  const diff = Date.now() - d.getTime();
-  const mins = Math.floor(diff / 60000);
-  const hours = Math.floor(diff / 3600000);
-  const days = Math.floor(diff / 86400000);
-  if (mins < 1) return "Just now";
-  if (mins < 60) return `${mins}m ago`;
-  if (hours < 24) return `${hours}h ago`;
-  if (days < 7) return `${days}d ago`;
-  return d.toLocaleDateString();
-};
 
-const formatDate = (iso?: string) => {
-  if (!iso) return "";
-  const d = new Date(iso);
-  return Number.isNaN(d.getTime())
-    ? ""
-    : d.toLocaleDateString("en-US", {
-        month: "short",
-        day: "numeric",
-        year: "numeric",
-      });
-};
 
 /** Shorten a UA string to something a human can recognise their device by. */
 const describeDevice = (ua?: string) => {
@@ -312,20 +249,17 @@ const AdminSettingsPage = () => {
     first_name: "",
     last_name: "",
     email: "",
+    // Only needed when the email changes - the backend refuses a silent
+    // sign-in-address change from a possibly hijacked session.
+    current_password: "",
   });
   const [password, setPassword] = useState({
     current_password: "",
     new_password: "",
     confirm_password: "",
   });
-  const [notifications, setNotifications] = useState({
-    email_alerts: true,
-    new_job_submissions: true,
-    user_reports: true,
-  });
   const [savingProfile, setSavingProfile] = useState(false);
   const [savingPassword, setSavingPassword] = useState(false);
-  const [savingNotifications, setSavingNotifications] = useState(false);
 
   useEffect(() => {
     if (!settings) return;
@@ -333,8 +267,8 @@ const AdminSettingsPage = () => {
       first_name: settings.first_name,
       last_name: settings.last_name,
       email: settings.email,
+      current_password: "",
     });
-    setNotifications(settings.notifications);
   }, [settings]);
 
   const fullName =
@@ -356,17 +290,32 @@ const AdminSettingsPage = () => {
     password.new_password.length >= 8 &&
     password.new_password === password.confirm_password;
 
+  const emailChanged = !!settings && profile.email !== settings.email;
+
   const handleSaveProfile = async () => {
+    if (emailChanged && !profile.current_password) {
+      showToast({
+        type: "error",
+        title: "Password needed",
+        description: "Enter your current password to change your sign-in email.",
+      });
+      return;
+    }
     setSavingProfile(true);
     try {
-      await updateAdminProfile(profile);
+      await updateAdminProfile({
+        first_name: profile.first_name,
+        last_name: profile.last_name,
+        email: profile.email,
+        ...(emailChanged ? { current_password: profile.current_password } : {}),
+      });
       await mutate(settings ? { ...settings, ...profile } : settings, false);
       setEditingProfile(false);
       showToast({ type: "success", title: "Profile updated" });
     } catch (err) {
       showToast({
         type: "error",
-        title: "Could not update profile",
+        title: "Couldn't update profile",
         description: err instanceof Error ? err.message : undefined,
       });
     } finally {
@@ -406,7 +355,7 @@ const AdminSettingsPage = () => {
     } catch (err) {
       showToast({
         type: "error",
-        title: "Could not change password",
+        title: "Couldn't change password",
         description: err instanceof Error ? err.message : undefined,
       });
     } finally {
@@ -414,31 +363,6 @@ const AdminSettingsPage = () => {
     }
   };
 
-  // Notification toggles save on change — no separate submit for three switches.
-  const handleToggleNotification = async (
-    key: keyof typeof notifications,
-    value: boolean,
-  ) => {
-    const next = { ...notifications, [key]: value };
-    setNotifications(next);
-    setSavingNotifications(true);
-    try {
-      await updateAdminNotifications(next);
-      await mutate(
-        settings ? { ...settings, notifications: next } : settings,
-        false,
-      );
-    } catch (err) {
-      setNotifications(notifications);
-      showToast({
-        type: "error",
-        title: "Could not update notifications",
-        description: err instanceof Error ? err.message : undefined,
-      });
-    } finally {
-      setSavingNotifications(false);
-    }
-  };
 
   const handleTwoFactorChange = async () => {
     setTwoFactorSetupOpen(false);
@@ -454,7 +378,7 @@ const AdminSettingsPage = () => {
     } catch (err) {
       showToast({
         type: "error",
-        title: "Could not sign out session",
+        title: "Couldn't sign out session",
         description: err instanceof Error ? err.message : undefined,
       });
     }
@@ -573,6 +497,7 @@ const AdminSettingsPage = () => {
                       first_name: settings.first_name,
                       last_name: settings.last_name,
                       email: settings.email,
+                      current_password: "",
                     });
                   }
                   setEditingProfile((v) => !v);
@@ -609,6 +534,24 @@ const AdminSettingsPage = () => {
                     }
                   />
                 </Field>
+                {emailChanged && (
+                  <Field label="Current password">
+                    <Input
+                      type="password"
+                      autoComplete="current-password"
+                      value={profile.current_password}
+                      onChange={(e) =>
+                        setProfile((p) => ({
+                          ...p,
+                          current_password: e.target.value,
+                        }))
+                      }
+                    />
+                    <p className="mt-1.5 text-xs text-gray-500">
+                      Needed because you&apos;re changing your sign-in email.
+                    </p>
+                  </Field>
+                )}
                 <div className="flex justify-end">
                   <button
                     onClick={handleSaveProfile}
@@ -755,7 +698,7 @@ const AdminSettingsPage = () => {
                   <p className="text-xs text-gray-500 mt-0.5">
                     {twoFactorEnabled
                       ? "Required at sign-in and for high-risk admin actions."
-                      : "Strongly recommended — admin actions need a second factor."}
+                      : "Strongly recommended - admin actions need a second factor."}
                   </p>
                 </div>
                 <button
@@ -826,38 +769,9 @@ const AdminSettingsPage = () => {
             )}
           </SectionCard>
 
-          {/* ── Notifications ── */}
-          <SectionCard
-            title="Notification Preferences"
-            icon={HiOutlineBell}
-            description="Changes save automatically."
-          >
-            <div className="divide-y divide-gray-100 -my-3.5">
-              <Toggle
-                label="Email Notifications"
-                description="Receive email alerts for important events"
-                checked={notifications.email_alerts}
-                disabled={savingNotifications}
-                onChange={(v) => handleToggleNotification("email_alerts", v)}
-              />
-              <Toggle
-                label="New Job Submissions"
-                description="Get notified when new jobs need review"
-                checked={notifications.new_job_submissions}
-                disabled={savingNotifications}
-                onChange={(v) =>
-                  handleToggleNotification("new_job_submissions", v)
-                }
-              />
-              <Toggle
-                label="User Reports"
-                description="Get notified about user-submitted reports"
-                checked={notifications.user_reports}
-                disabled={savingNotifications}
-                onChange={(v) => handleToggleNotification("user_reports", v)}
-              />
-            </div>
-          </SectionCard>
+          {/* Notification-preference toggles removed: they stored values
+              nothing read, and the emails they promised do not exist. They
+              come back when a consumer does (R3 #27). */}
         </div>
 
         {/* ── Quick actions ── */}

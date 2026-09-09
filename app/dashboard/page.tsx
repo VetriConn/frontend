@@ -1,15 +1,24 @@
 "use client";
 
 import { useEffect } from "react";
-import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
+import { preload } from "swr";
 import { useUserProfile } from "@/hooks/useUserProfile";
+import { getRecommendedJobs } from "@/lib/api";
 import { DashboardSkeleton } from "@/components/ui/Skeleton";
+import FindJobsDashboard from "@/components/pages/dashboard/FindJobsDashboard";
 
-const FindJobsDashboard = dynamic(
-  () => import("@/components/pages/dashboard/FindJobsDashboard"),
-  { loading: () => <DashboardSkeleton /> },
-);
+// Kick the recommendations fetch off as soon as the page chunk loads, in
+// parallel with the profile fetch — it used to wait for profile resolve, then
+// the FindJobsDashboard chunk, then the RecommendedJobs chunk (a 4-step
+// serial waterfall). The dynamic() wrapper is gone for the same reason: this
+// component IS the route, so splitting it only added a round trip.
+if (typeof window !== "undefined") {
+  // catch: an expired session 401s here before any component consumes the
+  // promise, which would otherwise surface as an unhandled rejection. SWR
+  // keeps the original promise, so the mounted hook still sees the error.
+  preload("/jobs/recommended", getRecommendedJobs).catch(() => {});
+}
 
 /**
  * The dashboard home is job search, for everyone.
@@ -30,16 +39,17 @@ const Dashboard = () => {
     }
   }, [isLoading, userProfile?.role, router]);
 
-  if (isLoading) return <DashboardSkeleton />;
-
-  if (isError || !userProfile) {
+  // The shell no longer waits for the profile: search box and filters are
+  // profile-independent, and the greeting/completion card handle their own
+  // loading state inside FindJobsDashboard.
+  if (isError && !isLoading && !userProfile) {
     return (
       <div className="flex items-center justify-center min-h-[60vh] px-4">
         <div className="text-center">
           <h1 className="text-xl font-bold text-gray-900 mb-2">
             We couldn&apos;t load your dashboard
           </h1>
-          <p className="text-sm text-gray-500 mb-6">
+          <p className="text-sm text-gray-600 mb-6">
             Please sign in again to continue.
           </p>
           <button
@@ -55,7 +65,7 @@ const Dashboard = () => {
   }
 
   // Redirect above is in flight.
-  if (userProfile.role === "admin") return <DashboardSkeleton />;
+  if (userProfile?.role === "admin") return <DashboardSkeleton />;
 
   return <FindJobsDashboard />;
 };

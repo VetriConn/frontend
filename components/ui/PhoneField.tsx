@@ -7,8 +7,8 @@ import PhoneInput, {
   isValidPhoneNumber,
   parsePhoneNumber,
 } from "react-phone-number-input";
-import flags from "react-phone-number-input/flags";
 import "react-phone-number-input/style.css";
+import { RequiredMark } from "./RequiredMark";
 
 /**
  * Country-aware phone input, in two pieces:
@@ -28,8 +28,10 @@ import "react-phone-number-input/style.css";
  * one matches `components/ui/CustomDropdown`, caps its height, and adds a
  * search box, because 250 options without search is unusable.
  *
- * Flags are bundled rather than fetched from the library's default CDN, so
- * these forms make no third-party image requests.
+ * Flags are self-hosted static SVGs (public/flags, copied from
+ * country-flag-icons by scripts/copy-flags.mjs) — no third-party image
+ * requests, and none of the library's ~250 inline flag components in the
+ * bundle.
  */
 
 /** Platform is Canada-first; the picker still offers every country. */
@@ -352,7 +354,7 @@ export const PhoneInputControl = ({
     <PhoneInput
       id={id}
       name={name}
-      flags={flags}
+      flagUrl="/flags/{XX}.svg"
       international
       countryCallingCodeEditable={false}
       defaultCountry={DEFAULT_PHONE_COUNTRY}
@@ -412,7 +414,7 @@ export const PhoneField = ({
         {optional && (
           <span className="text-gray-400 font-normal ml-1">(optional)</span>
         )}
-        {required && <span className="text-red-500 ml-1">*</span>}
+        {required && <RequiredMark />}
       </label>
 
       <PhoneInputControl
@@ -436,7 +438,7 @@ export const PhoneField = ({
       {error && (
         <p
           id={errorId}
-          className="text-xs text-red-500 mt-1"
+          className="text-sm text-red-700 mt-1"
           role="alert"
           aria-live="polite"
         >

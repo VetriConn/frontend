@@ -4,28 +4,29 @@ import React, { useState, useRef, useEffect } from "react";
 import {
   HiOutlineCamera,
   HiOutlineTrash,
-  HiOutlineArrowPath,
   HiOutlineMagnifyingGlassPlus,
   HiOutlineMagnifyingGlassMinus,
   HiOutlineXMark,
   HiOutlinePencilSquare,
   HiOutlineEye,
-  HiOutlineSparkles,
-  HiOutlineAdjustmentsHorizontal,
   HiOutlineCheck,
   HiOutlineArrowsRightLeft,
   HiOutlineArrowsUpDown,
 } from "react-icons/hi2";
 
+/** Who can see the photo. Was written as a comment beside `string`, which
+ *  is why both reads of it needed an `as any` to get back to the union. */
+type PhotoVisibility = "everyone" | "employers-only" | "private";
+
 interface ProfilePhotoModalProps {
   isOpen: boolean;
   currentPhotoUrl?: string;
   userName: string;
-  currentVisibility?: string; // "everyone" | "employers-only" | "private"
+  currentVisibility?: PhotoVisibility;
   onClose: () => void;
   onSave: (file: File) => Promise<void>;
   onDelete: () => Promise<void>;
-  onVisibilityChange?: (visibility: "everyone" | "employers-only" | "private") => Promise<void>;
+  onVisibilityChange?: (visibility: PhotoVisibility) => Promise<void>;
   isSubmitting?: boolean;
 }
 
@@ -68,13 +69,19 @@ export const ProfilePhotoModal: React.FC<ProfilePhotoModalProps> = ({
 
   const [error, setError] = useState<string>("");
   const [showVisibilityDropdown, setShowVisibilityDropdown] = useState<boolean>(false);
-  const [visibility, setVisibility] = useState<"everyone" | "employers-only" | "private">(
-    currentVisibility as any
-  );
+  const [visibility, setVisibility] =
+    useState<PhotoVisibility>(currentVisibility);
 
   // Camera stream references
   const videoRef = useRef<HTMLVideoElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
+
+  const stopCamera = () => {
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach((track) => track.stop());
+      streamRef.current = null;
+    }
+  };
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const imageRef = useRef<HTMLImageElement>(null);
@@ -97,7 +104,7 @@ export const ProfilePhotoModal: React.FC<ProfilePhotoModalProps> = ({
       setSaturation(100);
       setError("");
       setShowVisibilityDropdown(false);
-      setVisibility(currentVisibility as any);
+      setVisibility(currentVisibility);
     }
     return () => {
       stopCamera();
@@ -111,13 +118,6 @@ export const ProfilePhotoModal: React.FC<ProfilePhotoModalProps> = ({
       }
     };
   }, [previewUrl]);
-
-  const stopCamera = () => {
-    if (streamRef.current) {
-      streamRef.current.getTracks().forEach((track) => track.stop());
-      streamRef.current = null;
-    }
-  };
 
   if (!isOpen) return null;
 
@@ -164,8 +164,8 @@ export const ProfilePhotoModal: React.FC<ProfilePhotoModalProps> = ({
       if (videoRef.current) {
         videoRef.current.srcObject = stream;
       }
-    } catch (err) {
-      setError("Could not access camera. Please check permissions.");
+    } catch {
+      setError("Couldn't access camera. Please check permissions.");
       setMode("update-choice");
     }
   };
@@ -350,8 +350,10 @@ export const ProfilePhotoModal: React.FC<ProfilePhotoModalProps> = ({
             });
             try {
               await onSave(croppedFile);
-            } catch (err: any) {
-              setError(err.message || "Failed to save photo.");
+            } catch (err) {
+              setError(
+                err instanceof Error ? err.message : "Failed to save photo.",
+              );
             }
           } else {
             await onSave(fileToSave!);
@@ -747,7 +749,7 @@ export const ProfilePhotoModal: React.FC<ProfilePhotoModalProps> = ({
                 </div>
 
                 {error && (
-                  <p className="text-xs text-red-500 mt-4 leading-relaxed bg-red-50 px-3 py-2 rounded-lg">{error}</p>
+                  <p className="text-sm text-red-700 mt-4 leading-relaxed bg-red-50 px-3 py-2 rounded-lg">{error}</p>
                 )}
               </div>
             </div>

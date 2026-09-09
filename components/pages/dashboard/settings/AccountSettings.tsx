@@ -15,7 +15,6 @@ import {
   HiOutlineCheckCircle,
   HiOutlineLockClosed,
   HiOutlineArrowTopRightOnSquare,
-  HiOutlineChevronDown,
   HiOutlineChatBubbleLeftRight,
   HiOutlineClipboardDocumentCheck,
 } from "react-icons/hi2";
@@ -28,7 +27,6 @@ import {
   requestDataExport,
   deactivateAccount as deactivateAccountApi,
   updateUserSettings,
-  patchUserProfile,
 } from "@/lib/api";
 import TwoFactorSetupDialog from "@/components/security/TwoFactorSetupDialog";
 import DisableTwoFactorDialog from "@/components/security/DisableTwoFactorDialog";
@@ -62,15 +60,19 @@ interface SettingsState {
 function Toggle({
   enabled,
   onToggle,
+  ariaLabel,
 }: {
   enabled: boolean;
   onToggle: () => void;
+  /** The switch is a bare pill — without this it has no accessible name. */
+  ariaLabel: string;
 }) {
   return (
     <button
       type="button"
       role="switch"
       aria-checked={enabled}
+      aria-label={ariaLabel}
       onClick={onToggle}
       className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
         enabled ? "bg-primary" : "bg-gray-200"
@@ -101,7 +103,7 @@ function SectionCard({
       <h2 className="font-lato text-lg font-bold text-gray-900 mb-1">
         {title}
       </h2>
-      <p className="text-sm text-gray-500 mb-6">{subtitle}</p>
+      <p className="text-sm text-gray-600 mb-6">{subtitle}</p>
       {children}
     </div>
   );
@@ -333,11 +335,14 @@ export default function AccountSettings() {
       });
       setDownloadSuccess(true);
       setTimeout(() => setDownloadSuccess(false), 5000);
-    } catch (err: any) {
+    } catch (err) {
       showToast({
         type: "error",
         title: "Export failed",
-        description: err.message || "Failed to export your data. Please try again.",
+        description:
+          err instanceof Error
+            ? err.message
+            : "Failed to export your data. Please try again.",
       });
     } finally {
       setIsDownloading(false);
@@ -380,7 +385,7 @@ export default function AccountSettings() {
           <h1 className="font-lato text-xl md:text-3xl font-bold text-gray-900 mb-1">
             Account settings
           </h1>
-          <p className="text-gray-500 text-sm leading-relaxed">
+          <p className="text-gray-600 text-sm leading-relaxed">
             Manage your account preferences, security, and privacy settings.
           </p>
         </div>
@@ -399,16 +404,20 @@ export default function AccountSettings() {
             <div className="space-y-4">
               {/* Email Address (read-only) */}
               <div>
-                <label className="block text-sm font-semibold text-gray-900 mb-1.5 md:mb-2">
+                <label
+                  htmlFor="settings-email"
+                  className="block text-sm font-semibold text-gray-900 mb-1.5 md:mb-2"
+                >
                   Email Address
                 </label>
                 <input
+                  id="settings-email"
                   type="email"
                   value={userProfile?.email || ""}
                   disabled
-                  className="form-input disabled:bg-gray-50 disabled:text-gray-500 disabled:cursor-not-allowed"
+                  className="form-input disabled:bg-gray-50 disabled:text-gray-600 disabled:cursor-not-allowed"
                 />
-                <p className="text-xs text-gray-400 mt-1.5">
+                <p className="text-sm text-gray-500 mt-1.5">
                   Your email is used to sign in and cannot be changed here.
                   Contact support if you need to update it.
                 </p>
@@ -443,7 +452,7 @@ export default function AccountSettings() {
                 <h4 className="text-sm font-semibold text-gray-900 mb-1">
                   Change Your Password
                 </h4>
-                <p className="text-sm text-gray-500 leading-relaxed mb-3">
+                <p className="text-sm text-gray-600 leading-relaxed mb-3">
                   We recommend updating your password every few months, or if
                   you think someone else might know it.
                 </p>
@@ -466,12 +475,12 @@ export default function AccountSettings() {
                   <h4 className="text-sm font-semibold text-gray-900 mb-1">
                     Two-Step Verification
                     {twoFactorEnabled && (
-                      <span className="ml-2 inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200/70">
+                      <span className="ml-2 inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200/70">
                         On
                       </span>
                     )}
                   </h4>
-                  <p className="text-sm text-gray-500 leading-relaxed">
+                  <p className="text-sm text-gray-600 leading-relaxed">
                     Pair an authenticator app like 1Password or Google
                     Authenticator. We&apos;ll ask for a 6-digit code each time
                     you sign in.
@@ -480,6 +489,7 @@ export default function AccountSettings() {
               </div>
               <div className="shrink-0 pt-1">
                 <Toggle
+                  ariaLabel="Two-step verification"
                   enabled={twoFactorEnabled}
                   onToggle={handleTwoFactorToggle}
                 />
@@ -568,7 +578,7 @@ export default function AccountSettings() {
                   <h4 className="text-sm font-semibold text-gray-900 mb-0.5">
                     Email Notifications
                   </h4>
-                  <p className="text-sm text-gray-500">
+                  <p className="text-sm text-gray-600">
                     Receive important updates about your account and
                     applications.
                   </p>
@@ -576,6 +586,7 @@ export default function AccountSettings() {
               </div>
               <div className="shrink-0 pt-1">
                 <Toggle
+                  ariaLabel="Email notifications"
                   enabled={settings.emailNotifications}
                   onToggle={() =>
                     update("emailNotifications", !settings.emailNotifications)
@@ -594,13 +605,14 @@ export default function AccountSettings() {
                   <h4 className="text-sm font-semibold text-gray-900 mb-0.5">
                     Job Alerts
                   </h4>
-                  <p className="text-sm text-gray-500">
+                  <p className="text-sm text-gray-600">
                     Get notified when new jobs match your preferences.
                   </p>
                 </div>
               </div>
               <div className="shrink-0 pt-1">
                 <Toggle
+                  ariaLabel="Job alerts"
                   enabled={settings.jobAlerts}
                   onToggle={() => update("jobAlerts", !settings.jobAlerts)}
                 />
@@ -617,7 +629,7 @@ export default function AccountSettings() {
                   <h4 className="text-sm font-semibold text-gray-900 mb-0.5">
                     Application Approved/Rejected
                   </h4>
-                  <p className="text-sm text-gray-500">
+                  <p className="text-sm text-gray-600">
                     Get notified when your applications are reviewed and their
                     status changes.
                   </p>
@@ -625,6 +637,7 @@ export default function AccountSettings() {
               </div>
               <div className="shrink-0 pt-1">
                 <Toggle
+                  ariaLabel="Application decisions"
                   enabled={settings.applicationUpdates}
                   onToggle={() =>
                     update("applicationUpdates", !settings.applicationUpdates)
@@ -643,13 +656,14 @@ export default function AccountSettings() {
                   <h4 className="text-sm font-semibold text-gray-900 mb-0.5">
                     Your job posts
                   </h4>
-                  <p className="text-sm text-gray-500">
+                  <p className="text-sm text-gray-600">
                     Get notified when a job you posted is approved or rejected.
                   </p>
                 </div>
               </div>
               <div className="shrink-0 pt-1">
                 <Toggle
+                  ariaLabel="Your job posts"
                   enabled={settings.postingUpdates}
                   onToggle={() =>
                     update("postingUpdates", !settings.postingUpdates)
@@ -668,13 +682,14 @@ export default function AccountSettings() {
                   <h4 className="text-sm font-semibold text-gray-900 mb-0.5">
                     New applicants
                   </h4>
-                  <p className="text-sm text-gray-500">
+                  <p className="text-sm text-gray-600">
                     Get notified when someone applies to a job you posted.
                   </p>
                 </div>
               </div>
               <div className="shrink-0 pt-1">
                 <Toggle
+                  ariaLabel="New applicants"
                   enabled={settings.newApplications}
                   onToggle={() =>
                     update("newApplications", !settings.newApplications)
@@ -693,7 +708,7 @@ export default function AccountSettings() {
                   <h4 className="text-sm font-semibold text-gray-900 mb-0.5">
                     Messages
                   </h4>
-                  <p className="text-sm text-gray-500">
+                  <p className="text-sm text-gray-600">
                     Get notified when you receive a new message from an
                     employer.
                   </p>
@@ -701,6 +716,7 @@ export default function AccountSettings() {
               </div>
               <div className="shrink-0 pt-1">
                 <Toggle
+                  ariaLabel="Messages"
                   enabled={settings.messages}
                   onToggle={() => update("messages", !settings.messages)}
                 />
@@ -717,13 +733,14 @@ export default function AccountSettings() {
                   <h4 className="text-sm font-semibold text-gray-900 mb-0.5">
                     Community Updates
                   </h4>
-                  <p className="text-sm text-gray-500">
+                  <p className="text-sm text-gray-600">
                     Stay informed about community events and discussions.
                   </p>
                 </div>
               </div>
               <div className="shrink-0 pt-1">
                 <Toggle
+                  ariaLabel="Community updates"
                   enabled={settings.communityUpdates}
                   onToggle={() =>
                     update("communityUpdates", !settings.communityUpdates)
@@ -742,13 +759,20 @@ export default function AccountSettings() {
           <div className="space-y-6">
             {/* Text Size */}
             <div>
-              <label className="block text-sm font-semibold text-gray-900 mb-1">
+              <p
+                id="settings-text-size-label"
+                className="block text-sm font-semibold text-gray-900 mb-1"
+              >
                 Text Size
-              </label>
-              <p className="text-xs text-gray-400 mb-4">
+              </p>
+              <p className="text-sm text-gray-500 mb-4">
                 Choose a text size that&apos;s comfortable for you to read.
               </p>
-              <div className="grid grid-cols-3 gap-3">
+              <div
+                role="radiogroup"
+                aria-labelledby="settings-text-size-label"
+                className="grid grid-cols-3 gap-3"
+              >
                 {[
                   {
                     key: "normal" as TextSize,
@@ -768,6 +792,8 @@ export default function AccountSettings() {
                 ].map((opt) => (
                   <button
                     key={opt.key}
+                    role="radio"
+                    aria-checked={textSize === opt.key}
                     onClick={() => setTextSize(opt.key)}
                     className={`flex flex-col items-center justify-center py-5 px-3 rounded-xl border-2 transition-colors cursor-pointer ${
                       textSize === opt.key
@@ -784,7 +810,7 @@ export default function AccountSettings() {
                     >
                       Aa
                     </span>
-                    <span className="text-xs text-gray-500 mt-1">
+                    <span className="text-sm text-gray-600 mt-1">
                       {opt.label}
                     </span>
                   </button>
@@ -802,7 +828,7 @@ export default function AccountSettings() {
                   <h4 className="text-sm font-semibold text-gray-900 mb-0.5">
                     High Contrast Mode
                   </h4>
-                  <p className="text-sm text-gray-500">
+                  <p className="text-sm text-gray-600">
                     Makes text easier to read by increasing the contrast between
                     text and backgrounds.
                   </p>
@@ -810,6 +836,7 @@ export default function AccountSettings() {
               </div>
               <div className="shrink-0 pt-1">
                 <Toggle
+                  ariaLabel="High contrast mode"
                   enabled={highContrast}
                   onToggle={() => setHighContrast(!highContrast)}
                 />
@@ -856,7 +883,7 @@ export default function AccountSettings() {
                 <h4 className="text-sm font-semibold text-gray-900 mb-1">
                   Download Your Data
                 </h4>
-                <p className="text-sm text-gray-500 leading-relaxed mb-3">
+                <p className="text-sm text-gray-600 leading-relaxed mb-3">
                   Get a copy of all the information you&apos;ve shared with us.
                   This may take a few minutes to prepare.
                 </p>
@@ -892,7 +919,7 @@ export default function AccountSettings() {
                   <h4 className="text-sm font-semibold text-gray-900 mb-1">
                     Deactivate Account
                   </h4>
-                  <p className="text-sm text-gray-500 leading-relaxed mb-3">
+                  <p className="text-sm text-gray-600 leading-relaxed mb-3">
                     If you no longer wish to use this platform, you can
                     deactivate your account. Your data will be saved for 30 days
                     in case you change your mind.
@@ -932,7 +959,7 @@ export default function AccountSettings() {
                         ? "Set your password"
                         : "Change Password"}
                     </h3>
-                    <p className="text-xs text-gray-400">
+                    <p className="text-sm text-gray-500">
                       {mustChangePassword
                         ? "Your temporary password works only for this"
                         : "Keep your account secure"}
@@ -942,7 +969,7 @@ export default function AccountSettings() {
                 {!mustChangePassword && (
                   <button
                     onClick={handleClosePasswordModal}
-                    className="p-2 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors cursor-pointer"
+                    className="p-2 rounded-lg text-gray-500 hover:text-gray-700 hover:bg-gray-100 transition-colors cursor-pointer"
                   >
                     <HiOutlineXMark className="w-5 h-5" />
                   </button>
@@ -958,7 +985,7 @@ export default function AccountSettings() {
                   <h4 className="text-lg font-bold text-gray-900 mb-1">
                     Password Updated
                   </h4>
-                  <p className="text-sm text-gray-500">
+                  <p className="text-sm text-gray-600">
                     Your password has been changed successfully.
                   </p>
                 </div>
@@ -976,11 +1003,15 @@ export default function AccountSettings() {
 
                     {/* Current Password */}
                     <div>
-                      <label className="block text-sm font-semibold text-gray-900 mb-1.5 md:mb-2">
+                      <label
+                        htmlFor="settings-current-password"
+                        className="block text-sm font-semibold text-gray-900 mb-1.5 md:mb-2"
+                      >
                         Current Password
                       </label>
                       <div className="relative">
                         <input
+                          id="settings-current-password"
                           type={showCurrentPassword ? "text" : "password"}
                           value={currentPassword}
                           onChange={(e) => setCurrentPassword(e.target.value)}
@@ -992,7 +1023,8 @@ export default function AccountSettings() {
                           onClick={() =>
                             setShowCurrentPassword(!showCurrentPassword)
                           }
-                          className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 cursor-pointer"
+                          aria-label={showCurrentPassword ? "Hide password" : "Show password"}
+                          className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 cursor-pointer"
                         >
                           {showCurrentPassword ? (
                             <HiOutlineEyeSlash className="w-5 h-5" />
@@ -1005,11 +1037,15 @@ export default function AccountSettings() {
 
                     {/* New Password */}
                     <div>
-                      <label className="block text-sm font-semibold text-gray-900 mb-1.5 md:mb-2">
+                      <label
+                        htmlFor="settings-new-password"
+                        className="block text-sm font-semibold text-gray-900 mb-1.5 md:mb-2"
+                      >
                         New Password
                       </label>
                       <div className="relative">
                         <input
+                          id="settings-new-password"
                           type={showNewPassword ? "text" : "password"}
                           value={newPassword}
                           onChange={(e) => setNewPassword(e.target.value)}
@@ -1019,7 +1055,8 @@ export default function AccountSettings() {
                         <button
                           type="button"
                           onClick={() => setShowNewPassword(!showNewPassword)}
-                          className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 cursor-pointer"
+                          aria-label={showNewPassword ? "Hide password" : "Show password"}
+                          className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 cursor-pointer"
                         >
                           {showNewPassword ? (
                             <HiOutlineEyeSlash className="w-5 h-5" />
@@ -1059,8 +1096,8 @@ export default function AccountSettings() {
                                 </svg>
                               </div>
                               <span
-                                className={`text-xs ${
-                                  req.met ? "text-emerald-600" : "text-gray-400"
+                                className={`text-sm ${
+                                  req.met ? "text-emerald-600" : "text-gray-600"
                                 }`}
                               >
                                 {req.label}
@@ -1073,11 +1110,15 @@ export default function AccountSettings() {
 
                     {/* Confirm Password */}
                     <div>
-                      <label className="block text-sm font-semibold text-gray-900 mb-1.5 md:mb-2">
+                      <label
+                        htmlFor="settings-confirm-password"
+                        className="block text-sm font-semibold text-gray-900 mb-1.5 md:mb-2"
+                      >
                         Confirm New Password
                       </label>
                       <div className="relative">
                         <input
+                          id="settings-confirm-password"
                           type={showConfirmPassword ? "text" : "password"}
                           value={confirmPassword}
                           onChange={(e) => setConfirmPassword(e.target.value)}
@@ -1093,7 +1134,8 @@ export default function AccountSettings() {
                           onClick={() =>
                             setShowConfirmPassword(!showConfirmPassword)
                           }
-                          className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 cursor-pointer"
+                          aria-label={showConfirmPassword ? "Hide password" : "Show password"}
+                          className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 cursor-pointer"
                         >
                           {showConfirmPassword ? (
                             <HiOutlineEyeSlash className="w-5 h-5" />
@@ -1103,12 +1145,12 @@ export default function AccountSettings() {
                         </button>
                       </div>
                       {confirmPassword.length > 0 && !passwordsMatch && (
-                        <p className="text-xs text-red-500 mt-1.5">
+                        <p className="text-sm text-red-700 mt-1.5">
                           Passwords do not match.
                         </p>
                       )}
                       {passwordsMatch && (
-                        <p className="text-xs text-emerald-500 mt-1.5 flex items-center gap-1">
+                        <p className="text-sm text-emerald-500 mt-1.5 flex items-center gap-1">
                           <HiOutlineCheckCircle className="w-3.5 h-3.5" />
                           Passwords match
                         </p>
@@ -1166,14 +1208,14 @@ export default function AccountSettings() {
                     <h3 className="text-lg font-bold text-gray-900">
                       Deactivate Account
                     </h3>
-                    <p className="text-xs text-gray-400">
+                    <p className="text-sm text-gray-500">
                       This action cannot be easily undone
                     </p>
                   </div>
                 </div>
                 <button
                   onClick={handleCloseDeactivateModal}
-                  className="p-2 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors cursor-pointer"
+                  className="p-2 rounded-lg text-gray-500 hover:text-gray-700 hover:bg-gray-100 transition-colors cursor-pointer"
                 >
                   <HiOutlineXMark className="w-5 h-5" />
                 </button>
@@ -1206,11 +1248,15 @@ export default function AccountSettings() {
 
                 {/* Password */}
                 <div>
-                  <label className="block text-sm font-semibold text-gray-900 mb-1.5 md:mb-2">
+                  <label
+                    htmlFor="settings-deactivate-password"
+                    className="block text-sm font-semibold text-gray-900 mb-1.5 md:mb-2"
+                  >
                     Confirm your password
                   </label>
                   <div className="relative">
                     <input
+                      id="settings-deactivate-password"
                       type={showDeactivatePassword ? "text" : "password"}
                       value={deactivatePassword}
                       onChange={(e) => setDeactivatePassword(e.target.value)}
@@ -1222,7 +1268,8 @@ export default function AccountSettings() {
                       onClick={() =>
                         setShowDeactivatePassword(!showDeactivatePassword)
                       }
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 cursor-pointer"
+                      aria-label={showDeactivatePassword ? "Hide password" : "Show password"}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 cursor-pointer"
                     >
                       {showDeactivatePassword ? (
                         <HiOutlineEyeSlash className="w-5 h-5" />
@@ -1235,12 +1282,16 @@ export default function AccountSettings() {
 
                 {/* Type DEACTIVATE to confirm */}
                 <div>
-                  <label className="block text-sm font-semibold text-gray-900 mb-1.5 md:mb-2">
+                  <label
+                    htmlFor="settings-deactivate-confirm"
+                    className="block text-sm font-semibold text-gray-900 mb-1.5 md:mb-2"
+                  >
                     Type{" "}
                     <span className="text-red-600 font-bold">DEACTIVATE</span>{" "}
                     to confirm
                   </label>
                   <input
+                    id="settings-deactivate-confirm"
                     type="text"
                     value={deactivateConfirmText}
                     onChange={(e) => setDeactivateConfirmText(e.target.value)}

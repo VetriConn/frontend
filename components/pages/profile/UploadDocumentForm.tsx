@@ -113,7 +113,7 @@ export const UploadDocumentForm: React.FC<UploadDocumentFormProps> = ({
       </div>
 
       {/* Error message */}
-      {error && <p className="text-red-500 text-sm">{error}</p>}
+      {error && <p className="text-red-700 text-sm">{error}</p>}
 
       {/* Selected file preview */}
       {selectedFile && !error && (

@@ -23,13 +23,16 @@ export type {
 
 // ─── Hook ────────────────────────────────────────────────────────────────────
 
-export function useAdminSupportTickets() {
-  const { data, error, isLoading, mutate } = useSWR<AdminTicket[]>(
-    "/admin/support/tickets",
-    async () => (await adminListTickets()).tickets,
+export function useAdminSupportTickets(page = 1) {
+  // Same fix as useAdminReports: the pagination the API returns was
+  // discarded, stranding every ticket past the default page size.
+  const { data, error, isLoading, mutate } = useSWR(
+    ["/admin/support/tickets", page],
+    async () => adminListTickets({ page, limit: 20 }),
   );
   return {
-    tickets: data ?? [],
+    tickets: data?.tickets ?? [],
+    pagination: data?.pagination,
     isLoading,
     isError: !!error,
     mutate,
@@ -60,8 +63,11 @@ export async function closeAdminTicket(ticketId: string): Promise<void> {
  */
 export async function claimAdminTicket(
   ticketId: string,
-  _admin?: { id: string; name: string },
+  admin?: { id: string; name: string },
 ): Promise<void> {
+  // The claimant is the authenticated admin server-side; the parameter only
+  // exists so call sites read naturally.
+  void admin;
   await adminClaimTicket(ticketId);
 }
 

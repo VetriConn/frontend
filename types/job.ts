@@ -12,10 +12,27 @@ import type {
   SecurityClearance,
   Language,
   Benefit,
-  Currency,
   ScreeningQuestion,
   JobFaq,
 } from "@/lib/job-fields";
+
+/**
+ * What a role pays — one object, assembled server-side.
+ *
+ * The verbatim `text` is the only form that can express "$18.50 hourly";
+ * `basis` is what makes `min`/`max` interpretable, and without it the scam
+ * heuristic read every salaried figure as an hourly rate. Named rather than
+ * inlined per-consumer, because the five columns this replaced are still
+ * being found written out by hand in types that describe payloads the server
+ * stopped sending.
+ */
+export interface Compensation {
+  min?: number;
+  max?: number;
+  currency: string;
+  basis?: PaymentType;
+  text?: string;
+}
 
 export interface Job {
   id: string;
@@ -23,25 +40,13 @@ export interface Job {
   company_name: string;
   company_logo: string;
   location: string; // Dedicated location field for filtering
-  salary?: {
-    symbol: string;
-    number: number;
-    currency: string;
-  };
-  salary_range?: {
-    start_salary: {
-      symbol: string;
-      number?: number;
-      currency: string;
-    };
-    end_salary: {
-      symbol: string;
-      number?: number;
-      currency: string;
-    };
-  };
+  /** What the role pays. See {@link Compensation}. */
+  compensation?: Compensation;
   tags: Tag[];
-  full_description: string;
+  /** Full posting body — detail pages only; list payloads omit it. */
+  description?: string;
+  /** Card preview text, derived server-side from the body. */
+  summary: string;
   responsibilities: string[];
   qualifications: string[];
   applicationLink?: string; // Optional application link
@@ -55,11 +60,6 @@ export interface Job {
   /** Board the listing came from, e.g. "Job Bank". Shown on the badge. */
   source_name?: string;
   external_url?: string;
-  /**
-   * Salary exactly as the source wrote it, e.g. "$18.50 hourly". Preferred over
-   * the parsed numeric salary, which cannot represent hourly pay.
-   */
-  salary_text?: string;
 
   /** Whether the poster published as themselves or as a vetted Company Page. */
   posted_as?: "individual" | "company";
@@ -72,11 +72,9 @@ export interface Job {
   skills?: string;
   physical_demands?: PhysicalDemands;
   work_schedule?: WorkSchedule;
-  payment_type?: PaymentType;
   city?: string;
   state_province?: ProvinceCode;
   country?: string;
-  currency?: Currency;
   min_qualification?: MinQualification;
   security_clearance?: SecurityClearance;
   requires_drivers_license?: boolean;

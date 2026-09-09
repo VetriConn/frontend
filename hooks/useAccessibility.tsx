@@ -8,7 +8,6 @@ import React, {
   useCallback,
   type ReactNode,
 } from "react";
-import { usePathname } from "next/navigation";
 
 // ─── Types ──────────────────────────────────────────────────────────────────────
 
@@ -51,14 +50,18 @@ export function AccessibilityProvider({ children }: { children: ReactNode }) {
   const [state, setState] = useState<AccessibilityState>(defaults);
   const [mounted, setMounted] = useState(false);
 
-  // These preferences belong to the signed-in app, not the public marketing
-  // and auth pages — those have fixed, deliberately composed layouts that
-  // should look the same for everyone. The provider stays at the root so the
-  // settings screen can read and write them, but the DOM effects below only
-  // take hold inside /dashboard; elsewhere the document renders at its
-  // defaults regardless of what's stored.
-  const pathname = usePathname();
-  const inApp = pathname?.startsWith("/dashboard") ?? false;
+  // These preferences apply to every page, with no route gate.
+  //
+  // There used to be one, and it kept shrinking: first "dashboard only", then
+  // dashboard plus /jobs. Each widening was prompted by finding another page
+  // where someone who had asked for larger text was silently given small
+  // text — most recently /faq and /about, which are the longest continuous
+  // reading on the site, and the signed-out auth pages, where the person who
+  // most needs the setting has just been handed a form to fill in.
+  //
+  // The gate was never protecting a real constraint. A preference the user
+  // set explicitly is theirs to have honoured, and a layout that cannot take
+  // 125% is a layout bug rather than a reason to ignore them.
 
   // Load persisted preferences on mount
   useEffect(() => {
@@ -80,29 +83,27 @@ export function AccessibilityProvider({ children }: { children: ReactNode }) {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
   }, [state, mounted]);
 
-  // Apply text-size to <html> — but only inside the app. On public routes the
-  // style is removed, so a stored preference never reshapes a marketing or
-  // auth page.
+  // Apply text-size to <html>.
   useEffect(() => {
     if (!mounted) return;
     const html = document.documentElement;
-    if (inApp && state.textSize !== "normal") {
+    if (state.textSize !== "normal") {
       html.style.fontSize = TEXT_SIZE_MAP[state.textSize];
     } else {
       html.style.removeProperty("font-size");
     }
-  }, [state.textSize, mounted, inApp]);
+  }, [state.textSize, mounted]);
 
-  // Apply high-contrast class to <html> — likewise app-only.
+  // Apply high-contrast class to <html>.
   useEffect(() => {
     if (!mounted) return;
     const html = document.documentElement;
-    if (inApp && state.highContrast) {
+    if (state.highContrast) {
       html.classList.add("high-contrast");
     } else {
       html.classList.remove("high-contrast");
     }
-  }, [state.highContrast, mounted, inApp]);
+  }, [state.highContrast, mounted]);
 
   const setTextSize = useCallback((size: TextSize) => {
     setState((prev) => ({ ...prev, textSize: size }));

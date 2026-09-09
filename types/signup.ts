@@ -23,7 +23,6 @@ export interface SignupFormData {
   years_of_experience: string;
 
   // Step 5 - Resume Upload (optional)
-  resumeFile: File | null;
 }
 
 /**
@@ -44,7 +43,8 @@ export interface StepProps {
   errors: Record<string, string>;
   onFieldChange: (field: keyof SignupFormData, value: unknown) => void;
   onNext: () => void;
-  onBack: () => void;
+  /** Absent on the first step, which has nothing to go back to. */
+  onBack?: () => void;
   onSkip?: () => void;
   isBusy?: boolean;
   /** For the in-step header's progress indicator. */
@@ -126,5 +126,4 @@ export const INITIAL_FORM_DATA: SignupFormData = {
   job_title: "",
   industry: "",
   years_of_experience: "",
-  resumeFile: null,
 };

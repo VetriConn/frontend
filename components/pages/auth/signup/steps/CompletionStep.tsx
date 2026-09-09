@@ -1,6 +1,6 @@
 import { SignupFormData } from "@/types/signup";
-import { HiCheckCircle } from "react-icons/hi";
-import { CiMail } from "react-icons/ci";
+import { HiCheckCircle } from "react-icons/hi2";
+import { HiOutlineEnvelope } from "react-icons/hi2";
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useToaster } from "@/components/ui/Toaster";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -29,8 +29,8 @@ export function CompletionStep({
     : "/signin";
   const [timeRemaining, setTimeRemaining] = useState(0);
   const [resendAttempts, setResendAttempts] = useState(0);
-  const [isCheckingVerification, setIsCheckingVerification] = useState(false);
-  const [pollCount, setPollCount] = useState(0);
+  const [, setIsCheckingVerification] = useState(false);
+  const [, setPollCount] = useState(0);
   const pollIntervalRef = useRef<NodeJS.Timeout | null>(null);
   
   const MAX_ATTEMPTS = 5;
@@ -66,7 +66,7 @@ export function CompletionStep({
         // User has verified! Auto-redirect to signin
         showToast({
           type: "success",
-          title: "Email Verified!",
+          title: "Email verified",
           description: "Redirecting you to sign in...",
         });
         
@@ -161,7 +161,7 @@ export function CompletionStep({
     if (resendAttempts >= MAX_ATTEMPTS) {
       showToast({
         type: "error",
-        title: "Maximum Attempts Reached",
+        title: "Too many attempts",
         description:
           "You've reached the maximum resend limit. Please contact support if you need help.",
       });
@@ -177,7 +177,7 @@ export function CompletionStep({
 
       showToast({
         type: "success",
-        title: "Email Sent!",
+        title: "Email sent",
         description:
           "Verification email has been resent. Please check your inbox.",
       });
@@ -188,7 +188,7 @@ export function CompletionStep({
     } catch (error) {
       showToast({
         type: "error",
-        title: "Failed to Resend",
+        title: "Couldn't resend the email",
         description:
           error instanceof Error
             ? error.message
@@ -210,7 +210,7 @@ export function CompletionStep({
       {/* Email Icon */}
       <div className="flex justify-center">
         <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center">
-          <CiMail className="w-12 h-12 text-green-600" />
+          <HiOutlineEnvelope className="w-12 h-12 text-green-600" />
         </div>
       </div>
 
@@ -236,7 +236,7 @@ export function CompletionStep({
         <div className="flex items-start gap-3">
           <HiCheckCircle className="w-5 h-5 text-primary mt-0.5 flex-shrink-0" />
           <p className="text-sm text-gray-700">
-            Check your spam folder if you don't see it in your inbox
+            Check your spam folder if you don&rsquo;t see it in your inbox
           </p>
         </div>
         <div className="flex items-start gap-3">
@@ -255,7 +255,7 @@ export function CompletionStep({
 
       {/* Resend Email Section */}
       <div className="text-center space-y-3">
-        <p className="text-sm text-gray-600">Didn't receive the email?</p>
+        <p className="text-sm text-gray-600">Didn&rsquo;t receive the email?</p>
 
         {resendAttempts >= MAX_ATTEMPTS ? (
           <div className="text-sm text-red-600">

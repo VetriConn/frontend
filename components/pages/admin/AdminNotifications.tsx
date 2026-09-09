@@ -7,7 +7,6 @@ import {
   HiOutlineBriefcase,
   HiOutlineBuildingOffice2,
   HiOutlineExclamationTriangle,
-  HiOutlineShieldCheck,
   HiOutlineFlag,
 } from "react-icons/hi2";
 import {
@@ -19,6 +18,7 @@ import {
 } from "@/hooks/useAdminNotifications";
 import { AdminPageHeader } from "./AdminTablePanel";
 import { useToaster } from "@/components/ui/Toaster";
+import { formatRelativeTime } from "@/lib/date-utils";
 
 const ICONS: Record<
   AdminNotificationType,
@@ -26,7 +26,6 @@ const ICONS: Record<
 > = {
   job_submitted: HiOutlineBriefcase,
   employer_registered: HiOutlineBuildingOffice2,
-  employer_verified: HiOutlineShieldCheck,
   user_report: HiOutlineExclamationTriangle,
   post_flagged: HiOutlineFlag,
 };
@@ -34,25 +33,10 @@ const ICONS: Record<
 const ICON_TONE: Record<AdminNotificationType, string> = {
   job_submitted: "bg-rose-50 text-rose-600 ring-rose-100",
   employer_registered: "bg-indigo-50 text-indigo-600 ring-indigo-100",
-  employer_verified: "bg-emerald-50 text-emerald-600 ring-emerald-100",
   user_report: "bg-amber-50 text-amber-600 ring-amber-100",
   post_flagged: "bg-rose-50 text-rose-600 ring-rose-100",
 };
 
-const formatRelative = (iso: string) => {
-  const d = new Date(iso);
-  if (Number.isNaN(d.getTime())) return iso;
-  const diff = Date.now() - d.getTime();
-  const mins = Math.floor(diff / 60000);
-  const hours = Math.floor(diff / 3600000);
-  const days = Math.floor(diff / 86400000);
-  if (mins < 1) return "Just now";
-  if (mins < 60) return `${mins}m ago`;
-  if (hours < 24) return `${hours} ${hours === 1 ? "hour" : "hours"} ago`;
-  if (days === 1) return "1 day ago";
-  if (days < 7) return `${days} days ago`;
-  return d.toLocaleDateString();
-};
 
 /**
  * Where a notification points, derived from its stable key
@@ -113,7 +97,7 @@ const NotificationRow = ({
           {n.message}
         </p>
         <p className="text-xs text-gray-500 mt-0.5">
-          {formatRelative(n.createdAt)}
+          {formatRelativeTime(n.createdAt)}
         </p>
       </div>
     </>
@@ -169,7 +153,7 @@ const AdminNotifications = () => {
         false,
       );
     } catch {
-      showToast({ type: "error", title: "Could not mark as read" });
+      showToast({ type: "error", title: "Couldn't mark as read" });
     }
   };
 
@@ -182,7 +166,7 @@ const AdminNotifications = () => {
       );
       showToast({ type: "success", title: "All caught up" });
     } catch {
-      showToast({ type: "error", title: "Could not update notifications" });
+      showToast({ type: "error", title: "Couldn't update notifications" });
     }
   };
 

@@ -65,7 +65,7 @@ const TwoFactorSetupDialog = ({
       })
       .catch((err: Error) => {
         if (cancelled) return;
-        setSetupLoadError(err.message || "Could not start setup.");
+        setSetupLoadError(err.message || "Couldn't start setup.");
       });
 
     return () => {
@@ -198,9 +198,9 @@ const TwoFactorSetupDialog = ({
               Set up two-step verification
             </h2>
             <p className="text-xs text-gray-500 mt-0.5">
-              {step === "scan" && "Step 1 of 3 — Scan the QR code"}
-              {step === "verify" && "Step 2 of 3 — Verify the code"}
-              {step === "recovery" && "Step 3 of 3 — Save recovery codes"}
+              {step === "scan" && "Step 1 of 3 - Scan the QR code"}
+              {step === "verify" && "Step 2 of 3 - Verify the code"}
+              {step === "recovery" && "Step 3 of 3 - Save recovery codes"}
               {step === "loading" && "Preparing setup…"}
               {step === "done" && "All set"}
             </p>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import Link from "next/link";
 import {
   HiOutlineArrowLeft,
@@ -10,39 +10,25 @@ import {
   HiOutlineHashtag,
 } from "react-icons/hi2";
 import {
-  useAdminUsers,
+  useAdminMember,
   suspendAdminUser,
   reinstateAdminUser,
-  type AdminUser,
 } from "@/hooks/useAdminUsers";
 import { AdminPageHeader, StatusPill } from "./AdminTablePanel";
 import ConfirmDialog from "./ConfirmDialog";
 import { useToaster } from "@/components/ui/Toaster";
+import { formatDate } from "@/lib/date-utils";
 
 interface Props {
   userId: string;
 }
 
-const formatDate = (iso: string) => {
-  const d = new Date(iso);
-  if (Number.isNaN(d.getTime())) return iso;
-  return d.toLocaleDateString("en-US", {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-  });
-};
 
 const AdminUserDetail = ({ userId }: Props) => {
-  const { users, isLoading, mutate } = useAdminUsers();
+  const { user, isLoading, mutate } = useAdminMember(userId);
   const { showToast } = useToaster();
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [busy, setBusy] = useState(false);
-
-  const user = useMemo<AdminUser | null>(
-    () => users.find((u) => u.id === userId) ?? null,
-    [users, userId],
-  );
 
   const isSuspending = user?.status === "active";
 
@@ -57,15 +43,13 @@ const AdminUserDetail = ({ userId }: Props) => {
         await reinstateAdminUser(user.id);
         showToast({ type: "success", title: "User reinstated" });
       }
-      const next = users.map((u) =>
-        u.id === user.id
-          ? { ...u, status: isSuspending ? "suspended" : "active" }
-          : u,
+      await mutate(
+        { ...user, status: isSuspending ? "suspended" : "active" },
+        false,
       );
-      await mutate(next as AdminUser[], false);
       setConfirmOpen(false);
     } catch {
-      showToast({ type: "error", title: "Could not update user" });
+      showToast({ type: "error", title: "Couldn't update user" });
     } finally {
       setBusy(false);
     }

@@ -34,7 +34,7 @@ function EmptyState() {
       <h3 className="text-xl font-bold text-gray-900 mb-3">
         No saved searches yet
       </h3>
-      <p className="text-sm text-gray-500 max-w-[380px] leading-relaxed mb-8">
+      <p className="text-sm text-gray-600 max-w-[380px] leading-relaxed mb-8">
         Save your job searches to quickly access them later. You can also enable
         alerts to get notified about new matches.
       </p>
@@ -59,7 +59,7 @@ function FilterBadge({
   label: string;
 }) {
   return (
-    <span className="inline-flex items-center gap-2 bg-gray-100 text-gray-600 rounded-full px-2.5 py-0.5 text-xs font-medium">
+    <span className="inline-flex items-center gap-2 bg-gray-100 text-gray-600 rounded-full px-2.5 py-0.5 text-sm font-medium">
       {icon}
       {label}
     </span>
@@ -135,7 +135,7 @@ function SavedSearchCard({
           </div>
 
           {/* Alert status */}
-          <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-gray-400">
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-gray-500">
             <span className="inline-flex items-center gap-2">
               <HiOutlineCalendarDays className="w-4 h-4 md:w-5 md:h-5" />
               Saved on {createdDate}
@@ -196,7 +196,7 @@ function SavedSearchCard({
           ) : (
             <button
               onClick={() => setShowConfirmDelete(true)}
-              className="inline-flex items-center justify-center gap-2 px-4 py-2.5 text-sm text-gray-500 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors cursor-pointer"
+              className="inline-flex items-center justify-center gap-2 px-4 py-2.5 text-sm text-gray-600 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors cursor-pointer"
             >
               <HiOutlineTrash className="w-4 h-4 md:w-5 md:h-5" />
               Delete
@@ -242,12 +242,12 @@ export default function SavedSearchesPage() {
             Saved Searches
           </h1>
           {searches.length > 0 && (
-            <span className="text-sm text-gray-400 mt-2">
+            <span className="text-sm text-gray-500 mt-2">
               {searches.length} search{searches.length !== 1 && "es"} saved
             </span>
           )}
         </div>
-        <p className="text-gray-500 text-sm mb-8 leading-relaxed">
+        <p className="text-gray-600 text-sm mb-8 leading-relaxed">
           Quickly re-run your favorite searches or enable alerts to get notified
           about new matching jobs.
         </p>
@@ -281,10 +281,9 @@ export default function SavedSearchesPage() {
                     About Job Alerts
                   </p>
                   <p className="text-sm text-red-600 leading-relaxed">
-                    When you enable alerts, we&apos;ll save your preference.
-                    Email notifications for new matching jobs are coming soon —
-                    for now, you can quickly re-run your searches from this
-                    page.
+                    With alerts on, we email you new jobs matching this
+                    search once a week. You can also re-run any search from
+                    this page whenever you like.
                   </p>
                 </div>
               </div>

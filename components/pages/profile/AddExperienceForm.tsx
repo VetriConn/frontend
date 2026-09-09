@@ -100,7 +100,7 @@ export const AddExperienceForm: React.FC<AddExperienceFormProps> = ({
             }`}
           />
           {errors.start_date && (
-            <span className="text-red-500 text-xs mt-1">
+            <span className="text-red-700 text-sm mt-1">
               {errors.start_date}
             </span>
           )}

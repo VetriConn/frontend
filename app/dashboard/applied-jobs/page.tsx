@@ -1,6 +1,9 @@
 "use client";
 
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, useMemo } from "react";
+import useSWR from "swr";
+import type { ApplicationItem } from "@/types/api";
+import { getMyApplications, withdrawApplication } from "@/lib/api/jobs";
 import Link from "next/link";
 import {
   HiOutlineMapPin,
@@ -33,9 +36,9 @@ function StatusBadge({ status }: { status: ApplicationStatus }) {
   const config = APPLICATION_STATUS_CONFIG[status];
   return (
     <span
-      className={`inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold border ${config.textColor} ${config.bgColor} ${config.borderColor}`}
+      className={`inline-flex items-center gap-2 px-3 py-1 rounded-full text-sm font-semibold border ${config.textColor} ${config.bgColor} ${config.borderColor}`}
     >
-      <span className="text-xs">{config.icon}</span>
+      <span className="text-sm">{config.icon}</span>
       {config.label}
     </span>
   );
@@ -44,14 +47,14 @@ function StatusBadge({ status }: { status: ApplicationStatus }) {
 function SourceBadge({ source }: { source: ApplicationSource }) {
   if (source === "vetriconn") {
     return (
-      <span className="inline-flex items-center gap-2 text-xs text-primary font-medium">
+      <span className="inline-flex items-center gap-2 text-sm text-primary font-medium">
         <HiOutlineBriefcase className="w-4 h-4 md:w-5 md:h-5" />
         Via Vetriconn
       </span>
     );
   }
   return (
-    <span className="inline-flex items-center gap-2 text-xs text-gray-400 font-medium">
+    <span className="inline-flex items-center gap-2 text-sm text-gray-500 font-medium">
       <HiOutlineGlobeAlt className="w-4 h-4 md:w-5 md:h-5" />
       External
     </span>
@@ -72,7 +75,7 @@ function StatsCard({
   return (
     <div className="bg-white rounded-xl border border-gray-200 py-5 px-6 text-center flex-1 min-w-[120px]">
       <div className={`text-2xl font-bold ${color} mb-1`}>{value}</div>
-      <div className="text-sm text-gray-500">{label}</div>
+      <div className="text-sm text-gray-600">{label}</div>
     </div>
   );
 }
@@ -87,6 +90,8 @@ function StatusDropdown({
   onStatusChange: (status: ApplicationStatus) => void;
 }) {
   const [isOpen, setIsOpen] = useState(false);
+  const triggerRef = React.useRef<HTMLButtonElement>(null);
+  const menuRef = React.useRef<HTMLDivElement>(null);
 
   const statuses: ApplicationStatus[] = [
     "saved",
@@ -98,11 +103,54 @@ function StatusDropdown({
     "withdrawn",
   ];
 
+  // The KebabMenu keyboard contract, in place: this menu was mouse-only —
+  // no roles, no Escape, no arrows — beside a codebase that had already
+  // fixed exactly this pattern twice.
+  const close = (returnFocus = true) => {
+    setIsOpen(false);
+    if (returnFocus) triggerRef.current?.focus();
+  };
+  const moveFocus = (delta: number) => {
+    const items = Array.from(
+      menuRef.current?.querySelectorAll<HTMLButtonElement>('[role="menuitem"]') ?? [],
+    );
+    if (!items.length) return;
+    const at = items.indexOf(document.activeElement as HTMLButtonElement);
+    const next = (at + delta + items.length) % items.length;
+    items[next].focus();
+  };
+  const handleMenuKeys = (e: React.KeyboardEvent) => {
+    if (e.key === "Escape") {
+      e.preventDefault();
+      close();
+    } else if (e.key === "ArrowDown") {
+      e.preventDefault();
+      moveFocus(1);
+    } else if (e.key === "ArrowUp") {
+      e.preventDefault();
+      moveFocus(-1);
+    } else if (e.key === "Tab") {
+      // Return focus to the trigger and let Tab proceed from there -
+      // closing with focus on an unmounting item strands it on <body>.
+      close();
+    }
+  };
+  React.useEffect(() => {
+    if (isOpen) {
+      menuRef.current
+        ?.querySelector<HTMLButtonElement>('[role="menuitem"]')
+        ?.focus();
+    }
+  }, [isOpen]);
+
   return (
     <div className="relative">
       <button
+        ref={triggerRef}
         onClick={() => setIsOpen(!isOpen)}
-        className="inline-flex items-center gap-1 text-xs text-gray-500 hover:text-gray-700 cursor-pointer transition-colors"
+        aria-haspopup="menu"
+        aria-expanded={isOpen}
+        className="inline-flex items-center gap-1 text-sm text-gray-600 hover:text-gray-700 cursor-pointer transition-colors min-h-[44px]"
       >
         Update status
         <HiOutlineChevronDown
@@ -113,25 +161,32 @@ function StatusDropdown({
         <>
           <div
             className="fixed inset-0 z-40"
-            onClick={() => setIsOpen(false)}
+            onClick={() => close(false)}
           />
-          <div className="absolute right-0 top-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg min-w-[160px] py-1 z-50">
+          <div
+            ref={menuRef}
+            role="menu"
+            aria-label="Update status"
+            onKeyDown={handleMenuKeys}
+            className="absolute right-0 top-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg min-w-[160px] py-1 z-50"
+          >
             {statuses.map((status) => {
               const config = APPLICATION_STATUS_CONFIG[status];
               return (
                 <button
                   key={status}
+                  role="menuitem"
                   onClick={() => {
                     onStatusChange(status);
-                    setIsOpen(false);
+                    close();
                   }}
-                  className={`w-full text-left px-4 py-2 text-sm transition-colors cursor-pointer ${
+                  className={`w-full text-left px-4 py-2 min-h-[44px] text-sm transition-colors cursor-pointer ${
                     currentStatus === status
                       ? "bg-red-50 text-primary font-medium"
                       : "text-gray-700 hover:bg-gray-50"
                   }`}
                 >
-                  <span className="mr-2 text-xs">{config.icon}</span>
+                  <span className="mr-2 text-sm">{config.icon}</span>
                   {config.label}
                 </button>
               );
@@ -154,8 +209,8 @@ function EmptyState({ onAdd }: { onAdd: () => void }) {
       <h3 className="text-xl font-bold text-gray-900 mb-3">
         No applications yet
       </h3>
-      <p className="text-sm text-gray-500 max-w-[380px] leading-relaxed mb-8">
-        Track all your job applications in one place — whether you applied
+      <p className="text-sm text-gray-600 max-w-[380px] leading-relaxed mb-8">
+        Track all your job applications in one place - whether you applied
         through Vetriconn or elsewhere.
       </p>
       <div className="flex flex-col sm:flex-row gap-3">
@@ -180,16 +235,130 @@ function EmptyState({ onAdd }: { onAdd: () => void }) {
 
 // --- Application Card ---
 
+
+/**
+ * The employer's actual decision, from the real Application record - shown
+ * beside the self-managed tracker stage so "what the employer did" and "how
+ * I'm tracking it" stay visibly separate things. Until this existed, accept/
+ * reject decisions were saved server-side and never reached the candidate.
+ */
+function EmployerDecisionBadge({
+  status,
+}: {
+  status: ApplicationItem["status"];
+}) {
+  if (status === "pending") return null;
+  const styles = {
+    reviewed: "bg-indigo-50 text-indigo-700 ring-indigo-200/70",
+    accepted: "bg-emerald-50 text-emerald-700 ring-emerald-200/70",
+    interview: "bg-indigo-50 text-indigo-700 ring-indigo-200/70",
+    offer: "bg-emerald-50 text-emerald-700 ring-emerald-200/70",
+    rejected: "bg-gray-100 text-gray-600 ring-gray-200",
+    withdrawn: "bg-gray-100 text-gray-600 ring-gray-200",
+  } as const;
+  const labels = {
+    reviewed: "Reviewed by employer",
+    accepted: "Accepted by employer",
+    interview: "Interview stage",
+    offer: "Offer received",
+    rejected: "Employer moved on",
+    withdrawn: "You withdrew",
+  } as const;
+  return (
+    <span
+      className={`inline-flex items-center px-2 py-0.5 rounded-full text-sm font-semibold ring-1 ${styles[status]}`}
+    >
+      {labels[status]}
+    </span>
+  );
+}
+
+/**
+ * Two-step withdraw: first press arms it, second confirms. Withdrawing takes
+ * the application out of the employer's inbox for good, so a single stray
+ * click must not do it.
+ */
+function WithdrawButton({ onWithdraw }: { onWithdraw: () => Promise<void> }) {
+  const [arming, setArming] = useState(false);
+  const [busy, setBusy] = useState(false);
+  // Arming unmounts the button that had focus; without a handoff, keyboard
+  // focus fell to <body> and the confirm was never announced. The handoff
+  // works both ways: disarming returns focus to the collapsed button.
+  const confirmRef = React.useRef<HTMLButtonElement>(null);
+  const armRef = React.useRef<HTMLButtonElement>(null);
+  const wasArming = React.useRef(false);
+  React.useEffect(() => {
+    if (arming) confirmRef.current?.focus();
+    else if (wasArming.current) armRef.current?.focus();
+    wasArming.current = arming;
+  }, [arming]);
+  if (!arming) {
+    return (
+      <button
+        ref={armRef}
+        type="button"
+        onClick={() => setArming(true)}
+        className="text-sm font-medium text-gray-500 hover:text-primary underline-offset-2 hover:underline bg-transparent border-none cursor-pointer p-0 min-h-[44px]"
+      >
+        Withdraw application
+      </button>
+    );
+  }
+  return (
+    <span
+      role="alertdialog"
+      aria-label="Confirm withdrawal"
+      onKeyDown={(e) => {
+        if (e.key === "Escape") {
+          e.preventDefault();
+          setArming(false);
+        }
+      }}
+      className="inline-flex items-center gap-2 text-sm"
+    >
+      <span className="text-gray-600">Withdraw? The employer won&apos;t see it anymore.</span>
+      <button
+        ref={confirmRef}
+        type="button"
+        disabled={busy}
+        onClick={async () => {
+          setBusy(true);
+          try {
+            await onWithdraw();
+          } finally {
+            setBusy(false);
+            setArming(false);
+          }
+        }}
+        className="font-semibold text-primary bg-transparent border-none cursor-pointer p-0 min-h-[44px] disabled:opacity-60"
+      >
+        {busy ? "Withdrawing..." : "Yes, withdraw"}
+      </button>
+      <button
+        type="button"
+        onClick={() => setArming(false)}
+        className="font-medium text-gray-500 bg-transparent border-none cursor-pointer p-0 min-h-[44px]"
+      >
+        Keep it
+      </button>
+    </span>
+  );
+}
+
 function ApplicationCard({
   application,
+  employerStatus,
   onStatusChange,
   onDelete,
   onEditNotes,
+  onWithdraw,
 }: {
   application: ApplicationEntry;
+  employerStatus?: ApplicationItem["status"];
   onStatusChange: (id: string, status: ApplicationStatus) => void;
   onDelete: (id: string) => void;
   onEditNotes: (app: ApplicationEntry) => void;
+  onWithdraw?: () => Promise<void>;
 }) {
   const [showConfirmDelete, setShowConfirmDelete] = useState(false);
 
@@ -216,10 +385,12 @@ function ApplicationCard({
 
             <div className="flex flex-wrap items-center gap-3 mb-3">
               <StatusBadge status={application.status} />
+              {employerStatus && <EmployerDecisionBadge status={employerStatus} />}
               <SourceBadge source={application.source} />
+              {onWithdraw && <WithdrawButton onWithdraw={onWithdraw} />}
             </div>
 
-            <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-gray-500 mb-2">
+            <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-gray-600 mb-2">
               <span className="inline-flex items-center gap-2">
                 <HiOutlineBuildingOffice2 className="w-4 h-4 md:w-5 md:h-5" />
                 {application.company}
@@ -232,14 +403,14 @@ function ApplicationCard({
               )}
             </div>
 
-            <div className="flex items-center gap-2 text-xs text-gray-400">
+            <div className="flex items-center gap-2 text-sm text-gray-500">
               <HiOutlineCalendarDays className="w-4 h-4 md:w-5 md:h-5" />
               Applied {appliedDate}
             </div>
 
             {application.notes && (
               <div className="mt-3 p-3 bg-gray-50 rounded-lg">
-                <div className="flex items-center gap-2 text-xs text-gray-500 font-medium mb-1">
+                <div className="flex items-center gap-2 text-sm text-gray-600 font-medium mb-1">
                   <HiOutlineDocumentText className="w-4 h-4 md:w-5 md:h-5" />
                   Notes
                 </div>
@@ -260,7 +431,7 @@ function ApplicationCard({
 
           <button
             onClick={() => onEditNotes(application)}
-            className="inline-flex items-center gap-2 text-xs text-gray-500 hover:text-gray-700 cursor-pointer transition-colors"
+            className="inline-flex items-center gap-2 text-sm text-gray-600 hover:text-gray-700 cursor-pointer transition-colors"
           >
             <HiOutlinePencilSquare className="w-4 h-4 md:w-5 md:h-5" />
             {application.notes ? "Edit notes" : "Add notes"}
@@ -271,7 +442,7 @@ function ApplicationCard({
               href={application.url}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 text-xs text-primary hover:text-primary-hover transition-colors no-underline"
+              className="inline-flex items-center gap-2 text-sm text-primary hover:text-primary-hover transition-colors no-underline"
             >
               <HiOutlineGlobeAlt className="w-4 h-4 md:w-5 md:h-5" />
               View posting
@@ -281,7 +452,7 @@ function ApplicationCard({
           {application.job_id && (
             <Link
               href={`/jobs/${application.job_id}`}
-              className="inline-flex items-center gap-2 text-xs text-primary hover:text-primary-hover transition-colors no-underline"
+              className="inline-flex items-center gap-2 text-sm text-primary hover:text-primary-hover transition-colors no-underline"
             >
               <HiOutlineBriefcase className="w-4 h-4 md:w-5 md:h-5" />
               View on Vetriconn
@@ -292,13 +463,13 @@ function ApplicationCard({
             <div className="flex items-center gap-2 mt-1">
               <button
                 onClick={() => onDelete(application.id)}
-                className="px-2.5 py-1 text-xs font-medium text-red-600 bg-red-50 border border-red-200 rounded-md hover:bg-red-100 transition-colors cursor-pointer"
+                className="px-2.5 py-1 text-sm font-medium text-red-600 bg-red-50 border border-red-200 rounded-md hover:bg-red-100 transition-colors cursor-pointer"
               >
                 Remove
               </button>
               <button
                 onClick={() => setShowConfirmDelete(false)}
-                className="px-2.5 py-1 text-xs font-medium text-gray-600 bg-white border border-gray-200 rounded-md hover:bg-gray-50 transition-colors cursor-pointer"
+                className="px-2.5 py-1 text-sm font-medium text-gray-600 bg-white border border-gray-200 rounded-md hover:bg-gray-50 transition-colors cursor-pointer"
               >
                 Cancel
               </button>
@@ -306,7 +477,7 @@ function ApplicationCard({
           ) : (
             <button
               onClick={() => setShowConfirmDelete(true)}
-              className="inline-flex items-center gap-2 text-xs text-gray-400 hover:text-red-600 cursor-pointer transition-colors mt-1"
+              className="inline-flex items-center gap-2 text-sm text-gray-500 hover:text-red-600 cursor-pointer transition-colors mt-1"
             >
               <HiOutlineTrash className="w-4 h-4 md:w-5 md:h-5" />
               Remove
@@ -342,6 +513,87 @@ export default function AppliedJobsPage() {
   } = useApplications();
   const { showToast } = useToaster();
 
+  // The employer's real decisions, keyed by job identity. The tracker above is
+  // self-managed; this is what actually happened on the other side.
+  const { data: realApplications, mutate: mutateRealApplications } = useSWR(
+    "my-real-applications",
+    getMyApplications,
+    { revalidateOnFocus: false },
+  );
+  const employerStatusByJob = useMemo(() => {
+    const map = new Map<
+      string,
+      { status: ApplicationItem["status"]; applicationId: string }
+    >();
+    for (const item of realApplications ?? []) {
+      const entry = { status: item.status, applicationId: item._id };
+      const job = item.job_id;
+      if (typeof job === "string") map.set(job, entry);
+      else if (job) {
+        if (job._id) map.set(job._id, entry);
+        if (job.id) map.set(job.id, entry);
+      }
+    }
+    return map;
+  }, [realApplications]);
+  const decisionFor = (jobId?: string) =>
+    jobId ? employerStatusByJob.get(jobId)?.status : undefined;
+  // The real application behind a tracker row, when it can still be taken
+  // back - withdrawing is only meaningful before the employer decides.
+  const withdrawableIdFor = (jobId?: string) => {
+    const entry = jobId ? employerStatusByJob.get(jobId) : undefined;
+    return entry && (entry.status === "pending" || entry.status === "reviewed")
+      ? entry.applicationId
+      : undefined;
+  };
+  const handleWithdraw = async (applicationId: string, trackerId?: string) => {
+    try {
+      await withdrawApplication(applicationId);
+      await mutateRealApplications();
+      // The tracker row is self-managed state; without this it kept saying
+      // "Applied" and counting toward Active after the withdrawal.
+      if (trackerId) updateStatus(trackerId, "withdrawn");
+      showToast({
+        type: "success",
+        title: "Application withdrawn",
+        description: "The employer will no longer see it in their inbox.",
+      });
+    } catch {
+      showToast({
+        type: "error",
+        title: "Couldn't withdraw the application",
+        description: "Please try again in a moment.",
+      });
+    }
+  };
+
+  // Reconcile the self-managed tracker with what actually happened: an
+  // employer decision (or a withdrawal made elsewhere) updates the matching
+  // tracker row, which otherwise sat on "Applied" forever while the badge
+  // beside it told the real story.
+  const RECONCILED: Partial<Record<string, ApplicationStatus>> = useMemo(
+    () => ({ accepted: "offer", rejected: "rejected", withdrawn: "withdrawn" }),
+    [],
+  );
+  React.useEffect(() => {
+    if (!isLoaded || !realApplications) return;
+    for (const app of applications) {
+      if (app.source !== "vetriconn" || !app.job_id) continue;
+      const real = employerStatusByJob.get(app.job_id);
+      const target = real && RECONCILED[real.status];
+      if (target && app.status !== target && app.status !== "withdrawn") {
+        updateStatus(app.id, target);
+      }
+    }
+  }, [
+    isLoaded,
+    realApplications,
+    applications,
+    employerStatusByJob,
+    updateStatus,
+    RECONCILED,
+  ]);
+
   const [activeTab, setActiveTab] = useState("all");
   const [showAddDialog, setShowAddDialog] = useState(false);
   const [showNotesDialog, setShowNotesDialog] = useState(false);
@@ -375,20 +627,32 @@ export default function AppliedJobsPage() {
   });
 
   const handleAddSubmit = useCallback(
-    (e: React.FormEvent) => {
+    async (e: React.FormEvent) => {
       e.preventDefault();
       if (!addForm.company.trim() || !addForm.position.trim()) return;
 
-      addApplication({
-        company: addForm.company,
-        position: addForm.position,
-        location: addForm.location || undefined,
-        url: addForm.url || undefined,
-        notes: addForm.notes || undefined,
-        applied_date: addForm.applied_date || new Date().toISOString(),
-        status: "applied",
-        source: "external",
-      });
+      // Success is claimed only after the save lands. This used to toast,
+      // close the dialog and wipe the form before the request resolved - a
+      // failed save silently lost everything typed.
+      try {
+        await addApplication({
+          company: addForm.company,
+          position: addForm.position,
+          location: addForm.location || undefined,
+          url: addForm.url || undefined,
+          notes: addForm.notes || undefined,
+          applied_date: addForm.applied_date || new Date().toISOString(),
+          status: "applied",
+          source: "external",
+        });
+      } catch {
+        showToast({
+          type: "error",
+          title: "Couldn't log the application",
+          description: "Nothing was saved. Your entries are still here - try again.",
+        });
+        return;
+      }
 
       showToast({
         type: "success",
@@ -481,9 +745,9 @@ export default function AppliedJobsPage() {
         <div className="flex items-start justify-between mb-2 mobile:flex-col mobile:gap-3">
           <div>
             <h1 className="font-lato text-xl md:text-3xl font-bold text-gray-900">
-              Application Tracker
+              Applied Jobs
             </h1>
-            <p className="text-gray-500 text-sm mt-1">
+            <p className="text-gray-600 text-sm mt-1">
               Track all your job applications in one place.
             </p>
           </div>
@@ -543,7 +807,7 @@ export default function AppliedJobsPage() {
             {/* Applications list */}
             {filteredApplications.length === 0 ? (
               <div className="bg-white rounded-xl border border-gray-200 p-12 text-center">
-                <p className="text-gray-400 text-sm">
+                <p className="text-gray-500 text-sm">
                   No applications match this filter.
                 </p>
               </div>
@@ -554,19 +818,19 @@ export default function AppliedJobsPage() {
                   <table className="w-full">
                     <thead>
                       <tr className="bg-gray-50 border-b border-gray-200">
-                        <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700">
+                        <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">
                           Position
                         </th>
-                        <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700">
+                        <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">
                           Company
                         </th>
-                        <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700">
+                        <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">
                           Status
                         </th>
-                        <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700">
+                        <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">
                           Applied
                         </th>
-                        <th className="px-4 py-3 text-right text-xs font-semibold text-gray-700">
+                        <th className="px-4 py-3 text-right text-sm font-semibold text-gray-700">
                           Actions
                         </th>
                       </tr>
@@ -591,7 +855,7 @@ export default function AppliedJobsPage() {
                                 {app.position}
                               </div>
                               {app.location && (
-                                <div className="flex items-center gap-1 text-xs text-gray-500 mt-1">
+                                <div className="flex items-center gap-1 text-sm text-gray-600 mt-1">
                                   <HiOutlineMapPin className="w-3 h-3" />
                                   {app.location}
                                 </div>
@@ -612,9 +876,25 @@ export default function AppliedJobsPage() {
                             </td>
                             <td className="px-4 py-4">
                               <StatusBadge status={app.status} />
+                              {decisionFor(app.job_id) && (
+                                <div className="mt-1.5">
+                                  <EmployerDecisionBadge
+                                    status={decisionFor(app.job_id)!}
+                                  />
+                                </div>
+                              )}
+                              {withdrawableIdFor(app.job_id) && (
+                                <div className="mt-1.5">
+                                  <WithdrawButton
+                                    onWithdraw={() =>
+                                      handleWithdraw(withdrawableIdFor(app.job_id)!, app.id)
+                                    }
+                                  />
+                                </div>
+                              )}
                             </td>
                             <td className="px-4 py-4">
-                              <div className="flex items-center gap-2 text-xs text-gray-500">
+                              <div className="flex items-center gap-2 text-sm text-gray-600">
                                 <HiOutlineCalendarDays className="w-4 h-4 md:w-5 md:h-5" />
                                 {appliedDate}
                               </div>
@@ -629,7 +909,7 @@ export default function AppliedJobsPage() {
                                 />
                                 <button
                                   onClick={() => handleEditNotes(app)}
-                                  className="p-2 min-h-44 min-w-44 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
+                                  className="p-2 min-h-[44px] min-w-[44px] text-gray-600 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
                                   aria-label={
                                     app.notes ? "Edit notes" : "Add notes"
                                   }
@@ -649,7 +929,7 @@ export default function AppliedJobsPage() {
                                         ? "noopener noreferrer"
                                         : undefined
                                     }
-                                    className="p-2 min-h-44 min-w-44 text-primary hover:text-primary-hover hover:bg-red-50 rounded-lg transition-colors"
+                                    className="p-2 min-h-[44px] min-w-[44px] text-primary hover:text-primary-hover hover:bg-red-50 rounded-lg transition-colors"
                                     aria-label="View job posting"
                                   >
                                     {app.job_id ? (
@@ -661,7 +941,7 @@ export default function AppliedJobsPage() {
                                 )}
                                 <button
                                   onClick={() => handleDelete(app.id)}
-                                  className="p-2 min-h-44 min-w-44 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                                  className="p-2 min-h-[44px] min-w-[44px] text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
                                   aria-label="Remove application"
                                 >
                                   <HiOutlineTrash className="w-4 h-4" />
@@ -681,6 +961,11 @@ export default function AppliedJobsPage() {
                     <ApplicationCard
                       key={app.id}
                       application={app}
+                      employerStatus={decisionFor(app.job_id)}
+                      onWithdraw={(() => {
+                        const id = withdrawableIdFor(app.job_id);
+                        return id ? () => handleWithdraw(id, app.id) : undefined;
+                      })()}
                       onStatusChange={handleStatusChange}
                       onDelete={handleDelete}
                       onEditNotes={handleEditNotes}
@@ -701,7 +986,7 @@ export default function AppliedJobsPage() {
           submitLabel="Log Application"
         >
           <div className="space-y-4">
-            <p className="text-sm text-gray-500 -mt-2 mb-2">
+            <p className="text-sm text-gray-600 -mt-2 mb-2">
               Track a job you applied to outside of Vetriconn.
             </p>
             <div>
@@ -812,8 +1097,8 @@ export default function AppliedJobsPage() {
               placeholder="Add notes about this application \u2014 interview prep, key contacts, follow-up dates..."
               autoFocus
             />
-            <p className="text-xs text-gray-400 mt-2">
-              Notes are saved locally and only visible to you.
+            <p className="text-sm text-gray-500 mt-2">
+              Only you can see your notes.
             </p>
           </div>
         </EditDialog>

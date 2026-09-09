@@ -1,8 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import useSWR from "swr";
 import {
   HiOutlineUsers,
   HiOutlineUserCircle,
@@ -10,8 +9,8 @@ import {
   HiOutlineEye,
   HiOutlineCheckCircle,
 } from "react-icons/hi2";
-import { adminMemberCounts } from "@/lib/api/admin";
 import {
+  useAdminMemberCounts,
   useAdminUsers,
   suspendAdminUser,
   reinstateAdminUser,
@@ -31,29 +30,29 @@ import {
   StatusPill,
   AdminStatCard,
   AdminStatRow,
+  AdminLoadError,
+  AdminPagination,
 } from "./AdminTablePanel";
 import KebabMenu, { type KebabAction } from "./KebabMenu";
 import ConfirmDialog from "./ConfirmDialog";
 import { useToaster } from "@/components/ui/Toaster";
+import { formatDate } from "@/lib/date-utils";
 
-const formatDate = (iso: string) => {
-  const d = new Date(iso);
-  if (Number.isNaN(d.getTime())) return iso;
-  return d.toLocaleDateString("en-US", {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-  });
-};
 
 const UserManagement = () => {
   const router = useRouter();
-  const { users, isLoading, mutate } = useAdminUsers();
-  const { data: counts, mutate: mutateCounts } = useSWR(
-    "admin-member-counts",
-    adminMemberCounts,
-  );
+  const [page, setPage] = useState(1);
+  const { users, total, totalPages, isLoading, isError, mutate } =
+    useAdminUsers(page);
+  const { counts } = useAdminMemberCounts();
   const { showToast } = useToaster();
+
+  // If the total shrinks under the current page (last row of the last page
+  // acted on elsewhere), fall back to the real last page instead of
+  // dead-ending on an empty table.
+  useEffect(() => {
+    if (!isLoading && page > totalPages) setPage(totalPages);
+  }, [isLoading, page, totalPages]);
   const [target, setTarget] = useState<AdminUser | null>(null);
   const [busy, setBusy] = useState(false);
 
@@ -78,15 +77,16 @@ const UserManagement = () => {
           description: `${target.full_name} can sign in again.`,
         });
       }
-      const next = users.map((u) =>
-        u.id === target.id
-          ? { ...u, status: isSuspending ? "suspended" : "active" }
-          : u,
+      const next = users.map(
+        (u): AdminUser =>
+          u.id === target.id
+            ? { ...u, status: isSuspending ? "suspended" : "active" }
+            : u,
       );
-      await mutate(next as AdminUser[], false);
+      await mutate({ users: next, total, totalPages }, false);
       setTarget(null);
     } catch {
-      showToast({ type: "error", title: "Could not update user" });
+      showToast({ type: "error", title: "Couldn't update user" });
     } finally {
       setBusy(false);
     }
@@ -123,25 +123,25 @@ const UserManagement = () => {
         <AdminStatCard
           icon={HiOutlineUsers}
           label="Total members"
-          value={counts?.total ?? "—"}
+          value={counts?.total ?? "-"}
           tone="indigo"
         />
         <AdminStatCard
           icon={HiOutlineCheckCircle}
           label="Active"
-          value={counts?.active ?? "—"}
+          value={counts?.active ?? "-"}
           tone="emerald"
         />
         <AdminStatCard
           icon={HiOutlineNoSymbol}
           label="Suspended"
-          value={counts?.suspended ?? "—"}
+          value={counts?.suspended ?? "-"}
           tone="rose"
         />
         <AdminStatCard
           icon={HiOutlineUserCircle}
           label="Showing"
-          value={isLoading ? "—" : users.length}
+          value={isLoading ? "-" : users.length}
           tone="gray"
         />
       </AdminStatRow>
@@ -162,7 +162,7 @@ const UserManagement = () => {
                   <AdminRowSkeleton key={i} columns={6} />
                 ))
               : users.map((u) => (
-                  <AdminTableRow key={u.id}>
+                  <AdminTableRow key={u.id} onOpen={() => router.push(`/admin/users/${u.id}`)}>
                     <AdminTableTd className="font-semibold text-gray-900">
                       {u.full_name}
                     </AdminTableTd>
@@ -187,13 +187,24 @@ const UserManagement = () => {
                 ))}
           </AdminTableBody>
         </AdminTable>
-        {!isLoading && users.length === 0 && (
+        {!isLoading && isError && (
+          <AdminLoadError what="users" onRetry={() => mutate()} />
+        )}
+        {!isLoading && !isError && users.length === 0 && (
           <AdminEmptyState
             title="No users yet"
             description="Job seekers will appear here once they create an account."
             icon={HiOutlineUsers}
           />
         )}
+        <AdminPagination
+          pagination={{
+            currentPage: page,
+            totalPages,
+            totalItems: total,
+          }}
+          onPage={setPage}
+        />
       </AdminTablePanel>
 
       <ConfirmDialog

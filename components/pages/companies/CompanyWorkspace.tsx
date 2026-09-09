@@ -58,6 +58,25 @@ export const CompanyWorkspace = ({ companyId }: { companyId: string }) => {
         {company.name}
       </h1>
 
+      {company.status === "suspended" && (
+        <div className="mb-6 rounded-xl border border-amber-200 bg-amber-50 p-5">
+          <h2 className="text-sm font-semibold text-amber-900 mb-1">
+            This company is suspended
+          </h2>
+          <p className="text-sm text-amber-800 leading-relaxed">
+            Your listings are off the board and new postings are paused
+            {company.suspension_reason
+              ? ` - reason given: ${company.suspension_reason}`
+              : ""}
+            . If you believe this is a mistake, write to us through the{" "}
+            <Link href="/#contact-section" className="underline">
+              contact form
+            </Link>{" "}
+            and our team will take another look.
+          </p>
+        </div>
+      )}
+
       <div className="flex flex-col gap-6">
         <CompanyProfileEditor
           company={company}
@@ -100,19 +119,56 @@ export const CompanyWorkspace = ({ companyId }: { companyId: string }) => {
           )}
 
           <ul className="flex flex-col divide-y divide-gray-100">
-            {jobs.map((job) => (
-              <li key={job._id} className="py-3 first:pt-0 last:pb-0">
-                <Link
-                  href={`/jobs/${job._id}`}
-                  className="text-sm font-medium text-gray-900 hover:text-primary no-underline"
+            {jobs.map((job) => {
+              // Same standing logic as My Postings - this list used to hide
+              // status entirely and link to the candidate-facing page, so a
+              // pending or held listing looked identical to a live one.
+              const moderation = job.moderation_status ?? "pending";
+              const badge =
+                job.status === "draft"
+                  ? { label: "Draft", cls: "bg-gray-100 text-gray-600" }
+                  : moderation === "rejected"
+                    ? { label: "Rejected", cls: "bg-rose-50 text-rose-700" }
+                    : job.unpublished_reason === "expired"
+                      ? { label: "Expired", cls: "bg-gray-100 text-gray-600" }
+                      : job.unpublished_reason === "company_suspended"
+                        ? {
+                            label: "On hold",
+                            cls: "bg-amber-50 text-amber-700",
+                          }
+                        : moderation === "approved"
+                          ? {
+                              label: "Published",
+                              cls: "bg-green-50 text-green-700",
+                            }
+                          : {
+                              label: "Awaiting approval",
+                              cls: "bg-yellow-50 text-yellow-700",
+                            };
+              return (
+                <li
+                  key={job._id}
+                  className="py-3 first:pt-0 last:pb-0 flex items-start justify-between gap-3"
                 >
-                  {job.role}
-                </Link>
-                <p className="text-xs text-gray-500 mt-0.5">
-                  {job.location || "Location not set"}
-                </p>
-              </li>
-            ))}
+                  <div className="min-w-0">
+                    <Link
+                      href="/dashboard/postings"
+                      className="text-sm font-medium text-gray-900 hover:text-primary no-underline"
+                    >
+                      {job.role}
+                    </Link>
+                    <p className="text-xs text-gray-500 mt-0.5">
+                      {job.location || "Location not set"}
+                    </p>
+                  </div>
+                  <span
+                    className={`shrink-0 inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold ${badge.cls}`}
+                  >
+                    {badge.label}
+                  </span>
+                </li>
+              );
+            })}
           </ul>
         </section>
       </div>

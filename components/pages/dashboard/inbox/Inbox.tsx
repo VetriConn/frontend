@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import { useThreadSocket } from "@/hooks/useThreadSocket";
 import useSWR from "swr";
 import { useUserProfile } from "@/hooks/useUserProfile";
 import {
@@ -58,6 +59,13 @@ export default function Inbox() {
   } = useSWR(resolvedSelectedId ? ["thread", resolvedSelectedId] : null, () =>
     getThreadMessages(resolvedSelectedId),
   );
+
+  // Live updates: the open conversation refreshes when the other side sends
+  // or reads, via the Socket.IO room the backend already maintains.
+  useThreadSocket(resolvedSelectedId || undefined, () => {
+    void mutateThread();
+    void mutateThreads();
+  });
 
   const selectedThread = useMemo(
     () => threads.find((t) => t.application_id === resolvedSelectedId),
@@ -154,15 +162,15 @@ export default function Inbox() {
       <div className="max-w-[1400px] mx-auto w-full h-full flex flex-col px-4 md:px-6 py-4 md:py-6">
         <div className="mb-4 md:mb-6 shrink-0">
           <h1 className="text-xl md:text-2xl font-bold text-gray-900">
-            Messages
+            Inbox
           </h1>
-          <p className="text-sm text-gray-500 mt-1">
+          <p className="text-sm text-gray-600 mt-1">
             Conversations about jobs you applied to and jobs you posted
           </p>
         </div>
 
         {threadsLoading && (
-          <div className="bg-white rounded-lg border border-gray-200 p-4 text-sm text-gray-500 mb-4 shrink-0">
+          <div className="bg-white rounded-lg border border-gray-200 p-4 text-sm text-gray-600 mb-4 shrink-0">
             Loading conversations…
           </div>
         )}
@@ -175,6 +183,7 @@ export default function Inbox() {
         <div className="flex-1 bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden flex min-h-0">
           <ConversationList
             conversations={filteredConversations}
+            hiddenOnMobile={!!selectedId}
             selectedId={resolvedSelectedId}
             onSelect={(id) => {
               setSelectedId(id);
@@ -186,12 +195,21 @@ export default function Inbox() {
             onClearSearch={() => setSearchQuery("")}
           />
 
-          <div className="flex-1 flex flex-col min-w-0 bg-gray-50/30 h-full">
+          {/* Mobile is one pane at a time: the list until a thread is
+              explicitly opened, then the conversation with a back button.
+              Both panes used to render side by side, which computed the chat
+              to 0px width on phones. */}
+          <div
+            className={`${
+              selectedId ? "flex" : "hidden md:flex"
+            } flex-1 flex-col min-w-0 bg-gray-50/30 h-full`}
+          >
             {selectedConvo && selectedThread ? (
               <>
                 <ChatHeader
                   name={selectedConvo.name}
                   subtitle={selectedConvo.subtitle}
+                  onBack={() => setSelectedId("")}
                   // Contact details only exist on the hiring side, where they
                   // came from the application the person submitted.
                   email={
@@ -208,7 +226,7 @@ export default function Inbox() {
 
                 {threadLoading && messages.length === 0 && (
                   <div className="flex items-center justify-center py-8">
-                    <p className="text-sm text-gray-400">Loading messages…</p>
+                    <p className="text-sm text-gray-500">Loading messages…</p>
                   </div>
                 )}
 
@@ -246,7 +264,7 @@ export default function Inbox() {
                 <h3 className="text-xl font-bold text-gray-900 mb-2">
                   Your Messages
                 </h3>
-                <p className="text-gray-500 max-w-xs">
+                <p className="text-gray-600 max-w-xs">
                   Messages about your applications and about people applying to
                   your jobs will show up here.
                 </p>

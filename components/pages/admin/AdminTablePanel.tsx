@@ -2,6 +2,10 @@
 
 import { ReactNode } from "react";
 import clsx from "clsx";
+import {
+  HiOutlineChevronLeft,
+  HiOutlineChevronRight,
+} from "react-icons/hi2";
 import Link from "next/link";
 import {
   HiOutlineEye,
@@ -109,12 +113,33 @@ export const AdminTableBody = ({ children }: AdminTableBodyProps) => (
 interface AdminTableRowProps {
   children: ReactNode;
   className?: string;
+  /**
+   * Opens the row's detail view. Clicks that land on interactive descendants
+   * (kebab, links, buttons) are ignored, so an action never also opens the
+   * drawer behind it. The kebab's "View details" remains the keyboard path;
+   * the whole-row target is a convenience on top, not a replacement.
+   */
+  onOpen?: () => void;
 }
 
-export const AdminTableRow = ({ children, className }: AdminTableRowProps) => (
+export const AdminTableRow = ({
+  children,
+  className,
+  onOpen,
+}: AdminTableRowProps) => (
   <tr
+    onClick={
+      onOpen
+        ? (e) => {
+            const el = e.target as HTMLElement;
+            if (el.closest("button, a, input, label, [role='menu']")) return;
+            onOpen();
+          }
+        : undefined
+    }
     className={clsx(
       "hover:bg-gray-50/70 transition-colors",
+      onOpen && "cursor-pointer",
       className,
     )}
   >
@@ -293,34 +318,68 @@ const STAT_TONES: Record<StatTone, string> = {
   gray: "bg-gray-100 text-gray-600 ring-gray-200",
 };
 
-/** The summary card that heads every admin list page. */
+/** Value color for the icon-less variant, where the tone tints the number. */
+const STAT_VALUE_TEXT: Record<StatTone, string> = {
+  amber: "text-amber-600",
+  emerald: "text-emerald-600",
+  rose: "text-rose-600",
+  indigo: "text-indigo-600",
+  gray: "text-gray-900",
+};
+
+/**
+ * The summary card that heads every admin list page — the ONE implementation.
+ * (It used to be re-written locally in five components, each drifting a
+ * little; the variants folded back in as optional props.)
+ */
 export const AdminStatCard = ({
   icon: Icon,
   label,
   value,
   tone,
+  delta,
 }: {
-  icon: React.ComponentType<{ className?: string }>;
+  /** Icon chip. Without one, the tone tints the value instead. */
+  icon?: React.ComponentType<{ className?: string }>;
   label: string;
   value: number | string;
   tone: StatTone;
+  /** Small trend note under the value (dashboard cards). */
+  delta?: { value: string; positive?: boolean };
 }) => (
-  <div className="bg-white rounded-2xl border border-gray-200/80 p-5 shadow-[0_1px_2px_rgba(15,23,42,0.04)]">
+  <div className="bg-white rounded-2xl border border-gray-200/80 p-5 shadow-[0_1px_2px_rgba(15,23,42,0.04)] hover:shadow-[0_8px_24px_-12px_rgba(15,23,42,0.15)] transition-shadow">
     <div className="flex items-start justify-between gap-3">
       <div className="min-w-0">
         <p className="text-[13px] font-medium text-gray-500">{label}</p>
-        <p className="mt-2 text-3xl font-bold text-gray-900 tracking-tight tabular-nums">
+        <p
+          className={clsx(
+            "mt-2 text-3xl font-bold tracking-tight tabular-nums",
+            Icon ? "text-gray-900" : STAT_VALUE_TEXT[tone],
+          )}
+        >
           {value}
         </p>
-      </div>
-      <div
-        className={clsx(
-          "w-11 h-11 rounded-xl ring-1 flex items-center justify-center shrink-0",
-          STAT_TONES[tone],
+        {delta && (
+          <p
+            className={clsx(
+              "mt-1.5 inline-flex items-center gap-1 text-xs font-medium",
+              delta.positive ? "text-emerald-600" : "text-gray-500",
+            )}
+          >
+            {delta.value}
+          </p>
         )}
-      >
-        <Icon className="w-5 h-5" />
       </div>
+      {Icon && (
+        <div
+          className={clsx(
+            "w-11 h-11 rounded-xl ring-1 flex items-center justify-center shrink-0",
+            STAT_TONES[tone],
+          )}
+        >
+          <Icon className="w-5 h-5" />
+        </div>
+      )}
     </div>
   </div>
 );
@@ -328,4 +387,88 @@ export const AdminStatCard = ({
 /** Row of summary cards; 2-up on mobile, 4-up on desktop. */
 export const AdminStatRow = ({ children }: { children: React.ReactNode }) => (
   <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-5">{children}</div>
+);
+
+/** Pagination shape the backend's paginated() envelope returns. */
+export interface AdminPaginationMeta {
+  currentPage: number;
+  totalPages: number;
+  totalItems: number;
+  hasPrev?: boolean;
+  hasNext?: boolean;
+}
+
+/**
+ * The footer pager every admin table shares. Reports and support tickets
+ * used to fetch page 1 of 10 with no controls at all - rows past ten were
+ * unreachable while the header counters showed the true totals.
+ */
+export const AdminPagination = ({
+  pagination,
+  onPage,
+}: {
+  pagination?: AdminPaginationMeta | null;
+  onPage: (page: number) => void;
+}) => {
+  if (!pagination || pagination.totalPages <= 1) return null;
+  const { currentPage, totalPages, totalItems } = pagination;
+  const hasPrev = pagination.hasPrev ?? currentPage > 1;
+  const hasNext = pagination.hasNext ?? currentPage < totalPages;
+  return (
+    <div className="flex items-center justify-between gap-4 px-5 md:px-6 py-3 border-t border-gray-100">
+      <p className="text-xs text-gray-500 tabular-nums">
+        Page {currentPage} of {totalPages} · {totalItems} total
+      </p>
+      <div className="flex items-center gap-2">
+        <button
+          onClick={() => onPage(Math.max(1, currentPage - 1))}
+          disabled={!hasPrev}
+          className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg border border-gray-200 bg-white text-xs font-semibold text-gray-700 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed"
+        >
+          <HiOutlineChevronLeft className="w-4 h-4" />
+          Prev
+        </button>
+        <button
+          onClick={() => onPage(currentPage + 1)}
+          disabled={!hasNext}
+          className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg border border-gray-200 bg-white text-xs font-semibold text-gray-700 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed"
+        >
+          Next
+          <HiOutlineChevronRight className="w-4 h-4" />
+        </button>
+      </div>
+    </div>
+  );
+};
+
+/**
+ * A failed table fetch, said plainly. Every queue used to render its
+ * cheerful empty state ("No users yet") over a 403 or a network error -
+ * for tiers without access that read as an empty platform.
+ */
+export const AdminLoadError = ({
+  what,
+  onRetry,
+}: {
+  /** e.g. "reports" */
+  what: string;
+  onRetry?: () => void;
+}) => (
+  <div className="px-6 py-14 text-center">
+    <p className="text-sm font-semibold text-gray-900 mb-1">
+      Couldn&apos;t load {what}
+    </p>
+    <p className="text-sm text-gray-500 mb-4">
+      You may not have access to this queue, or the request failed.
+    </p>
+    {onRetry && (
+      <button
+        type="button"
+        onClick={onRetry}
+        className="inline-flex items-center px-4 py-2 min-h-[44px] rounded-lg border border-gray-200 bg-white text-sm font-semibold text-gray-700 hover:bg-gray-50"
+      >
+        Try again
+      </button>
+    )}
+  </div>
 );

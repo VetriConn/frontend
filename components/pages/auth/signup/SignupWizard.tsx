@@ -104,18 +104,7 @@ function signupReducer(
  * Serialize form data for session storage (handles File objects)
  */
 function serializeFormData(formData: SignupFormData): string {
-  const serializable = {
-    ...formData,
-    // File objects cannot be serialized, store metadata instead
-    resumeFile: formData.resumeFile
-      ? {
-          name: formData.resumeFile.name,
-          size: formData.resumeFile.size,
-          type: formData.resumeFile.type,
-        }
-      : null,
-  };
-  return JSON.stringify(serializable);
+  return JSON.stringify(formData);
 }
 
 /**
@@ -144,11 +133,7 @@ function loadStateFromStorage(): Partial<SignupWizardState> | null {
     return {
       currentStep: parsed.currentStep,
       highestCompletedStep: parsed.highestCompletedStep || 0,
-      formData: {
-        ...parsed.formData,
-        // File cannot be restored from storage, set to null
-        resumeFile: null,
-      },
+      formData: parsed.formData,
     };
   } catch {
     return null;
@@ -328,7 +313,7 @@ export function SignupWizard() {
         // Handle validation errors
         if (response.errors) {
           const errorMap: Record<string, string> = {};
-          response.errors.forEach((err: any) => {
+          response.errors.forEach((err) => {
             errorMap[err.field] = err.message;
           });
           dispatch({ type: "SET_ERRORS", payload: errorMap });
@@ -337,7 +322,7 @@ export function SignupWizard() {
         // Show toast notification for error
         showToast({
           type: "error",
-          title: "Registration Failed",
+          title: "Couldn't create your account",
           description:
             response.message || "Please check your information and try again.",
         });
@@ -480,7 +465,8 @@ export function SignupWizard() {
       errors,
       onFieldChange: handleFieldChange,
       onNext: handleNext,
-      onBack: handleBack,
+      // Step 1 is the entry point — no Back control there.
+      onBack: currentStep > 1 ? handleBack : undefined,
       onSkip: handleSkip,
       isBusy: state.isSubmitting || isActionLocked,
       currentStep,
@@ -511,7 +497,7 @@ export function SignupWizard() {
       {/* Left — image panel, matching sign in. Fixed to the viewport so the
           taller signup form scrolls past it rather than dragging it along.
           Hidden below md, where the form takes the full width. */}
-      <div className="hidden md:flex md:w-1/2 lg:w-[45%] self-start sticky top-0 h-screen relative items-center justify-center p-8 text-left bg-[linear-gradient(70deg,rgba(0,0,0,0.65),rgba(0,0,0,0.45)),url('/images/Hero/3.svg')] bg-center bg-cover">
+      <div className="hidden md:flex md:w-1/2 lg:w-[45%] self-start sticky top-0 h-screen relative items-center justify-center p-8 text-left bg-[linear-gradient(70deg,rgba(0,0,0,0.65),rgba(0,0,0,0.45)),url('/images/hero/3.jpg')] bg-center bg-cover">
         <DottedBox9 className="absolute top-50 right-10 w-32 h-auto z-0 opacity-60" />
         <h1 className="font-lato text-2xl md:text-4xl mb-4 text-white font-semibold leading-tight drop-shadow-lg">
           Join the <br />{" "}
@@ -528,7 +514,7 @@ export function SignupWizard() {
         {/* Main Content. Vertically centred like sign in — the column grows
             with the form, so a tall step still scrolls from the top rather
             than clipping. The logo sits at the top of this centred block. */}
-        <main className="relative z-10 flex-1 flex items-center justify-center px-4 md:px-8 py-8">
+        <main id="main-content" className="relative z-10 flex-1 flex items-center justify-center px-4 md:px-8 py-8">
           <div className="w-full max-w-xl">
             <Link
               href="/"
@@ -537,7 +523,7 @@ export function SignupWizard() {
             >
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
-                src="/images/logo_1.svg"
+                src="/images/logo.png"
                 alt="Vetriconn"
                 className="w-40 h-auto"
               />

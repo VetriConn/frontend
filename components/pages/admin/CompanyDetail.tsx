@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { companyIndustryLabel } from "@/lib/company-fields";
 import { useState } from "react";
 import useSWR from "swr";
 import {
@@ -25,6 +26,7 @@ import StepUpDialog, { type StepUpCreds } from "./StepUpDialog";
 import ConfirmDialog from "./ConfirmDialog";
 import { useToaster } from "@/components/ui/Toaster";
 import { safeHttpUrl } from "@/lib/safe-url";
+import { formatDate } from "@/lib/date-utils";
 
 const STATUS_TONE: Record<CompanyStatus, "amber" | "emerald" | "rose" | "gray"> = {
   pending: "amber",
@@ -33,13 +35,6 @@ const STATUS_TONE: Record<CompanyStatus, "amber" | "emerald" | "rose" | "gray"> 
   suspended: "gray",
 };
 
-const formatDate = (iso?: string) => {
-  if (!iso) return "—";
-  const d = new Date(iso);
-  return Number.isNaN(d.getTime())
-    ? "—"
-    : d.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
-};
 
 const Field = ({
   label,
@@ -186,7 +181,7 @@ const CompanyDetail = ({
   return (
     <div className="space-y-6">
       {/* Header + actions */}
-      <div className="bg-white rounded-2xl border border-gray-200 p-6">
+      <div className="pb-6 border-b border-gray-100">
         <div className="flex items-start gap-4 flex-wrap">
           <div className="w-14 h-14 rounded-xl bg-gray-100 flex items-center justify-center overflow-hidden shrink-0">
             {company.logo_url ? (
@@ -202,7 +197,7 @@ const CompanyDetail = ({
           </div>
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-3 flex-wrap">
-              <h1 className="text-xl font-bold text-gray-900">{company.name}</h1>
+              <h2 className="text-xl font-bold text-gray-900">{company.name}</h2>
               <StatusPill tone={STATUS_TONE[company.status]}>
                 {company.status}
               </StatusPill>
@@ -213,7 +208,7 @@ const CompanyDetail = ({
               )}
             </div>
             <p className="text-sm text-gray-500 mt-1">
-              {company.tagline || company.industry || "—"}
+              {company.tagline || companyIndustryLabel(company.industry) || "-"}
             </p>
           </div>
           <div className="flex items-center gap-2 shrink-0">
@@ -262,7 +257,7 @@ const CompanyDetail = ({
       </div>
 
       {/* Requesting account */}
-      <div className="bg-white rounded-2xl border border-gray-200 p-6">
+      <div className="pb-6 border-b border-gray-100">
         <h2 className="text-sm font-bold text-gray-900 mb-4">
           Requesting account
         </h2>
@@ -283,7 +278,7 @@ const CompanyDetail = ({
               </div>
               <div className="min-w-0">
                 <p className="text-sm font-semibold text-gray-900 truncate">
-                  {company.owner.full_name || "—"}
+                  {company.owner.full_name || "-"}
                 </p>
                 <p className="text-xs text-gray-500 truncate">
                   {company.owner.email}
@@ -304,12 +299,12 @@ const CompanyDetail = ({
       </div>
 
       {/* Submitted details */}
-      <div className="bg-white rounded-2xl border border-gray-200 p-6">
+      <div>
         <h2 className="text-sm font-bold text-gray-900 mb-4">
           Submitted details
         </h2>
         <dl className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-5">
-          <Field label="Industry" value={company.industry} />
+          <Field label="Industry" value={companyIndustryLabel(company.industry)} />
           <Field label="Company size" value={company.size} />
           <Field label="Location" value={location} />
           <Field

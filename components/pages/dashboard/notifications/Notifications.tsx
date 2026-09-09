@@ -1,6 +1,8 @@
 "use client";
 
 import React, { useState } from "react";
+import { useModalFocus } from "@/hooks/useModalFocus";
+import { ListLoadError } from "@/components/ui/ListLoadError";
 import { HiOutlineCheck, HiOutlineTrash } from "react-icons/hi2";
 import { useNotifications } from "@/hooks/useNotifications";
 import { AuthGuard } from "@/components/auth/AuthGuard";
@@ -12,12 +14,17 @@ export default function Notifications() {
     notifications,
     unreadCount,
     isLoading,
+    isError,
+    mutate,
     markRead,
     markAllRead,
     removeNotification,
     clearAll,
   } = useNotifications();
   const [showClearModal, setShowClearModal] = useState(false);
+  const clearModalRef = useModalFocus(showClearModal, () =>
+    setShowClearModal(false),
+  );
 
   // Derived counts
   const totalCount = notifications.length;
@@ -51,7 +58,7 @@ export default function Notifications() {
           <h1 className="font-lato text-xl md:text-3xl font-bold text-gray-900 mb-1">
             Notifications
           </h1>
-          <p className="text-gray-500 text-sm">
+          <p className="text-gray-600 text-sm">
             Updates about your applications, jobs, and community activity.
           </p>
         </div>
@@ -63,7 +70,7 @@ export default function Notifications() {
               {totalCount} total
             </span>
             {unreadCount > 0 && (
-              <span className="px-2 py-0.5 rounded-full bg-red-50 text-primary text-xs font-semibold">
+              <span className="px-2 py-0.5 rounded-full bg-red-50 text-primary text-sm font-semibold">
                 {unreadCount} unread
               </span>
             )}
@@ -93,10 +100,14 @@ export default function Notifications() {
 
         {/* Notifications List */}
         <div className="bg-white rounded-xl border border-gray-200 overflow-hidden shadow-sm">
-          {isLoading ? (
+          {isError && notifications.length === 0 ? (
+            <div className="p-6">
+              <ListLoadError what="notifications" onRetry={() => mutate()} />
+            </div>
+          ) : isLoading ? (
             <div className="flex flex-col items-center justify-center py-20">
               <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-primary mb-4"></div>
-              <p className="text-sm text-gray-500 font-medium">
+              <p className="text-sm text-gray-600 font-medium">
                 Loading notifications...
               </p>
             </div>
@@ -118,7 +129,12 @@ export default function Notifications() {
 
         {/* Clear All Confirmation Modal */}
         {showClearModal && (
-          <div className="fixed inset-0 z-100 overflow-y-auto">
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="clear-all-title"
+            className="fixed inset-0 z-100 overflow-y-auto"
+          >
             <div className="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
               <div
                 className="fixed inset-0 transition-opacity"
@@ -132,18 +148,24 @@ export default function Notifications() {
               >
                 &#8203;
               </span>
-              <div className="inline-block align-bottom bg-white rounded-xl text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-md sm:w-full">
+              <div
+                ref={clearModalRef}
+                className="inline-block align-bottom bg-white rounded-xl text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-md sm:w-full"
+              >
                 <div className="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
                   <div className="sm:flex sm:items-start">
                     <div className="mx-auto shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-red-100 sm:mx-0 sm:h-10 sm:w-10">
                       <HiOutlineTrash className="h-6 w-6 text-red-600" />
                     </div>
                     <div className="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
-                      <h3 className="text-lg leading-6 font-semibold text-gray-900">
+                      <h3
+                        id="clear-all-title"
+                        className="text-lg leading-6 font-semibold text-gray-900"
+                      >
                         Clear all notifications
                       </h3>
                       <div className="mt-2">
-                        <p className="text-sm text-gray-500">
+                        <p className="text-sm text-gray-600">
                           Are you sure you want to delete all notifications?
                           This action cannot be undone.
                         </p>

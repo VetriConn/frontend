@@ -22,10 +22,7 @@ type SourceFields = Pick<
   "source" | "source_name" | "external_url" | "applicationLink"
 >;
 
-type SalaryFields = Pick<
-  Job,
-  "salary" | "salary_range" | "salary_text" | "payment_type"
->;
+type SalaryFields = Pick<Job, "compensation">;
 
 /**
  * True for listings scraped from an external board rather than posted by an
@@ -34,6 +31,40 @@ type SalaryFields = Pick<
  */
 export function isAggregatedJob(job: Pick<Job, "source">): boolean {
   return job.source === "scraped";
+}
+
+/**
+ * A listing title fit to display.
+ *
+ * Aggregated boards publish titles in flat lower case ("cook", "guard,
+ * security"), which reads as unfinished next to employer-written ones. Only
+ * all-lowercase titles are recapitalised — a title with any capital in it was
+ * cased deliberately, and rewriting it would turn "IT support" into "It
+ * Support". Short joining words stay lowercase unless they lead.
+ */
+const TITLE_MINOR_WORDS = new Set([
+  "a", "an", "and", "as", "at", "but", "by", "for", "in", "nor", "of", "on",
+  "or", "per", "the", "to", "vs", "via", "with",
+]);
+
+export function toDisplayTitle(title: string): string {
+  const trimmed = (title ?? "").trim();
+  if (!trimmed) return "";
+  // Any existing capital means the source cased it on purpose — leave it be.
+  if (/[A-Z]/.test(trimmed)) return trimmed;
+
+  return trimmed
+    .split(/(\s+)/)
+    .map((token) => {
+      if (/^\s+$/.test(token)) return token;
+      // Capitalise after any leading punctuation, e.g. "(part-time)".
+      return token.replace(/[a-z]+/g, (word, offset) => {
+        const isFirstWordOfTitle = offset === 0 && token === trimmed.split(/\s+/)[0];
+        if (!isFirstWordOfTitle && TITLE_MINOR_WORDS.has(word)) return word;
+        return word.charAt(0).toUpperCase() + word.slice(1);
+      });
+    })
+    .join("");
 }
 
 /** Board a listing was aggregated from, for attribution. */
@@ -63,11 +94,11 @@ export function getExternalApplyUrl(job: SourceFields): string | null {
  * How a job states its pay.
  *
  * Job Bank quotes most roles hourly, and an hourly rate has no meaningful
- * annual figure to store — the scraper leaves `salary.number` at 0 and keeps
- * the source's wording in `salary_text`. That means **hourly roles are
+ * annual figure to store — the scraper leaves `salary.number` absent and
+ * keeps the source's wording in `salary_text`. That means **hourly roles are
  * invisible to any filter or sort over `salary.number`**: the backend's
  * `minSalary`/`maxSalary` filter and `sortBy=salary` both operate on that
- * field, so an hourly job matches a minimum of 0 and nothing else.
+ * field, and a document without it matches no range.
  *
  * Neither filter nor sort is currently exposed in the UI. Whoever wires them
  * up needs to decide what happens to hourly roles rather than letting them
@@ -81,14 +112,15 @@ const PERIODIC_PATTERN = /\b(week|weekly|day|daily|month|monthly)\b/i;
 
 /** Whether a job quotes pay hourly, annually, or not at all. */
 export function getPayBasis(job: SalaryFields): PayBasis {
-  // The stored column wins over any text inference — it is what the employer
+  // The stated basis wins over any text inference — it is what the employer
   // actually selected. Text regexes remain for scraped listings, which carry
   // only the source board's wording.
-  if (job.payment_type === "hourly") return "hourly";
-  if (job.payment_type === "salary") return "annual";
-  if (job.payment_type) return "unspecified";
+  const basis = job.compensation?.basis;
+  if (basis === "hourly") return "hourly";
+  if (basis === "salary") return "annual";
+  if (basis) return "unspecified";
 
-  const sourceText = job.salary_text?.trim();
+  const sourceText = job.compensation?.text?.trim();
 
   if (sourceText) {
     if (HOURLY_PATTERN.test(sourceText)) return "hourly";
@@ -96,11 +128,7 @@ export function getPayBasis(job: SalaryFields): PayBasis {
     return /\d/.test(sourceText) ? "annual" : "unspecified";
   }
 
-  if (job.salary?.number || job.salary_range?.start_salary?.number) {
-    return "annual";
-  }
-
-  return "unspecified";
+  return job.compensation?.min ? "annual" : "unspecified";
 }
 
 /**
@@ -108,11 +136,7 @@ export function getPayBasis(job: SalaryFields): PayBasis {
  * correctly in salary filtering and sorting.
  */
 export function hasComparableSalary(job: SalaryFields): boolean {
-  return Boolean(
-    job.salary?.number ||
-      (job.salary_range?.start_salary?.number &&
-        job.salary_range?.end_salary?.number),
-  );
+  return Boolean(job.compensation?.min);
 }
 
 function formatCompact(symbol: string, amount: number): string {
@@ -126,13 +150,13 @@ function formatFull(symbol: string, amount: number, currency: string): string {
 /**
  * The salary line for a job, or null when we genuinely don't know it.
  *
- * `salary_text` wins whenever it exists. Scraped listings carry the source's
- * own wording ("$18.50 hourly"), and the parsed numeric salary cannot represent
- * hourly pay — dividing 18.5 by 1000 and calling it "$0K/year" is worse than
- * saying nothing.
+ * The verbatim `text` wins whenever it exists. Scraped listings carry the
+ * source's own wording ("$18.50 hourly"), and a parsed annual figure cannot
+ * represent hourly pay — dividing 18.5 by 1000 and calling it "$0K/year" is
+ * worse than saying nothing.
  *
- * A numeric salary of 0 is treated as unknown, not as free. The scraper writes
- * 0 whenever it cannot find a figure in the source text.
+ * An absent figure means the listing states none; it is never rendered as
+ * free or as zero.
  */
 export function formatJobSalary(
   job: SalaryFields,
@@ -140,16 +164,15 @@ export function formatJobSalary(
 ): string | null {
   // Scraped listings bake the word in ("Salary $34.75 hourly"); every
   // surface renders it beside a dollar icon or label, so it read twice.
-  const sourceText = job.salary_text?.trim().replace(/^salary\s*:?\s*/i, "");
+  const sourceText = job.compensation?.text
+    ?.trim()
+    .replace(/^salary\s*:?\s*/i, "");
   if (sourceText) return sourceText;
 
-  const start = job.salary_range?.start_salary;
-  const end = job.salary_range?.end_salary;
-
   // "/year" was hardcoded here, so an hourly range read "$25 – $30K/year".
-  // The employer's own payment type decides the wording; absent one, annual
-  // remains the compact default it always was.
-  const hourly = job.payment_type === "hourly";
+  // The stated basis decides the wording; absent one, annual remains the
+  // compact default it always was.
+  const hourly = job.compensation?.basis === "hourly";
   const suffix = hourly ? "/hour" : "/year";
 
   // Hourly is the one basis where cents are normal, so keep them — but only
@@ -175,22 +198,28 @@ export function formatJobSalary(
   // out as a word and leaves annual unmarked, as it always did.
   const tail = variant === "compact" ? suffix : hourly ? " hourly" : "";
 
-  const startNum = start?.number ?? 0;
-  const endNum = end?.number ?? 0;
-  const sym = start?.symbol ?? end?.symbol ?? job.salary?.symbol ?? "$";
-  const cur = start?.currency ?? end?.currency ?? job.salary?.currency ?? "";
+  const startNum = job.compensation?.min ?? 0;
+  const endNum = job.compensation?.max ?? 0;
+  // One symbol per currency; it is derived for display, never stored.
+  const sym = "$";
+  const cur = job.compensation?.currency ?? "";
 
-  // A range needs both ends; one end alone is honest as "From" / "Up to"
-  // rather than a fabricated equal pair or nothing at all.
+  // Equal ends are one figure, not a range: an employer who types the same
+  // number in both boxes means "this is the pay", and "$45K – $45K" reads as
+  // a mistake.
+  if (startNum && endNum && startNum === endNum) {
+    return `${amount(sym, startNum, cur)}${tail}`;
+  }
   if (startNum && endNum) {
     return `${amount(sym, startNum, cur)} – ${amount(sym, endNum, cur)}${tail}`;
   }
+  // One end alone is a bound, and is stated as one. The wizard offers a
+  // minimum and a maximum box, so a lone minimum genuinely means "from" —
+  // this is the one behaviour the collapsed shape changed, and deliberately:
+  // the old model stored an exact figure and a range floor in two different
+  // fields, and rendered a lone floor as if it were exact.
   if (startNum) return `From ${amount(sym, startNum, cur)}${tail}`;
   if (endNum) return `Up to ${amount(sym, endNum, cur)}${tail}`;
-
-  if (job.salary?.number) {
-    return `${amount(job.salary.symbol, job.salary.number, job.salary.currency)}${tail}`;
-  }
 
   return null;
 }

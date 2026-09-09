@@ -1,29 +1,80 @@
 "use client";
+import Image from "next/image";
 import { useState, useEffect } from "react";
-import Logo from "@/public/images/logo_1.svg";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import clsx from "clsx";
 import { useUserProfile } from "@/hooks/useUserProfile";
+import { readAuthHint, setAuthHint } from "@/lib/auth-hint";
 
 /**
  * The public header's one call to action.
  *
  * It offered "Sign In" to everybody, including people already signed in — who
- * do not need it and whose actual destination is their dashboard. Held blank
- * while the profile resolves so the label does not flip a moment after paint.
+ * do not need it and whose actual destination is their dashboard. The
+ * signed-out pair is the server-rendered default (most public-page visitors
+ * are signed out, and holding the slot blank cost a visible pop-in); a
+ * localStorage hint corrects returning signed-in users on the first client
+ * tick, and the resolved profile is authoritative when it lands.
  */
-function AuthCta({ className }: { className: string }) {
-  const { userProfile, isLoading } = useUserProfile();
+/**
+ * Remembers whether the last resolved profile was signed in, so a reload can
+ * paint the right label immediately instead of waiting on the network. Only a
+ * label hint — never an authorisation decision: the destination is guarded
+ * server-side either way, and the real answer overwrites this as soon as it
+ * lands.
+ */
+function AuthCta({
+  className,
+  onNavigate,
+}: {
+  className: string;
+  onNavigate?: () => void;
+}) {
+  const { userProfile, isLoading, isError } = useUserProfile();
+  const [hint, setHint] = useState<boolean | null>(null);
 
-  if (isLoading) {
-    return <span className={clsx(className, "opacity-0")} aria-hidden="true" />;
-  }
+  // Read after mount: touching localStorage during render would desync
+  // hydration, since the server has no way to know it.
+  useEffect(() => {
+    const stored = readAuthHint();
+    if (stored !== null) setHint(stored);
+  }, []);
+
+  // Record the truth once it arrives, for the next load.
+  const resolved = !isLoading || isError || !!userProfile;
+  useEffect(() => {
+    if (!resolved) return;
+    setAuthHint(!!userProfile);
+  }, [resolved, userProfile]);
+
+  // Signed-out is the render-now default: no placeholder, no timer. The hint
+  // flips returning signed-in users on the first client tick; the profile
+  // response settles it for everyone else.
+  const signedIn = resolved ? !!userProfile : hint === true;
 
   return (
-    <Link href={userProfile ? "/dashboard" : "/signin"} className={className}>
-      {userProfile ? "Dashboard" : "Sign In"}
-    </Link>
+    <>
+      {!signedIn && (
+        <Link
+          href="/signup"
+          className="font-open-sans text-sm md:text-base text-text font-semibold no-underline hover:text-primary transition-colors whitespace-nowrap"
+          onClick={onNavigate}
+        >
+          Create account
+        </Link>
+      )}
+      <Link
+        href={signedIn ? "/dashboard" : "/signin"}
+        // The fixed minimum keeps the pill's width stable when the label swaps
+        // between "Sign in" and "Dashboard", so a late resolve can't shift
+        // the nav.
+        className={clsx(className, "min-w-[7.5rem]")}
+        onClick={onNavigate}
+      >
+        {signedIn ? "Dashboard" : "Sign in"}
+      </Link>
+    </>
   );
 }
 
@@ -40,13 +91,16 @@ export const Header = () => {
 
   const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
 
+  // The stray dot is gone: it sat at left-0 while the line started at left-2 and
+  // spanned only 85% of the word, so neither aligned with the label or with each
+  // other. One mark now, spanning the whole word.
   const navLinkClass = (isActive: boolean) =>
     clsx(
-      "font-open-sans text-base md:text-lg text-text transition-colors relative cursor-pointer inline-block",
-      "before:content-[''] before:block before:absolute before:left-0 mobile:before:bottom-[10px] before:bottom-[-2px] before:w-1 before:h-1 before:rounded-full before:bg-primary before:opacity-0 before:transition-opacity",
-      "after:content-[''] after:block after:absolute after:left-2 mobile:after:bottom-[10px] after:bottom-[-2px] after:w-[85%] after:h-px after:bg-primary after:rounded-sm after:opacity-0 after:transition-opacity",
-      "hover:text-primary hover:before:opacity-100 hover:after:opacity-100",
-      isActive && "text-primary before:opacity-100 after:opacity-100",
+      // Colour is exclusive-or: text-text and text-primary tie on specificity,
+      // so stacking both let the base win and the active label never went red.
+      "nav-brush font-open-sans text-base md:text-lg transition-colors cursor-pointer inline-block no-underline",
+      "hover:text-primary focus-visible:outline-none focus-visible:text-primary",
+      isActive ? "is-active text-primary" : "text-text",
     );
 
   const handleScrollTo = (id: string) => {
@@ -55,11 +109,21 @@ export const Header = () => {
   };
 
   return (
-    <nav className="flex justify-between items-center py-2 max-w-7xl mx-auto px-6 shadow-[0_6px_4px_-4px_#e8e8e8]">
-      <Logo className="w-[180px] h-auto block overflow-visible mobile:w-[140px]" />
+    <nav className="flex justify-between items-center py-2 max-w-[1600px] mx-auto px-6 shadow-[0_6px_4px_-4px_#e8e8e8]">
+      <Link href="/" aria-label="Vetriconn home" className="shrink-0">
+        <Image
+          src="/images/logo.png"
+          alt="Vetriconn"
+          width={360}
+          height={164}
+          priority
+          sizes="180px"
+          className="w-[180px] h-auto mobile:w-[140px]"
+        />
+      </Link>
       <button
         className={clsx(
-          "hidden mobile:block bg-transparent border-none cursor-pointer z-20 py-4 px-2.5 relative",
+          "hidden mobile:block bg-transparent border-none cursor-pointer z-[60] py-4 px-2.5 relative",
         )}
         onClick={toggleMenu}
         aria-label="Toggle menu"
@@ -87,6 +151,10 @@ export const Header = () => {
         <Link href="/faq" className={navLinkClass(pathname === "/faq")}>
           FAQ
         </Link>
+        {/* eslint-disable-next-line @next/next/no-html-link-for-pages --
+            An in-page anchor, not a route. On the home page the click is
+            intercepted and scrolled; from anywhere else the browser needs
+            the fragment to land on, which <Link> would strip. */}
         <a
           href="/#contact-section"
           className={navLinkClass(false)}
@@ -107,21 +175,21 @@ export const Header = () => {
         className={clsx(
           "hidden",
           isMenuOpen &&
-            "mobile:flex mobile:flex-col mobile:fixed mobile:inset-0 mobile:w-full mobile:h-screen mobile:bg-white mobile:z-10 mobile:pt-20 mobile:pb-8 mobile:justify-between",
+            "mobile:flex mobile:flex-col mobile:fixed mobile:inset-0 mobile:w-full mobile:h-dvh mobile:bg-white mobile:z-50 mobile:pt-16 mobile:pb-6 mobile:justify-between",
         )}
       >
         <div
           className={clsx(
             "hidden",
             isMenuOpen &&
-              "mobile:flex mobile:flex-col mobile:items-center mobile:justify-start mobile:m-0 mobile:px-8 mobile:pt-4 mobile:flex-1 mobile:gap-1 mobile:overflow-y-auto",
+              "mobile:flex mobile:flex-col mobile:items-stretch mobile:justify-start mobile:m-0 mobile:px-5 mobile:pt-2 mobile:flex-1 mobile:gap-0 mobile:overflow-y-auto",
           )}
         >
           <Link
             href="/"
             className={clsx(
               navLinkClass(pathname === "/"),
-              "mobile:py-3 mobile:text-xl mobile:font-semibold mobile:min-h-[44px] mobile:flex mobile:items-center",
+              "mobile:py-3.5 mobile:text-lg mobile:font-semibold mobile:min-h-[48px] mobile:flex mobile:items-center mobile:justify-start mobile:border-b mobile:border-gray-100",
             )}
             onClick={() => setIsMenuOpen(false)}
           >
@@ -131,7 +199,7 @@ export const Header = () => {
             href="/jobs"
             className={clsx(
               navLinkClass(pathname === "/jobs"),
-              "mobile:py-3 mobile:text-xl mobile:font-semibold mobile:min-h-[44px] mobile:flex mobile:items-center",
+              "mobile:py-3.5 mobile:text-lg mobile:font-semibold mobile:min-h-[48px] mobile:flex mobile:items-center mobile:justify-start mobile:border-b mobile:border-gray-100",
             )}
             onClick={() => setIsMenuOpen(false)}
           >
@@ -141,7 +209,7 @@ export const Header = () => {
             href="/about"
             className={clsx(
               navLinkClass(pathname === "/about"),
-              "mobile:py-3 mobile:text-xl mobile:font-semibold mobile:min-h-[44px] mobile:flex mobile:items-center",
+              "mobile:py-3.5 mobile:text-lg mobile:font-semibold mobile:min-h-[48px] mobile:flex mobile:items-center mobile:justify-start mobile:border-b mobile:border-gray-100",
             )}
             onClick={() => setIsMenuOpen(false)}
           >
@@ -151,17 +219,19 @@ export const Header = () => {
             href="/faq"
             className={clsx(
               navLinkClass(pathname === "/faq"),
-              "mobile:py-3 mobile:text-xl mobile:font-semibold mobile:min-h-[44px] mobile:flex mobile:items-center",
+              "mobile:py-3.5 mobile:text-lg mobile:font-semibold mobile:min-h-[48px] mobile:flex mobile:items-center mobile:justify-start mobile:border-b mobile:border-gray-100",
             )}
             onClick={() => setIsMenuOpen(false)}
           >
             FAQ
           </Link>
+          {/* eslint-disable-next-line @next/next/no-html-link-for-pages --
+              Same in-page anchor, mobile drawer copy. */}
           <a
             href="/#contact-section"
             className={clsx(
               navLinkClass(false),
-              "mobile:py-3 mobile:text-xl mobile:font-semibold mobile:min-h-[44px] mobile:flex mobile:items-center",
+              "mobile:py-3.5 mobile:text-lg mobile:font-semibold mobile:min-h-[48px] mobile:flex mobile:items-center mobile:justify-start mobile:border-b mobile:border-gray-100",
             )}
             onClick={() => {
               setIsMenuOpen(false);
@@ -177,21 +247,21 @@ export const Header = () => {
           className={clsx(
             "hidden",
             isMenuOpen &&
-              "mobile:flex mobile:flex-col mobile:items-center mobile:justify-center mobile:px-8 mobile:pb-4",
+              "mobile:flex mobile:flex-col mobile:items-stretch mobile:justify-center mobile:px-5 mobile:pt-4 mobile:pb-2",
           )}
         >
-          <Link
-            href="/signin"
-            className="font-open-sans text-base bg-primary text-white border-none py-3 px-10 rounded-full cursor-pointer transition-all hover:bg-primary-hover inline-block text-center mobile:w-full mobile:max-w-[280px] mobile:font-semibold shadow-md min-h-[44px] flex items-center justify-center"
-            onClick={() => setIsMenuOpen(false)}
-          >
-            Sign In
-          </Link>
+          {/* Same auth-aware control as the desktop nav. This was a hardcoded
+              "Sign In", so a signed-in visitor opening the mobile menu was sent
+              back to the login page instead of their dashboard. */}
+          <AuthCta
+            className="font-open-sans text-base bg-primary text-white border-none py-3 px-10 rounded-full cursor-pointer transition-colors hover:bg-primary-hover text-center mobile:w-full mobile:font-semibold shadow-md min-h-[48px] flex items-center justify-center no-underline"
+            onNavigate={() => setIsMenuOpen(false)}
+          />
         </div>
       </div>
       {isMenuOpen && (
         <div
-          className="hidden mobile:block mobile:fixed mobile:inset-0 mobile:bg-black/50 mobile:z-[9]"
+          className="hidden mobile:block mobile:fixed mobile:inset-0 mobile:bg-black/50 mobile:z-40"
           onClick={toggleMenu}
         />
       )}

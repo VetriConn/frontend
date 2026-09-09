@@ -5,10 +5,16 @@
 
 import { getApiUrl, API_CONFIG } from "../api-config";
 import { apiFetch, API_BASE_URL } from "./client";
+import { setAuthHint } from "../auth-hint";
 import { SignupFormData } from "@/types/signup";
 import type { LoginResponse } from "@/types/api";
 
-export interface ApiResponse<T = any> {
+/**
+ * A response from an auth endpoint. `never` as the argument is how an
+ * endpoint that returns no payload says so — `{}` said "any non-nullish
+ * value", which is the opposite.
+ */
+export interface ApiResponse<T = unknown> {
   success: boolean;
   message: string;
   data?: T;
@@ -73,32 +79,6 @@ export async function registerUser(
   }
 }
 
-/**
- * Upload resume file
- * This should be called after successful registration
- */
-export async function uploadResume(
-  file: File,
-  _token: string,
-): Promise<ApiResponse<{ url: string; document: any }>> {
-  try {
-    const formData = new FormData();
-    formData.append("resume", file);
-
-    return await apiFetch<ApiResponse<{ url: string; document: any }>>(
-      getApiUrl("/api/v1/user/upload-resume"),
-      {
-        method: "POST",
-        body: formData,
-      },
-    );
-  } catch (error) {
-    return {
-      success: false,
-      message: error instanceof Error ? error.message : "Resume upload failed",
-    };
-  }
-}
 
 /**
  * Login user
@@ -125,11 +105,6 @@ export async function loginUser(
     );
   }
 
-  // Mock 2FA detour — only triggers in dev when the email contains "2fa".
-  // The real backend will return `requires2FA: true` itself once shipped.
-  const SIMULATE_2FA =
-    process.env.NEXT_PUBLIC_NODE_ENV === "development" &&
-    /2fa/i.test(email);
 
   try {
     const response = await apiFetch<LoginResponse>(
@@ -143,7 +118,10 @@ export async function loginUser(
       },
     );
 
-    const requires2FA = (response.data as any)?.requires_2fa === true || response.requires2FA === true;
+    // The server reports the detour inside `data`; `requires2FA` is the flag
+    // this function synthesises for its own callers, so both are checked.
+    const requires2FA =
+      response.data?.requires_2fa === true || response.requires2FA === true;
 
     if (requires2FA) {
       return {
@@ -166,6 +144,9 @@ export async function logoutUser(): Promise<{
   success: boolean;
   message: string;
 }> {
+  // Cleared first: a redirect can unmount the header before the profile
+  // refetch resolves, which would leave "Dashboard" showing on the next load.
+  setAuthHint(false);
   try {
     return await apiFetch<{ success: boolean; message: string }>(
       `${API_BASE_URL}/api/v1/auth/logout`,
@@ -189,9 +170,9 @@ export async function logoutUser(): Promise<{
  */
 export async function resendVerificationEmail(
   email: string,
-): Promise<ApiResponse<{}>> {
+): Promise<ApiResponse<never>> {
   try {
-    return await apiFetch<ApiResponse<{}>>(
+    return await apiFetch<ApiResponse<never>>(
       getApiUrl(API_CONFIG.ENDPOINTS.AUTH.RESEND_VERIFICATION),
       {
         method: "POST",
@@ -217,9 +198,9 @@ export async function resendVerificationEmail(
  */
 export async function requestPasswordReset(
   email: string,
-): Promise<ApiResponse<{}>> {
+): Promise<ApiResponse<never>> {
   try {
-    return await apiFetch<ApiResponse<{}>>(
+    return await apiFetch<ApiResponse<never>>(
       getApiUrl(API_CONFIG.ENDPOINTS.AUTH.FORGOT_PASSWORD),
       {
         method: "POST",
@@ -246,9 +227,9 @@ export async function requestPasswordReset(
 export async function resetPasswordWithToken(
   token: string,
   newPassword: string,
-): Promise<ApiResponse<{}>> {
+): Promise<ApiResponse<never>> {
   try {
-    return await apiFetch<ApiResponse<{}>>(
+    return await apiFetch<ApiResponse<never>>(
       getApiUrl(API_CONFIG.ENDPOINTS.AUTH.RESET_PASSWORD),
       {
         method: "POST",

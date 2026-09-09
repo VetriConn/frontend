@@ -34,15 +34,23 @@ export interface ApiResponse<T = unknown> {
 export interface LoginResponse {
   success: boolean;
   message: string;
+  /**
+   * Two different payloads share this key, because the server sends one or
+   * the other. A completed login carries the user and token; a login that
+   * stops for 2FA carries only `requires_2fa`, which was missing from this
+   * type and read through an `as any` at the call site — so nothing would
+   * have noticed if the server renamed it.
+   */
   data?: {
-    user: {
+    user?: {
       id: string;
       email: string;
       first_name?: string;
       last_name?: string;
       role?: string;
     };
-    token: string;
+    token?: string;
+    requires_2fa?: boolean;
   };
   /** Set when the user has 2FA enabled. Frontend must call /2fa/challenge
    * with the partial-session token before a full session is issued. */
@@ -171,17 +179,17 @@ export interface UserProfile {
   work_experience?: WorkExperience[];
   education?: Education[];
   certifications?: Certification[];
-  saved_jobs?: string[];
+  saved_jobs_count?: number;
   applied_jobs_count?: number;
   skills?: string[];
-
-  // Job-seeking status
 
   // Email verification fields
   emailVerified?: boolean;
 
   // Admin elevation flag — only meaningful when role === "admin".
   is_super_admin?: boolean;
+  /** Resolved admin tier — drives which console surfaces are shown. */
+  admin_role?: "super_admin" | "reviewer" | "moderator" | "billing";
 
   // Two-factor enabled (set by /2fa/verify, cleared by /2fa/disable).
   two_factor_enabled?: boolean;
@@ -237,7 +245,7 @@ export interface UserProfileResponse {
       work_experience?: WorkExperience[];
       education?: Education[];
       certifications?: Certification[];
-      saved_jobs?: string[];
+      saved_jobs_count?: number;
       applied_jobs_count?: number;
       skills?: string[];
       attachments?: UserAttachment[];
@@ -254,25 +262,16 @@ export interface JobsResponse {
   company_name: string;
   company_logo?: string;
   location?: string;
-  salary: {
-    symbol: string;
-    number: number;
+  /** What the role pays — one object. See the Job type for the contract. */
+  compensation?: {
+    min?: number;
+    max?: number;
     currency: string;
-  };
-  salary_range?: {
-    start_salary: {
-      symbol: string;
-      number?: number;
-      currency: string;
-    };
-    end_salary: {
-      symbol: string;
-      number?: number;
-      currency: string;
-    };
+    basis?: PaymentType;
+    text?: string;
   };
   tags?: string[];
-  full_description?: string;
+  summary?: string;
   responsibilities?: string[];
   qualifications?: string[];
   applicationLink?: string;
@@ -291,7 +290,6 @@ export interface JobsResponse {
   skills?: string;
   physical_demands?: PhysicalDemands;
   work_schedule?: WorkSchedule;
-  payment_type?: PaymentType;
   city?: string;
   state_province?: ProvinceCode;
   country?: string;
@@ -322,8 +320,6 @@ export interface JobsResponse {
   source?: "user" | "scraped";
   source_name?: string;
   external_url?: string;
-  /** Free-text salary straight from the source, e.g. "$18.50 hourly". */
-  salary_text?: string;
 
   // Company-posted jobs (vetted Company Pages).
   posted_as?: "individual" | "company";
@@ -336,7 +332,10 @@ export interface JobsResponse {
 
 export interface ApplicationItem {
   _id: string;
-  user_id: string;
+  /** Populated with the candidate's card fields on the employer list. */
+  user_id:
+    | string
+    | { _id: string; full_name?: string; email?: string; picture?: string };
   job_id:
     | string
     | {
@@ -350,7 +349,7 @@ export interface ApplicationItem {
         skills?: string;
         qualifications?: string[];
       };
-  status: "pending" | "reviewed" | "accepted" | "rejected";
+  status: "pending" | "reviewed" | "accepted" | "rejected" | "interview" | "offer" | "withdrawn";
   full_name: string;
   email: string;
   phone: string;
@@ -372,14 +371,20 @@ export interface ApplicationItem {
 
 // Job Seeker Messaging Types
 export type NotificationType =
+  // Mirrors backend NOTIFICATION_TYPES (types/Notification.ts) exactly -
+  // the old union carried three types nothing ever sends and missed six
+  // that render daily.
   | "application_sent"
   | "application_received"
   | "application_reviewed"
+  | "application_status_changed"
   | "job_match"
+  | "new_application"
+  | "new_message"
+  | "job_approved"
+  | "job_rejected"
+  | "saved_search_matches"
   | "profile_reminder"
-  | "profile_viewed"
-  | "new_reply"
-  | "employer_message"
   | "system";
 
 export interface NotificationItem {
@@ -402,8 +407,12 @@ export interface PostedJobSummary {
   status?: "draft" | "published";
   /** Admin moderation state — a published job is only live once approved. */
   moderation_status?: "pending" | "approved" | "rejected";
-  is_approved?: boolean;
+  /** Platform hold: the owning company is suspended; the listing is off the board. */
+  /** "none" when there is no hold; the platform-hold axis is always present. */
+  unpublished_reason?: "none" | "company_suspended" | "expired";
   rejected_at?: string;
+  /** Why moderation turned it down — shown so the employer can fix and resubmit. */
+  rejection_reason?: string;
   application_count?: number;
   createdAt?: string;
   updatedAt?: string;
@@ -411,27 +420,18 @@ export interface PostedJobSummary {
 
 export interface PostedJobDetail extends PostedJobSummary {
   description?: string;
-  full_description?: string;
+  summary?: string;
   tags?: string[];
   qualifications?: string[];
   responsibilities?: string[];
   company_logo?: string;
-  salary?: {
-    number: number;
+  /** What the role pays — one object. See the Job type for the contract. */
+  compensation?: {
+    min?: number;
+    max?: number;
     currency: string;
-    symbol: string;
-  };
-  salary_range?: {
-    start_salary?: {
-      number?: number;
-      currency?: string;
-      symbol?: string;
-    };
-    end_salary?: {
-      number?: number;
-      currency?: string;
-      symbol?: string;
-    };
+    basis?: PaymentType;
+    text?: string;
   };
   /**
    * The structured fields behind the Post-a-Job form, as real columns —
@@ -447,7 +447,6 @@ export interface PostedJobDetail extends PostedJobSummary {
   skills?: string;
   physical_demands?: PhysicalDemands;
   work_schedule?: WorkSchedule;
-  payment_type?: PaymentType;
   city?: string;
   state_province?: ProvinceCode;
   country?: string;

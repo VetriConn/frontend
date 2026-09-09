@@ -1,15 +1,20 @@
 "use client";
+import { HiOutlineArrowRight } from "react-icons/hi2";
+import Eyebrow from "@/components/ui/Eyebrow";
+import Reveal from "@/components/ui/Reveal";
 import React, { useState } from "react";
 import clsx from "clsx";
-import FacebookIcon from "@/public/images/facebook.svg";
-import LocationIcon from "@/public/images/location.svg";
-import CallCallingIcon from "@/public/images/call-calling.svg";
-import SmsIcon from "@/public/images/sms.svg";
-import SmsTrackingIcon from "@/public/images/sms-tracking.svg";
-import { FiLinkedin } from "react-icons/fi";
+// Both marks from one family. Facebook was a hand-rolled SVG and LinkedIn
+// was Feather's, so the pair never matched in weight or corner radius —
+// and Feather's "in" is a lookalike rather than the real mark.
+import { FaFacebookF, FaLinkedinIn } from "react-icons/fa6";
 import { sendContactMessage } from "@/lib/api";
 import { ContactMessage } from "@/types/api";
 import { useToaster } from "@/components/ui/Toaster";
+
+/** One input treatment for every field in the form. */
+const FIELD_CLASS =
+  "w-full py-3.5 px-4 bg-gray-50 border border-gray-200 rounded-xl font-open-sans text-base text-gray-900 outline-none transition-colors placeholder:text-gray-400 focus:border-primary focus:bg-white focus:ring-2 focus:ring-primary/10 disabled:opacity-60";
 
 interface ContactSectionProps {
   id?: string;
@@ -65,7 +70,7 @@ export const ContactSection = ({ id }: ContactSectionProps) => {
       });
       showToast({
         type: "success",
-        title: "Message Sent!",
+        title: "Message sent",
         description: "Thank you for contacting us. We'll get back to you soon.",
       });
       setFormData({ full_name: "", email: "", message: "" });
@@ -77,7 +82,7 @@ export const ContactSection = ({ id }: ContactSectionProps) => {
       setSubmitStatus({ type: "error", message: errorMessage });
       showToast({
         type: "error",
-        title: "Message Failed to Send",
+        title: "Couldn't send your message",
         description: errorMessage,
       });
     } finally {
@@ -87,143 +92,194 @@ export const ContactSection = ({ id }: ContactSectionProps) => {
 
   return (
     <section
-      className="w-full py-12 pb-16 mobile:py-8 mobile:pb-10 relative overflow-hidden"
+      className="w-full bg-gray-bg py-20 md:py-28 mobile:py-14 relative overflow-hidden"
       id={id}
     >
       {/* Decorative dots */}
-      <div
-        className="absolute top-8 left-[5%] w-2.5 h-2.5 rounded-full bg-primary opacity-40"
-        aria-hidden="true"
-      />
-      <div
-        className="absolute top-14 right-[6%] w-3 h-3 rounded-full bg-amber-400 opacity-50"
-        aria-hidden="true"
-      />
-      <div
-        className="absolute bottom-12 left-[8%] w-2 h-2 rounded-full bg-amber-400 opacity-35"
-        aria-hidden="true"
-      />
-      <div
-        className="absolute bottom-20 right-[4%] w-2 h-2 rounded-full bg-primary opacity-40"
-        aria-hidden="true"
-      />
-      <div
-        className="absolute top-[40%] left-[2%] w-2 h-2 rounded-full bg-pink-400 opacity-30"
-        aria-hidden="true"
-      />
 
-      <div className="max-w-7xl mx-auto px-[5%] md:px-6 relative z-10">
-        <h1 className="heading-1 text-center mb-10 mobile:mb-6">
-          Get In <span className="text-primary">Touch</span>
-        </h1>
-        <div className="flex flex-col md:flex-row gap-6 md:gap-16 items-start justify-between">
-        <form
-          className="flex-1 flex flex-col gap-6 mobile:gap-4 mobile:w-full"
-          onSubmit={handleSubmit}
-        >
-          <h2 className="heading-2 mb-2 mobile:mb-1">
-            Send a message{" "}
-            <span className="inline-flex items-center justify-center align-middle relative top-0.5 ml-1 [&_svg]:w-6 [&_svg]:h-6 [&_svg]:block mobile:[&_svg]:w-5 mobile:[&_svg]:h-5">
-              <SmsTrackingIcon />
-            </span>
-          </h2>
-          {submitStatus.type && (
-            <div
-              className={clsx(
-                "p-4 rounded-lg font-open-sans font-medium text-center mb-2 mobile:p-3 mobile:text-sm",
-                submitStatus.type === "success" &&
-                  "bg-green-100 text-green-800 border border-green-200",
-                submitStatus.type === "error" &&
-                  "bg-red-100 text-red-800 border border-red-200",
-              )}
-            >
-              {submitStatus.message}
+      <div className="max-w-[1600px] mx-auto px-[5%] md:px-10 lg:px-14 relative z-10">
+        {/* Details first, form second — the reference layout: the reader sees
+            who they're contacting before being handed a form, and the form
+            sits in its own card so it reads as one task. */}
+        <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,0.85fr)_minmax(0,1fr)] gap-10 lg:gap-16 items-start">
+          {/* Left: the heading belongs to this column. Centred above a
+              two-column, left-aligned layout it lined up with nothing - it sat
+              over the gutter between the columns. */}
+          <Reveal className="w-full">
+            <Eyebrow>Contact</Eyebrow>
+            {/* Was an <h1>: a second top-level heading on a page that already
+                has one in the hero. */}
+            <h2 className="heading-1 mb-5">
+              Talk to a <span className="text-primary">real person</span>.
+            </h2>
+            <p className="body-text text-lg leading-relaxed mb-8 max-w-[42ch] mobile:text-base mobile:mb-6">
+              Whether you have a question about a listing, need a hand with your
+              account, or want to tell us what&apos;s missing - we read every
+              message.
+            </p>
+
+            <dl className="space-y-6">
+              <div>
+                <dt className="font-open-sans text-sm text-text-muted mb-1">
+                  Email
+                </dt>
+                <dd className="font-lato text-lg md:text-xl font-bold text-gray-900 break-all">
+                  <a
+                    href="mailto:richmonda@vetriconn.ca"
+                    className="inline-flex items-center min-h-[44px] no-underline hover:text-primary transition-colors"
+                  >
+                    richmonda@vetriconn.ca
+                  </a>
+                </dd>
+              </div>
+
+              <div>
+                <dt className="font-open-sans text-sm text-text-muted mb-1">
+                  Phone
+                </dt>
+                <dd className="font-lato text-lg md:text-xl font-bold text-gray-900 leading-snug">
+                  <a href="tel:+16478899542" className="inline-flex items-center min-h-[44px] no-underline hover:text-primary transition-colors">
+                    English - 1 (647) 889 9542
+                  </a>
+                  <br />
+                  <a href="tel:+16135019162" className="inline-flex items-center min-h-[44px] no-underline hover:text-primary transition-colors">
+                    French - 1 (613) 501 9162
+                  </a>
+                </dd>
+                <p className="font-open-sans text-sm text-text-muted mt-2">
+                  Monday to Friday, 9 AM – 6 PM ET
+                </p>
+              </div>
+
+              <div>
+                <dt className="font-open-sans text-sm text-text-muted mb-1">
+                  Office
+                </dt>
+                <dd className="font-lato text-lg md:text-xl font-bold text-gray-900">
+                  Ottawa, Ontario
+                </dd>
+              </div>
+            </dl>
+
+            <div className="flex gap-4 mt-10">
+              <a
+                href="https://www.facebook.com/profile.php?id=61580233844003"
+                aria-label="Vetriconn on Facebook"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center justify-center w-12 h-12 rounded-full bg-white border border-gray-200 text-primary text-xl transition-colors hover:border-primary/40 hover:bg-red-50"
+              >
+                <FaFacebookF aria-hidden="true" />
+              </a>
+              <a
+                href="https://www.linkedin.com/company/vetriconn-inc/?viewAsMember=true"
+                aria-label="Vetriconn on LinkedIn"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center justify-center w-12 h-12 rounded-full bg-white border border-gray-200 text-primary text-xl transition-colors hover:border-primary/40 hover:bg-red-50"
+              >
+                <FaLinkedinIn aria-hidden="true" />
+              </a>
             </div>
-          )}
-          <input
-            type="text"
-            name="name"
-            placeholder="Full name"
-            className="w-full py-4 px-5 border border-gray-200 rounded-2xl font-open-sans text-base outline-none transition-colors focus:border-primary focus:border-2 mobile:py-3 mobile:px-4 mobile:text-sm mobile:rounded-xl"
-            value={formData.full_name}
-            onChange={handleInputChange}
-            disabled={isSubmitting}
-            required
-          />
-          <input
-            type="email"
-            name="email"
-            placeholder="Email address"
-            className="w-full py-4 px-5 border border-gray-200 rounded-2xl font-open-sans text-base outline-none transition-colors focus:border-primary focus:border-2 mobile:py-3 mobile:px-4 mobile:text-sm mobile:rounded-xl"
-            value={formData.email}
-            onChange={handleInputChange}
-            disabled={isSubmitting}
-            required
-          />
-          <textarea
-            name="message"
-            placeholder="Message"
-            className="w-full py-4 px-5 border border-gray-200 rounded-2xl font-open-sans text-base outline-none transition-colors min-h-[120px] resize-y focus:border-primary focus:border-2 mobile:py-3 mobile:px-4 mobile:text-sm mobile:rounded-xl mobile:min-h-[100px]"
-            rows={6}
-            value={formData.message}
-            onChange={handleInputChange}
-            disabled={isSubmitting}
-            required
-          />
-          <button
-            type="submit"
-            className="bg-primary text-white font-open-sans font-semibold border-none rounded-2xl py-4 mt-2 cursor-pointer transition-colors hover:bg-primary-hover disabled:bg-gray-300 disabled:cursor-not-allowed mobile:py-3 mobile:mt-1 mobile:rounded-xl mobile:text-sm"
-            disabled={isSubmitting}
+          </Reveal>
+
+          {/* Right: the form, as a card */}
+          <form
+            className="w-full bg-white rounded-3xl border border-gray-100 shadow-[0_8px_40px_-24px_rgba(15,23,42,0.25)] p-6 md:p-8 flex flex-col gap-5"
+            onSubmit={handleSubmit}
+            noValidate
           >
-            {isSubmitting ? "Sending..." : "Submit"}
-          </button>
-        </form>
-        <div className="flex-1 bg-[#fcfcfc] rounded-3xl w-full py-10 px-8 flex flex-col gap-6 mobile:py-6 mobile:px-5 mobile:rounded-2xl mobile:gap-4">
-          <h2 className="heading-2 text-primary mb-5 mobile:mb-3">
-            Contact information
-          </h2>
-          <div className="flex items-start gap-4 font-open-sans text-base text-gray-900 mb-3 mobile:text-sm mobile:gap-3 mobile:mb-2">
-            <span className="text-primary text-xl mt-0.5 mobile:text-lg">
-              <LocationIcon />
-            </span>
-            <span>Ottawa, Ontario.</span>
-          </div>
-          <div className="flex items-start gap-4 font-open-sans text-base text-gray-900 mb-3 mobile:text-sm mobile:gap-3 mobile:mb-2">
-            <span className="text-primary text-xl mt-0.5 mobile:text-lg">
-              <CallCallingIcon />
-            </span>
-            <span>
-              English - 1(647)-889-9542 <br />
-              <br /> French - 1(613)-501-9162
-            </span>
-          </div>
-          <div className="flex items-start gap-4 font-open-sans text-base text-gray-900 mb-3 mobile:text-sm mobile:gap-3 mobile:mb-2">
-            <span className="text-primary text-xl mt-0.5 mobile:text-lg">
-              <SmsIcon />
-            </span>
-            <span>richmonda@vetriconn.ca</span>
-          </div>
-          <div className="flex gap-4 md:gap-6 mt-10 justify-start mobile:gap-4 mobile:mt-6">
-            <a
-              href="https://www.facebook.com/profile.php?id=61580233844003"
-              aria-label="Facebook"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center justify-center w-14 h-14 rounded-full border-none shadow-[0_-2px_4px_0_#f1f0f0,0_2px_6px_0_#757373] text-primary text-3xl bg-white transition-shadow hover:shadow-[0_-2px_4px_0_#ebe9e9,0_3px_10px_0_#646363] mobile:w-12 mobile:h-12 mobile:text-2xl"
-            >
-              <FacebookIcon />
-            </a>
-            <a
-              href="https://www.linkedin.com/company/vetriconn-inc/?viewAsMember=true"
-              aria-label="LinkedIn"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center justify-center w-14 h-14 rounded-full border-none shadow-[0_-2px_4px_0_#f1f0f0,0_2px_6px_0_#757373] text-primary text-3xl bg-white transition-shadow hover:shadow-[0_-2px_4px_0_#ebe9e9,0_3px_10px_0_#646363] mobile:w-12 mobile:h-12 mobile:text-2xl"
-            >
-              <FiLinkedin />
-            </a>
-          </div>
-        </div>
+            {submitStatus.type && (
+              <div
+                className={clsx(
+                  "p-4 rounded-xl font-open-sans font-medium text-sm",
+                  submitStatus.type === "success" &&
+                    "bg-green-50 text-green-800 border border-green-200",
+                  submitStatus.type === "error" &&
+                    "bg-red-50 text-red-800 border border-red-200",
+                )}
+                role="status"
+              >
+                {submitStatus.message}
+              </div>
+            )}
+
+            <div>
+              <label
+                htmlFor="contact-name"
+                className="block font-open-sans text-sm font-medium text-gray-700 mb-1.5"
+              >
+                Full name
+              </label>
+              <input
+                id="contact-name"
+                type="text"
+                name="name"
+                autoComplete="name"
+                placeholder="Enter your full name"
+                className={FIELD_CLASS}
+                value={formData.full_name}
+                onChange={handleInputChange}
+                disabled={isSubmitting}
+                required
+              />
+            </div>
+
+            <div>
+              <label
+                htmlFor="contact-email"
+                className="block font-open-sans text-sm font-medium text-gray-700 mb-1.5"
+              >
+                Email
+              </label>
+              <input
+                id="contact-email"
+                type="email"
+                name="email"
+                autoComplete="email"
+                placeholder="Enter your email address"
+                className={FIELD_CLASS}
+                value={formData.email}
+                onChange={handleInputChange}
+                disabled={isSubmitting}
+                required
+              />
+            </div>
+
+            <div>
+              <label
+                htmlFor="contact-message"
+                className="block font-open-sans text-sm font-medium text-gray-700 mb-1.5"
+              >
+                How can we help you?
+              </label>
+              <textarea
+                id="contact-message"
+                name="message"
+                placeholder="Enter your message"
+                className={clsx(FIELD_CLASS, "min-h-[140px] resize-y")}
+                rows={6}
+                value={formData.message}
+                onChange={handleInputChange}
+                disabled={isSubmitting}
+                required
+              />
+            </div>
+
+            <div className="flex justify-end pt-1">
+              <button
+                type="submit"
+                className="group inline-flex items-center justify-center gap-2 bg-primary text-white font-open-sans font-semibold rounded-full py-3.5 px-8 min-h-[52px] cursor-pointer transition-colors hover:bg-primary-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:ring-offset-2 disabled:bg-gray-300 disabled:cursor-not-allowed w-full sm:w-auto"
+                disabled={isSubmitting}
+              >
+                {isSubmitting ? "Sending…" : "Send message"}
+                <HiOutlineArrowRight
+                  className="w-4 h-4 transition-transform group-hover:translate-x-0.5"
+                  aria-hidden="true"
+                />
+              </button>
+            </div>
+          </form>
         </div>
       </div>
     </section>

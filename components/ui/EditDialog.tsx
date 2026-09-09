@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useRef, useCallback } from "react";
-import { FaTimes } from "react-icons/fa";
+import { HiOutlineXMark } from "react-icons/hi2";
 import clsx from "clsx";
 
 export interface EditDialogProps {
@@ -197,7 +197,7 @@ export const EditDialog: React.FC<EditDialogProps> = ({
             disabled={isSubmitting}
             aria-label="Close dialog"
           >
-            <FaTimes size={20} />
+            <HiOutlineXMark size={20} />
           </button>
         </div>
 

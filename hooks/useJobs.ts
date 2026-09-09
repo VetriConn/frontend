@@ -33,8 +33,20 @@ export function useJobs(options?: UseJobsOptions) {
     experience ? `&experience=${experience}` : ""
   }${arrangement ? `&arrangement=${arrangement}` : ""}`;
 
-  const { data, error, mutate, isLoading } = useSWR(cacheKey, () =>
-    getJobs(options),
+  const { data, error, mutate, isLoading } = useSWR(
+    cacheKey,
+    () => getJobs(options),
+    {
+      // A job board doesn't change second to second. SWR's default is to
+      // refetch every time the window regains focus, which on this page reads
+      // as the list "refreshing in the background" — and repaints it — each
+      // time you tab back. Revalidate on an explicit navigation/filter change
+      // instead, and keep the previous page visible while the next one loads
+      // so paging never flashes an empty list.
+      revalidateOnFocus: false,
+      keepPreviousData: true,
+      dedupingInterval: 30_000,
+    },
   );
 
   const jobs: Job[] = data?.jobs?.map(mapJobsResponse) ?? [];

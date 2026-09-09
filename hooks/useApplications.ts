@@ -106,6 +106,7 @@ export const APPLICATION_STATUS_CONFIG: Record<
  */
 function mapFromBackend(raw: TrackerEntryResponse): ApplicationEntry {
   return {
+    url: raw.url || undefined,
     id: raw._id,
     job_id: raw.job_id || undefined,
     company: raw.company_name,
@@ -159,6 +160,7 @@ export function useApplications() {
           location: entry.location,
           status: entry.status,
           notes: entry.notes,
+          url: entry.url,
           applied_at: entry.applied_date,
         });
         const mapped = mapFromBackend(raw);

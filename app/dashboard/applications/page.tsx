@@ -1,6 +1,9 @@
 "use client";
 
 import { Fragment, useState, useMemo } from "react";
+import type { ApplicationItem } from "@/types/api";
+import type { ScreeningQuestion } from "@/lib/job-fields";
+import { ListLoadError } from "@/components/ui/ListLoadError";
 import Link from "next/link";
 import useSWR from "swr";
 import {
@@ -24,30 +27,19 @@ import {
 import { screeningAnswerState } from "@/lib/candidate-match";
 import { formatDate } from "@/lib/date-utils";
 import { CustomDropdown } from "@/components/ui/CustomDropdown";
+import { Pagination } from "@/components/ui/Pagination";
+
+/** Applicants per page. The endpoint caps at MAX_PAGE_SIZE (100). */
+const APPLICATIONS_PER_PAGE = 25;
 
 
-function getJobLabel(
-  job:
-    | string
-    | {
-        _id: string;
-        id: string;
-        role: string;
-        company_name: string;
-        location?: string;
-        company_logo?: string;
-      },
-) {
-  if (typeof job === "string") return "Job posting";
-  return `${job.role} • ${job.company_name}`;
-}
 
 
 
 function ApplicationStatusBadge({ status }: { status: string }) {
   if (status === "accepted") {
     return (
-      <span className="inline-flex px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-50 text-green-700">
+      <span className="inline-flex px-2.5 py-0.5 rounded-full text-sm font-medium bg-green-50 text-green-700">
         Accepted
       </span>
     );
@@ -55,7 +47,7 @@ function ApplicationStatusBadge({ status }: { status: string }) {
 
   if (status === "rejected") {
     return (
-      <span className="inline-flex px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-50 text-red-700">
+      <span className="inline-flex px-2.5 py-0.5 rounded-full text-sm font-medium bg-red-50 text-red-700">
         Rejected
       </span>
     );
@@ -63,14 +55,14 @@ function ApplicationStatusBadge({ status }: { status: string }) {
 
   if (status === "reviewed") {
     return (
-      <span className="inline-flex px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-50 text-blue-700">
+      <span className="inline-flex px-2.5 py-0.5 rounded-full text-sm font-medium bg-blue-50 text-blue-700">
         Reviewed
       </span>
     );
   }
 
   return (
-    <span className="inline-flex px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-50 text-yellow-700">
+    <span className="inline-flex px-2.5 py-0.5 rounded-full text-sm font-medium bg-yellow-50 text-yellow-700">
       Pending
     </span>
   );
@@ -89,7 +81,7 @@ function MatchCell({
   flagged?: boolean;
 }) {
   if (typeof score !== "number") {
-    return <span className="text-xs text-gray-400">—</span>;
+    return <span className="text-sm text-gray-500"> - </span>;
   }
   const tone =
     score >= 70
@@ -100,14 +92,14 @@ function MatchCell({
   return (
     <div className="flex items-center gap-1.5">
       <span
-        className={`inline-flex px-2.5 py-0.5 rounded-full text-xs font-semibold ${tone}`}
+        className={`inline-flex px-2.5 py-0.5 rounded-full text-sm font-semibold ${tone}`}
       >
         {score}%
       </span>
       {flagged && (
         <span
-          title="A knockout question wasn't met — worth a closer look"
-          className="inline-flex items-center gap-1 rounded-full bg-red-50 px-2 py-0.5 text-xs font-medium text-red-600"
+          title="A knockout question wasn't met - worth a closer look"
+          className="inline-flex items-center gap-1 rounded-full bg-red-50 px-2 py-0.5 text-sm font-medium text-red-600"
         >
           <HiOutlineFlag className="w-3.5 h-3.5" />
           Flag
@@ -122,11 +114,16 @@ function MatchCell({
  * employer's preferred answers, plus the free-text parts of the application.
  * This is what makes the Match % explainable — never a gate, just context.
  */
-function ApplicantDetail({ app }: { app: any }) {
+/** The populated candidate object, or undefined when not populated. */
+function candidateOf(app: ApplicationItem) {
+  return typeof app.user_id === "object" ? app.user_id : undefined;
+}
+
+function ApplicantDetail({ app }: { app: ApplicationItem }) {
   const questions =
     typeof app.job_id === "object" ? app.job_id?.screening_questions ?? [] : [];
   const answersById = new Map<string, string[]>(
-    (app.screening_answers ?? []).map((a: any) => [a.question_id, a.answer]),
+    (app.screening_answers ?? []).map((a) => [a.question_id, a.answer]),
   );
 
   const details: { label: string; value?: string }[] = [
@@ -144,12 +141,12 @@ function ApplicantDetail({ app }: { app: any }) {
           Screening answers
         </h4>
         {questions.length === 0 ? (
-          <p className="text-sm text-gray-400">
+          <p className="text-sm text-gray-500">
             This job had no screening questions.
           </p>
         ) : (
           <ul className="space-y-3">
-            {questions.map((q: any) => {
+            {questions.map((q: ScreeningQuestion) => {
               const answer = answersById.get(q.id) ?? [];
               const state = screeningAnswerState(
                 q.preferred_answers ?? [],
@@ -185,7 +182,7 @@ function ApplicantDetail({ app }: { app: any }) {
                       {answer.length ? answer.join(", ") : "No answer"}
                     </p>
                     {(q.preferred_answers ?? []).length > 0 && (
-                      <p className="text-xs text-gray-400 capitalize">
+                      <p className="text-sm text-gray-500 capitalize">
                         Preferred: {(q.preferred_answers ?? []).join(", ")}
                         {q.knockout && (
                           <span className="ml-1 text-red-500">• knockout</span>
@@ -218,10 +215,10 @@ function ApplicantDetail({ app }: { app: any }) {
               Skills
             </h4>
             <div className="flex flex-wrap gap-1.5">
-              {app.selected_skills.map((skill: string) => (
+              {(app.selected_skills ?? []).map((skill) => (
                 <span
                   key={skill}
-                  className="rounded-full bg-white border border-gray-200 px-2.5 py-0.5 text-xs text-gray-700"
+                  className="rounded-full bg-white border border-gray-200 px-2.5 py-0.5 text-sm text-gray-700"
                 >
                   {skill}
                 </span>
@@ -233,7 +230,7 @@ function ApplicantDetail({ app }: { app: any }) {
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             {shownDetails.map((d) => (
               <div key={d.label}>
-                <p className="text-xs text-gray-400">{d.label}</p>
+                <p className="text-sm text-gray-500">{d.label}</p>
                 <p className="text-sm text-gray-700">{d.value}</p>
               </div>
             ))}
@@ -259,11 +256,22 @@ export default function ApplicationsPage() {
   const [busyApplicationId, setBusyApplicationId] = useState<string | null>(
     null,
   );
+  const [page, setPage] = useState(1);
   const {
-    data: applications = [],
+    data,
     isLoading,
+    error: loadError,
     mutate,
-  } = useSWR("employer-applications", getReceivedApplications);
+  } = useSWR(["employer-applications", page], () =>
+    getReceivedApplications(page, APPLICATIONS_PER_PAGE),
+  );
+  // Failed first load only - see the postings page.
+  const showLoadError = !!loadError && data === undefined;
+  // Server-paged: the endpoint returns one page, so the filters and counters
+  // below describe the page on screen, not the whole history.
+  const applications = data?.applications ?? [];
+  const totalPages = data?.pagination?.totalPages ?? 1;
+  const totalItems = data?.pagination?.totalItems ?? applications.length;
 
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedStatus, setSelectedStatus] = useState<string>("all");
@@ -272,7 +280,7 @@ export default function ApplicationsPage() {
   const [expandedId, setExpandedId] = useState<string | null>(null);
 
   const filteredApplications = useMemo(() => {
-    const filtered = applications.filter((app: any) => {
+    const filtered = applications.filter((app) => {
       // 1. Status Filter
       if (selectedStatus !== "all" && app.status !== selectedStatus) {
         return false;
@@ -281,10 +289,10 @@ export default function ApplicationsPage() {
       // 2. Search Query
       if (searchQuery.trim()) {
         const query = searchQuery.toLowerCase();
-        const candidateName = (app.user_id?.full_name || app.full_name || "").toLowerCase();
-        const candidateEmail = (app.user_id?.email || app.email || "").toLowerCase();
-        const jobRole = (app.job_id?.role || "job posting").toLowerCase();
-        const companyName = (app.job_id?.company_name || "").toLowerCase();
+        const candidateName = (candidateOf(app)?.full_name || app.full_name || "").toLowerCase();
+        const candidateEmail = (candidateOf(app)?.email || app.email || "").toLowerCase();
+        const jobRole = (typeof app.job_id === "object" ? app.job_id.role : "job posting").toLowerCase();
+        const companyName = (typeof app.job_id === "object" ? app.job_id.company_name : "").toLowerCase();
 
         return (
           candidateName.includes(query) ||
@@ -301,7 +309,7 @@ export default function ApplicationsPage() {
     // to the bottom but stay listed — rank & flag, never hide). Default keeps
     // newest first.
     if (sortBy === "match") {
-      return [...filtered].sort((a: any, b: any) => {
+      return [...filtered].sort((a, b) => {
         const sa = typeof a.screening_score === "number" ? a.screening_score : -1;
         const sb = typeof b.screening_score === "number" ? b.screening_score : -1;
         return sb - sa;
@@ -312,7 +320,7 @@ export default function ApplicationsPage() {
 
   const counts = useMemo(() => {
     const res = { all: applications.length, pending: 0, reviewed: 0, accepted: 0, rejected: 0 };
-    applications.forEach((app: any) => {
+    applications.forEach((app) => {
       if (app.status in res) {
         res[app.status as keyof typeof res]++;
       }
@@ -340,7 +348,7 @@ export default function ApplicationsPage() {
         description:
           err instanceof Error
             ? err.message
-            : "Could not update application status",
+            : "Couldn't update application status",
       });
     } finally {
       setBusyApplicationId(null);
@@ -360,17 +368,21 @@ export default function ApplicationsPage() {
       <div className="max-w-7xl mx-auto">
         <div className="mb-8">
           <h1 className="text-2xl font-bold text-gray-900 mb-1">
-            Applications & Applicants
+            Applicants
           </h1>
-          <p className="text-gray-500">
+          <p className="text-gray-600">
             Review and manage candidates who have applied to your job postings.
           </p>
         </div>
 
-        {isLoading ? (
+        {showLoadError ? (
+
+          <ListLoadError what="applications" onRetry={() => mutate()} />
+
+        ) : isLoading ? (
           <div className="flex flex-col items-center justify-center py-20">
             <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-primary mb-4"></div>
-            <p className="text-sm text-gray-500 font-medium">
+            <p className="text-sm text-gray-600 font-medium">
               Loading applications...
             </p>
           </div>
@@ -394,7 +406,7 @@ export default function ApplicationsPage() {
 
               {/* Status Filters */}
               <div className="flex flex-wrap items-center gap-1.5">
-                <div className="flex items-center gap-1.5 text-xs font-semibold text-gray-400 mr-2 uppercase tracking-wider">
+                <div className="flex items-center gap-1.5 text-sm font-semibold text-gray-500 mr-2 uppercase tracking-wider">
                   <HiOutlineFunnel className="w-4 h-4" />
                   <span>Status:</span>
                 </div>
@@ -405,7 +417,7 @@ export default function ApplicationsPage() {
                     <button
                       key={filter.key}
                       onClick={() => setSelectedStatus(filter.key)}
-                      className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
+                      className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${
                         isActive
                           ? "bg-primary text-white shadow-sm"
                           : "bg-gray-50 text-gray-600 hover:bg-gray-100 border border-gray-200/60"
@@ -413,10 +425,10 @@ export default function ApplicationsPage() {
                     >
                       <span>{filter.label}</span>
                       <span
-                        className={`inline-block px-1.5 py-0.5 rounded-full text-[10px] ${
+                        className={`inline-block px-1.5 py-0.5 rounded-full text-xs ${
                           isActive
                             ? "bg-white/20 text-white font-bold"
-                            : "bg-gray-200/80 text-gray-500 font-semibold"
+                            : "bg-gray-200/80 text-gray-600 font-semibold"
                         }`}
                       >
                         {count}
@@ -428,7 +440,7 @@ export default function ApplicationsPage() {
 
               {/* Sort */}
               <div className="flex flex-wrap items-center gap-1.5">
-                <span className="text-xs font-semibold text-gray-400 mr-2 uppercase tracking-wider">
+                <span className="text-sm font-semibold text-gray-500 mr-2 uppercase tracking-wider">
                   Sort:
                 </span>
                 {(
@@ -440,7 +452,7 @@ export default function ApplicationsPage() {
                   <button
                     key={opt.key}
                     onClick={() => setSortBy(opt.key)}
-                    className={`inline-flex items-center px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
+                    className={`inline-flex items-center px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${
                       sortBy === opt.key
                         ? "bg-primary text-white shadow-sm"
                         : "bg-gray-50 text-gray-600 hover:bg-gray-100 border border-gray-200/60"
@@ -459,28 +471,28 @@ export default function ApplicationsPage() {
                   <table className="w-full text-left border-collapse">
                     <thead>
                       <tr className="bg-gray-50 border-b border-gray-200">
-                        <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                        <th className="px-6 py-4 text-sm font-semibold text-gray-600 uppercase tracking-wider">
                           Applicant
                         </th>
-                        <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                        <th className="px-6 py-4 text-sm font-semibold text-gray-600 uppercase tracking-wider">
                           Applied For
                         </th>
-                        <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                        <th className="px-6 py-4 text-sm font-semibold text-gray-600 uppercase tracking-wider">
                           Date
                         </th>
-                        <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                        <th className="px-6 py-4 text-sm font-semibold text-gray-600 uppercase tracking-wider">
                           Status
                         </th>
-                        <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                        <th className="px-6 py-4 text-sm font-semibold text-gray-600 uppercase tracking-wider">
                           Match
                         </th>
-                        <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider text-right">
+                        <th className="px-6 py-4 text-sm font-semibold text-gray-600 uppercase tracking-wider text-right">
                           Actions
                         </th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-200">
-                      {filteredApplications.map((app: any) => (
+                      {filteredApplications.map((app) => (
                         <Fragment key={app._id}>
                         <tr
                           className="hover:bg-gray-50/50 transition-colors"
@@ -488,14 +500,14 @@ export default function ApplicationsPage() {
                           <td className="px-6 py-4">
                             <div className="flex items-center gap-3">
                               <div className="w-10 h-10 rounded-full bg-red-50 flex items-center justify-center text-primary font-bold text-sm overflow-hidden shrink-0">
-                                {app.user_id?.picture ? (
+                                {candidateOf(app)?.picture ? (
                                   <img
-                                    src={app.user_id.picture}
-                                    alt={app.user_id.full_name || app.full_name}
+                                    src={candidateOf(app)!.picture}
+                                    alt={candidateOf(app)?.full_name || app.full_name}
                                     className="w-full h-full object-cover"
                                   />
                                 ) : (
-                                  (app.user_id?.full_name || app.full_name || "U").charAt(0).toUpperCase()
+                                  (candidateOf(app)?.full_name || app.full_name || "U").charAt(0).toUpperCase()
                                 )}
                               </div>
                               <div>
@@ -503,10 +515,10 @@ export default function ApplicationsPage() {
                                   href={`/dashboard/applications/${app._id}`}
                                   className="text-sm font-semibold text-gray-900 no-underline hover:text-primary"
                                 >
-                                  {app.user_id?.full_name || app.full_name || "Unknown User"}
+                                  {candidateOf(app)?.full_name || app.full_name || "Unknown User"}
                                 </Link>
-                                <p className="text-xs text-gray-500">
-                                  {app.user_id?.email || app.email || "No email provided"}
+                                <p className="text-sm text-gray-600">
+                                  {candidateOf(app)?.email || app.email || "No email provided"}
                                 </p>
                               </div>
                             </div>
@@ -524,7 +536,7 @@ export default function ApplicationsPage() {
                                     <p className="text-sm text-gray-700 font-medium truncate max-w-[200px]">
                                       {app.job_id?.role}
                                     </p>
-                                    <p className="text-xs text-gray-500 font-bold mt-0.5 truncate max-w-[200px]">
+                                    <p className="text-sm text-gray-600 font-bold mt-0.5 truncate max-w-[200px]">
                                       {app.job_id?.company_name}
                                     </p>
                                   </>
@@ -532,7 +544,7 @@ export default function ApplicationsPage() {
                               </div>
                             </div>
                           </td>
-                          <td className="px-6 py-4 text-sm text-gray-500">
+                          <td className="px-6 py-4 text-sm text-gray-600">
                             <div className="flex items-center gap-2">
                               <HiOutlineCalendar className="w-4 h-4 text-gray-400" />
                               {formatDate(app.createdAt)}
@@ -562,7 +574,7 @@ export default function ApplicationsPage() {
                                     ? "Hide details"
                                     : "Show details"
                                 }
-                                className="p-1.5 rounded-lg text-gray-500 hover:text-primary hover:bg-red-50 transition-colors"
+                                className="p-1.5 rounded-lg text-gray-600 hover:text-primary hover:bg-red-50 transition-colors"
                                 title="Details"
                               >
                                 <HiOutlineChevronDown
@@ -576,7 +588,7 @@ export default function ApplicationsPage() {
                                   href={app.resume_url}
                                   target="_blank"
                                   rel="noopener noreferrer"
-                                  className="p-1.5 rounded-lg text-gray-500 hover:text-primary hover:bg-red-50 transition-colors"
+                                  className="p-1.5 rounded-lg text-gray-600 hover:text-primary hover:bg-red-50 transition-colors"
                                   title="Download Resume"
                                 >
                                   <HiOutlineDocumentArrowDown className="w-5 h-5" />
@@ -589,7 +601,12 @@ export default function ApplicationsPage() {
                                   value={app.status}
                                   disabled={busyApplicationId === app._id}
                                   hideHeader
-                                  onChange={(val) => handleStatusChange(app._id, val as any)}
+                                  onChange={(val) =>
+                                    handleStatusChange(
+                                      app._id,
+                                      val as "reviewed" | "accepted" | "rejected",
+                                    )
+                                  }
                                   options={[
                                     { value: "pending", label: "Pending" },
                                     { value: "reviewed", label: "Reviewed" },
@@ -616,6 +633,16 @@ export default function ApplicationsPage() {
                     </tbody>
                   </table>
                 </div>
+                {/* Server-paged: without this the employer saw only the first
+                    page and nothing said so. */}
+                <div className="px-4 py-3 border-t border-gray-100">
+                  <Pagination
+                    page={page}
+                    totalPages={totalPages}
+                    onPageChange={setPage}
+                    summary={`${totalItems} application${totalItems === 1 ? "" : "s"} in total`}
+                  />
+                </div>
               </div>
             ) : (
               <div className="bg-white rounded-xl border border-gray-200 p-12 text-center shadow-sm">
@@ -625,7 +652,7 @@ export default function ApplicationsPage() {
                 <h3 className="text-lg font-semibold text-gray-900 mb-2">
                   No matching applications found
                 </h3>
-                <p className="text-sm text-gray-500 max-w-sm mx-auto">
+                <p className="text-sm text-gray-600 max-w-sm mx-auto">
                   Try adjusting your search terms or status filters to find what you are looking for.
                 </p>
               </div>
@@ -639,7 +666,7 @@ export default function ApplicationsPage() {
             <h3 className="text-lg font-semibold text-gray-900 mb-2">
               No applications yet
             </h3>
-            <p className="text-sm text-gray-500 max-w-sm mx-auto">
+            <p className="text-sm text-gray-600 max-w-sm mx-auto">
               When candidates apply to your job postings, they will appear here
               for you to review.
             </p>

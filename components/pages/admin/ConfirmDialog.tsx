@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import clsx from "clsx";
 import { HiOutlineExclamationTriangle } from "react-icons/hi2";
+import { useModalFocus } from "@/hooks/useModalFocus";
 
 type Tone = "danger" | "neutral";
 
@@ -39,6 +40,7 @@ export const ConfirmDialog = ({
   onConfirm,
 }: ConfirmDialogProps) => {
   const [reason, setReason] = useState("");
+  const panelRef = useModalFocus(open, onClose, { closeDisabled: busy });
 
   useEffect(() => {
     if (!open) setReason("");
@@ -58,7 +60,10 @@ export const ConfirmDialog = ({
       className="fixed inset-0 z-50 flex items-center justify-center p-4 animate-fadeIn"
     >
       <div className="absolute inset-0 bg-black/50" onClick={onClose} />
-      <div className="relative w-full max-w-md bg-white rounded-2xl shadow-xl border border-gray-200 overflow-hidden">
+      <div
+        ref={panelRef}
+        className="relative w-full max-w-md bg-white rounded-2xl shadow-xl border border-gray-200 overflow-hidden"
+      >
         <div className="px-5 py-4 border-b border-gray-100 flex items-start gap-3">
           <div
             className={clsx(
@@ -97,7 +102,7 @@ export const ConfirmDialog = ({
                 onChange={(e) => setReason(e.target.value)}
                 rows={4}
                 placeholder={reasonPlaceholder}
-                className="mt-1.5 w-full px-3 py-2.5 text-sm border border-gray-200 rounded-xl outline-none focus:border-primary focus:ring-2 focus:ring-primary/10 resize-none"
+                className="mt-1.5 w-full px-3 py-2.5 text-sm border border-gray-200 rounded-xl outline-none focus:border-primary focus:ring-2 focus:ring-primary/30 resize-none"
               />
             </label>
           )}

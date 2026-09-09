@@ -1,12 +1,17 @@
 "use client";
 import React, { useMemo, useState } from "react";
 import dynamic from "next/dynamic";
+import { useRouter } from "next/navigation";
 import { useUserProfile } from "@/hooks/useUserProfile";
-import { PROVINCES } from "@/lib/job-fields";
+import {
+  PROVINCES,
+  EXPERIENCE_LEVELS,
+  EXPERIENCE_LEVEL_LABELS,
+  toOptions,
+} from "@/lib/job-fields";
 import { pickGreeting } from "@/lib/greeting";
-import { DashboardSkeleton } from "@/components/ui/Skeleton";
-import { HiOutlineLocationMarker } from "react-icons/hi";
-import { HiMagnifyingGlass, HiChevronDown } from "react-icons/hi2";
+import { CustomDropdown } from "@/components/ui/CustomDropdown";
+import { HiMagnifyingGlass } from "react-icons/hi2";
 
 // Dynamically import profile cards for better optimization
 const CompleteProfileCard = dynamic(
@@ -53,11 +58,23 @@ const FILTER_FIELD =
   "w-full min-h-[44px] px-3 py-2 border border-gray-200 rounded-lg bg-white text-sm " +
   "focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary";
 
+// Every work arrangement the vocabulary has — this row used to omit
+// "hybrid", making hybrid jobs unreachable from the dashboard filter.
 const WORK_TYPES = [
   { value: "all", label: "All" },
   { value: "remote", label: "Remote" },
+  { value: "hybrid", label: "Hybrid" },
   { value: "onsite", label: "On-site" },
 ] as const;
+
+// One option list with the same labels the find-jobs filter panel derives
+// from the shared vocabulary — not a hand-typed near-copy.
+const EXPERIENCE_OPTIONS = toOptions(EXPERIENCE_LEVELS, EXPERIENCE_LEVEL_LABELS);
+
+const LOCATION_OPTIONS = [
+  { value: "", label: "All locations" },
+  ...PROVINCES.map((p) => ({ value: p.code, label: p.name })),
+];
 
 // The profile nudge, once dismissed, stays gone for three days — the full
 // reminder lives permanently on the profile page, so there's no need to keep
@@ -76,12 +93,13 @@ const POPULAR_SEARCHES = [
 ];
 
 const FindJobsDashboard = () => {
+  const router = useRouter();
   const { userProfile, profileCompletion, isLoading } = useUserProfile();
 
   // Search and filter state
   const [searchQuery, setSearchQuery] = useState("");
   const [location, setLocation] = useState("");
-  const [workType, setWorkType] = useState<"all" | "remote" | "onsite">("all");
+  const [workType, setWorkType] = useState<"all" | "remote" | "hybrid" | "onsite">("all");
   const [experienceLevel, setExperienceLevel] = useState("");
 
   // A rotating, time-and-country greeting — a fresh one each visit. Falls back
@@ -125,16 +143,12 @@ const FindJobsDashboard = () => {
     // nothing.
     if (workType !== "all") params.set("arrangement", workType);
     if (experienceLevel) params.set("experience", experienceLevel);
-    window.location.href = `/dashboard/find-jobs${params.toString() ? `?${params.toString()}` : ""}`;
+    router.push(`/dashboard/find-jobs${params.toString() ? `?${params.toString()}` : ""}`);
   };
 
   const quickSearch = (term: string) => {
-    window.location.href = `/dashboard/find-jobs?q=${encodeURIComponent(term)}`;
+    router.push(`/dashboard/find-jobs?q=${encodeURIComponent(term)}`);
   };
-
-  if (isLoading) {
-    return <DashboardSkeleton />;
-  }
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -142,10 +156,16 @@ const FindJobsDashboard = () => {
         {/* Header — a rotating, localized greeting; "Find Your Next
             Opportunity" moved up here from the search card it used to title. */}
         <div className="mb-5">
-          <h1 className="text-2xl md:text-4xl font-bold text-gray-900">
-            {greeting}
-          </h1>
-          <p className="text-gray-500 mt-1">Find Your Next Opportunity</p>
+          {isLoading ? (
+            /* Only the greeting waits for the profile now - the search shell
+               below is profile-independent and renders immediately. */
+            <div className="h-8 md:h-10 w-72 max-w-full rounded bg-gray-100 animate-pulse" />
+          ) : (
+            <h1 className="text-2xl md:text-4xl font-bold text-gray-900">
+              {greeting}
+            </h1>
+          )}
+          <p className="text-gray-600 mt-1">Find Your Next Opportunity</p>
         </div>
 
         {/* Search & filters — a clean, cohesive panel. Labels stay (this is
@@ -156,12 +176,16 @@ const FindJobsDashboard = () => {
           <div className="flex flex-wrap items-end gap-3 md:gap-4">
             {/* Job Search */}
             <div className="flex-1 min-w-56">
-              <label className="block text-xs md:text-sm font-medium text-gray-700 mb-1.5">
+              <label
+                htmlFor="dashboard-job-search"
+                className="block text-sm font-medium text-gray-700 mb-1.5"
+              >
                 Job Search
               </label>
               <div className="relative">
                 <HiMagnifyingGlass className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5 pointer-events-none" />
                 <input
+                  id="dashboard-job-search"
                   type="text"
                   placeholder="Search jobs by title or keyword"
                   value={searchQuery}
@@ -174,38 +198,33 @@ const FindJobsDashboard = () => {
               </div>
             </div>
 
-            {/* Location */}
-            <div className="min-w-44">
-              <label className="block text-xs md:text-sm font-medium text-gray-700 mb-1.5">
-                Location
-              </label>
-              <div className="relative">
-                <HiOutlineLocationMarker className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5 pointer-events-none" />
-                <select
-                  value={location}
-                  onChange={(e) => setLocation(e.target.value)}
-                  className={`${FILTER_FIELD} pl-10 pr-9 appearance-none cursor-pointer`}
-                >
-                  {/* Province codes match the state_province column the
-                      backend filters on. Name slugs matched nothing, and
-                      "Remote" is a work arrangement, not a location. */}
-                  <option value="">All Locations</option>
-                  {PROVINCES.map((province) => (
-                    <option key={province.code} value={province.code}>
-                      {province.name}
-                    </option>
-                  ))}
-                </select>
-                <HiChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4 pointer-events-none" />
-              </div>
+            {/* Location — province codes match the state_province column the
+                backend filters on. CustomDropdown like every other select on
+                the dashboard; this page kept the last native ones. */}
+            <div className="min-w-[44px]">
+              <CustomDropdown
+                label="Location"
+                name="dashboard-location"
+                placeholder="All locations"
+                value={location}
+                onChange={setLocation}
+                options={LOCATION_OPTIONS}
+              />
             </div>
 
             {/* Work Type */}
             <div>
-              <label className="block text-xs md:text-sm font-medium text-gray-700 mb-1.5">
+              <span
+                id="dashboard-work-type-label"
+                className="block text-sm font-medium text-gray-700 mb-1.5"
+              >
                 Work Type
-              </label>
-              <div className="flex gap-1 rounded-lg bg-gray-100 p-1">
+              </span>
+              <div
+                role="group"
+                aria-labelledby="dashboard-work-type-label"
+                className="flex gap-1 rounded-lg bg-gray-100 p-1"
+              >
                 {WORK_TYPES.map((wt) => (
                   <button
                     key={wt.value}
@@ -226,24 +245,14 @@ const FindJobsDashboard = () => {
 
             {/* Experience Level */}
             <div className="min-w-40">
-              <label className="block text-xs md:text-sm font-medium text-gray-700 mb-1.5">
-                Experience Level
-              </label>
-              <div className="relative">
-                <select
-                  value={experienceLevel}
-                  onChange={(e) => setExperienceLevel(e.target.value)}
-                  className={`${FILTER_FIELD} pr-9 appearance-none cursor-pointer`}
-                >
-                  <option value="">All Levels</option>
-                  <option value="entry">Entry Level</option>
-                  <option value="mid">Mid Level</option>
-                  <option value="senior">Senior Level</option>
-                  <option value="lead">Lead</option>
-                  <option value="executive">Executive</option>
-                </select>
-                <HiChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4 pointer-events-none" />
-              </div>
+              <CustomDropdown
+                label="Experience Level"
+                name="dashboard-experience"
+                placeholder="All levels"
+                value={experienceLevel}
+                onChange={setExperienceLevel}
+                options={[{ value: "", label: "All levels" }, ...EXPERIENCE_OPTIONS]}
+              />
             </div>
 
             {/* Find Jobs */}
@@ -259,13 +268,13 @@ const FindJobsDashboard = () => {
 
           {/* Popular searches */}
           <div className="mt-4 flex flex-wrap items-center gap-2">
-            <span className="text-xs font-medium text-gray-400">Popular:</span>
+            <span className="text-sm font-medium text-gray-500">Popular:</span>
             {POPULAR_SEARCHES.map((term) => (
               <button
                 key={term}
                 type="button"
                 onClick={() => quickSearch(term)}
-                className="rounded-full border border-gray-200 px-3 py-1 text-xs font-medium text-gray-600 transition-colors hover:border-primary hover:text-primary"
+                className="rounded-full border border-gray-200 px-4 py-2 min-h-[44px] text-sm font-medium text-gray-600 transition-colors hover:border-primary hover:text-primary"
               >
                 {term}
               </button>
@@ -275,7 +284,7 @@ const FindJobsDashboard = () => {
 
         {/* The profile nudge shows only while incomplete AND not snoozed;
             once complete, the ready-to-apply card takes its place. */}
-        {isProfileComplete ? (
+        {isLoading ? null : isProfileComplete ? (
           <ReadyToApplyCard />
         ) : reminderVisible ? (
           <CompleteProfileCard

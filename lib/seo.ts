@@ -39,8 +39,10 @@ export const SITE_CONFIG: SiteConfig = {
   name: "Vetriconn",
   description:
     "Find meaningful jobs for retirees and veterans in Canada. Part-time, full-time, and volunteer opportunities for seniors and experienced professionals.",
-  url: "https://vetriconn.ca",
-  ogImage: "https://vetriconn.ca/og-image.png",
+  // www, matching CORS, emails, and the deployed site - the apex here made
+  // every canonical tag disagree with the domain everything else uses.
+  url: "https://www.vetriconn.ca",
+  ogImage: "https://www.vetriconn.ca/og-image.png",
   twitterHandle: "@vetriconn",
   locale: "en_CA",
   keywords: [
@@ -239,7 +241,7 @@ export function generateJobMetadata(job: Job): Metadata {
   const title = `${job.role} at ${job.company_name} | Vetriconn`;
 
   // Create a description from job data, truncated to fit meta description limits
-  const rawDescription = job.full_description || "";
+  const rawDescription = job.description || job.summary || "";
   const truncatedDescription =
     rawDescription.length > 140
       ? `${rawDescription.substring(0, 137)}...`
@@ -310,7 +312,7 @@ export function generateJobPostingSchema(job: Job): JobPosting {
     "@context": "https://schema.org",
     "@type": "JobPosting",
     title: job.role,
-    description: job.full_description,
+    description: job.description || job.summary,
     datePosted: new Date().toISOString().split("T")[0],
     hiringOrganization: {
       "@type": "Organization",
@@ -336,28 +338,29 @@ export function generateJobPostingSchema(job: Job): JobPosting {
     };
   }
 
-  // Salary. The unit comes from the employer's stated payment type — this
-  // hardcoded YEAR, which published every hourly listing to Google as an
-  // annual figure ($34.75 a year).
-  const salaryUnit = job.payment_type === "hourly" ? "HOUR" : "YEAR";
-  if (job.salary?.number) {
-    schema.baseSalary = {
-      "@type": "MonetaryAmount",
-      currency: job.salary.currency || "CAD",
-      value: job.salary.number,
-      unitText: salaryUnit,
-    };
-  } else if (
-    job.salary_range?.start_salary?.number ||
-    job.salary_range?.end_salary?.number
-  ) {
-    schema.baseSalary = {
-      "@type": "MonetaryAmount",
-      currency: job.salary_range.start_salary?.currency || "CAD",
-      minValue: job.salary_range.start_salary?.number,
-      maxValue: job.salary_range.end_salary?.number,
-      unitText: salaryUnit,
-    };
+  // Salary. The unit comes from the stated basis — this hardcoded YEAR, which
+  // published every hourly listing to Google as an annual figure ($34.75 a
+  // year). The basis travelling inside the compensation object is what makes
+  // the figure interpretable here at all.
+  const pay = job.compensation;
+  if (pay && (pay.min !== undefined || pay.max !== undefined)) {
+    const salaryUnit = pay.basis === "hourly" ? "HOUR" : "YEAR";
+    const currency = pay.currency || "CAD";
+    schema.baseSalary =
+      pay.min !== undefined && pay.max !== undefined
+        ? {
+            "@type": "MonetaryAmount",
+            currency,
+            minValue: pay.min,
+            maxValue: pay.max,
+            unitText: salaryUnit,
+          }
+        : {
+            "@type": "MonetaryAmount",
+            currency,
+            value: pay.min ?? pay.max,
+            unitText: salaryUnit,
+          };
   }
 
   // Employment type from the stored column, in schema.org's spelling.

@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
+import { adminCompanyCounts } from "@/lib/api/companies";
 import useSWR from "swr";
+import { useUserProfile } from "@/hooks/useUserProfile";
 import {
   getPublicCompanyJobs,
   type PublicCompanyJob,
@@ -13,8 +15,11 @@ import {
 
 /** Companies the signed-in user is an active member of. */
 export function useMyCompanies() {
+  // Null key while signed out: the hook also mounts on public pages (the
+  // job page's own-listing check), where the request can only ever 401.
+  const { userProfile } = useUserProfile();
   const { data, error, isLoading, mutate } = useSWR(
-    "/companies/me",
+    userProfile ? "/companies/me" : null,
     getMyCompanies,
   );
 
@@ -32,10 +37,22 @@ export function useMyCompanies() {
   };
 }
 
-export function useCompany(companyId: string | undefined) {
+export function useCompany(
+  companyId: string | undefined,
+  initialData?: Company | null,
+) {
+  // Seeded from the server render on the public page: paints from the ISR
+  // copy instantly while one background request revalidates it — that
+  // request is what corrects a suspension within seconds when the ISR page
+  // is still inside its revalidate window. Explicit revalidateOnMount: SWR
+  // skips the mount revalidate by default when fallbackData is set. Member
+  // views pass no seed.
   const { data, error, isLoading, mutate } = useSWR(
     companyId ? `/companies/${companyId}` : null,
     () => getCompanyById(companyId!),
+    initialData
+      ? { fallbackData: initialData, revalidateOnMount: true }
+      : undefined,
   );
 
   return {
@@ -90,11 +107,17 @@ export function useAdminCompanies(
 export function usePublicCompanyJobs(
   companyId: string | undefined,
   limit = 20,
+  initialData?: Awaited<ReturnType<typeof getPublicCompanyJobs>> | null,
 ) {
   const [page, setPage] = useState(1);
+  // The seed is page 1; later pages fetch normally (the accumulate effect
+  // dedups the fallback rows that briefly show while a next page loads).
   const { data, error, isLoading } = useSWR(
     companyId ? `/companies/${companyId}/open-jobs?page=${page}&limit=${limit}` : null,
     () => getPublicCompanyJobs(companyId!, page, limit),
+    initialData
+      ? { fallbackData: initialData, revalidateOnMount: true }
+      : undefined,
   );
 
   // Listings accumulate as the visitor pages, so "load more" appends rather
@@ -116,4 +139,13 @@ export function usePublicCompanyJobs(
     isLoading: isLoading && page === 1,
     isError: !!error,
   };
+}
+
+/** Vetting counts for the company review queue's summary cards. */
+export function useAdminCompanyCounts() {
+  const { data: counts, mutate } = useSWR(
+    "admin-company-counts",
+    adminCompanyCounts,
+  );
+  return { counts, mutate };
 }

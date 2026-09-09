@@ -21,6 +21,7 @@ export interface ApplicationDraftResponse {
   preferred_schedule: string;
   work_location_preference: string;
   additional_info: string;
+  screening_answers?: Record<string, string[]>;
   createdAt: string;
   updatedAt: string;
 }
@@ -61,6 +62,7 @@ export async function upsertDraft(
     preferred_schedule?: string;
     work_location_preference?: string;
     additional_info?: string;
+    screening_answers?: Record<string, string[]>;
   },
 ): Promise<ApplicationDraftResponse> {
   const response = await apiFetch<
@@ -79,7 +81,7 @@ export async function upsertDraft(
 }
 
 export async function deleteDraft(jobId: string): Promise<void> {
-  await apiFetch<ApiEnvelope<{}>>(
+  await apiFetch<ApiEnvelope<never>>(
     `${API_BASE_URL}/api/v1/application-drafts/${jobId}`,
     { method: "DELETE" },
   );
@@ -157,7 +159,7 @@ export async function updateSavedSearch(
 }
 
 export async function deleteSavedSearch(id: string): Promise<void> {
-  await apiFetch<ApiEnvelope<{}>>(
+  await apiFetch<ApiEnvelope<never>>(
     `${API_BASE_URL}/api/v1/saved-searches/${id}`,
     { method: "DELETE" },
   );
@@ -190,6 +192,7 @@ export interface TrackerEntryResponse {
   location: string;
   status: "saved" | "applied" | "viewed" | "interview" | "offer" | "rejected" | "withdrawn";
   notes: string;
+  url?: string;
   applied_at?: string;
   createdAt: string;
   updatedAt: string;
@@ -223,6 +226,7 @@ export async function createTrackerEntry(data: {
   location?: string;
   status?: string;
   notes?: string;
+  url?: string;
   applied_at?: string;
 }): Promise<TrackerEntryResponse> {
   const response = await apiFetch<
@@ -260,7 +264,7 @@ export async function updateTrackerEntry(
 }
 
 export async function deleteTrackerEntry(id: string): Promise<void> {
-  await apiFetch<ApiEnvelope<{}>>(
+  await apiFetch<ApiEnvelope<never>>(
     `${API_BASE_URL}/api/v1/application-tracker/${id}`,
     { method: "DELETE" },
   );

@@ -6,141 +6,35 @@ import { HiOutlineArrowRight } from "react-icons/hi2";
 import { Header } from "@/components/ui/Header";
 import Footer from "@/components/ui/Footer";
 import DottedBox from "@/public/images/dotted_box.svg";
+import Eyebrow from "@/components/ui/Eyebrow";
 
 // ── Data ─────────────────────────────────────────────────────────────
 
 const commitments = [
   "Featuring job postings tailored specifically for retirees and veterans.",
   "Automating job matches based on individual experience and interests.",
-  "Offering hands-on support with resume building and application processes.",
   "Promoting opportunities for community involvement and volunteer work.",
 ];
 
 const benefits = [
   {
-    title: "More Convenient",
+    title: "One profile, every application",
     description:
-      "Create a profile, browse jobs, and apply in minutes. Our streamlined platform saves you time so you can focus on what matters.",
-    icon: (
-      <svg
-        width="48"
-        height="48"
-        viewBox="0 0 48 48"
-        fill="none"
-        xmlns="http://www.w3.org/2000/svg"
-        aria-hidden="true"
-      >
-        <circle cx="24" cy="24" r="24" fill="#FEE2E2" />
-        <path
-          d="M24 14V24L30 27"
-          stroke="#E53E3E"
-          strokeWidth="2.5"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        />
-        <path
-          d="M24 34C29.5228 34 34 29.5228 34 24C34 18.4772 29.5228 14 24 14C18.4772 14 14 18.4772 14 24C14 29.5228 18.4772 34 24 34Z"
-          stroke="#E53E3E"
-          strokeWidth="2.5"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        />
-      </svg>
-    ),
+      "Fill in your details once. Apply to any role with the same profile - no starting over each time.",
     cta: "Get Started",
     href: "/signup",
   },
   {
-    title: "More Connected",
+    title: "Roles that come to you",
     description:
-      "Receive personalized job alerts and curated opportunities that match your skills, experience, and lifestyle.",
-    icon: (
-      <svg
-        width="48"
-        height="48"
-        viewBox="0 0 48 48"
-        fill="none"
-        xmlns="http://www.w3.org/2000/svg"
-        aria-hidden="true"
-      >
-        <circle cx="24" cy="24" r="24" fill="#FEE2E2" />
-        <path
-          d="M20 28C20 28 21.5 30 24 30C26.5 30 28 28 28 28"
-          stroke="#E53E3E"
-          strokeWidth="2.5"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        />
-        <path
-          d="M21 21H21.01"
-          stroke="#E53E3E"
-          strokeWidth="2.5"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        />
-        <path
-          d="M27 21H27.01"
-          stroke="#E53E3E"
-          strokeWidth="2.5"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        />
-        <path
-          d="M24 34C29.5228 34 34 29.5228 34 24C34 18.4772 29.5228 14 24 14C18.4772 14 14 18.4772 14 24C14 29.5228 18.4772 34 24 34Z"
-          stroke="#E53E3E"
-          strokeWidth="2.5"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        />
-      </svg>
-    ),
+      "Tell us the work and hours you want. We'll email you new jobs that match.",
     cta: "Learn More",
     href: "/jobs",
   },
   {
-    title: "Stronger Communities",
+    title: "Paid work and volunteering",
     description:
-      "Organizations gain experienced talent. You gain purpose, income, and connection — a true win-win for Canada.",
-    icon: (
-      <svg
-        width="48"
-        height="48"
-        viewBox="0 0 48 48"
-        fill="none"
-        xmlns="http://www.w3.org/2000/svg"
-        aria-hidden="true"
-      >
-        <circle cx="24" cy="24" r="24" fill="#FEE2E2" />
-        <path
-          d="M30 32V30C30 28.9391 29.5786 27.9217 28.8284 27.1716C28.0783 26.4214 27.0609 26 26 26H22C20.9391 26 19.9217 26.4214 19.1716 27.1716C18.4214 27.9217 18 28.9391 18 30V32"
-          stroke="#E53E3E"
-          strokeWidth="2.5"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        />
-        <path
-          d="M24 22C26.2091 22 28 20.2091 28 18C28 15.7909 26.2091 14 24 14C21.7909 14 20 15.7909 20 18C20 20.2091 21.7909 22 24 22Z"
-          stroke="#E53E3E"
-          strokeWidth="2.5"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        />
-        <path
-          d="M35 32V30C34.9993 29.1137 34.7044 28.2528 34.1614 27.5523C33.6184 26.8519 32.8581 26.3516 32 26.13"
-          stroke="#E53E3E"
-          strokeWidth="2.5"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        />
-        <path
-          d="M29 14.13C29.8604 14.3503 30.623 14.8507 31.1676 15.5523C31.7122 16.2539 32.0078 17.1168 32.0078 18.005C32.0078 18.8932 31.7122 19.7561 31.1676 20.4577C30.623 21.1593 29.8604 21.6597 29 21.88"
-          stroke="#E53E3E"
-          strokeWidth="2.5"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        />
-      </svg>
-    ),
+      "Full-time, part-time, and volunteer placements from Canadian organisations that want experienced people.",
     cta: "Browse Jobs",
     href: "/jobs",
   },
@@ -148,33 +42,13 @@ const benefits = [
 
 // ── Check Icon ───────────────────────────────────────────────────────
 
-const CheckIcon = () => (
-  <svg
-    width="22"
-    height="22"
-    viewBox="0 0 22 22"
-    fill="none"
-    xmlns="http://www.w3.org/2000/svg"
-    aria-hidden="true"
-    className="flex-shrink-0 mt-0.5"
-  >
-    <circle cx="11" cy="11" r="11" fill="#FEE2E2" />
-    <path
-      d="M7 11L10 14L15 8"
-      stroke="#E53E3E"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    />
-  </svg>
-);
 
 // ── Decorative Images ────────────────────────────────────────────────
 
 const heroImages = [
-  { src: "/images/Hero/2.svg", alt: "Veteran finding new career" },
-  { src: "/images/Hero/3.svg", alt: "Retiree at work" },
-  { src: "/images/Hero/8.svg", alt: "Professional collaboration" },
+  { src: "/images/hero/2.jpg", alt: "Veteran finding new career" },
+  { src: "/images/hero/3.jpg", alt: "Retiree at work" },
+  { src: "/images/hero/8.jpg", alt: "Professional collaboration" },
 ];
 
 // ── Page ─────────────────────────────────────────────────────────────
@@ -215,14 +89,16 @@ export default function AboutPage() {
           aria-hidden="true"
         />
 
-        <div className="flex items-center justify-between gap-8 relative max-w-[1340px] mx-auto p-8 mobile:flex-col mobile:text-center mobile:gap-6 mobile:mt-4 mobile:p-4 mobile:pt-8">
+        {/* Anchored to the section, not the column — at -left-[150px] the grid
+            clipped against overflow-hidden, the bug fixed on home and /jobs. */}
+        <DottedBox
+          className="absolute top-6 left-6 lg:left-10 z-0 w-24 lg:w-28 h-auto pointer-events-none hidden md:block"
+          aria-hidden="true"
+        />
+
+        <div className="flex items-center justify-between gap-8 relative max-w-[1600px] mx-auto p-8 md:px-10 lg:px-14 mobile:flex-col mobile:text-center mobile:gap-6 mobile:mt-4 mobile:p-4 mobile:pt-8">
           {/* Left — Text */}
           <div className="flex-[0_0_45%] max-w-[500px] relative mobile:flex-none mobile:w-full mobile:mx-auto mobile:max-w-full">
-            <DottedBox
-              className="absolute top-0 -left-[150px] z-0 w-[100px] h-auto pointer-events-none mobile:w-[70px] mobile:-top-10 mobile:left-0"
-              aria-hidden="true"
-            />
-
             <h1 className="heading-1 mb-6 mobile:mb-4">
               About <span className="text-primary">Vetriconn</span>
             </h1>
@@ -233,7 +109,7 @@ export default function AboutPage() {
 
             <Link
               href="/signup"
-              className="inline-flex items-center gap-2 bg-primary hover:bg-red-700 text-white font-semibold py-3.5 px-8 rounded-full transition-all shadow-sm mt-4 group"
+              className="inline-flex items-center justify-center gap-2 bg-primary hover:bg-primary-hover text-white font-semibold py-3.5 px-8 min-h-[52px] rounded-full transition-colors shadow-sm group no-underline whitespace-nowrap focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:ring-offset-2 mt-4"
             >
               Get Started
               <HiOutlineArrowRight className="w-4 h-4 md:w-5 md:h-5 transition-transform group-hover:-rotate-45" aria-hidden="true" />
@@ -306,7 +182,7 @@ export default function AboutPage() {
 
       {/* ─── Mission Section ──────────────────────────────────────── */}
       <section className="py-20 bg-white relative overflow-hidden mobile:py-14">
-        <div className="max-w-[1340px] mx-auto px-[5%] md:px-6">
+        <div className="max-w-[1600px] mx-auto px-[5%] md:px-10 lg:px-14">
           {/* Two-column: text left, image right */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-16 items-center">
             {/* Left — Text */}
@@ -315,12 +191,10 @@ export default function AboutPage() {
                 className="absolute -top-6 -left-10 w-16 h-auto pointer-events-none opacity-40 mobile:hidden"
                 aria-hidden="true"
               />
-              <p className="text-primary font-semibold text-sm tracking-widest uppercase mb-4 font-open-sans">
-                Our Mission
-              </p>
+              <Eyebrow>Our Mission</Eyebrow>
               <h2 className="heading-2 mb-6">
                 Reconnecting experience{" "}
-                <span className="text-primary italic font-[var(--font-outfit)]">
+                <span className="text-primary">
                   with opportunity
                 </span>
               </h2>
@@ -332,27 +206,17 @@ export default function AboutPage() {
                 engagement, and community for those transitioning from full-time
                 service into retirement.
               </p>
-              <div className="flex flex-col gap-3">
-                {[
-                  "Part-time positions",
-                  "Full-time roles",
-                  "Volunteer opportunities",
-                ].map((item, idx) => (
-                  <div
-                    key={idx}
-                    className="flex items-center gap-3 font-open-sans text-base text-text"
-                  >
-                    <CheckIcon />
-                    <span className="font-medium">{item}</span>
-                  </div>
+              <p className="meta-list flex flex-wrap items-center gap-y-1 text-[13px] font-semibold uppercase tracking-[0.08em] text-gray-500">
+                {["Part-time", "Full-time", "Volunteer"].map((item) => (
+                  <span key={item}>{item}</span>
                 ))}
-              </div>
+              </p>
             </div>
 
             {/* Right — Image */}
             <div className="relative w-full aspect-[4/3] rounded-2xl overflow-hidden shadow-lg mobile:aspect-[16/10]">
               <Image
-                src="/images/Hero/7.svg"
+                src="/images/hero/7.jpg"
                 alt="Community of veterans and retirees"
                 fill
                 className="object-cover w-full h-auto"
@@ -366,13 +230,13 @@ export default function AboutPage() {
 
       {/* ─── Commitments Section ──────────────────────────────────── */}
       <section className="py-20 bg-gray-light relative overflow-hidden mobile:py-14">
-        <div className="max-w-[1340px] mx-auto px-[5%] md:px-6">
+        <div className="max-w-[1600px] mx-auto px-[5%] md:px-10 lg:px-14">
           {/* Two-column: image left, text right */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-16 items-center">
             {/* Left — Image */}
             <div className="relative w-full aspect-[4/3] rounded-2xl overflow-hidden shadow-lg mobile:order-2 mobile:aspect-[16/10]">
               <Image
-                src="/images/Hero/1.svg"
+                src="/images/hero/1.jpg"
                 alt="Meaningful employment opportunities"
                 fill
                 className="object-cover w-full h-auto"
@@ -383,12 +247,10 @@ export default function AboutPage() {
 
             {/* Right — Text */}
             <div className="relative mobile:order-1">
-              <p className="text-primary font-semibold text-sm tracking-widest uppercase mb-4 font-open-sans">
-                Our Commitment
-              </p>
+              <Eyebrow>Our Commitment</Eyebrow>
               <h2 className="heading-2 mb-6">
                 Making workforce re-entry{" "}
-                <span className="text-primary italic font-[var(--font-outfit)]">
+                <span className="text-primary">
                   smooth &amp; fulfilling
                 </span>
               </h2>
@@ -396,9 +258,12 @@ export default function AboutPage() {
                 {commitments.map((item, idx) => (
                   <div
                     key={idx}
-                    className="flex items-start gap-3 font-open-sans text-base text-text-muted leading-relaxed"
+                    className="flex items-start gap-3.5 font-open-sans text-base text-text-muted leading-relaxed"
                   >
-                    <CheckIcon />
+                    <span
+                      aria-hidden="true"
+                      className="mt-2.5 h-1.5 w-1.5 shrink-0 rounded-full bg-primary/60"
+                    />
                     <span>{item}</span>
                   </div>
                 ))}
@@ -433,16 +298,12 @@ export default function AboutPage() {
           aria-hidden="true"
         />
 
-        <div className="max-w-[1340px] mx-auto px-[5%] md:px-6 relative z-10">
+        <div className="max-w-[1600px] mx-auto px-[5%] md:px-10 lg:px-14 relative z-10">
           <div className="text-center max-w-3xl mx-auto mb-14 mobile:mb-10">
-            <p className="text-primary font-semibold text-sm tracking-widest uppercase mb-4 font-open-sans">
-              Why Vetriconn
-            </p>
+            <Eyebrow>Why Vetriconn</Eyebrow>
             <h2 className="heading-1 mb-5 mobile:mb-4">
-              Benefits of Using{" "}
-              <span className="text-primary italic font-[var(--font-outfit)]">
-                Vetriconn
-              </span>
+              What you get with{" "}
+              <span className="text-primary">Vetriconn</span>
             </h2>
             <p className="body-text text-lg mobile:text-base">
               Discover how our platform makes finding meaningful opportunities
@@ -452,8 +313,13 @@ export default function AboutPage() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
             {benefits.map((benefit, idx) => (
-              <article key={idx} className="flex flex-col">
-                <div className="mb-5">{benefit.icon}</div>
+              <article key={idx} className="group flex flex-col">
+                {/* Grows toward half the column when the card is hovered —
+                    width only, so nothing around it shifts. */}
+                <span
+                  aria-hidden="true"
+                  className="block mb-5 h-1 w-10 rounded-full bg-primary/70 transition-[width] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:w-1/2 motion-reduce:transition-none"
+                />
                 <h3 className="heading-3 mb-3">
                   {benefit.title}
                 </h3>
@@ -478,22 +344,18 @@ export default function AboutPage() {
 
       {/* ─── CTA Banner ───────────────────────────────────────────── */}
       <section className="py-16 bg-gray-light mobile:py-12">
-        <div className="max-w-[1340px] mx-auto px-[5%] md:px-6 text-center">
+        <div className="max-w-[1600px] mx-auto px-[5%] md:px-10 lg:px-14 text-center">
           <h2 className="heading-1 mb-4 mobile:mb-3">
-            Ready to{" "}
-            <span className="text-primary italic font-[var(--font-outfit)]">
-              Get Started
-            </span>
-            ?
+            Ready to <span className="text-primary">get started</span>?
           </h2>
           <p className="body-text text-lg max-w-2xl mx-auto mb-8 mobile:text-base mobile:mb-6">
-            Join thousands of Canadian retirees and veterans who are finding
-            purpose, income, and connection through Vetriconn.
+            Made for Canadian retirees and veterans looking for purpose,
+            income, and connection on their own terms.
           </p>
           <div className="flex items-center justify-center">
             <Link
               href="/signup"
-              className="inline-flex items-center gap-2 bg-primary hover:bg-red-700 text-white font-semibold py-3.5 px-10 rounded-full transition-all shadow-sm group"
+              className="inline-flex items-center justify-center gap-2 bg-primary hover:bg-primary-hover text-white font-semibold py-3.5 px-8 min-h-[52px] rounded-full transition-colors shadow-sm group no-underline whitespace-nowrap focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:ring-offset-2"
             >
               Create Your Free Account
               <HiOutlineArrowRight className="w-4 h-4 md:w-5 md:h-5 transition-transform group-hover:-rotate-45" aria-hidden="true" />

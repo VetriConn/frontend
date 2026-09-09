@@ -1,5 +1,6 @@
 "use client";
 import React from "react";
+import type { JobsResponse } from "@/types/api";
 import Link from "next/link";
 import JobDescriptor from "@/components/ui/JobDescriptor";
 import { Header } from "@/components/ui/Header";
@@ -11,13 +12,17 @@ import { JobDetailSkeleton } from "@/components/ui/Skeleton";
 interface JobDetailClientProps {
   jobId: string;
   initialJob: Job | null;
+  /** Raw server-fetched response, seeding SWR so the client never refetches
+   * data already on screen. */
+  initialJobRaw?: JobsResponse | null;
 }
 
 export default function JobDetailClient({
   jobId,
   initialJob,
+  initialJobRaw,
 }: JobDetailClientProps) {
-  const { job, isLoading, isError } = useJob(jobId);
+  const { job, isLoading, isError } = useJob(jobId, initialJobRaw);
 
   const displayJob = job || initialJob;
 
@@ -29,17 +34,17 @@ export default function JobDetailClient({
       <div className="min-h-[60vh] bg-gray-50 flex items-center justify-center px-6">
         <div className="bg-white rounded-xl p-12 text-center border border-gray-200 max-w-md">
           <h1 className="text-2xl font-bold text-gray-900 mb-2">
-            Job Not Found
+            Job not found
           </h1>
           <p className="text-gray-500 mb-6">
-            The job you&apos;re looking for doesn&apos;t exist or has been
-            removed.
+            This listing is no longer available. Postings come down when they
+            are filled or expire.
           </p>
           <Link
-            href="/dashboard/find-jobs"
+            href="/jobs"
             className="text-primary font-medium hover:underline no-underline"
           >
-            ← Back to Jobs
+            ← Browse open jobs
           </Link>
         </div>
       </div>

@@ -1,7 +1,13 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useModalFocus } from "@/hooks/useModalFocus";
 import { HiOutlineShieldCheck } from "react-icons/hi2";
+import StepUpFields, {
+  EMPTY_STEP_UP,
+  toStepUpCreds,
+  type StepUpFieldsValue,
+} from "./StepUpFields";
 
 export interface StepUpCreds {
   password: string;
@@ -38,14 +44,14 @@ const StepUpDialog = ({
   onClose,
   onConfirm,
 }: StepUpDialogProps) => {
-  const [password, setPassword] = useState("");
-  const [totp, setTotp] = useState("");
+  const [creds, setCreds] = useState<StepUpFieldsValue>(EMPTY_STEP_UP);
   const [reason, setReason] = useState("");
+
+  const panelRef = useModalFocus(open, onClose, { closeDisabled: busy });
 
   useEffect(() => {
     if (!open) {
-      setPassword("");
-      setTotp("");
+      setCreds(EMPTY_STEP_UP);
       setReason("");
     }
   }, [open]);
@@ -53,18 +59,26 @@ const StepUpDialog = ({
   if (!open) return null;
 
   const reasonOk = !requireReason || reason.trim().length >= 3;
-  const canSubmit = password.length > 0 && reasonOk && !busy;
+  const canSubmit = creds.password.length > 0 && reasonOk && !busy;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 animate-fadeIn">
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="step-up-title"
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 animate-fadeIn"
+    >
       <div className="absolute inset-0 bg-black/50" onClick={onClose} />
-      <div className="relative w-full max-w-md bg-white rounded-2xl shadow-xl border border-gray-200 overflow-hidden">
+      <div
+        ref={panelRef}
+        className="relative w-full max-w-md bg-white rounded-2xl shadow-xl border border-gray-200 overflow-hidden"
+      >
         <div className="px-5 py-4 border-b border-gray-100 flex items-start gap-3">
           <div className="w-10 h-10 rounded-xl bg-primary/10 text-primary ring-1 ring-primary/15 flex items-center justify-center shrink-0">
             <HiOutlineShieldCheck className="w-5 h-5" />
           </div>
           <div className="min-w-0">
-            <h3 className="text-base font-semibold text-gray-900">{title}</h3>
+            <h3 id="step-up-title" className="text-base font-semibold text-gray-900">{title}</h3>
             {description && (
               <p className="text-xs text-gray-500 mt-0.5">{description}</p>
             )}
@@ -80,37 +94,11 @@ const StepUpDialog = ({
                 onChange={(e) => setReason(e.target.value)}
                 rows={3}
                 placeholder="Recorded in the audit log."
-                className="mt-1.5 w-full px-3 py-2.5 text-sm border border-gray-200 rounded-xl outline-none focus:border-primary focus:ring-2 focus:ring-primary/10 resize-none"
+                className="mt-1.5 w-full px-3 py-2.5 text-sm border border-gray-200 rounded-xl outline-none focus:border-primary focus:ring-2 focus:ring-primary/30 resize-none"
               />
             </label>
           )}
-          <label className="block">
-            <span className="text-xs font-semibold text-gray-700">
-              Your password
-            </span>
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              autoComplete="current-password"
-              className="mt-1.5 w-full px-3 py-2.5 text-sm border border-gray-200 rounded-xl outline-none focus:border-primary focus:ring-2 focus:ring-primary/10"
-            />
-          </label>
-          <label className="block">
-            <span className="text-xs font-semibold text-gray-700">
-              Authentication code{" "}
-              <span className="font-normal text-gray-400">(if 2FA is on)</span>
-            </span>
-            <input
-              type="text"
-              inputMode="numeric"
-              value={totp}
-              onChange={(e) => setTotp(e.target.value)}
-              placeholder="123456"
-              autoComplete="one-time-code"
-              className="mt-1.5 w-full px-3 py-2.5 text-sm border border-gray-200 rounded-xl outline-none focus:border-primary focus:ring-2 focus:ring-primary/10 tracking-widest"
-            />
-          </label>
+          <StepUpFields value={creds} onChange={setCreds} />
         </div>
 
         <div className="px-5 py-3 bg-gray-50 border-t border-gray-100 flex items-center justify-end gap-2">
@@ -124,8 +112,7 @@ const StepUpDialog = ({
           <button
             onClick={() =>
               onConfirm({
-                password,
-                totp_code: totp.trim() || undefined,
+                ...toStepUpCreds(creds),
                 reason: requireReason ? reason.trim() : undefined,
               })
             }

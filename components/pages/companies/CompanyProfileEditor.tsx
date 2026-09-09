@@ -1,6 +1,8 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { COMPANY_INDUSTRY_OPTIONS } from "@/lib/company-fields";
+import { CustomDropdown } from "@/components/ui/CustomDropdown";
 import {
   HiOutlineBuildingOffice2,
   HiOutlinePhoto,
@@ -242,12 +244,15 @@ export const CompanyProfileEditor = ({
           />
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-x-4">
-            <FormField
+            {/* Same vocabulary as the application form — this was a free-
+                text field that could overwrite the stored slug with prose. */}
+            <CustomDropdown
               label="Industry"
               name="company_industry"
+              placeholder="Select industry"
               value={form.industry}
               onChange={(value) => setField("industry", value)}
-              optional
+              options={COMPANY_INDUSTRY_OPTIONS}
             />
             <FormField
               label="Company size"

@@ -30,16 +30,6 @@ function EmailVerificationContent() {
   const [message, setMessage] = useState("");
   const token = searchParams.get("token");
 
-  useEffect(() => {
-    if (!token) {
-      setStatus("error");
-      setMessage("Invalid verification link. No token provided.");
-      return;
-    }
-
-    verifyEmail(token);
-  }, [token]);
-
   const verifyEmail = async (token: string) => {
     try {
       const response = await fetch(getApiUrl("/api/v1/auth/verify-email"), {
@@ -77,6 +67,17 @@ function EmailVerificationContent() {
     }
   };
 
+  useEffect(() => {
+    if (!token) {
+      setStatus("error");
+      setMessage("Invalid verification link. No token provided.");
+      return;
+    }
+
+    verifyEmail(token);
+  }, [token]);
+
+
   return (
     <>
       {status === "loading" && <VerifyingSpinner />}
@@ -99,7 +100,7 @@ function EmailVerificationContent() {
             </svg>
           </div>
           <h1 className="text-2xl font-bold text-gray-800 mb-2">
-            Email Verified!
+            Email verified
           </h1>
           <p className="text-gray-600 mb-6">{message}</p>
           <p className="text-sm text-gray-500">

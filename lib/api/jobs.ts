@@ -10,6 +10,7 @@ import {
   PaginatedApiEnvelope,
 } from "./client";
 import type { ApplicationItem, JobsResponse } from "@/types/api";
+import type { PaymentType } from "@/lib/job-fields";
 
 /** Per-source outcome of one scraper run. */
 export interface ScraperSourceSummary {
@@ -48,19 +49,18 @@ export interface AdminJobRaw {
   company_logo?: string;
   location?: string;
   job_type?: string;
-  salary?: { number?: number; currency?: string; symbol?: string };
-  salary_range?: {
-    start_salary?: { number?: number };
-    end_salary?: { number?: number };
+  compensation?: {
+    min?: number;
+    max?: number;
+    currency: string;
+    basis?: PaymentType;
+    text?: string;
   };
-  salary_text?: string;
-  payment_type?: string;
   description?: string;
-  full_description?: string;
   responsibilities?: string[];
   qualifications?: string[];
   moderation_status?: "pending" | "approved" | "rejected";
-  is_approved?: boolean;
+  __v?: number;
   approved_at?: string;
   rejected_at?: string;
   rejection_reason?: string;
@@ -113,10 +113,24 @@ export async function adminListJobs(
 }
 
 /** Approve a pending job (id is the Mongo _id). */
-export async function adminApproveJob(id: string): Promise<void> {
+export async function adminApproveJob(
+  id: string,
+  expectedVersion?: number,
+): Promise<void> {
   await apiFetch<ApiEnvelope<unknown>>(
     `${API_BASE_URL}/api/v1/jobs/admin/${id}/approve`,
-    { method: "PATCH" },
+    {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      // The document version this decision was made against. The backend
+      // preconditions the write on it, so approving content that changed
+      // since it was loaded 409s instead of landing unreviewed.
+      body: JSON.stringify(
+        typeof expectedVersion === "number"
+          ? { expected_version: expectedVersion }
+          : {},
+      ),
+    },
   );
 }
 
@@ -124,13 +138,18 @@ export async function adminApproveJob(id: string): Promise<void> {
 export async function adminRejectJob(
   id: string,
   reason: string,
+  expectedVersion?: number,
 ): Promise<void> {
   await apiFetch<ApiEnvelope<unknown>>(
     `${API_BASE_URL}/api/v1/jobs/admin/${id}/reject`,
     {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ reason }),
+      body: JSON.stringify(
+        typeof expectedVersion === "number"
+          ? { reason, expected_version: expectedVersion }
+          : { reason },
+      ),
     },
   );
 }
@@ -142,7 +161,7 @@ export async function adminBulkApproveJobs(ids: string[]): Promise<void> {
     {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ ids }),
+      body: JSON.stringify({ jobIds: ids }),
     },
   );
 }
@@ -157,7 +176,7 @@ export async function adminBulkRejectJobs(
     {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ ids, reason }),
+      body: JSON.stringify({ jobIds: ids, reason }),
     },
   );
 }
@@ -235,6 +254,11 @@ export async function getJobs(options?: {
     headers: {
       "Content-Type": "application/json",
     },
+    // Server-side (/jobs SSR) this lets Next cache each results page briefly,
+    // matching the backend's own edge-cache design; the board changes on a
+    // 6-hour scrape and human moderation, so 60s staleness is invisible.
+    // In the browser fetch ignores the `next` key entirely.
+    next: { revalidate: 60 },
   });
 
   // Backend wraps jobs in { success, data, pagination }. The pagination block
@@ -264,6 +288,11 @@ export async function getJobById(jobId: string): Promise<JobsResponse> {
       headers: {
         "Content-Type": "application/json",
       },
+      // Server-side this lets Next cache each detail page for five minutes -
+      // the SEO-critical surface was fully dynamic, so every view AND every
+      // crawler hit paid live backend latency, cold starts included. In the
+      // browser fetch ignores the `next` key.
+      next: { revalidate: 300 },
     },
   );
 
@@ -308,6 +337,14 @@ export async function getMyApplications(): Promise<ApplicationItem[]> {
   return response.data?.applications || [];
 }
 
+/** Withdraw a submitted application (only while the employer hasn't decided). */
+export async function withdrawApplication(applicationId: string): Promise<void> {
+  await apiFetch<ApiEnvelope<unknown>>(
+    `${API_BASE_URL}/api/v1/applications/${applicationId}/withdraw`,
+    { method: "PATCH" },
+  );
+}
+
 // Save a job
 export async function saveJob(jobId: string): Promise<{ message: string }> {
   const response = await apiFetch<ApiEnvelope<{ jobId: string }>>(
@@ -337,15 +374,25 @@ export async function unsaveJob(jobId: string): Promise<{ message: string }> {
 }
 
 export async function getSavedJobs(): Promise<JobsResponse[]> {
-  const response = await apiFetch<
-    PaginatedApiEnvelope<{
-      jobs: JobsResponse[];
-    }>
-  >(`${API_BASE_URL}/api/v1/auth/saved-jobs`, {
-    method: "GET",
-  });
-
-  return response.data?.jobs || [];
+  // The default request took page 1 of 10 and discarded the pagination
+  // meta, silently hiding every saved job past the tenth. A person's saved
+  // list is small; fetch it whole (100/page, following pages just in case).
+  const all: JobsResponse[] = [];
+  let page = 1;
+  let totalPages = 1;
+  do {
+    const response = await apiFetch<
+      PaginatedApiEnvelope<{
+        jobs: JobsResponse[];
+      }>
+    >(`${API_BASE_URL}/api/v1/auth/saved-jobs?page=${page}&limit=100`, {
+      method: "GET",
+    });
+    all.push(...(response.data?.jobs || []));
+    totalPages = response.pagination?.totalPages ?? 1;
+    page += 1;
+  } while (page <= totalPages);
+  return all;
 }
 
 export async function getRecommendedJobs(): Promise<JobsResponse[]> {
@@ -358,4 +405,26 @@ export async function getRecommendedJobs(): Promise<JobsResponse[]> {
   });
 
   return response.data?.jobs || [];
+}
+
+// ─── Public landing-page stats (GET /api/v1/jobs/stats) ──────────────────────
+
+export interface PublicStats {
+  openJobs: number;
+  employers: number;
+  provinces: number;
+}
+
+/** Headline numbers for the marketing page. Public, cached at the edge. */
+export async function getPublicStats(): Promise<PublicStats | null> {
+  try {
+    const res = await apiFetch<ApiEnvelope<PublicStats>>(
+      `${API_BASE_URL}/api/v1/jobs/stats`,
+      { method: "GET" },
+    );
+    return res.data ?? null;
+  } catch {
+    // A marketing flourish must never break the page it decorates.
+    return null;
+  }
 }

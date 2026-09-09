@@ -1,7 +1,7 @@
 "use client";
 import React from "react";
 import Link from "next/link";
-import { HiOutlineBriefcase } from "react-icons/hi";
+import { HiOutlineBriefcase } from "react-icons/hi2";
 import {
   HiOutlineCog6Tooth,
   HiOutlineHeart,

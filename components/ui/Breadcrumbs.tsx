@@ -5,24 +5,26 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { HiOutlineChevronRight, HiOutlineHome } from "react-icons/hi2";
 
-// Map route segments to user-friendly labels
+// Map route segments to labels — the SAME labels the nav uses, so a page
+// never wears one name in the menu and another in the breadcrumb.
 const ROUTE_LABELS: Record<string, string> = {
   dashboard: "Dashboard",
   profile: "My Profile",
   settings: "Account Settings",
+  "find-jobs": "Browse Jobs",
   "applied-jobs": "Applied Jobs",
   "saved-jobs": "Saved Jobs",
   "saved-searches": "Saved Searches",
   "application-drafts": "Application Drafts",
-  jobs: "Browse Jobs",
   notifications: "Notifications",
   community: "Community",
   inbox: "Inbox",
-  "companies": "Companies",
+  companies: "Companies",
   "post-job": "Post a Job",
-  applications: "Applications",
-  messages: "Messages",
-  billing: "Billing & Subscription",
+  postings: "My Postings",
+  drafts: "Drafts",
+  applications: "Applicants",
+  billing: "Billing",
 };
 
 export const Breadcrumbs: React.FC = () => {
@@ -39,6 +41,11 @@ export const Breadcrumbs: React.FC = () => {
   // Build breadcrumb items
   const crumbs = segments.map((segment, index) => {
     const href = "/" + segments.slice(0, index + 1).join("/");
+    // A detail route's id segment (Mongo ObjectId or similar) must not be
+    // title-cased into the trail as gibberish.
+    if (/^[0-9a-f]{24}$/i.test(segment)) {
+      return { href, label: "Details", isLast: index === segments.length - 1 };
+    }
     const label =
       ROUTE_LABELS[segment] ||
       segment.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());

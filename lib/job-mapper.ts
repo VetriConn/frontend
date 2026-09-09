@@ -1,5 +1,6 @@
 import type { Job } from "@/types/job";
 import type { JobsResponse } from "@/types/api";
+import { toDisplayTitle } from "./job-display";
 
 /**
  * The one JobsResponse → Job transform.
@@ -14,21 +15,24 @@ export function mapJobsResponse(job: JobsResponse): Job {
     // The Mongo id wins so detail links stay stable across retitles; the
     // saved-jobs hook indexes both identities, so saved state follows either.
     id: job._id || job.id,
-    role: job.role,
+    // Aggregated boards publish flat lowercase titles; only those are
+    // recapitalised (see toDisplayTitle), so deliberate casing survives.
+    role: toDisplayTitle(job.role),
     company_name: job.company_name,
     company_logo: job.company_logo || "",
     location: job.location || "",
-    salary: job.salary,
-    salary_range: job.salary_range,
+    compensation: job.compensation,
     tags: (job.tags ?? []).map((tag) => ({ name: tag })),
-    full_description: job.full_description || job.description || "",
+    // Lists ship `summary` (derived) and omit the body; detail pages ship
+    // `description`. Falling back keeps one mapper for both payloads.
+    description: job.description,
+    summary: job.summary || job.description || "",
     responsibilities: job.responsibilities ?? [],
     qualifications: job.qualifications ?? [],
     applicationLink: job.applicationLink,
     source: job.source,
     source_name: job.source_name,
     external_url: job.external_url,
-    salary_text: job.salary_text,
     posted_as: job.posted_as,
     company_id: job.company_id,
     poster_id: job.poster_id,
@@ -39,8 +43,6 @@ export function mapJobsResponse(job: JobsResponse): Job {
     skills: job.skills,
     physical_demands: job.physical_demands,
     work_schedule: job.work_schedule,
-    payment_type: job.payment_type,
-    currency: job.currency,
     city: job.city,
     state_province: job.state_province,
     country: job.country,

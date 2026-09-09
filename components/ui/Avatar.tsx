@@ -1,4 +1,5 @@
 import Image from "next/image";
+import cloudinaryLoader from "@/lib/cloudinary-loader";
 import { getInitials } from "@/lib/initials";
 
 interface AvatarProps {
@@ -40,6 +41,7 @@ export function Avatar({ src, name, size = 40, className = "", alt }: AvatarProp
     >
       {hasValidSrc ? (
         <Image
+          loader={cloudinaryLoader}
           src={src}
           alt={altText}
           width={size}

@@ -2,6 +2,12 @@
 
 import { useEffect, useState } from "react";
 import clsx from "clsx";
+import { useModalFocus } from "@/hooks/useModalFocus";
+import StepUpFields, {
+  EMPTY_STEP_UP,
+  toStepUpCreds,
+  type StepUpFieldsValue,
+} from "./StepUpFields";
 import { HiOutlineUserPlus } from "react-icons/hi2";
 import {
   ADMIN_ROLES,
@@ -37,16 +43,16 @@ const InviteAdminDialog = ({
   const [email, setEmail] = useState("");
   const [fullName, setFullName] = useState("");
   const [role, setRole] = useState<AdminMemberRole>("reviewer");
-  const [password, setPassword] = useState("");
-  const [totp, setTotp] = useState("");
+  const [creds, setCreds] = useState<StepUpFieldsValue>(EMPTY_STEP_UP);
+
+  const panelRef = useModalFocus(open, onClose, { closeDisabled: busy });
 
   useEffect(() => {
     if (!open) {
       setEmail("");
       setFullName("");
       setRole("reviewer");
-      setPassword("");
-      setTotp("");
+      setCreds(EMPTY_STEP_UP);
     }
   }, [open]);
 
@@ -55,7 +61,7 @@ const InviteAdminDialog = ({
   const valid =
     EMAIL_RE.test(email.trim()) &&
     fullName.trim().length > 0 &&
-    password.length > 0;
+    creds.password.length > 0;
 
   return (
     <div
@@ -64,7 +70,10 @@ const InviteAdminDialog = ({
       className="fixed inset-0 z-50 flex items-center justify-center p-4 animate-fadeIn"
     >
       <div className="absolute inset-0 bg-black/50" onClick={onClose} />
-      <div className="relative w-full max-w-md bg-white rounded-2xl shadow-xl border border-gray-200 overflow-hidden">
+      <div
+        ref={panelRef}
+        className="relative w-full max-w-md bg-white rounded-2xl shadow-xl border border-gray-200 overflow-hidden"
+      >
         <div className="px-5 py-4 border-b border-gray-100 flex items-start gap-3">
           <div className="w-10 h-10 rounded-xl bg-primary/10 text-primary ring-1 ring-primary/15 flex items-center justify-center shrink-0">
             <HiOutlineUserPlus className="w-5 h-5" />
@@ -89,7 +98,7 @@ const InviteAdminDialog = ({
               value={fullName}
               onChange={(e) => setFullName(e.target.value)}
               placeholder="Jordan Lee"
-              className="mt-1.5 w-full px-3.5 py-2.5 text-sm border border-gray-200 rounded-xl outline-none focus:border-primary focus:ring-2 focus:ring-primary/10"
+              className="mt-1.5 w-full px-3.5 py-2.5 text-sm border border-gray-200 rounded-xl outline-none focus:border-primary focus:ring-2 focus:ring-primary/30"
             />
           </label>
 
@@ -100,7 +109,7 @@ const InviteAdminDialog = ({
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="name@vetriconn.com"
-              className="mt-1.5 w-full px-3.5 py-2.5 text-sm border border-gray-200 rounded-xl outline-none focus:border-primary focus:ring-2 focus:ring-primary/10"
+              className="mt-1.5 w-full px-3.5 py-2.5 text-sm border border-gray-200 rounded-xl outline-none focus:border-primary focus:ring-2 focus:ring-primary/30"
             />
           </label>
 
@@ -127,37 +136,8 @@ const InviteAdminDialog = ({
             </div>
           </fieldset>
 
-          <div className="space-y-3 pt-1 border-t border-gray-100">
-            <p className="text-[11px] text-gray-500 pt-3">
-              Confirm it&apos;s you to send an admin invite.
-            </p>
-            <label className="block">
-              <span className="text-xs font-semibold text-gray-700">
-                Your password
-              </span>
-              <input
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                autoComplete="current-password"
-                className="mt-1.5 w-full px-3 py-2.5 text-sm border border-gray-200 rounded-xl outline-none focus:border-primary focus:ring-2 focus:ring-primary/10"
-              />
-            </label>
-            <label className="block">
-              <span className="text-xs font-semibold text-gray-700">
-                Authentication code{" "}
-                <span className="font-normal text-gray-400">(if 2FA is on)</span>
-              </span>
-              <input
-                type="text"
-                inputMode="numeric"
-                value={totp}
-                onChange={(e) => setTotp(e.target.value)}
-                placeholder="123456"
-                autoComplete="one-time-code"
-                className="mt-1.5 w-full px-3 py-2.5 text-sm border border-gray-200 rounded-xl outline-none focus:border-primary focus:ring-2 focus:ring-primary/10 tracking-widest"
-              />
-            </label>
+          <div className="pt-4 border-t border-gray-100">
+            <StepUpFields value={creds} onChange={setCreds} note="Confirm it's you to send an admin invite." />
           </div>
         </div>
 
@@ -171,10 +151,7 @@ const InviteAdminDialog = ({
           </button>
           <button
             onClick={() =>
-              onConfirm(email.trim(), fullName.trim(), role, {
-                password,
-                totp_code: totp.trim() || undefined,
-              })
+              onConfirm(email.trim(), fullName.trim(), role, toStepUpCreds(creds))
             }
             disabled={busy || !valid}
             className="inline-flex items-center gap-2 bg-primary text-white px-3.5 py-2 rounded-lg text-sm font-semibold hover:bg-primary-hover transition-colors disabled:opacity-50 disabled:cursor-not-allowed"

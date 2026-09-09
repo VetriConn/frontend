@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
-import useSWR from "swr";
 import clsx from "clsx";
 import {
   HiOutlineBriefcase,
@@ -13,10 +12,9 @@ import {
   HiOutlineCheck,
   HiOutlineXMark,
   HiOutlineExclamationTriangle,
-  HiOutlineChevronLeft,
-  HiOutlineChevronRight,
 } from "react-icons/hi2";
 import {
+  useAdminJobCounts,
   useAdminJobQueue,
   approveAdminJob,
   rejectAdminJob,
@@ -24,7 +22,6 @@ import {
   type AdminJob,
   type AdminJobStatus,
 } from "@/hooks/useAdminJobQueue";
-import { adminJobCounts } from "@/lib/api/jobs";
 import { useToaster } from "@/components/ui/Toaster";
 import {
   AdminPageHeader,
@@ -38,12 +35,16 @@ import {
   AdminRowSkeleton,
   AdminEmptyState,
   StatusPill,
+  AdminStatCard,
+  AdminPagination,
+  AdminLoadError,
 } from "./AdminTablePanel";
 import KebabMenu, { type KebabAction } from "./KebabMenu";
 import DetailDrawer from "./DetailDrawer";
 import AdminJobDetail from "./AdminJobDetail";
 import ConfirmDialog from "./ConfirmDialog";
 import ScrapeJobsButton from "./ScrapeJobsButton";
+import { formatDate } from "@/lib/date-utils";
 
 const FILTERS: { value: AdminJobStatus | "all"; label: string }[] = [
   { value: "all", label: "All" },
@@ -58,72 +59,20 @@ const STATUS_TONE: Record<AdminJobStatus, "amber" | "emerald" | "rose"> = {
   rejected: "rose",
 };
 
-const formatDate = (iso?: string) => {
-  if (!iso) return "—";
-  const d = new Date(iso);
-  return Number.isNaN(d.getTime())
-    ? "—"
-    : d.toLocaleDateString("en-US", {
-        month: "short",
-        day: "numeric",
-        year: "numeric",
-      });
-};
 
-const StatCard = ({
-  icon: Icon,
-  label,
-  value,
-  tone,
-}: {
-  icon: React.ComponentType<{ className?: string }>;
-  label: string;
-  value: number | string;
-  tone: "amber" | "emerald" | "rose" | "indigo";
-}) => {
-  const map = {
-    amber: "bg-amber-50 text-amber-600 ring-amber-100",
-    emerald: "bg-emerald-50 text-emerald-600 ring-emerald-100",
-    rose: "bg-rose-50 text-rose-600 ring-rose-100",
-    indigo: "bg-indigo-50 text-indigo-600 ring-indigo-100",
-  } as const;
-  return (
-    <div className="bg-white rounded-2xl border border-gray-200/80 p-5 shadow-[0_1px_2px_rgba(15,23,42,0.04)]">
-      <div className="flex items-start justify-between gap-3">
-        <div>
-          <p className="text-[13px] font-medium text-gray-500">{label}</p>
-          <p className="mt-2 text-3xl font-bold text-gray-900 tracking-tight tabular-nums">
-            {value}
-          </p>
-        </div>
-        <div
-          className={clsx(
-            "w-11 h-11 rounded-xl ring-1 flex items-center justify-center shrink-0",
-            map[tone],
-          )}
-        >
-          <Icon className="w-5 h-5" />
-        </div>
-      </div>
-    </div>
-  );
-};
 
 /**
  * Job moderation — one page for every listing, with standing as a filter
  * rather than separate routes. Details and review actions open in a drawer.
- * Scraped listings are excluded server-side: admins moderate Vetriconn posts.
+ * Scraped listings appear only when moderation touched them (a report takedown makes one pending); admins otherwise moderate Vetriconn posts.
  */
 const JobsTable = () => {
   const searchParams = useSearchParams();
   const [status, setStatus] = useState<AdminJobStatus | "all">("all");
   const [page, setPage] = useState(1);
 
-  const { jobs, pagination, isLoading, mutate } = useAdminJobQueue(status, page);
-  const { data: counts, mutate: mutateCounts } = useSWR(
-    "admin-job-counts",
-    adminJobCounts,
-  );
+  const { jobs, pagination, isLoading, isError, mutate } = useAdminJobQueue(status, page);
+  const { counts, mutate: mutateCounts } = useAdminJobCounts();
   const { showToast } = useToaster();
 
   const [drawerId, setDrawerId] = useState<string | null>(null);
@@ -147,7 +96,7 @@ const JobsTable = () => {
   const handleApprove = async (job: AdminJob) => {
     setBusyId(job.id);
     try {
-      await approveAdminJob(job.id);
+      await approveAdminJob(job.id, job.version);
       showToast({ type: "success", title: "Job approved" });
       refresh();
     } catch (err) {
@@ -165,7 +114,7 @@ const JobsTable = () => {
     if (!rejecting || !reason?.trim()) return;
     setDialogBusy(true);
     try {
-      await rejectAdminJob(rejecting.id, reason.trim());
+      await rejectAdminJob(rejecting.id, reason.trim(), rejecting.version);
       showToast({ type: "success", title: "Job rejected" });
       setRejecting(null);
       refresh();
@@ -184,7 +133,7 @@ const JobsTable = () => {
     if (!unpublishing || !reason?.trim()) return;
     setDialogBusy(true);
     try {
-      await unpublishAdminJob(unpublishing.id, reason.trim());
+      await unpublishAdminJob(unpublishing.id, reason.trim(), unpublishing.version);
       showToast({ type: "success", title: "Job unpublished" });
       setUnpublishing(null);
       refresh();
@@ -247,28 +196,28 @@ const JobsTable = () => {
       />
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-5">
-        <StatCard
+        <AdminStatCard
           icon={HiOutlineClock}
           label="Pending"
-          value={counts?.pending ?? "—"}
+          value={counts?.pending ?? "-"}
           tone="amber"
         />
-        <StatCard
+        <AdminStatCard
           icon={HiOutlineCheckCircle}
           label="Approved"
-          value={counts?.approved ?? "—"}
+          value={counts?.approved ?? "-"}
           tone="emerald"
         />
-        <StatCard
+        <AdminStatCard
           icon={HiOutlineXCircle}
           label="Rejected"
-          value={counts?.rejected ?? "—"}
+          value={counts?.rejected ?? "-"}
           tone="rose"
         />
-        <StatCard
+        <AdminStatCard
           icon={HiOutlineBriefcase}
           label="Total"
-          value={counts?.total ?? "—"}
+          value={counts?.total ?? "-"}
           tone="indigo"
         />
       </div>
@@ -332,7 +281,7 @@ const JobsTable = () => {
                   <AdminRowSkeleton key={i} columns={6} />
                 ))
               : jobs.map((job) => (
-                  <AdminTableRow key={job.id}>
+                  <AdminTableRow key={job.id} onOpen={() => setDrawerId(job.id)}>
                     <AdminTableTd className="font-semibold text-gray-900">
                       <div className="flex items-center gap-2">
                         <button
@@ -352,10 +301,10 @@ const JobsTable = () => {
                       </div>
                     </AdminTableTd>
                     <AdminTableTd className="text-gray-600">
-                      {job.company_name || "—"}
+                      {job.company_name || "-"}
                     </AdminTableTd>
                     <AdminTableTd className="text-gray-600">
-                      {job.location || "—"}
+                      {job.location || "-"}
                     </AdminTableTd>
                     <AdminTableTd>
                       <StatusPill tone={STATUS_TONE[job.status]}>
@@ -373,7 +322,10 @@ const JobsTable = () => {
           </AdminTableBody>
         </AdminTable>
 
-        {!isLoading && jobs.length === 0 && (
+        {!isLoading && isError && (
+          <AdminLoadError what="jobs" onRetry={() => mutate()} />
+        )}
+        {!isLoading && !isError && jobs.length === 0 && (
           <AdminEmptyState
             title="No jobs"
             description={
@@ -385,32 +337,7 @@ const JobsTable = () => {
           />
         )}
 
-        {pagination && pagination.totalPages > 1 && (
-          <div className="flex items-center justify-between gap-4 px-5 md:px-6 py-3 border-t border-gray-100">
-            <p className="text-xs text-gray-500 tabular-nums">
-              Page {pagination.currentPage} of {pagination.totalPages} ·{" "}
-              {pagination.totalItems} total
-            </p>
-            <div className="flex items-center gap-2">
-              <button
-                onClick={() => setPage((p) => Math.max(1, p - 1))}
-                disabled={!pagination.hasPrev}
-                className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg border border-gray-200 bg-white text-xs font-semibold text-gray-700 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed"
-              >
-                <HiOutlineChevronLeft className="w-4 h-4" />
-                Prev
-              </button>
-              <button
-                onClick={() => setPage((p) => p + 1)}
-                disabled={!pagination.hasNext}
-                className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg border border-gray-200 bg-white text-xs font-semibold text-gray-700 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed"
-              >
-                Next
-                <HiOutlineChevronRight className="w-4 h-4" />
-              </button>
-            </div>
-          </div>
-        )}
+        <AdminPagination pagination={pagination} onPage={setPage} />
       </AdminTablePanel>
 
       <DetailDrawer

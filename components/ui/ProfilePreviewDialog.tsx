@@ -2,15 +2,16 @@
 
 import React from "react";
 import Image from "next/image";
+import cloudinaryLoader from "@/lib/cloudinary-loader";
+import { useModalFocus } from "@/hooks/useModalFocus";
 import {
   HiOutlineMapPin,
   HiOutlineBriefcase,
   HiOutlineAcademicCap,
   HiOutlineXMark,
   HiOutlineBuildingOffice2,
-  HiOutlineEnvelope,
 } from "react-icons/hi2";
-import { PiTreeStructureLight } from "react-icons/pi";
+import { HiOutlineRectangleGroup } from "react-icons/hi2";
 import {
   JobSeekingStatusBadge,
   type JobSeekingStatus,
@@ -47,6 +48,8 @@ export function ProfilePreviewDialog({
   onClose,
   profile,
 }: ProfilePreviewDialogProps) {
+  const panelRef = useModalFocus(isOpen, onClose);
+
   if (!isOpen) return null;
 
   return (
@@ -63,9 +66,12 @@ export function ProfilePreviewDialog({
         className="fixed inset-0 z-50 flex items-center justify-center p-4"
         role="dialog"
         aria-modal="true"
-        aria-label="Profile preview — how employers see your profile"
+        aria-label="Profile preview - how employers see your profile"
       >
-        <div className="bg-white rounded-2xl shadow-xl w-[95%] md:w-full max-w-2xl max-h-[90vh] overflow-hidden flex flex-col">
+        <div
+          ref={panelRef}
+          className="bg-white rounded-2xl shadow-xl w-[95%] md:w-full max-w-2xl max-h-[90vh] overflow-hidden flex flex-col"
+        >
           {/* Header bar */}
           <div className="sticky top-0 bg-white border-b border-gray-200 px-4 md:px-6 py-4 flex items-center justify-between rounded-t-2xl z-10 shrink-0">
             <div>
@@ -92,6 +98,7 @@ export function ProfilePreviewDialog({
               <div className="w-16 h-16 md:w-20 md:h-20 rounded-full overflow-hidden bg-red-50 border-2 border-red-100 flex items-center justify-center shrink-0">
                 {profile.avatar ? (
                   <Image
+                    loader={cloudinaryLoader}
                     src={profile.avatar}
                     alt={profile.name}
                     width={80}
@@ -172,7 +179,7 @@ export function ProfilePreviewDialog({
             {profile.skills && profile.skills.length > 0 && (
               <div>
                 <h4 className="text-sm font-semibold text-gray-900 mb-2 flex items-center gap-1.5">
-                  <PiTreeStructureLight className="w-4 h-4 text-red-500" />
+                  <HiOutlineRectangleGroup className="w-4 h-4 text-red-500" />
                   Skills
                 </h4>
                 <div className="flex flex-wrap gap-2">
@@ -204,7 +211,7 @@ export function ProfilePreviewDialog({
                       <p className="text-sm text-gray-600">{exp.company}</p>
                       <p className="text-xs text-gray-400 mt-0.5">
                         {exp.start_date}
-                        {exp.end_date ? ` — ${exp.end_date}` : " — Present"}
+                        {exp.end_date ? ` - ${exp.end_date}` : " - Present"}
                       </p>
                       {exp.description && (
                         <p className="text-sm text-gray-500 mt-1.5 leading-relaxed">
@@ -234,7 +241,7 @@ export function ProfilePreviewDialog({
                       <p className="text-sm text-gray-600">{edu.institution}</p>
                       <p className="text-xs text-gray-400 mt-0.5">
                         {edu.start_year}
-                        {edu.end_year ? ` — ${edu.end_year}` : " — Present"}
+                        {edu.end_year ? ` - ${edu.end_year}` : " - Present"}
                       </p>
                     </div>
                   ))}

@@ -1,6 +1,8 @@
 "use client";
 
 import React, { useState, useCallback, useEffect } from "react";
+import { CustomDropdown } from "@/components/ui/CustomDropdown";
+import { INDUSTRY_OPTIONS, EXPERIENCE_LEVELS } from "@/lib/profile-options";
 import { useUserProfile } from "@/hooks/useUserProfile";
 import { usePatchProfile } from "@/hooks/usePatchProfile";
 import { safeHttpUrl } from "@/lib/safe-url";
@@ -111,7 +113,7 @@ export default function ProfilePage() {
   });
 
   // ─── Photo upload state ───────────────────────────────────────────────────
-  const [photoFile, setPhotoFile] = useState<File | null>(null);
+  const [, setPhotoFile] = useState<File | null>(null);
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
   const [isUploadingPhoto, setIsUploadingPhoto] = useState(false);
   const [isUploadingDoc, setIsUploadingDoc] = useState(false);
@@ -179,7 +181,7 @@ export default function ProfilePage() {
       showToast({
         type: "error",
         title: "Update failed",
-        description: "Could not update contact info. Please try again.",
+        description: "Couldn't update contact info. Please try again.",
       });
     }
   };
@@ -208,7 +210,7 @@ export default function ProfilePage() {
       showToast({
         type: "error",
         title: "Update failed",
-        description: "Could not update public profile. Please try again.",
+        description: "Couldn't update public profile. Please try again.",
       });
     }
   };
@@ -239,7 +241,7 @@ export default function ProfilePage() {
         type: "error",
         title: "Update failed",
         description:
-          "Could not update professional information. Please try again.",
+          "Couldn't update professional information. Please try again.",
       });
     }
   };
@@ -276,7 +278,7 @@ export default function ProfilePage() {
         showToast({
           type: "error",
           title: "Delete failed",
-          description: "Could not delete work experience. Please try again.",
+          description: "Couldn't delete work experience. Please try again.",
         });
       }
     },
@@ -307,7 +309,7 @@ export default function ProfilePage() {
       showToast({
         type: "error",
         title: "Save failed",
-        description: "Could not save work experience. Please try again.",
+        description: "Couldn't save work experience. Please try again.",
       });
     }
   };
@@ -344,7 +346,7 @@ export default function ProfilePage() {
         showToast({
           type: "error",
           title: "Delete failed",
-          description: "Could not delete education. Please try again.",
+          description: "Couldn't delete education. Please try again.",
         });
       }
     },
@@ -375,7 +377,7 @@ export default function ProfilePage() {
       showToast({
         type: "error",
         title: "Save failed",
-        description: "Could not save education. Please try again.",
+        description: "Couldn't save education. Please try again.",
       });
     }
   };
@@ -423,7 +425,7 @@ export default function ProfilePage() {
       showToast({
         type: "error",
         title: "Upload failed",
-        description: "Could not upload document. Please try again.",
+        description: "Couldn't upload document. Please try again.",
       });
     } finally {
       setUploadedFile(null);
@@ -466,7 +468,7 @@ export default function ProfilePage() {
       showToast({
         type: "error",
         title: "Delete failed",
-        description: "Could not delete document. Please try again.",
+        description: "Couldn't delete document. Please try again.",
       });
     } finally {
       setDeletingDocId(null);
@@ -502,11 +504,14 @@ export default function ProfilePage() {
         title: "Photo updated",
         description: "Your profile picture has been updated successfully.",
       });
-    } catch (err: any) {
+    } catch (err) {
       showToast({
         type: "error",
         title: "Upload failed",
-        description: err.message || "Failed to upload photo. Please check your connection and try again.",
+        description:
+          err instanceof Error
+            ? err.message
+            : "Failed to upload photo. Please check your connection and try again.",
       });
       throw new Error("Failed to upload photo.");
     } finally {
@@ -565,7 +570,7 @@ export default function ProfilePage() {
       showToast({
         type: "error",
         title: "Update failed",
-        description: "Could not update skills. Please try again.",
+        description: "Couldn't update skills. Please try again.",
       });
     }
   };
@@ -818,7 +823,7 @@ export default function ProfilePage() {
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                   <div>
-                    <p className="text-xs text-gray-400 mb-1">Job Title</p>
+                    <p className="text-sm text-gray-500 mb-1">Job Title</p>
                     <p className="text-sm text-gray-900 font-medium">
                       {userProfile.job_title || (
                         <span className="text-gray-400 italic font-normal">
@@ -828,7 +833,7 @@ export default function ProfilePage() {
                     </p>
                   </div>
                   <div>
-                    <p className="text-xs text-gray-400 mb-1">Industry</p>
+                    <p className="text-sm text-gray-500 mb-1">Industry</p>
                     <p className="text-sm text-gray-900 font-medium">
                       {userProfile.industry || (
                         <span className="text-gray-400 italic font-normal">
@@ -838,7 +843,7 @@ export default function ProfilePage() {
                     </p>
                   </div>
                   <div>
-                    <p className="text-xs text-gray-400 mb-1">
+                    <p className="text-sm text-gray-500 mb-1">
                       Years of Experience
                     </p>
                     <p className="text-sm text-gray-900 font-medium">
@@ -914,7 +919,7 @@ export default function ProfilePage() {
             )}
             <QuickActionsCard
               appliedJobsCount={userProfile.applied_jobs_count ?? 0}
-              savedJobsCount={userProfile.saved_jobs?.length ?? 0}
+              savedJobsCount={userProfile.saved_jobs_count ?? 0}
             />
           </div>
         </div>
@@ -958,7 +963,7 @@ export default function ProfilePage() {
                 className="form-input resize-none"
                 placeholder="Tell employers about your background, skills, and what you're looking for..."
               />
-              <p className="text-xs text-gray-400 mt-1.5">
+              <p className="text-sm text-gray-500 mt-1.5">
                 {publicProfileForm.bio.length}/500 characters
               </p>
             </div>
@@ -991,81 +996,29 @@ export default function ProfilePage() {
                 placeholder="e.g. Operations Manager, Logistics Supervisor"
               />
             </div>
-            <div>
-              <label className="block text-sm font-semibold text-gray-900 mb-1.5 md:mb-2">
-                Industry
-              </label>
-              <select
-                value={professionalInfoForm.industry}
-                onChange={(e) =>
-                  setProfessionalInfoForm((p) => ({
-                    ...p,
-                    industry: e.target.value,
-                  }))
-                }
-                className="form-input"
-              >
-                <option value="">Select industry</option>
-                <option value="Government & Public Administration">
-                  Government &amp; Public Administration
-                </option>
-                <option value="Defence & Military">
-                  Defence &amp; Military
-                </option>
-                <option value="Healthcare & Medical">
-                  Healthcare &amp; Medical
-                </option>
-                <option value="Information Technology">
-                  Information Technology
-                </option>
-                <option value="Engineering">Engineering</option>
-                <option value="Logistics & Supply Chain">
-                  Logistics &amp; Supply Chain
-                </option>
-                <option value="Education & Training">
-                  Education &amp; Training
-                </option>
-                <option value="Construction & Trades">
-                  Construction &amp; Trades
-                </option>
-                <option value="Finance & Accounting">
-                  Finance &amp; Accounting
-                </option>
-                <option value="Law Enforcement & Security">
-                  Law Enforcement &amp; Security
-                </option>
-                <option value="Transportation">Transportation</option>
-                <option value="Telecommunications">Telecommunications</option>
-                <option value="Manufacturing">Manufacturing</option>
-                <option value="Non-profit & Community">
-                  Non-profit &amp; Community
-                </option>
-                <option value="Other">Other</option>
-              </select>
-            </div>
-            <div>
-              <label className="block text-sm font-semibold text-gray-900 mb-1.5 md:mb-2">
-                Years of Experience
-              </label>
-              <select
-                value={professionalInfoForm.years_of_experience}
-                onChange={(e) =>
-                  setProfessionalInfoForm((p) => ({
-                    ...p,
-                    years_of_experience: e.target.value,
-                  }))
-                }
-                className="form-input"
-              >
-                <option value="">Select experience</option>
-                <option value="0-2 years">0–2 years</option>
-                <option value="3-5 years">3–5 years</option>
-                <option value="6-10 years">6–10 years</option>
-                <option value="11-15 years">11–15 years</option>
-                <option value="16-20 years">16–20 years</option>
-                <option value="20+ years">20+ years</option>
-              </select>
-            </div>
+            <CustomDropdown
+              label="Industry"
+              name="profile-industry"
+              placeholder="Select industry"
+              value={professionalInfoForm.industry}
+              onChange={(value) =>
+                setProfessionalInfoForm((p) => ({ ...p, industry: value }))
+              }
+              options={INDUSTRY_OPTIONS}
+            />
+            <CustomDropdown
+              label="Years of Experience"
+              name="profile-experience-years"
+              placeholder="Select experience"
+              value={professionalInfoForm.years_of_experience}
+              onChange={(value) =>
+                setProfessionalInfoForm((p) => ({
+                  ...p,
+                  years_of_experience: value,
+                }))
+              }
+              options={EXPERIENCE_LEVELS}
+            />
           </div>
         </EditDialog>
 

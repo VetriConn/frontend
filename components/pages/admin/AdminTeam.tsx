@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import clsx from "clsx";
 import {
   HiOutlineUsers,
   HiOutlineUserPlus,
@@ -44,6 +43,8 @@ import {
   AdminEmptyState,
   RowActions,
   StatusPill,
+  AdminStatCard,
+  AdminLoadError,
 } from "./AdminTablePanel";
 import KebabMenu, { type KebabAction } from "./KebabMenu";
 import InviteAdminDialog from "./InviteAdminDialog";
@@ -52,29 +53,13 @@ import StepUpDialog, { type StepUpCreds } from "./StepUpDialog";
 import { useToaster } from "@/components/ui/Toaster";
 import { useUserProfile } from "@/hooks/useUserProfile";
 import { isSuperAdmin } from "@/lib/admin-permissions";
+import { formatDate, formatRelativeTime } from "@/lib/date-utils";
 
-const formatDate = (iso?: string) => {
-  if (!iso) return "—";
-  const d = new Date(iso);
-  if (Number.isNaN(d.getTime())) return iso;
-  return d.toLocaleDateString("en-US", {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-  });
-};
+// "Never" is the meaningful absence here (an invite not yet accepted),
+// which the shared helper's "Recently" fallback would misstate.
+const formatRelative = (iso?: string) => (iso ? formatRelativeTime(iso) : "Never");
 
-const formatRelative = (iso?: string) => {
-  if (!iso) return "Never";
-  const d = new Date(iso);
-  if (Number.isNaN(d.getTime())) return "Never";
-  const diff = Date.now() - d.getTime();
-  const hours = Math.floor(diff / 3600000);
-  const days = Math.floor(diff / 86400000);
-  if (hours < 24) return `${hours}h ago`;
-  if (days < 7) return `${days}d ago`;
-  return d.toLocaleDateString();
-};
+
 
 // ─── Step-up action (suspend/reinstate) ──────────────────────────────────────
 
@@ -84,7 +69,7 @@ const AdminTeam = () => {
   const { userProfile } = useUserProfile();
   const isSuper = isSuperAdmin(userProfile);
 
-  const { members, invites, isLoading, mutate } = useAdminTeam();
+  const { members, invites, isLoading, isError, mutate } = useAdminTeam();
   const { showToast } = useToaster();
 
   const [inviteOpen, setInviteOpen] = useState(false);
@@ -134,7 +119,7 @@ const AdminTeam = () => {
     } catch {
       showToast({
         type: "error",
-        title: "Could not send invite",
+        title: "Couldn't send invite",
         description: "Check your password/2FA code and try again.",
       });
     } finally {
@@ -151,7 +136,7 @@ const AdminTeam = () => {
         description: `${invite.email}`,
       });
     } catch {
-      showToast({ type: "error", title: "Could not resend invite" });
+      showToast({ type: "error", title: "Couldn't resend invite" });
     }
   };
 
@@ -161,7 +146,7 @@ const AdminTeam = () => {
       await mutate();
       showToast({ type: "success", title: "Invite revoked" });
     } catch {
-      showToast({ type: "error", title: "Could not revoke invite" });
+      showToast({ type: "error", title: "Couldn't revoke invite" });
     }
   };
 
@@ -182,7 +167,7 @@ const AdminTeam = () => {
     } catch {
       showToast({
         type: "error",
-        title: "Could not change role",
+        title: "Couldn't change role",
         description: "Check your password/2FA code and try again.",
       });
     } finally {
@@ -207,7 +192,7 @@ const AdminTeam = () => {
     } catch {
       showToast({
         type: "error",
-        title: "Could not update admin",
+        title: "Couldn't update admin",
         description: "Check your password/2FA code and try again.",
       });
     } finally {
@@ -237,25 +222,25 @@ const AdminTeam = () => {
 
       {/* Stats */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-5">
-        <StatCard
+        <AdminStatCard
           icon={HiOutlineUsers}
           label="Total Admins"
           value={stats.total}
           tone="indigo"
         />
-        <StatCard
+        <AdminStatCard
           icon={HiOutlineShieldCheck}
           label="Active"
           value={stats.active}
           tone="emerald"
         />
-        <StatCard
+        <AdminStatCard
           icon={HiOutlineClock}
           label="Pending Invites"
           value={stats.pendingInvites}
           tone="amber"
         />
-        <StatCard
+        <AdminStatCard
           icon={HiOutlineExclamationTriangle}
           label="2FA Off"
           value={stats.twoFactorOff}
@@ -352,7 +337,10 @@ const AdminTeam = () => {
                   ))}
             </AdminTableBody>
           </AdminTable>
-          {!isLoading && members.length === 0 && (
+          {!isLoading && isError && (
+            <AdminLoadError what="the team" onRetry={() => mutate()} />
+          )}
+          {!isLoading && !isError && members.length === 0 && (
             <AdminEmptyState
               title="No admins yet"
               description="Invite your first admin to get started."
@@ -420,14 +408,14 @@ const AdminTeam = () => {
                             ]}
                           />
                         ) : (
-                          <span className="text-xs text-gray-400">—</span>
+                          <span className="text-xs text-gray-400"> - </span>
                         )}
                       </AdminTableTd>
                     </AdminTableRow>
                   ))}
             </AdminTableBody>
           </AdminTable>
-          {!isLoading && invites.length === 0 && (
+          {!isLoading && !isError && invites.length === 0 && (
             <AdminEmptyState
               title="No invites"
               description="When you invite admins, they'll show up here."
@@ -486,44 +474,6 @@ const AdminTeam = () => {
 
 // ─── Subcomponents ───────────────────────────────────────────────────────────
 
-const StatCard = ({
-  icon: Icon,
-  label,
-  value,
-  tone,
-}: {
-  icon: React.ComponentType<{ className?: string }>;
-  label: string;
-  value: number;
-  tone: "amber" | "emerald" | "indigo" | "rose";
-}) => {
-  const map = {
-    amber: "bg-amber-50 text-amber-600 ring-amber-100",
-    emerald: "bg-emerald-50 text-emerald-600 ring-emerald-100",
-    indigo: "bg-indigo-50 text-indigo-600 ring-indigo-100",
-    rose: "bg-rose-50 text-rose-600 ring-rose-100",
-  } as const;
-  return (
-    <div className="bg-white rounded-2xl border border-gray-200/80 p-5 shadow-[0_1px_2px_rgba(15,23,42,0.04)]">
-      <div className="flex items-start justify-between gap-3">
-        <div>
-          <p className="text-[13px] font-medium text-gray-500">{label}</p>
-          <p className="mt-2 text-3xl font-bold text-gray-900 tracking-tight tabular-nums">
-            {value}
-          </p>
-        </div>
-        <div
-          className={clsx(
-            "w-11 h-11 rounded-xl ring-1 flex items-center justify-center shrink-0",
-            map[tone],
-          )}
-        >
-          <Icon className="w-5 h-5" />
-        </div>
-      </div>
-    </div>
-  );
-};
 
 interface MemberRowMenuProps {
   member: AdminMember;
@@ -545,7 +495,7 @@ const MemberRowMenu = ({
   onSuspend,
   onReinstate,
 }: MemberRowMenuProps) => {
-  if (!isSuper) return <span className="text-xs text-gray-400">—</span>;
+  if (!isSuper) return <span className="text-xs text-gray-400"> - </span>;
   const isSelf = currentUserId && member.id === currentUserId;
   if (isSelf) return <span className="text-xs text-gray-400">You</span>;
 

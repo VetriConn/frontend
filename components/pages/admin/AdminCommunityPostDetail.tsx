@@ -17,20 +17,12 @@ import {
 import { AdminPageHeader } from "./AdminTablePanel";
 import ConfirmDialog from "./ConfirmDialog";
 import { useToaster } from "@/components/ui/Toaster";
+import { formatDate } from "@/lib/date-utils";
 
 interface Props {
   postId: string;
 }
 
-const formatDate = (iso: string) => {
-  const d = new Date(iso);
-  if (Number.isNaN(d.getTime())) return iso;
-  return d.toLocaleDateString("en-US", {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-  });
-};
 
 const AdminCommunityPostDetail = ({ postId }: Props) => {
   const { posts, isLoading, mutate } = useAdminCommunity();
@@ -51,7 +43,7 @@ const AdminCommunityPostDetail = ({ postId }: Props) => {
       showToast({ type: "success", title: "Post removed" });
       await mutate(posts.filter((p) => p.id !== post.id), false);
     } catch {
-      showToast({ type: "error", title: "Could not remove post" });
+      showToast({ type: "error", title: "Couldn't remove post" });
     } finally {
       setBusy(false);
     }

@@ -1,6 +1,8 @@
 "use client";
 
 import Link from "next/link";
+import type { Company } from "@/lib/api";
+import type { getPublicCompanyJobs } from "@/lib/api";
 import {
   HiOutlineBuildingOffice2,
   HiOutlineMapPin,
@@ -15,7 +17,9 @@ import {
 } from "react-icons/hi2";
 import { useCompany, usePublicCompanyJobs } from "@/hooks/useCompanies";
 import { safeHttpUrl } from "@/lib/safe-url";
-import { fieldLabel, JOB_TYPE_LABELS, INDUSTRY_LABELS } from "@/lib/job-fields";
+import { fieldLabel, JOB_TYPE_LABELS } from "@/lib/job-fields";
+import { companyIndustryLabel } from "@/lib/company-fields";
+import { formatDate } from "@/lib/date-utils";
 
 /**
  * Public company profile — the organisation's page on Vetriconn, the way a
@@ -27,13 +31,6 @@ import { fieldLabel, JOB_TYPE_LABELS, INDUSTRY_LABELS } from "@/lib/job-fields";
  * never shown here.
  */
 
-const formatDate = (iso?: string) => {
-  if (!iso) return "";
-  const d = new Date(iso);
-  return Number.isNaN(d.getTime())
-    ? ""
-    : d.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
-};
 
 const SectionCard = ({
   title,
@@ -81,8 +78,18 @@ const Detail = ({
   );
 };
 
-export const CompanyProfile = ({ companyId }: { companyId: string }) => {
-  const { company, isLoading, isError } = useCompany(companyId);
+export const CompanyProfile = ({
+  companyId,
+  initialCompany,
+  initialJobs,
+}: {
+  companyId: string;
+  /** Server-rendered seeds (public projection); absent when the ISR fetch
+   * failed, e.g. a pending company only its members may load. */
+  initialCompany?: Company | null;
+  initialJobs?: Awaited<ReturnType<typeof getPublicCompanyJobs>> | null;
+}) => {
+  const { company, isLoading, isError } = useCompany(companyId, initialCompany);
   const {
     jobs,
     total: jobsTotal,
@@ -90,7 +97,7 @@ export const CompanyProfile = ({ companyId }: { companyId: string }) => {
     loadMore,
     isLoadingMore,
     isLoading: jobsLoading,
-  } = usePublicCompanyJobs(companyId);
+  } = usePublicCompanyJobs(companyId, 20, initialJobs);
 
   if (isLoading) {
     return (
@@ -128,7 +135,7 @@ export const CompanyProfile = ({ companyId }: { companyId: string }) => {
     .join(", ");
   const website = safeHttpUrl(company.website);
   const industry =
-    fieldLabel(INDUSTRY_LABELS, company.industry) ?? company.industry;
+    companyIndustryLabel(company.industry);
 
   return (
     <div className="max-w-5xl mx-auto px-4 md:px-6 py-6 md:py-8 space-y-6">
@@ -171,7 +178,10 @@ export const CompanyProfile = ({ companyId }: { companyId: string }) => {
                 <h1 className="text-2xl md:text-3xl font-bold text-gray-900">
                   {company.name}
                 </h1>
-                {company.status === "approved" && (
+                {/* "Verified" is the deliberate business-verification
+                    decision (admin verify action), not the approval that
+                    every listed company has by definition. */}
+                {company.authorized_rep_verified && (
                   <span className="inline-flex items-center gap-1 text-xs font-semibold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200/70">
                     <HiOutlineCheckBadge className="w-3.5 h-3.5" />
                     Verified

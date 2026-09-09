@@ -8,7 +8,6 @@ import React, {
 } from "react";
 import Link from "next/link";
 import {
-  HiOutlineArrowLeft,
   HiOutlineMapPin,
   HiOutlineClock,
   HiOutlineBriefcase,
@@ -33,7 +32,8 @@ import {
 } from "@/lib/applicationDrafts";
 import { useToaster } from "@/components/ui/Toaster";
 import { CustomDropdown } from "@/components/ui/CustomDropdown";
-import { PhoneInputControl } from "@/components/ui/PhoneField";
+import { PhoneInputControl } from "@/components/ui/PhoneField.lazy";
+import { ScreeningQuestionField } from "./ScreeningQuestionField";
 
 // Canonical profile shape subset used for pre-filling application form
 import type { UserProfile } from "@/types/api";
@@ -48,8 +48,10 @@ interface JobApplicationFormProps {
   userProfile?: CanonicalUserProfile | null;
 }
 
-// Skills pool — in a real app, these would come from the job posting or backend
-const AVAILABLE_SKILLS = [
+// Fallback pool for listings that state no skills of their own. When the
+// posting lists skills, THOSE are the chips - picking from a generic list
+// unrelated to the job told the employer nothing.
+const FALLBACK_SKILLS = [
   "Customer Service",
   "Phone Communication",
   "Problem Solving",
@@ -63,6 +65,15 @@ const AVAILABLE_SKILLS = [
   "Public Speaking",
   "Analytical Thinking",
 ];
+
+/** The job's own stated skills, split from its free-text field. */
+function jobSkillPool(raw?: string): string[] {
+  if (!raw) return [];
+  return raw
+    .split(/[\n,;]+/)
+    .map((v) => v.trim())
+    .filter(Boolean);
+}
 
 const SCHEDULE_OPTIONS = [
   { value: "", label: "Select your preference..." },
@@ -134,12 +145,22 @@ export default function JobApplicationForm({
           setFormData((prev) => ({
             ...prev,
             relevantExperience: draft.relevantExperience || prev.relevantExperience,
-            selectedSkills: draft.selectedSkills || prev.selectedSkills,
+            // Only picks still in the rendered pool: the employer may have
+            // edited the listing's skills since the draft was saved, and an
+            // invisible, un-deselectable pick must not ride into the
+            // submission.
+            selectedSkills: (draft.selectedSkills || prev.selectedSkills).filter(
+              (skill) => {
+                const pool = jobSkillPool(job.skills);
+                return (pool.length > 0 ? pool : FALLBACK_SKILLS).includes(skill);
+              },
+            ),
             earliestStartDate: draft.earliestStartDate || prev.earliestStartDate,
             preferredSchedule: draft.preferredSchedule || prev.preferredSchedule,
             workLocationPreference:
               draft.workLocationPreference || prev.workLocationPreference,
             additionalInfo: draft.additionalInfo || prev.additionalInfo,
+            screeningAnswers: draft.screeningAnswers ?? prev.screeningAnswers,
           }));
         }
       } catch (err) {
@@ -278,6 +299,20 @@ export default function JobApplicationForm({
       });
       return;
     }
+    // The backend requires all three; catching it here spares the user a
+    // round trip that used to fail without a word.
+    if (
+      !formData.fullName.trim() ||
+      !formData.email.trim() ||
+      !formData.phone.trim()
+    ) {
+      showToast({
+        type: "error",
+        title: "Add your contact details",
+        description: "Your name, email, and phone number are needed so the employer can reach you.",
+      });
+      return;
+    }
     setIsSubmitting(true);
     try {
       const apiFormData = new FormData();
@@ -319,9 +354,19 @@ export default function JobApplicationForm({
       await removeApplicationDraft(job.id);
       setIsSubmitting(false);
       setSubmitted(true);
-    } catch {
+    } catch (err) {
+      // The spinner stopping with no explanation read as "I applied" when
+      // nothing was saved. The server's message names the actual problem
+      // (already applied, listing no longer available, missing field).
       setIsSubmitting(false);
-      // Could show error toast here
+      showToast({
+        type: "error",
+        title: "Your application wasn't submitted",
+        description:
+          err instanceof Error && err.message
+            ? err.message
+            : "Something went wrong. Please try again.",
+      });
     }
   };
 
@@ -338,6 +383,9 @@ export default function JobApplicationForm({
         preferredSchedule: formData.preferredSchedule,
         workLocationPreference: formData.workLocationPreference,
         additionalInfo: formData.additionalInfo,
+        // The answers are the part of a long application most worth saving -
+        // "Draft saved" used to silently drop them.
+        screeningAnswers: formData.screeningAnswers,
         savedAt: new Date().toISOString(),
       });
       showToast({
@@ -350,7 +398,7 @@ export default function JobApplicationForm({
       showToast({
         type: "error",
         title: "Save failed",
-        description: "Could not save draft. Please try again.",
+        description: "Couldn't save draft. Please try again.",
       });
     }
   };
@@ -558,14 +606,18 @@ export default function JobApplicationForm({
 
             <div>
               <label className="block text-sm font-semibold text-gray-900 mb-1.5 md:mb-2">
-                Select Your Skills
+                Select your skills
               </label>
-              <p className="text-xs text-gray-400 mb-3">
-                Choose any skills that apply to you. This helps us understand
-                your strengths.
+              <p className="text-xs text-gray-500 mb-3">
+                {jobSkillPool(job.skills).length > 0
+                  ? "These are the skills the employer listed - pick the ones you have."
+                  : "Choose any skills that apply to you."}
               </p>
               <div className="flex flex-wrap gap-2.5">
-                {AVAILABLE_SKILLS.map((skill) => {
+                {(jobSkillPool(job.skills).length > 0
+                  ? jobSkillPool(job.skills)
+                  : FALLBACK_SKILLS
+                ).map((skill) => {
                   const selected = formData.selectedSkills.includes(skill);
                   return (
                     <button
@@ -712,91 +764,14 @@ export default function JobApplicationForm({
             optional={!screeningQuestions.some((q) => q.required)}
           >
             <div className="space-y-6">
-              {screeningQuestions.map((q) => {
-                const value = formData.screeningAnswers[q.id] ?? [];
-                return (
-                  <div key={q.id}>
-                    <label className="block text-sm font-semibold text-gray-900 mb-2">
-                      {q.question}
-                      {q.required && (
-                        <span className="text-red-500 ml-0.5">*</span>
-                      )}
-                    </label>
-
-                    {q.type === "short_text" && (
-                      <textarea
-                        value={value[0] ?? ""}
-                        onChange={(e) =>
-                          setScreeningAnswer(
-                            q.id,
-                            e.target.value ? [e.target.value] : [],
-                          )
-                        }
-                        rows={3}
-                        className="form-input resize-none"
-                        placeholder="Type your answer..."
-                      />
-                    )}
-
-                    {(q.type === "yes_no" ||
-                      q.type === "single_choice") && (
-                      <div className="flex flex-wrap gap-2">
-                        {(q.type === "yes_no"
-                          ? ["yes", "no"]
-                          : q.options ?? []
-                        ).map((opt) => {
-                          const on = value.includes(opt);
-                          return (
-                            <button
-                              key={opt}
-                              type="button"
-                              aria-pressed={on}
-                              onClick={() => setScreeningAnswer(q.id, [opt])}
-                              className={`min-h-[44px] rounded-lg border px-4 py-2 text-sm font-medium capitalize transition-colors ${
-                                on
-                                  ? "border-primary bg-primary text-white"
-                                  : "border-gray-300 bg-white text-gray-700 hover:border-primary hover:text-primary"
-                              }`}
-                            >
-                              {opt}
-                            </button>
-                          );
-                        })}
-                      </div>
-                    )}
-
-                    {q.type === "multi_choice" && (
-                      <div className="flex flex-wrap gap-2">
-                        {(q.options ?? []).map((opt) => {
-                          const on = value.includes(opt);
-                          return (
-                            <button
-                              key={opt}
-                              type="button"
-                              aria-pressed={on}
-                              onClick={() =>
-                                setScreeningAnswer(
-                                  q.id,
-                                  on
-                                    ? value.filter((v) => v !== opt)
-                                    : [...value, opt],
-                                )
-                              }
-                              className={`min-h-[44px] rounded-lg border px-4 py-2 text-sm font-medium transition-colors ${
-                                on
-                                  ? "border-primary bg-primary text-white"
-                                  : "border-gray-300 bg-white text-gray-700 hover:border-primary hover:text-primary"
-                              }`}
-                            >
-                              {opt}
-                            </button>
-                          );
-                        })}
-                      </div>
-                    )}
-                  </div>
-                );
-              })}
+              {screeningQuestions.map((q) => (
+                <ScreeningQuestionField
+                  key={q.id}
+                  question={q}
+                  value={formData.screeningAnswers[q.id] ?? []}
+                  onChange={(values) => setScreeningAnswer(q.id, values)}
+                />
+              ))}
             </div>
           </SectionCard>
         )}
@@ -887,7 +862,6 @@ function SectionCard({
   title,
   subtitle,
   complete,
-  optional,
   children,
 }: {
   number: number;

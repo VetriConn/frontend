@@ -2,7 +2,6 @@
 import { useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
-import clsx from "clsx";
 import DottedBox7 from "@/public/images/dotted_box_7.svg";
 import DottedBox9 from "@/public/images/dotted_box_9.svg";
 import DottedBox4 from "@/public/images/dotted_box_4.svg";
@@ -11,6 +10,7 @@ import { signInSchema } from "@/lib/validation";
 import { useToaster } from "@/components/ui/Toaster";
 import { ZodError } from "zod";
 import { loginUser } from "@/lib/api";
+import { resendVerificationEmail } from "@/lib/api/auth";
 import { FormField } from "@/components/ui/FormField";
 import { PasswordField } from "@/components/ui/PasswordField";
 import TwoFactorChallengeDialog from "@/components/security/TwoFactorChallengeDialog";
@@ -26,6 +26,13 @@ export const SignIn = () => {
   const [rememberMe, setRememberMe] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+  // Set when sign-in fails because the address is unverified. A vanishing
+  // toast is not a recovery path - this drives a persistent notice with a
+  // resend button instead.
+  const [needsVerification, setNeedsVerification] = useState(false);
+  const [resendState, setResendState] = useState<"idle" | "sending" | "sent">(
+    "idle",
+  );
 
   // 2FA challenge state
   const [twoFactorOpen, setTwoFactorOpen] = useState(false);
@@ -90,17 +97,24 @@ export const SignIn = () => {
         setErrors(errorMessages);
         showToast({
           type: "error",
-          title: "Validation Error",
+          title: "Check your details",
           description: "Please fix the errors and try again",
         });
       } else {
         const errorMessage =
           error instanceof Error ? error.message : "Login failed";
-        showToast({
-          type: "error",
-          title: "Login Failed",
-          description: errorMessage,
-        });
+        if (/verify your email/i.test(errorMessage)) {
+          // Recoverable without support: show the persistent notice with the
+          // resend affordance rather than a toast that vanishes in seconds.
+          setNeedsVerification(true);
+          setResendState("idle");
+        } else {
+          showToast({
+            type: "error",
+            title: "Login failed",
+            description: errorMessage,
+          });
+        }
         if (
           errorMessage.toLowerCase().includes("invalid") ||
           errorMessage.toLowerCase().includes("incorrect")
@@ -115,7 +129,7 @@ export const SignIn = () => {
   return (
     <div className="flex min-h-screen font-open-sans">
       {/* Desktop: Left side with image */}
-      <div className="flex-1 bg-gray-100 items-center justify-center p-8 text-left bg-[linear-gradient(70deg,rgba(0,0,0,0.65),rgba(0,0,0,0.45)),url('/images/Hero/1.svg')] bg-right bg-cover hidden mobile:hidden tablet:hidden relative md:flex">
+      <div className="flex-1 bg-gray-100 items-center justify-center p-8 text-left bg-[linear-gradient(70deg,rgba(0,0,0,0.65),rgba(0,0,0,0.45)),url('/images/hero/1.jpg')] bg-right bg-cover hidden mobile:hidden tablet:hidden relative md:flex">
         <DottedBox9 className="absolute top-50 right-10 w-32 h-auto z-0 opacity-60" />
         <h1 className="font-lato text-2xl md:text-4xl mb-4 text-white font-semibold leading-tight drop-shadow-lg">
           Welcome back to the <br />{" "}
@@ -130,7 +144,7 @@ export const SignIn = () => {
         <DottedBox4 className="absolute top-8 left-15 h-auto z-0 opacity-60" />
         <div className="w-full max-w-lg">
           {/* Logo */}
-          <img src="/images/logo_1.svg" alt="Vetriconn" className="w-40 mb-8" />
+          <img src="/images/logo.png" alt="Vetriconn" className="w-40 mb-8" />
 
           <h2 className="text-xl md:text-3xl mb-4">Welcome back</h2>
           <p className="text-sm md:text-base mb-4">
@@ -139,6 +153,46 @@ export const SignIn = () => {
           {sessionExpired && (
             <div className="mb-4 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
               Your session expired. Please sign in again to continue.
+            </div>
+          )}
+          {needsVerification && (
+            <div
+              role="status"
+              className="mb-4 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800"
+            >
+              <p className="mb-2">
+                Your email address isn&apos;t verified yet. Check your inbox for
+                the verification link, or we can send a new one.
+              </p>
+              {resendState === "sent" ? (
+                <p className="font-medium">
+                  Sent. Check your inbox (and your spam folder).
+                </p>
+              ) : (
+                <button
+                  type="button"
+                  disabled={resendState === "sending" || !email.trim()}
+                  onClick={async () => {
+                    setResendState("sending");
+                    try {
+                      await resendVerificationEmail(email.trim());
+                      setResendState("sent");
+                    } catch {
+                      setResendState("idle");
+                      showToast({
+                        type: "error",
+                        title: "Couldn't resend the email",
+                        description: "Please try again in a moment.",
+                      });
+                    }
+                  }}
+                  className="font-semibold text-primary hover:underline disabled:opacity-60 disabled:cursor-not-allowed cursor-pointer bg-transparent border-none p-0 min-h-[44px]"
+                >
+                  {resendState === "sending"
+                    ? "Sending..."
+                    : "Resend verification email"}
+                </button>
+              )}
             </div>
           )}
           <form onSubmit={handleSubmit}>
@@ -187,13 +241,18 @@ export const SignIn = () => {
               />
               <label htmlFor="remember-me">Remember me on this device</label>
             </div>
-            <button
-              type="submit"
-              className="bg-primary text-white py-3 px-7 border-none rounded-lg text-sm cursor-pointer transition-colors ml-auto mt-2 inline-block hover:bg-red-700 disabled:bg-gray-300 disabled:text-text-muted disabled:cursor-not-allowed w-full"
-              disabled={isButtonDisabled}
-            >
-              {isSubmitting ? "Signing In..." : "Sign In to your account"}
-            </button>
+            {/* Same treatment as the signup wizard's Continue (WizardNav):
+                full-width and large-tap on mobile, a compact right-aligned
+                button from sm up. */}
+            <div className="mt-2 flex justify-end">
+              <button
+                type="submit"
+                className="w-full rounded-lg bg-primary px-8 py-3 font-medium text-white transition-colors hover:bg-primary/90 disabled:cursor-not-allowed disabled:bg-gray-300 disabled:text-text-muted sm:w-auto"
+                disabled={isButtonDisabled}
+              >
+                {isSubmitting ? "Signing In…" : "Sign In"}
+              </button>
+            </div>
           </form>
 
           {/* Divider with text */}

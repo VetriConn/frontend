@@ -10,6 +10,7 @@ import {
   FIELD_ERROR,
   FIELD_WRAPPER,
 } from "./fieldStyles";
+import { RequiredMark } from "./RequiredMark";
 
 interface FormFieldProps {
   label: string;
@@ -24,11 +25,14 @@ interface FormFieldProps {
   onChange: (value: string) => void;
   options?: { value: string; label: string }[];
   disabled?: boolean;
+  /** Passed through so password managers and browser autofill work. */
+  autoComplete?: string;
 }
 
 export const FormField = ({
   label,
   name,
+  autoComplete,
   type = "text",
   placeholder,
   helperText,
@@ -60,7 +64,7 @@ export const FormField = ({
         {optional && (
           <span className="text-gray-400 font-normal ml-1">(optional)</span>
         )}
-        {required && <span className="text-red-500 ml-1">*</span>}
+        {required && <RequiredMark />}
       </label>
 
       {type === "select" ? (
@@ -88,6 +92,7 @@ export const FormField = ({
       ) : (
         <input
           id={inputId}
+          autoComplete={autoComplete}
           name={name}
           type={type}
           value={value}

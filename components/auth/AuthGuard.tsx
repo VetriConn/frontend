@@ -3,6 +3,7 @@
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useUserProfile } from "@/hooks/useUserProfile";
+import { withReturnUrl } from "@/lib/auth-redirect";
 
 interface AuthGuardProps {
   children: React.ReactNode;
@@ -41,7 +42,13 @@ export function AuthGuard({
     if (isLoading) return;
 
     if (!userProfile) {
-      router.replace(redirectTo ?? "/signin");
+      // Carry the page they were heading to through the sign-in detour —
+      // "Hiring? Post a job" must land on post-job after auth, not on the
+      // generic dashboard. window.location is fine here: this runs only in
+      // an effect, and it spares every guarded page a useSearchParams
+      // Suspense boundary.
+      const here = window.location.pathname + window.location.search;
+      router.replace(redirectTo ?? withReturnUrl("/signin", here));
       return;
     }
 

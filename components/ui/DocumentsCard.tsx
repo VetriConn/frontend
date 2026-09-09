@@ -7,6 +7,7 @@ import {
   HiOutlineDocumentText,
 } from "react-icons/hi2";
 import { UserDocument } from "@/types/api";
+import { formatDate } from "@/lib/date-utils";
 
 interface DocumentsCardProps {
   documents: UserDocument[];
@@ -27,20 +28,6 @@ export const DocumentsCard: React.FC<DocumentsCardProps> = ({
   isUploading = false,
   deletingDocId,
 }) => {
-  const formatDate = (date?: Date | string) => {
-    if (!date) return "";
-    try {
-      const d = new Date(date);
-      return d.toLocaleDateString("en-US", {
-        year: "numeric",
-        month: "short",
-        day: "numeric",
-      });
-    } catch {
-      return "";
-    }
-  };
-
   const formatFileSize = (bytes?: number) => {
     if (!bytes) return "";
     if (bytes < 1024) return `${bytes} B`;

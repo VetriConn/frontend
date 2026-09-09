@@ -41,7 +41,7 @@ const RULE = /At least 8 characters/i;
 const continueButton = () =>
   screen.getByRole("button", { name: /continue/i });
 
-describe("CreateAccountStep — deferred password checklist", () => {
+describe("CreateAccountStep - deferred password checklist", () => {
   it("hides the checklist until Continue is attempted", () => {
     render(<CreateAccountStep {...makeProps()} />);
     expect(screen.queryByText(RULE)).toBeNull();

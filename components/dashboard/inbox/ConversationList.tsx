@@ -6,7 +6,6 @@ import {
 } from "react-icons/hi2";
 import { Avatar } from "@/components/ui/Avatar";
 import { formatRelativeTime } from "@/lib/date-utils";
-import { getInitials } from "@/lib/initials";
 
 import { Conversation } from "@/types/inbox";
 
@@ -18,6 +17,8 @@ interface ConversationListProps {
   onSearchChange: (val: string) => void;
   onClearSearch: () => void;
   isLoading?: boolean;
+  /** Mobile is single-pane: the list yields to the open conversation. */
+  hiddenOnMobile?: boolean;
 }
 
 export function ConversationList({
@@ -28,9 +29,14 @@ export function ConversationList({
   onSearchChange,
   onClearSearch,
   isLoading,
+  hiddenOnMobile,
 }: ConversationListProps) {
   return (
-    <div className="w-full md:w-80 lg:w-96 border-r border-gray-200 flex flex-col h-full bg-white">
+    <div
+      className={`${
+        hiddenOnMobile ? "hidden md:flex" : "flex"
+      } w-full md:w-80 lg:w-96 border-r border-gray-200 flex-col h-full bg-white`}
+    >
       {/* Search/Filter Header */}
       <div className="p-4 border-b border-gray-200 shrink-0">
         <div className="relative">

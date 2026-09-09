@@ -6,12 +6,13 @@ import { formatJobSalary } from "@/lib/job-display";
 import {
   HiOutlineArrowRight,
   HiOutlineBriefcase,
-  HiOutlineLocationMarker,
+  HiOutlineMapPin,
   HiOutlineClock,
   HiCurrencyDollar,
-} from "react-icons/hi";
+} from "react-icons/hi2";
 import { getRecommendedJobs } from "@/lib/api";
 import { useUserProfile } from "@/hooks/useUserProfile";
+import { RecommendedJobsSkeleton } from "@/components/ui/Skeleton";
 import clsx from "clsx";
 import { fieldLabel, JOB_TYPE_LABELS } from "@/lib/job-fields";
 import {
@@ -28,7 +29,9 @@ interface RecommendedJobCardProps {
   company_name: string;
   location: string;
   work_type?: string;
-  salary_range: string;
+  /** Pay, already formatted. Named for the column it came from long after
+   *  that column stopped existing. */
+  pay: string;
 }
 
 const RecommendedJobCard: React.FC<RecommendedJobCardProps> = ({
@@ -37,7 +40,7 @@ const RecommendedJobCard: React.FC<RecommendedJobCardProps> = ({
   company_name,
   location,
   work_type,
-  salary_range,
+  pay,
 }) => {
   return (
     <article
@@ -56,7 +59,7 @@ const RecommendedJobCard: React.FC<RecommendedJobCardProps> = ({
       >
         {/* One step down the scale: 24px in a 274px card overwhelmed it.
             Two lines are clamped AND reserved, so a one-line title and a
-            two-line title leave the rows below starting at the same height —
+            two-line title leave the rows below starting at the same height  - 
             it is the raggedness, more than the size, that read as off. */}
         <h3
           className={clsx(CARD_TITLE, "text-lg capitalize line-clamp-2 min-h-[2.75em] mb-2")}
@@ -73,7 +76,7 @@ const RecommendedJobCard: React.FC<RecommendedJobCardProps> = ({
         </div>
 
         <div className={clsx(CARD_META_ROW, "text-gray-600 mb-2")}>
-          <HiOutlineLocationMarker className={CARD_META_ICON} />
+          <HiOutlineMapPin className={CARD_META_ICON} />
           <span>{location}</span>
         </div>
 
@@ -86,7 +89,7 @@ const RecommendedJobCard: React.FC<RecommendedJobCardProps> = ({
 
         <div className={clsx(CARD_META_ROW, "text-primary font-medium")}>
           <HiCurrencyDollar className="w-4 h-4 shrink-0" />
-          <span>{salary_range}</span>
+          <span>{pay}</span>
         </div>
       </Link>
 
@@ -136,12 +139,11 @@ export const RecommendedJobs: React.FC = () => {
       location: (job.location || "Canada").replace(/^location\s+/i, ""),
       // The card has always had a clock row for this; nothing populated it.
       work_type: fieldLabel(JOB_TYPE_LABELS, job.job_type) ?? undefined,
-      salary_range: salaryRange,
+      pay: salaryRange,
     };
   });
 
   if (isLoading) {
-    const { RecommendedJobsSkeleton } = require("@/components/ui/Skeleton");
     return <RecommendedJobsSkeleton />;
   }
 
@@ -175,7 +177,7 @@ export const RecommendedJobs: React.FC = () => {
           "Ranked by how well they match your profile and location"
         ) : (
           <>
-            The newest openings across Canada —{" "}
+            The newest openings across Canada  - {" "}
             <Link
               href="/dashboard/profile"
               className="text-primary hover:underline"
@@ -188,7 +190,7 @@ export const RecommendedJobs: React.FC = () => {
       </p>
 
       {/* A failed request used to render as this exact section with a silent
-          empty grid under it — indistinguishable from "no jobs". Say what
+          empty grid under it - indistinguishable from "no jobs". Say what
           happened and offer the retry. */}
       {error && (
         <div className="bg-white rounded-xl border border-gray-200 p-8 text-center">
@@ -209,7 +211,7 @@ export const RecommendedJobs: React.FC = () => {
         <div className="bg-white rounded-xl border border-gray-200 p-8 text-center">
           <p className="text-sm text-gray-500">
             No open listings at the moment. New jobs are added throughout the
-            day — check back soon.
+            day - check back soon.
           </p>
         </div>
       )}

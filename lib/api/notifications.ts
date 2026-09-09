@@ -39,7 +39,7 @@ export async function markNotificationRead(id: string): Promise<void> {
 }
 
 export async function markAllNotificationsRead(): Promise<void> {
-  await apiFetch<ApiEnvelope<{}>>(
+  await apiFetch<ApiEnvelope<never>>(
     `${API_BASE_URL}/api/v1/notifications/read-all`,
     {
       method: "PATCH",
@@ -55,7 +55,7 @@ export async function deleteNotification(id: string): Promise<void> {
 }
 
 export async function clearNotifications(): Promise<void> {
-  await apiFetch<ApiEnvelope<{}>>(`${API_BASE_URL}/api/v1/notifications`, {
+  await apiFetch<ApiEnvelope<never>>(`${API_BASE_URL}/api/v1/notifications`, {
     method: "DELETE",
   });
 }

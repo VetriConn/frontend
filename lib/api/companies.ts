@@ -14,6 +14,7 @@ import {
   type PaginatedApiEnvelope,
 } from "./client";
 import type { PostedJobSummary } from "@/types/api";
+import type { Compensation } from "@/types/job";
 
 export type CompanyRole = "owner" | "admin" | "recruiter";
 export type CompanyMemberStatus = "invited" | "active";
@@ -56,6 +57,8 @@ export interface Company {
   members: CompanyMember[];
 
   status: CompanyStatus;
+  /** Why moderation suspended the company - members see this in the workspace. */
+  suspension_reason?: string;
   approved_at?: string;
   rejected_at?: string;
   rejection_reason?: string;
@@ -121,7 +124,9 @@ export async function getMyCompanies(): Promise<Company[]> {
 export async function getCompanyById(companyId: string): Promise<Company> {
   const response = await apiFetch<ApiEnvelope<Company>>(
     `${COMPANIES_URL}/${companyId}`,
-    { method: "GET" },
+    // `next` only applies server-side (the public page's ISR render); the
+    // browser ignores it, so member dashboards still fetch live.
+    { method: "GET", next: { revalidate: 300 } },
   );
   return response.data;
 }
@@ -175,6 +180,17 @@ export const uploadCompanyBanner = (companyId: string, file: File) =>
 // ── Team ────────────────────────────────────────────────────────────────────
 
 /** Invite a teammate by email. Sends a token that expires in seven days. */
+/** Cancel a pending invite so the address can be re-invited or corrected. */
+export async function revokeCompanyInvite(
+  companyId: string,
+  email: string,
+): Promise<void> {
+  await apiFetch<ApiEnvelope<{ email: string }>>(
+    `${COMPANIES_URL}/${companyId}/invites/revoke`,
+    jsonRequest("POST", { email }),
+  );
+}
+
 export async function inviteMember(
   companyId: string,
   email: string,
@@ -239,7 +255,7 @@ export async function getPublicCompanyJobs(
 }> {
   const response = await apiFetch<PaginatedApiEnvelope<PublicCompanyJob[]>>(
     `${COMPANIES_URL}/${companyId}/open-jobs?page=${page}&limit=${limit}`,
-    { method: "GET" },
+    { method: "GET", next: { revalidate: 300 } },
   );
   return { jobs: response.data || [], pagination: response.pagination };
 }
@@ -251,11 +267,13 @@ export interface PublicCompanyJob {
   location?: string;
   job_type?: string;
   work_arrangement?: string;
-  salary?: { number?: number; currency?: string };
-  salary_range?: { min?: number; max?: number };
-  salary_text?: string;
-  payment_type?: string;
-  currency?: string;
+  /**
+   * Pay, as one object. This declared the five columns it replaced —
+   * `salary`, `salary_range`, `salary_text`, `payment_type` and `currency` —
+   * for a while after they stopped existing, so anything that read them here
+   * would have type-checked and rendered nothing.
+   */
+  compensation?: Compensation;
   createdAt?: string;
 }
 

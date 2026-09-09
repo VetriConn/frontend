@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { companyIndustryLabel } from "@/lib/company-fields";
 import clsx from "clsx";
 import {
   HiOutlineBuildingOffice2,
@@ -97,7 +98,7 @@ const CompanyCard = ({
           </div>
 
           <p className="text-sm text-gray-500">
-            {[company.industry, [company.city, company.country].filter(Boolean).join(", ")]
+            {[companyIndustryLabel(company.industry), [company.city, company.country].filter(Boolean).join(", ")]
               .filter(Boolean)
               .join(" · ") || "No details added yet"}
           </p>
@@ -122,7 +123,7 @@ const CompanyCard = ({
           {company.status === "pending" && (
             <p className="text-xs text-gray-500 mt-3">
               An admin is reviewing this. You can post jobs as a company once
-              it&apos;s approved — posting as yourself still works in the
+              it&apos;s approved - posting as yourself still works in the
               meantime.
             </p>
           )}
@@ -147,10 +148,13 @@ export const MyCompanies = () => {
 
   if (isLoading) return <DashboardSkeleton />;
 
-  // The server rejects a second application while one is pending or approved,
-  // so only offer the CTA when there's genuinely nothing in flight.
+  // The server rejects a second application only when THIS user OWNS a
+  // pending/approved company. Gating on mere membership hid the CTA from
+  // everyone ever invited to someone else's hiring team.
   const hasBlockingApplication = companies.some(
-    (c) => c.status === "pending" || c.status === "approved",
+    (c) =>
+      (c.status === "pending" || c.status === "approved") &&
+      String(c.owner_id) === userProfile?.id,
   );
 
   return (

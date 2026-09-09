@@ -3,6 +3,7 @@ import {
   adminListContent,
   adminModerateContent,
   type ContentModerationStatus,
+  adminContentCounts,
 } from "@/lib/api/admin";
 
 export interface AdminCommunityPost {
@@ -54,4 +55,13 @@ export async function flagAdminCommunityPost(
 /** Restore a removed or flagged post to visible. */
 export async function restoreAdminCommunityPost(id: string): Promise<void> {
   await adminModerateContent(id, "visible");
+}
+
+/** Content moderation counts for the community page's summary cards. */
+export function useAdminContentCounts() {
+  const { data: counts, mutate } = useSWR(
+    "admin-content-counts",
+    adminContentCounts,
+  );
+  return { counts, mutate };
 }

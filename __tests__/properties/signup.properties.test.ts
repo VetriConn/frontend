@@ -136,8 +136,7 @@ describe("Feature: multi-step-signup - Property-Based Tests", () => {
       fc.assert(
         fc.property(
           fc.constantFrom(...invalidTypes),
-          fc.integer({ min: 1, max: 10 * 1024 * 1024 }),
-          (type, _size) => {
+          (type) => {
             const isValidType =
               type === "application/pdf" ||
               type ===

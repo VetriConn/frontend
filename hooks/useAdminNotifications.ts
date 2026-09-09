@@ -3,14 +3,12 @@ import {
   adminListNotifications,
   adminMarkNotificationRead,
   adminMarkAllNotificationsRead,
+  type AdminNotificationType,
 } from "@/lib/api/admin";
 
-export type AdminNotificationType =
-  | "job_submitted"
-  | "employer_registered"
-  | "employer_verified"
-  | "user_report"
-  | "post_flagged";
+// One definition, owned by the API layer - this file's local copy had
+// drifted ("employer_verified" was vocabulary nothing sends).
+export type { AdminNotificationType } from "@/lib/api/admin";
 
 export interface AdminNotification {
   id: string;

@@ -5,6 +5,7 @@ import {
   adminRejectJob,
   getJobById,
   type AdminJobRaw,
+  adminJobCounts,
 } from "@/lib/api/jobs";
 import { formatJobSalary } from "@/lib/job-display";
 import { fieldLabel, JOB_TYPE_LABELS } from "@/lib/job-fields";
@@ -20,7 +21,8 @@ export interface AdminJob {
   company_logo?: string;
   location: string;
   employment_type: string;
-  salary_range?: string;
+  /** Pay, already formatted for display — not the removed salary_range column. */
+  pay?: string;
   description: string;
   requirements: string[];
   submittedAt: string; // ISO
@@ -29,6 +31,8 @@ export interface AdminJob {
   applications?: number;
   status: AdminJobStatus;
   rejection_reason?: string;
+  /** __v the row was loaded at; decisions are preconditioned on it. */
+  version?: number;
   /** Keyword scam signals from the backend detector — worth a close look. */
   scam_flags?: string[];
   employer: {
@@ -40,10 +44,10 @@ export interface AdminJob {
 // ─── Mapping (raw lean job → view model) ─────────────────────────────────────
 
 function deriveStatus(j: AdminJobRaw): AdminJobStatus {
-  if (j.moderation_status) return j.moderation_status;
-  if (j.is_approved) return "approved";
-  if (j.rejected_at) return "rejected";
-  return "pending";
+  // moderation_status is the single verdict field (schema default "pending",
+  // no pre-default documents exist); the old is_approved/rejected_at
+  // fallback chain disagreed with the employer surface and is gone with it.
+  return j.moderation_status ?? "pending";
 }
 
 export function toAdminJob(j: AdminJobRaw): AdminJob {
@@ -54,18 +58,11 @@ export function toAdminJob(j: AdminJobRaw): AdminJob {
     company_logo: j.company_logo,
     location: j.location || "Canada",
     employment_type:
-      fieldLabel(JOB_TYPE_LABELS, j.job_type) ?? (j.job_type || "—"),
-    salary_range:
-      formatJobSalary(
-        {
-          salary: j.salary,
-          salary_range: j.salary_range,
-          salary_text: j.salary_text,
-          payment_type: j.payment_type,
-        } as Parameters<typeof formatJobSalary>[0],
-        "full",
-      ) ?? undefined,
-    description: j.full_description || j.description || "",
+      fieldLabel(JOB_TYPE_LABELS, j.job_type) ?? (j.job_type || "-"),
+    // No cast needed now that pay is one object with one shape everywhere —
+    // this used to assemble four loose fields and assert the result matched.
+    pay: formatJobSalary({ compensation: j.compensation }, "full") ?? undefined,
+    description: j.description || "",
     requirements: j.qualifications ?? [],
     submittedAt: j.createdAt || "",
     approvedAt: j.approved_at,
@@ -73,6 +70,7 @@ export function toAdminJob(j: AdminJobRaw): AdminJob {
     applications: j.application_count,
     status: deriveStatus(j),
     rejection_reason: j.rejection_reason,
+    version: j.__v,
     scam_flags: j.scam_flags,
     // No per-poster verification flag on the job; a company posting is the
     // closest "vetted" signal we have here.
@@ -127,15 +125,19 @@ export function useAdminJob(id: string) {
 
 // ─── Mutations ───────────────────────────────────────────────────────────────
 
-export async function approveAdminJob(id: string): Promise<void> {
-  await adminApproveJob(id);
+export async function approveAdminJob(
+  id: string,
+  expectedVersion?: number,
+): Promise<void> {
+  await adminApproveJob(id, expectedVersion);
 }
 
 export async function rejectAdminJob(
   id: string,
   reason: string,
+  expectedVersion?: number,
 ): Promise<void> {
-  await adminRejectJob(id, reason);
+  await adminRejectJob(id, reason, expectedVersion);
 }
 
 /**
@@ -146,6 +148,13 @@ export async function rejectAdminJob(
 export async function unpublishAdminJob(
   id: string,
   reason: string,
+  expectedVersion?: number,
 ): Promise<void> {
-  await adminRejectJob(id, reason);
+  await adminRejectJob(id, reason, expectedVersion);
+}
+
+/** Moderation counts for the jobs page's summary cards, one shared fetch. */
+export function useAdminJobCounts() {
+  const { data: counts, mutate } = useSWR("admin-job-counts", adminJobCounts);
+  return { counts, mutate };
 }

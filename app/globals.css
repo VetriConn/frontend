@@ -1,10 +1,15 @@
 @import "tailwindcss";
 
 @theme {
-  --color-primary: #e53e3e;
-  --color-primary-hover: #dc2626;
+  /* Brand red, at AA contrast. #e53e3e measured 4.13:1 against white, which
+     fails WCAG AA (4.5:1) BOTH ways — as link/label text on white, and as
+     white button text on the fill. On a board whose audience is 45+ and
+     which ships its own accessibility panel, that is the wrong place to be
+     a hundredth short. #c53030 is 5.47:1 and reads as the same red. */
+  --color-primary: #c53030;
+  --color-primary-hover: #a52828;
   --color-text: #1f2937;
-  --color-text-muted: #666666;
+  --color-text-muted: #4b5563;
   --color-text-label: #686b6f;
   --color-gray-bg: #f9f9f9;
   --color-gray-border: #d1d5db;
@@ -99,131 +104,16 @@
   }
 }
 
-@utility btn-secondary {
-  background-color: #f3f4f6;
-  color: var(--color-text);
-  font-weight: 600;
-  padding: 0.75rem 1.5rem;
-  border-radius: 0.5rem;
-  transition: background-color 0.2s;
-  &:hover {
-    background-color: #e5e7eb;
-  }
-}
-
-/* ─── Responsive Container Utilities ──────────────────────────────────────── */
-
-@utility container-main {
-  max-width: 1340px;
-  margin-left: auto;
-  margin-right: auto;
-  padding-left: 5%;
-  padding-right: 5%;
-  @media (min-width: 768px) {
-    padding-left: 1.5rem;
-    padding-right: 1.5rem;
-  }
-}
-
-@utility container-dashboard {
-  max-width: 1280px;
-  margin-left: auto;
-  margin-right: auto;
-  padding-left: 1rem;
-  padding-right: 1rem;
-  @media (min-width: 768px) {
-    padding-left: 1.5rem;
-    padding-right: 1.5rem;
-  }
-  @media (min-width: 1024px) {
-    padding-left: 2rem;
-    padding-right: 2rem;
-  }
-}
-
-@utility container-narrow {
-  max-width: 896px;
-  margin-left: auto;
-  margin-right: auto;
-  padding-left: 1rem;
-  padding-right: 1rem;
-  @media (min-width: 768px) {
-    padding-left: 1.5rem;
-    padding-right: 1.5rem;
-  }
-}
-
-/* ─── Touch Target Utility ────────────────────────────────────────────────── */
-
-@utility touch-target {
-  min-height: 2.75rem; /* 44px */
-  min-width: 2.75rem; /* 44px */
-}
-
-/* ─── Responsive Table Utilities ──────────────────────────────────────────── */
-
-@utility table-scroll-container {
-  overflow-x: auto;
-  margin-left: -1rem;
-  margin-right: -1rem;
-  padding-left: 1rem;
-  padding-right: 1rem;
-  @media (min-width: 768px) {
-    margin-left: 0;
-    margin-right: 0;
-    padding-left: 0;
-    padding-right: 0;
-  }
-}
-
-/* ─── Responsive Typography Utilities ─────────────────────────────────────── */
-
-@utility text-responsive-h1 {
-  font-family: var(--font-lato);
-  font-size: 2rem;
-  line-height: 1.2;
-  font-weight: 700;
-  color: var(--color-text);
-  @media (min-width: 768px) {
-    font-size: 3rem;
-  }
-  @media (min-width: 1024px) {
-    font-size: 3.75rem;
-  }
-}
-
-@utility text-responsive-h2 {
-  font-family: var(--font-lato);
-  font-size: 1.5rem;
-  line-height: 1.2;
-  font-weight: 700;
-  color: var(--color-text);
-  @media (min-width: 768px) {
-    font-size: 2.25rem;
-  }
-}
-
-@utility text-responsive-body {
-  font-family: var(--font-open-sans);
-  font-size: 0.875rem;
-  line-height: 1.6;
-  font-weight: 400;
-  color: var(--color-text-muted);
-  @media (min-width: 768px) {
-    font-size: 1rem;
-  }
-}
-
 @utility heading-1 {
   font-family: var(--font-lato);
-  font-size: 1.875rem; /* 30px - text-3xl on mobile */
-  line-height: 1.1;
-  letter-spacing: 0;
+  /* Fluid, and deliberately a step below the hero's h1 so the page has a
+     hierarchy: hero → section → subsection, rather than four headings all
+     shouting at 48px. */
+  font-size: clamp(1.75rem, 1.15rem + 2.6vw, 2.5rem); /* 28 → 40px */
+  line-height: 1.15;
+  letter-spacing: -0.02em;
   font-weight: 700;
   color: var(--color-text);
-  @media (min-width: 768px) {
-    font-size: 3rem; /* 48px - text-5xl on desktop */
-  }
 }
 
 @utility heading-2 {
@@ -257,27 +147,6 @@
   color: var(--color-text-muted);
   @media (min-width: 768px) {
     font-size: 1rem; /* 16px - text-base on desktop */
-  }
-}
-
-@utility input-field {
-  width: 100%;
-  padding: 1rem 1.25rem;
-  border: 2px solid #e5e7eb;
-  border-radius: 1rem;
-  font-family: var(--font-open-sans);
-  font-size: 1rem;
-  outline: none;
-  transition: border-color 0.2s;
-  &:focus {
-    border-color: var(--color-primary);
-  }
-}
-
-@utility input-error {
-  border-color: #ef4444;
-  &:focus {
-    border-color: #ef4444;
   }
 }
 
@@ -472,11 +341,55 @@ html.high-contrast .bg-primary {
   animation-delay: calc(min(var(--reveal-index, 0), 6) * 40ms);
 }
 
+/* Scroll-triggered variant: held at the pre-animation state until the element
+   reaches the viewport, then handed .reveal-on-enter by <Reveal>.
+   The hold is scoped to no-preference, so a reduced-motion visitor (and any
+   session where the observer never runs) simply sees the finished content
+   rather than a permanently blank page. */
+@media (prefers-reduced-motion: no-preference) {
+  .reveal-pending {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}
+
 /* Reduced motion gets the finished state, not a faster animation. */
 @media (prefers-reduced-motion: reduce) {
-  .reveal-on-enter {
+  .reveal-on-enter,
+  /* Panel entrances (admin drawers) resolve to their final state rather than
+     playing faster — a reduced-motion request means no motion, not less. */
+  .animate-slide-up,
+  /* Dialog entrances (translateY is motion too) and the skeleton shimmer. */
+  .animate-fadeIn,
+  .animate-shimmer {
     animation: none;
   }
+}
+
+/* Keyboard focus is visible everywhere by default. Components with their own
+   ring keep it; anything unstyled falls back to this outline instead of to
+   nothing. Mouse focus (:focus without :focus-visible) stays quiet. */
+:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+/* Skip-to-content: invisible to mouse users, always. Only real keyboard
+   tabbing (:focus-visible) reveals it — clicks and programmatic focus never
+   do — and it disappears again the moment focus moves on. */
+.skip-link {
+  position: absolute;
+  left: -9999px;
+  top: 0;
+  z-index: 100;
+  background: var(--color-primary);
+  color: #fff;
+  padding: 12px 20px;
+  border-radius: 0 0 8px 0;
+  font-weight: 600;
+}
+.skip-link:focus-visible {
+  left: 0;
 }
 
 /* Rich-text: the job Brief editor and its rendered output. Tailwind's preflight
@@ -488,3 +401,93 @@ html.high-contrast .bg-primary {
 .prose-editor a, .rich-text a { color: var(--color-primary); text-decoration: underline; }
 .prose-editor p, .rich-text p { margin: 0.4rem 0; }
 .rich-text { line-height: 1.65; }
+
+/* Nav underline: the hero's brush stroke, reused as the navigation mark.
+   Drawn as a background image rather than an inline SVG so it can live on a
+   pseudo-element and animate without restructuring every link.
+
+   Active and hover share the mark but not the treatment: the current page
+   holds a solid stroke, hovering draws a lighter one in. Same device, still
+   answerable at a glance. */
+.nav-brush {
+  position: relative;
+}
+
+.nav-brush::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -0.3em;
+  height: 0.42em;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 18' preserveAspectRatio='none'%3E%3Cpath d='M2 12.5 C60 3.2 140 3.2 198 8.6 C140 16 60 16 2 12.5 Z' fill='%23e53e3e'/%3E%3C/svg%3E")
+    no-repeat center / 100% 100%;
+  transform: scaleX(0);
+  transform-origin: left center;
+  opacity: 0;
+  pointer-events: none;
+  transition:
+    transform 320ms cubic-bezier(0.22, 1, 0.36, 1),
+    opacity 200ms ease-out;
+}
+
+.nav-brush:hover::after,
+.nav-brush:focus-visible::after {
+  transform: scaleX(1);
+  opacity: 0.55;
+}
+
+/* The current page keeps its stroke at full strength, no hover required. */
+.nav-brush.is-active::after {
+  transform: scaleX(1);
+  opacity: 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .nav-brush::after {
+    transition: none;
+  }
+}
+
+/* In the mobile menu the links are full-width rows, so the word-width brush
+   stroke stretched into a bar across the whole screen. Rows get a drawer-style
+   mark instead: a short red bar on the leading edge plus the red label, with
+   the active label indented to sit beside its bar. */
+@media (max-width: 850px) {
+  .nav-brush::after {
+    display: none;
+  }
+
+  .nav-brush.is-active {
+    padding-left: 0.9rem;
+  }
+
+  .nav-brush.is-active::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 4px;
+    height: 1.4em;
+    border-radius: 9999px;
+    background: var(--color-primary);
+  }
+}
+
+/* Inline meta list ("PART-TIME · FULL-TIME · …").
+   The separator is attached to the end of each item rather than sitting
+   between them as its own element, so when the list wraps the dot stays on the
+   line it belongs to instead of orphaning at the start of the next one. */
+.meta-list > *:not(:last-child)::after {
+  content: "";
+  display: inline-block;
+  width: 0.25rem;
+  height: 0.25rem;
+  border-radius: 9999px;
+  /* Plain rgba: color-mix() with a var was silently dropped by the CSS
+     compiler, taking the whole rule with it. */
+  background-color: rgba(229, 62, 62, 0.5);
+  margin: 0 0.25rem 0 0.625rem;
+  vertical-align: middle;
+}

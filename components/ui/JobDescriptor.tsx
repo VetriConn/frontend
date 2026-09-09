@@ -2,6 +2,7 @@
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import cloudinaryLoader from "@/lib/cloudinary-loader";
 import clsx from "clsx";
 import {
   HiOutlineMapPin,
@@ -47,6 +48,7 @@ import {
   LANGUAGE_LABELS,
   BENEFIT_LABELS,
 } from "@/lib/job-fields";
+import { formatDate } from "@/lib/date-utils";
 import {
   JOB_TAG_CLASS,
   jobChipLabels,
@@ -54,6 +56,7 @@ import {
   formatJobSalary,
   getExternalApplyUrl,
   getSourceLabel,
+  isAggregatedJob,
   splitDescriptionParts,
 } from "@/lib/job-display";
 
@@ -105,17 +108,15 @@ const JobDescriptor: React.FC<JobDescriptorProps> = ({
   company_name,
   company_logo,
   location,
-  salary,
-  salary_range,
   tags,
-  full_description,
+  compensation,
+  description,
   responsibilities,
   qualifications,
   applicationLink,
   source,
   source_name,
   external_url,
-  salary_text,
   posted_as,
   company_id,
   poster_id,
@@ -126,11 +127,9 @@ const JobDescriptor: React.FC<JobDescriptorProps> = ({
   skills,
   physical_demands,
   work_schedule,
-  payment_type,
   min_qualification,
   security_clearance,
   requires_drivers_license,
-  visa_sponsorship,
   languages,
   certifications,
   benefits,
@@ -170,8 +169,19 @@ const JobDescriptor: React.FC<JobDescriptorProps> = ({
     (!!poster_id && poster_id === userProfile?.id) ||
     (!!company_id && companies.some((company) => company._id === company_id));
 
+  // Both lookups answer "has THIS account already applied / drafted?" — a
+  // question that has no answer without an account. They used to fire
+  // unconditionally, so every anonymous view of a job page paid two
+  // guaranteed-401 requests (and logged a console error for the draft one).
+  // Now they wait for the profile to resolve and only run signed in.
   useEffect(() => {
     let isMounted = true;
+
+    if (profileLoading) return;
+    if (!isSignedIn) {
+      setHasApplied(false);
+      return;
+    }
 
     const loadApplications = async () => {
       try {
@@ -188,7 +198,7 @@ const JobDescriptor: React.FC<JobDescriptorProps> = ({
 
         setHasApplied(alreadyApplied);
       } catch {
-        // ignore - unauthenticated users can still view the page
+        // ignore - a failed lookup only hides the "already applied" hint
       }
     };
 
@@ -197,10 +207,17 @@ const JobDescriptor: React.FC<JobDescriptorProps> = ({
     return () => {
       isMounted = false;
     };
-  }, [id]);
+  }, [id, isSignedIn, profileLoading]);
 
   useEffect(() => {
     let cancelled = false;
+
+    if (profileLoading) return;
+    if (!isSignedIn) {
+      setHasDraft(false);
+      return;
+    }
+
     async function checkDraft() {
       try {
         const result = await hasApplicationDraft(id);
@@ -215,7 +232,7 @@ const JobDescriptor: React.FC<JobDescriptorProps> = ({
     return () => {
       cancelled = true;
     };
-  }, [id]);
+  }, [id, isSignedIn, profileLoading]);
 
   const handleToggleSave = async () => {
     if (isMutating(id)) return;
@@ -243,8 +260,7 @@ const JobDescriptor: React.FC<JobDescriptorProps> = ({
 
   // Aggregated listings carry the source's own salary wording, which is the
   // only form that can express hourly pay correctly.
-  const getSalaryDisplay = () =>
-    formatJobSalary({ salary, salary_range, salary_text, payment_type });
+  const getSalaryDisplay = () => formatJobSalary({ compensation });
 
   const externalApplyUrl = getExternalApplyUrl({
     source,
@@ -253,6 +269,7 @@ const JobDescriptor: React.FC<JobDescriptorProps> = ({
     applicationLink,
   });
   const sourceLabel = getSourceLabel({ source, source_name });
+  const isAggregated = isAggregatedJob({ source });
 
   // Straight column reads. This used to scan tags against a hardcoded list
   // and default to "Full-Time" — inventing a fact for any listing that
@@ -288,17 +305,6 @@ const JobDescriptor: React.FC<JobDescriptorProps> = ({
   const hiringStages = (hiring_stages ?? []).filter(Boolean);
   const faqItems = (faqs ?? []).filter((f) => f.question && f.answer);
   const screeningCount = (screening_questions ?? []).length;
-
-  const formatDate = (value?: string) => {
-    if (!value) return "";
-    const parsed = new Date(value);
-    if (Number.isNaN(parsed.getTime())) return "";
-    return parsed.toLocaleDateString("en-CA", {
-      year: "numeric",
-      month: "short",
-      day: "numeric",
-    });
-  };
 
   // The "Is this job right for you?" cards. Each maps to a real attribute the
   // employer set, so the heart only lights up when the job genuinely meets that
@@ -359,7 +365,7 @@ const JobDescriptor: React.FC<JobDescriptorProps> = ({
         </nav>
 
         {/* Two-column layout. No items-start: the columns stretch to equal
-            height so the sidebar's sticky card has room to hold as you scroll —
+            height so the sidebar's sticky card has room to hold as you scroll  - 
             only the details column actually moves. */}
         <div className="flex flex-col md:flex-row gap-4 md:gap-8">
           {/* Main Content */}
@@ -384,6 +390,7 @@ const JobDescriptor: React.FC<JobDescriptorProps> = ({
             <div className="flex items-center gap-3 mb-6">
               {company_logo ? (
                 <Image
+                  loader={cloudinaryLoader}
                   src={company_logo}
                   alt={company_name}
                   width={40}
@@ -416,10 +423,23 @@ const JobDescriptor: React.FC<JobDescriptorProps> = ({
                     {company_name}
                   </p>
                 )}
-                <p className="text-xs text-gray-400 flex items-center gap-1">
-                  <HiOutlineShieldCheck className="w-4 h-4 md:w-5 md:h-5 text-emerald-500" />
-                  Trusted employer
-                </p>
+                {/* Only for listings posted here. An aggregated listing has
+                    no vetted employer behind it - badging it "trusted" would
+                    vouch for a company we've never dealt with. External ones
+                    get their source attributed instead. */}
+                {isAggregated ? (
+                  sourceLabel && (
+                    <p className="text-xs text-gray-400 flex items-center gap-1">
+                      <HiOutlineGlobeAlt className="w-4 h-4 md:w-5 md:h-5 text-gray-400" />
+                      Listed via {sourceLabel}
+                    </p>
+                  )
+                ) : (
+                  <p className="text-xs text-gray-400 flex items-center gap-1">
+                    <HiOutlineShieldCheck className="w-4 h-4 md:w-5 md:h-5 text-emerald-500" />
+                    Trusted employer
+                  </p>
+                )}
               </div>
             </div>
 
@@ -437,12 +457,12 @@ const JobDescriptor: React.FC<JobDescriptorProps> = ({
             </div>
 
             {/* About This Role */}
-            {full_description && (
+            {description && (
               <section className="mb-8">
                 <h2 className="text-xl md:text-3xl font-bold text-gray-900 mb-3">
                   About This Role
                 </h2>
-                <DescriptionBody text={full_description} />
+                <DescriptionBody text={description} />
               </section>
             )}
 
@@ -737,12 +757,12 @@ const JobDescriptor: React.FC<JobDescriptorProps> = ({
                       {
                         icon: HiOutlineClock,
                         label: "Application Deadline",
-                        value: formatDate(application_deadline),
+                        value: application_deadline ? formatDate(application_deadline) : "",
                       },
                       {
                         icon: HiOutlineCalendarDays,
                         label: "Expected Start",
-                        value: formatDate(start_date),
+                        value: start_date ? formatDate(start_date) : "",
                       },
                     ] as {
                       icon: React.ComponentType<{ className?: string }>;
@@ -781,7 +801,7 @@ const JobDescriptor: React.FC<JobDescriptorProps> = ({
                 </div>
 
                 {/* The application finishes on another site, so set that
-                    expectation before the click — but neutrally, without
+                    expectation before the click - but neutrally, without
                     naming where the listing came from. */}
                 {externalApplyUrl && (
                   <p className="text-xs text-gray-500 mb-2.5">
@@ -875,13 +895,6 @@ const JobDescriptor: React.FC<JobDescriptorProps> = ({
                     <p className="text-xs text-gray-500 leading-relaxed">
                       Complete your profile to increase your chances of getting
                       hired
-                    </p>
-                  </div>
-                  <div className="flex items-start gap-2.5">
-                    <HiOutlineCheckCircle className="w-4 h-4 md:w-5 md:h-5 text-emerald-500 shrink-0 mt-0.5" />
-                    <p className="text-xs text-gray-500 leading-relaxed">
-                      Be one of the first to apply — early applicants are 3x
-                      more likely to get noticed
                     </p>
                   </div>
                 </div>

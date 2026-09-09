@@ -1,6 +1,6 @@
 "use client";
 import React from "react";
-import { LuPhone } from "react-icons/lu";
+import { HiOutlinePhone } from "react-icons/hi2";
 import {
   HiOutlineEnvelope,
   HiOutlineMapPin,
@@ -46,7 +46,7 @@ export const ContactInfoCard: React.FC<ContactInfoCardProps> = ({
         {/* Phone Number */}
         <div className="flex items-start gap-3">
           <div className="w-10 h-10 rounded-full bg-red-50 flex items-center justify-center shrink-0">
-            <LuPhone className="w-5 h-5 md:w-6 md:h-6 text-red-500" />
+            <HiOutlinePhone className="w-5 h-5 md:w-6 md:h-6 text-red-500" />
           </div>
           <div className="flex-1">
             <label className="text-sm font-medium text-gray-500 block mb-1">

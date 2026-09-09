@@ -1,14 +1,13 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { companyIndustryLabel } from "@/lib/company-fields";
 import { useSearchParams } from "next/navigation";
-import useSWR from "swr";
 import clsx from "clsx";
 import {
   HiOutlineBuildingOffice2,
   HiOutlineClock,
   HiOutlineCheckCircle,
-  HiOutlineXCircle,
   HiOutlinePauseCircle,
   HiOutlinePlayCircle,
   HiOutlineEye,
@@ -22,11 +21,11 @@ import {
   adminRejectCompany,
   adminSuspendCompany,
   adminReinstateCompany,
-  adminCompanyCounts,
   type Company,
   type CompanyStatus,
 } from "@/lib/api/companies";
-import { useAdminCompanies } from "@/hooks/useCompanies";
+import {
+  useAdminCompanyCounts, useAdminCompanies } from "@/hooks/useCompanies";
 import { useToaster } from "@/components/ui/Toaster";
 import {
   AdminPageHeader,
@@ -40,12 +39,15 @@ import {
   AdminRowSkeleton,
   AdminEmptyState,
   StatusPill,
+  AdminStatCard,
+  AdminLoadError,
 } from "./AdminTablePanel";
 import KebabMenu, { type KebabAction } from "./KebabMenu";
 import DetailDrawer from "./DetailDrawer";
 import CompanyDetail from "./CompanyDetail";
 import StepUpDialog, { type StepUpCreds } from "./StepUpDialog";
 import ConfirmDialog from "./ConfirmDialog";
+import { formatDate } from "@/lib/date-utils";
 
 const FILTERS: { value: CompanyStatus | "all"; label: string }[] = [
   { value: "all", label: "All" },
@@ -63,58 +65,9 @@ const STATUS_TONE: Record<CompanyStatus, "amber" | "emerald" | "rose" | "gray"> 
     suspended: "gray",
   };
 
-const formatDate = (iso?: string) => {
-  if (!iso) return "—";
-  const d = new Date(iso);
-  return Number.isNaN(d.getTime())
-    ? "—"
-    : d.toLocaleDateString("en-US", {
-        month: "short",
-        day: "numeric",
-        year: "numeric",
-      });
-};
 
 // ─── Stat card ────────────────────────────────────────────────────────────────
 
-const StatCard = ({
-  icon: Icon,
-  label,
-  value,
-  tone,
-}: {
-  icon: React.ComponentType<{ className?: string }>;
-  label: string;
-  value: number | string;
-  tone: "amber" | "emerald" | "indigo" | "gray";
-}) => {
-  const map = {
-    amber: "bg-amber-50 text-amber-600 ring-amber-100",
-    emerald: "bg-emerald-50 text-emerald-600 ring-emerald-100",
-    indigo: "bg-indigo-50 text-indigo-600 ring-indigo-100",
-    gray: "bg-gray-100 text-gray-600 ring-gray-200",
-  } as const;
-  return (
-    <div className="bg-white rounded-2xl border border-gray-200/80 p-5 shadow-[0_1px_2px_rgba(15,23,42,0.04)]">
-      <div className="flex items-start justify-between gap-3">
-        <div>
-          <p className="text-[13px] font-medium text-gray-500">{label}</p>
-          <p className="mt-2 text-3xl font-bold text-gray-900 tracking-tight tabular-nums">
-            {value}
-          </p>
-        </div>
-        <div
-          className={clsx(
-            "w-11 h-11 rounded-xl ring-1 flex items-center justify-center shrink-0",
-            map[tone],
-          )}
-        >
-          <Icon className="w-5 h-5" />
-        </div>
-      </div>
-    </div>
-  );
-};
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
@@ -124,14 +77,11 @@ export const CompanyReviewQueue = () => {
   const [status, setStatus] = useState<CompanyStatus | "all">("all");
   const [page, setPage] = useState(1);
 
-  const { companies, pagination, isLoading, mutate } = useAdminCompanies(
+  const { companies, pagination, isLoading, isError, mutate } = useAdminCompanies(
     status,
     page,
   );
-  const { data: counts, mutate: mutateCounts } = useSWR(
-    "admin-company-counts",
-    adminCompanyCounts,
-  );
+  const { counts, mutate: mutateCounts } = useAdminCompanyCounts();
   const { showToast } = useToaster();
 
   const [busyId, setBusyId] = useState<string | null>(null);
@@ -272,28 +222,28 @@ export const CompanyReviewQueue = () => {
 
       {/* Summary cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-5">
-        <StatCard
+        <AdminStatCard
           icon={HiOutlineClock}
           label="Pending"
-          value={counts?.pending ?? "—"}
+          value={counts?.pending ?? "-"}
           tone="amber"
         />
-        <StatCard
+        <AdminStatCard
           icon={HiOutlineCheckCircle}
           label="Approved"
-          value={counts?.approved ?? "—"}
+          value={counts?.approved ?? "-"}
           tone="emerald"
         />
-        <StatCard
+        <AdminStatCard
           icon={HiOutlinePauseCircle}
           label="Suspended"
-          value={counts?.suspended ?? "—"}
+          value={counts?.suspended ?? "-"}
           tone="gray"
         />
-        <StatCard
+        <AdminStatCard
           icon={HiOutlineBuildingOffice2}
           label="Total"
-          value={counts?.total ?? "—"}
+          value={counts?.total ?? "-"}
           tone="indigo"
         />
       </div>
@@ -356,7 +306,7 @@ export const CompanyReviewQueue = () => {
                   <AdminRowSkeleton key={i} columns={6} />
                 ))
               : companies.map((company) => (
-                  <AdminTableRow key={company._id}>
+                  <AdminTableRow key={company._id} onOpen={() => setDrawerId(company._id)}>
                     <AdminTableTd className="font-semibold text-gray-900">
                       <div className="flex items-center gap-3">
                         <div className="w-9 h-9 rounded-lg bg-gray-100 flex items-center justify-center overflow-hidden shrink-0">
@@ -380,12 +330,12 @@ export const CompanyReviewQueue = () => {
                       </div>
                     </AdminTableTd>
                     <AdminTableTd className="text-gray-600">
-                      {company.industry || "—"}
+                      {companyIndustryLabel(company.industry) || "-"}
                     </AdminTableTd>
                     <AdminTableTd className="text-gray-600">
                       {[company.city, company.country]
                         .filter(Boolean)
-                        .join(", ") || "—"}
+                        .join(", ") || "-"}
                     </AdminTableTd>
                     <AdminTableTd>
                       <StatusPill tone={STATUS_TONE[company.status]}>
@@ -403,7 +353,10 @@ export const CompanyReviewQueue = () => {
           </AdminTableBody>
         </AdminTable>
 
-        {!isLoading && companies.length === 0 && (
+        {!isLoading && isError && (
+          <AdminLoadError what="companies" onRetry={() => mutate()} />
+        )}
+        {!isLoading && !isError && companies.length === 0 && (
           <AdminEmptyState
             title="No companies"
             description={

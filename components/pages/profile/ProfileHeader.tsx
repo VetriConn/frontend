@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { HiOutlineLocationMarker } from "react-icons/hi";
+import { HiOutlineMapPin } from "react-icons/hi2";
 import {
   HiOutlinePencilSquare,
   HiOutlineCamera,
@@ -136,7 +136,7 @@ export const ProfileHeader: React.FC<ProfileHeaderProps> = ({
             {/* Location */}
             {location && (
               <div className="flex items-center justify-center sm:justify-start gap-1.5 text-gray-500 text-sm mb-3">
-                <HiOutlineLocationMarker className="w-4 h-4 md:w-5 md:h-5 shrink-0" />
+                <HiOutlineMapPin className="w-4 h-4 md:w-5 md:h-5 shrink-0" />
                 <span>{location}</span>
               </div>
             )}
@@ -148,7 +148,7 @@ export const ProfileHeader: React.FC<ProfileHeaderProps> = ({
               </p>
             ) : (
               <p className="text-xs md:text-sm text-gray-400 italic mb-4">
-                No bio yet — tell employers about yourself.
+                No bio yet - tell employers about yourself.
               </p>
             )}
 

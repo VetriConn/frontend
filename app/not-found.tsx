@@ -17,11 +17,12 @@ export default function NotFound() {
           
           {/* Message */}
           <h2 className="text-3xl font-semibold text-gray-800 mb-4">
-            Page Not Found
+            Page not found
           </h2>
           
           <p className="text-gray-600 mb-8 max-w-md mx-auto">
-            Sorry, the page you're looking for doesn't exist or has been moved.
+            Sorry, the page you&rsquo;re looking for doesn&rsquo;t exist or has
+            been moved.
           </p>
           
           {/* Action Buttons */}

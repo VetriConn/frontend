@@ -15,9 +15,9 @@ export default function CommunityComingSoonPage() {
           <h1 className="text-2xl md:text-3xl font-bold text-gray-900 tracking-tight">
             Community is coming soon
           </h1>
-          <p className="mt-2 text-sm md:text-base text-gray-500 max-w-md mx-auto leading-relaxed">
+          <p className="mt-2 text-sm md:text-base text-gray-600 max-w-md mx-auto leading-relaxed">
             Share advice, swap stories, and connect with other Vetriconn
-            members. We&apos;re putting the finishing touches on it — check
+            members. We&apos;re putting the finishing touches on it - check
             back shortly.
           </p>
           <div className="mt-7 flex flex-wrap items-center justify-center gap-2">

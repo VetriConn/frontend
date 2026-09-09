@@ -1,9 +1,8 @@
 "use client";
 
-import { useMemo } from "react";
 import { StepProps } from "@/types/signup";
 import { FormField } from "@/components/ui/FormField";
-import { PhoneField } from "@/components/ui/PhoneField";
+import { PhoneField } from "@/components/ui/PhoneField.lazy";
 import { CustomDropdown } from "@/components/ui/CustomDropdown";
 import { CountrySelect } from "@/components/ui/CountrySelect";
 import {
@@ -29,7 +28,6 @@ export const ContactInfoStep = ({
   totalSteps,
 }: StepProps) => {
   // Step is now optional, so Continue is always enabled
-  const isFormValid = true;
 
   return (
     <div className="w-full max-w-lg mx-auto">

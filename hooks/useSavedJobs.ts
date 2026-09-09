@@ -3,13 +3,15 @@
 import { useMemo, useState } from "react";
 import useSWR from "swr";
 import { getSavedJobs, saveJob, unsaveJob } from "@/lib/api";
+import { useUserProfile } from "@/hooks/useUserProfile";
 import type { JobsResponse } from "@/types/api";
 
 /**
  * A job answers to two identities: the slug (`id`, e.g. head-baker-91994a34)
  * and the Mongo `_id`. Which one a surface holds depends on where it got the
  * job — the browse card links by slug, the detail page is often reached by
- * _id — and `saved_jobs` stores only the canonical slug.
+ * _id — and the API answers either, resolving to the canonical _id server
+ * side (jobIdentityQuery).
  *
  * This hook used to index saved jobs by `id || _id`, so a page holding the
  * _id asked "is this saved?" against a set of slugs and was told no. The Save
@@ -21,11 +23,16 @@ const identitiesOf = (job: JobsResponse): string[] =>
   [job.id, job._id].filter((value): value is string => Boolean(value));
 
 export function useSavedJobs() {
+  // Keyed off the resolved session: this hook mounts on public pages (the
+  // job detail Save button), where every anonymous view used to fire a
+  // guaranteed-401 request. Signed-out visitors now make no request at all —
+  // the key stays null until the profile resolves to a signed-in user.
+  const { userProfile } = useUserProfile();
   const {
     data: savedJobs = [],
     isLoading,
     mutate,
-  } = useSWR("/auth/saved-jobs", getSavedJobs);
+  } = useSWR(userProfile ? "/auth/saved-jobs" : null, getSavedJobs);
 
   const [pendingSavedIds, setPendingSavedIds] = useState<Set<string>>(
     new Set(),

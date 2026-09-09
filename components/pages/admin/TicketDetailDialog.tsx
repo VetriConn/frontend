@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import clsx from "clsx";
+import { useModalFocus } from "@/hooks/useModalFocus";
 import {
   HiOutlineXMark,
   HiOutlineChatBubbleLeftRight,
@@ -19,6 +20,7 @@ import {
   closeAdminTicket,
 } from "@/hooks/useAdminSupport";
 import { useToaster } from "@/components/ui/Toaster";
+import { formatDate } from "@/lib/date-utils";
 
 // ─── Pill styles (match the rest of the admin shell) ────────────────────────
 
@@ -36,11 +38,6 @@ const PRIORITY_TONE: Record<TicketPriority, string> = {
   critical: "bg-rose-600 text-white ring-rose-700/30",
 };
 
-const formatDate = (iso: string) => {
-  const d = new Date(iso);
-  if (Number.isNaN(d.getTime())) return iso;
-  return d.toISOString().slice(0, 10);
-};
 
 // ─── Component ───────────────────────────────────────────────────────────────
 
@@ -65,25 +62,12 @@ const TicketDetailDialog = ({
     setReply("");
   }, [ticket?.id]);
 
-  // Close on Escape
-  useEffect(() => {
-    if (!ticket) return;
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape" && busy === null) onClose();
-    };
-    document.addEventListener("keydown", onKey);
-    return () => document.removeEventListener("keydown", onKey);
-  }, [ticket, busy, onClose]);
-
-  // Lock body scroll while open
-  useEffect(() => {
-    if (!ticket) return;
-    const prev = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
-    return () => {
-      document.body.style.overflow = prev;
-    };
-  }, [ticket]);
+  // Escape/scroll-lock plus focus: trap Tab inside, move focus in on open,
+  // restore it to the opening row after close — the same contract as the
+  // other admin dialogs, via useModalFocus.
+  const panelRef = useModalFocus(!!ticket, onClose, {
+    closeDisabled: busy !== null,
+  });
 
   if (!ticket) return null;
 
@@ -112,7 +96,7 @@ const TicketDetailDialog = ({
       }, 0);
       showToast({ type: "success", title: "Reply sent" });
     } catch {
-      showToast({ type: "error", title: "Could not send reply" });
+      showToast({ type: "error", title: "Couldn't send reply" });
     } finally {
       setBusy(null);
     }
@@ -126,7 +110,7 @@ const TicketDetailDialog = ({
       onTicketChange({ ...ticket, status: "resolved" });
       showToast({ type: "success", title: "Marked as resolved" });
     } catch {
-      showToast({ type: "error", title: "Could not update ticket" });
+      showToast({ type: "error", title: "Couldn't update ticket" });
     } finally {
       setBusy(null);
     }
@@ -140,7 +124,7 @@ const TicketDetailDialog = ({
       onTicketChange({ ...ticket, status: "closed" });
       showToast({ type: "success", title: "Ticket closed" });
     } catch {
-      showToast({ type: "error", title: "Could not close ticket" });
+      showToast({ type: "error", title: "Couldn't close ticket" });
     } finally {
       setBusy(null);
     }
@@ -157,7 +141,10 @@ const TicketDetailDialog = ({
         className="absolute inset-0 bg-black/50"
         onClick={() => busy === null && onClose()}
       />
-      <div className="relative w-full max-w-2xl bg-white rounded-2xl shadow-xl border border-gray-200 overflow-hidden flex flex-col max-h-[90vh]">
+      <div
+        ref={panelRef}
+        className="relative w-full max-w-2xl bg-white rounded-2xl shadow-xl border border-gray-200 overflow-hidden flex flex-col max-h-[90vh]"
+      >
         {/* Header */}
         <div className="px-5 md:px-6 py-4 border-b border-gray-100 flex items-start gap-3 shrink-0">
           <div className="flex-1 min-w-0">
@@ -269,7 +256,7 @@ const TicketDetailDialog = ({
                 onChange={(e) => setReply(e.target.value)}
                 rows={4}
                 placeholder="Type your response…"
-                className="mt-1.5 w-full px-3.5 py-2.5 text-sm border border-rose-200 rounded-xl outline-none focus:border-primary focus:ring-2 focus:ring-primary/10 resize-none"
+                className="mt-1.5 w-full px-3.5 py-2.5 text-sm border border-rose-200 rounded-xl outline-none focus:border-primary focus:ring-2 focus:ring-primary/30 resize-none"
               />
             </section>
           )}

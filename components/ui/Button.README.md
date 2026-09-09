@@ -202,7 +202,6 @@ To view the Button component examples, create a test page:
 
 ```tsx
 // app/test/buttons/page.tsx
-import ButtonExamples from "@/components/ui/Button.stories";
 
 export default function ButtonTestPage() {
   return <ButtonExamples />;

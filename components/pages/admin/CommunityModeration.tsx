@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import useSWR from "swr";
 import {
   HiOutlineChatBubbleLeftRight,
   HiOutlineEye,
@@ -10,8 +9,8 @@ import {
   HiOutlineArrowUturnLeft,
   HiOutlineCheckCircle,
 } from "react-icons/hi2";
-import { adminContentCounts } from "@/lib/api/admin";
 import {
+  useAdminContentCounts,
   useAdminCommunity,
   removeAdminCommunityPost,
   flagAdminCommunityPost,
@@ -32,28 +31,18 @@ import {
   StatusPill,
   AdminStatCard,
   AdminStatRow,
+  AdminLoadError,
 } from "./AdminTablePanel";
 import KebabMenu, { type KebabAction } from "./KebabMenu";
 import DetailDrawer from "./DetailDrawer";
 import ConfirmDialog from "./ConfirmDialog";
 import { useToaster } from "@/components/ui/Toaster";
+import { formatDate } from "@/lib/date-utils";
 
-const formatDate = (iso: string) => {
-  const d = new Date(iso);
-  if (Number.isNaN(d.getTime())) return iso;
-  return d.toLocaleDateString("en-US", {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-  });
-};
 
 const CommunityModeration = () => {
-  const { posts, isLoading, mutate } = useAdminCommunity();
-  const { data: counts, mutate: mutateCounts } = useSWR(
-    "admin-content-counts",
-    adminContentCounts,
-  );
+  const { posts, isLoading, isError, mutate } = useAdminCommunity();
+  const { counts, mutate: mutateCounts } = useAdminContentCounts();
   const [viewing, setViewing] = useState<AdminCommunityPost | null>(null);
   const { showToast } = useToaster();
   const [target, setTarget] = useState<AdminCommunityPost | null>(null);
@@ -73,7 +62,7 @@ const CommunityModeration = () => {
       mutateCounts();
       setTarget(null);
     } catch {
-      showToast({ type: "error", title: "Could not remove post" });
+      showToast({ type: "error", title: "Couldn't remove post" });
     } finally {
       setBusy(false);
     }
@@ -93,7 +82,7 @@ const CommunityModeration = () => {
       await mutate();
       mutateCounts();
     } catch {
-      showToast({ type: "error", title: "Could not update post" });
+      showToast({ type: "error", title: "Couldn't update post" });
     }
   };
 
@@ -137,25 +126,25 @@ const CommunityModeration = () => {
         <AdminStatCard
           icon={HiOutlineChatBubbleLeftRight}
           label="Total posts"
-          value={counts?.total ?? "—"}
+          value={counts?.total ?? "-"}
           tone="indigo"
         />
         <AdminStatCard
           icon={HiOutlineCheckCircle}
           label="Visible"
-          value={counts?.visible ?? "—"}
+          value={counts?.visible ?? "-"}
           tone="emerald"
         />
         <AdminStatCard
           icon={HiOutlineFlag}
           label="Flagged"
-          value={counts?.flagged ?? "—"}
+          value={counts?.flagged ?? "-"}
           tone="amber"
         />
         <AdminStatCard
           icon={HiOutlineTrash}
           label="Removed"
-          value={counts?.removed ?? "—"}
+          value={counts?.removed ?? "-"}
           tone="rose"
         />
       </AdminStatRow>
@@ -175,7 +164,7 @@ const CommunityModeration = () => {
                   <AdminRowSkeleton key={i} columns={5} />
                 ))
               : posts.map((p) => (
-                  <AdminTableRow key={p.id}>
+                  <AdminTableRow key={p.id} onOpen={() => setViewing(p)}>
                     <AdminTableTd className="font-semibold text-gray-900">
                       {p.title}
                     </AdminTableTd>
@@ -201,7 +190,10 @@ const CommunityModeration = () => {
                 ))}
           </AdminTableBody>
         </AdminTable>
-        {!isLoading && posts.length === 0 && (
+        {!isLoading && isError && (
+          <AdminLoadError what="community posts" onRetry={() => mutate()} />
+        )}
+        {!isLoading && !isError && posts.length === 0 && (
           <AdminEmptyState
             title="Community posting isn't live yet"
             description="There's no way for members to publish posts on Vetriconn yet, so this queue stays empty. It will fill in once community posting ships."

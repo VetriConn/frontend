@@ -24,6 +24,7 @@ export interface ApplicationDraftRecord {
   preferredSchedule?: string;
   workLocationPreference?: string;
   additionalInfo?: string;
+  screeningAnswers?: Record<string, string[]>;
   savedAt?: string;
 }
 
@@ -42,6 +43,10 @@ function mapFromBackend(raw: ApplicationDraftResponse): ApplicationDraftRecord {
     preferredSchedule: raw.preferred_schedule || undefined,
     workLocationPreference: raw.work_location_preference || undefined,
     additionalInfo: raw.additional_info || undefined,
+    screeningAnswers:
+      raw.screening_answers && Object.keys(raw.screening_answers).length
+        ? raw.screening_answers
+        : undefined,
     savedAt: raw.updatedAt || undefined,
   };
 }
@@ -84,6 +89,7 @@ export async function saveApplicationDraft(
     preferred_schedule: draft.preferredSchedule,
     work_location_preference: draft.workLocationPreference,
     additional_info: draft.additionalInfo,
+    screening_answers: draft.screeningAnswers,
   });
 }
 

@@ -6,7 +6,7 @@ import React, {
   useCallback,
   useMemo,
   useRef,
-  useEffect,
+  
 } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -20,7 +20,6 @@ import { FilterPanel } from "@/components/ui/FilterPanel";
 import { JobResultsList } from "@/components/ui/JobResultsList";
 import { Pagination } from "@/components/ui/Pagination";
 import { useJobs } from "@/hooks/useJobs";
-import { Job } from "@/types/job";
 import { useSavedSearches } from "@/hooks/useSavedSearches";
 import { useToaster } from "@/components/ui/Toaster";
 
@@ -175,36 +174,6 @@ const SearchResultsPage = () => {
 
   // Handle page change
   const resultsRef = useRef<HTMLDivElement>(null);
-  const shellRef = useRef<HTMLDivElement>(null);
-
-  /**
-   * Fill exactly the space the dashboard layout leaves, no more.
-   *
-   * The shared layout puts a navbar, breadcrumbs and its own padding above
-   * this page, so a plain h-screen here overflows the window by precisely that
-   * chrome — which is what made the whole page scroll instead of just the
-   * list. Measured rather than hardcoded because the chrome differs by
-   * breakpoint, and the layout is shared with pages that still scroll the
-   * window, so it cannot be reshaped from here.
-   */
-  const [shellHeight, setShellHeight] = useState<string>("100vh");
-
-  useEffect(() => {
-    const measure = () => {
-      const shell = shellRef.current;
-      if (!shell) return;
-      const top = shell.getBoundingClientRect().top + window.scrollY;
-      const layoutMain = shell.closest("main");
-      const bottomPad = layoutMain
-        ? parseFloat(getComputedStyle(layoutMain).paddingBottom) || 0
-        : 0;
-      setShellHeight(`${Math.max(320, window.innerHeight - top - bottomPad)}px`);
-    };
-
-    measure();
-    window.addEventListener("resize", measure);
-    return () => window.removeEventListener("resize", measure);
-  }, []);
 
   const handlePageChange = useCallback((nextPage: number) => {
     setCurrentPage(nextPage);
@@ -258,18 +227,26 @@ const SearchResultsPage = () => {
   // The page itself no longer grows with the results. The header and the
   // filters hold their place and only the list scrolls, so the controls stay
   // reachable however far down the list you are.
+  //
+  // The height is pure CSS: 100dvh minus the dashboard chrome above and below
+  // — 66px of fixed parts (logo 64px + two borders) plus the rem-sized parts
+  // (navbar/breadcrumb padding, breadcrumb line, layout main's py-6/py-8:
+  // 7rem, 8rem at md). Split px/rem so the app's own accessibility text-size
+  // setting (which scales the root font-size, and with it all that rem
+  // chrome) keeps the shell exactly fitting instead of overflowing. No
+  // post-mount remeasure, no resize listener; dvh tracks the mobile URL-bar
+  // collapse that vh ignores. The constants live in the shared layout — if
+  // its chrome changes, retune these two calc()s.
   return (
     <div
-      ref={shellRef}
-      style={{ height: shellHeight }}
-      className="flex flex-col bg-gray-50 overflow-hidden"
+      className="flex flex-col bg-gray-50 overflow-hidden h-[max(320px,calc(100dvh-66px-7rem))] md:h-[max(320px,calc(100dvh-66px-8rem))]"
     >
       {/* Main Content */}
       <main id="main-content" className="flex-1 min-h-0 flex flex-col" tabIndex={-1}>
         <div className="max-w-screen-xl mx-auto w-full flex-1 min-h-0 flex flex-col px-4 md:px-6 pt-4">
           <Link
             href="/dashboard"
-            className="inline-flex items-center gap-2 text-sm text-gray-500 hover:text-gray-900 font-medium transition-colors no-underline mb-3"
+            className="inline-flex items-center gap-2 text-sm text-gray-600 hover:text-gray-900 font-medium transition-colors no-underline mb-3"
           >
             <HiOutlineArrowLeft className="w-4 h-4 md:w-5 md:h-5" />
             Back to Dashboard
@@ -278,9 +255,9 @@ const SearchResultsPage = () => {
           {/* Page Header */}
           <header className="mb-4">
             <h1 className="text-xl sm:text-2xl font-bold text-gray-900 leading-tight tracking-tight mb-1">
-              Find Your Next Opportunity
+              Browse Jobs
             </h1>
-            <p className="text-gray-500 text-sm">
+            <p className="text-gray-600 text-sm">
               Browse flexible positions designed for experienced professionals
               like you.
             </p>
@@ -313,7 +290,7 @@ const SearchResultsPage = () => {
                 )}
                 <Link
                   href="/dashboard/saved-searches"
-                  className="text-sm text-gray-400 hover:text-gray-600 transition-colors no-underline"
+                  className="text-sm text-gray-500 hover:text-gray-600 transition-colors no-underline"
                 >
                   View saved searches
                 </Link>
@@ -354,10 +331,10 @@ const SearchResultsPage = () => {
                     <p className="text-sm font-medium text-gray-900">
                       Still looking for more matches
                     </p>
-                    <p className="text-sm text-gray-500">
+                    <p className="text-sm text-gray-600">
                       We&apos;re searching further afield for
                       {appliedSearchQuery ? ` “${appliedSearchQuery}”` : " this"}
-                      . Check back in a moment — new listings are added as we
+                      . Check back in a moment - new listings are added as we
                       find them.
                     </p>
                   </div>

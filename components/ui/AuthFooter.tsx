@@ -15,7 +15,7 @@ export const AuthFooter = () => {
           href="https://vetriconntandc.notion.site/VETRICONN-INC-TERMS-AND-CONDITIONS-22ac6380202c807fa63ef48c7ca69815"
           target="_blank"
           rel="noopener noreferrer"
-          className="font-open-sans text-xs md:text-sm text-gray-500 hover:text-primary transition-colors min-h-44 flex items-center"
+          className="font-open-sans text-xs md:text-sm text-gray-500 hover:text-primary transition-colors min-h-[44px] flex items-center"
         >
           Privacy Policy
         </Link>
@@ -24,7 +24,7 @@ export const AuthFooter = () => {
           href="https://vetriconntandc.notion.site/VETRICONN-INC-TERMS-AND-CONDITIONS-22ac6380202c807fa63ef48c7ca69815"
           target="_blank"
           rel="noopener noreferrer"
-          className="font-open-sans text-xs md:text-sm text-gray-500 hover:text-primary transition-colors min-h-44 flex items-center"
+          className="font-open-sans text-xs md:text-sm text-gray-500 hover:text-primary transition-colors min-h-[44px] flex items-center"
         >
           Terms of Service
         </Link>

@@ -15,6 +15,7 @@ import {
   type JobFaq,
 } from "@/lib/job-fields";
 import { CustomDropdown } from "@/components/ui/CustomDropdown";
+import { inputClasses } from "./formKit";
 
 /**
  * Phase-2 builder step: the screening questionnaire, a public FAQ, and the
@@ -26,15 +27,13 @@ import { CustomDropdown } from "@/components/ui/CustomDropdown";
  * the wizard shell stays readable by importing just <StepHiring/>.
  */
 
-const inputClasses =
-  "w-full px-3 py-2 md:px-4 md:py-3 border border-gray-200 rounded-lg text-sm md:text-base focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent bg-white";
 
 const WEIGHT_LABELS: Record<number, string> = {
-  1: "1 — Nice to have",
-  2: "2 — Minor",
-  3: "3 — Important",
-  4: "4 — Major",
-  5: "5 — Critical",
+  1: "1 - Nice to have",
+  2: "2 - Minor",
+  3: "3 - Important",
+  4: "4 - Major",
+  5: "5 - Critical",
 };
 
 const YES_NO_OPTIONS = ["yes", "no"];
@@ -66,8 +65,8 @@ function IconButton({
       title={label}
       className={`inline-flex h-9 w-9 items-center justify-center rounded-lg border transition-colors disabled:opacity-40 disabled:cursor-not-allowed ${
         danger
-          ? "border-gray-200 text-gray-500 hover:border-red-300 hover:text-red-600"
-          : "border-gray-200 text-gray-500 hover:border-primary hover:text-primary"
+          ? "border-gray-200 text-gray-600 hover:border-red-300 hover:text-red-600"
+          : "border-gray-200 text-gray-600 hover:border-primary hover:text-primary"
       }`}
     >
       {children}
@@ -148,7 +147,7 @@ function ScreeningQuestionCard({
   return (
     <div className="rounded-xl border border-gray-200 p-4 md:p-5">
       <div className="mb-3 flex items-start gap-3">
-        <span className="mt-2 text-sm font-semibold text-gray-400">
+        <span className="mt-2 text-sm font-semibold text-gray-500">
           {index + 1}
         </span>
         <div className="flex-1">
@@ -215,7 +214,7 @@ function ScreeningQuestionCard({
       {/* Options editor for choice types */}
       {isChoice && (
         <div className="mt-4">
-          <p className="mb-1.5 text-xs font-medium text-gray-600">Options</p>
+          <p className="mb-1.5 text-sm font-medium text-gray-600">Options</p>
           <div className="space-y-2">
             {(question.options ?? []).map((opt, optIndex) => (
               <div key={optIndex} className="flex items-center gap-2">
@@ -251,10 +250,10 @@ function ScreeningQuestionCard({
       {/* Preferred answer(s) — the scoring target */}
       {canScore && preferredCandidates.length > 0 && (
         <div className="mt-4">
-          <p className="mb-1.5 text-xs font-medium text-gray-600">
+          <p className="mb-1.5 text-sm font-medium text-gray-600">
             Preferred answer{question.type === "multi_choice" ? "s" : ""}{" "}
             <span className="font-normal text-gray-400">
-              (used for ranking — optional)
+              (used for ranking - optional)
             </span>
           </p>
           <div className="flex flex-wrap gap-2">
@@ -281,7 +280,7 @@ function ScreeningQuestionCard({
       )}
 
       {question.type === "short_text" && (
-        <p className="mt-3 text-xs text-gray-400">
+        <p className="mt-3 text-sm text-gray-500">
           Short answers are shown to you but aren&apos;t scored.
         </p>
       )}
@@ -374,10 +373,10 @@ export function StepHiring({
       <h2 className="text-xl font-semibold text-gray-900 mb-1">
         Screening &amp; Hiring
       </h2>
-      <p className="text-sm md:text-base text-gray-500 mb-6">
+      <p className="text-sm md:text-base text-gray-600 mb-6">
         Optional. Ask a few screening questions to rank applicants, answer common
         questions up front, and show candidates what to expect. Screening never
-        rejects anyone automatically — it only helps you sort.
+        rejects anyone automatically - it only helps you sort.
       </p>
 
       {/* Screening questions */}
@@ -385,7 +384,7 @@ export function StepHiring({
         <h3 className="text-base font-semibold text-gray-900 mb-1">
           Screening questions
         </h3>
-        <p className="text-sm text-gray-500 mb-4">
+        <p className="text-sm text-gray-600 mb-4">
           Set a preferred answer and importance to rank applicants automatically.
         </p>
         <div className="space-y-4">
@@ -417,7 +416,7 @@ export function StepHiring({
         <h3 className="text-base font-semibold text-gray-900 mb-1">
           Frequently asked questions
         </h3>
-        <p className="text-sm text-gray-500 mb-4">
+        <p className="text-sm text-gray-600 mb-4">
           Answer common questions so applicants don&apos;t have to ask.
         </p>
         <div className="space-y-4">
@@ -433,7 +432,7 @@ export function StepHiring({
                   onChange={(e) =>
                     updateFaq(i, { ...faq, question: e.target.value })
                   }
-                  placeholder="Question — e.g. Is parking available?"
+                  placeholder="Question - e.g. Is parking available?"
                   className={inputClasses}
                   aria-label={`FAQ question ${i + 1}`}
                 />
@@ -473,7 +472,7 @@ export function StepHiring({
         <h3 className="text-base font-semibold text-gray-900 mb-1">
           Hiring process
         </h3>
-        <p className="text-sm text-gray-500 mb-4">
+        <p className="text-sm text-gray-600 mb-4">
           Show candidates the steps from application to offer.
         </p>
         <div className="space-y-2">
@@ -486,7 +485,7 @@ export function StepHiring({
                 type="text"
                 value={stage}
                 onChange={(e) => updateStage(i, e.target.value)}
-                placeholder={`Stage ${i + 1} — e.g. Phone screen`}
+                placeholder={`Stage ${i + 1} - e.g. Phone screen`}
                 className={inputClasses}
                 aria-label={`Hiring stage ${i + 1}`}
               />

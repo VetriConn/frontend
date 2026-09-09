@@ -1,10 +1,8 @@
-"use client";
-
-import { ReactNode } from "react";
+import Eyebrow from "@/components/ui/Eyebrow";
+import Reveal from "@/components/ui/Reveal";
 import Image from "next/image";
 
 interface Benefit {
-  icon: ReactNode;
   title: string;
   description: string;
   image: string;
@@ -12,138 +10,26 @@ interface Benefit {
 }
 
 // SVG Icons as components
-const ConvenienceIcon = () => (
-  <svg
-    width="48"
-    height="48"
-    viewBox="0 0 48 48"
-    fill="none"
-    xmlns="http://www.w3.org/2000/svg"
-    aria-hidden="true"
-  >
-    <circle cx="24" cy="24" r="24" fill="#FEE2E2" />
-    <path
-      d="M24 14V24L30 27"
-      stroke="#E53E3E"
-      strokeWidth="2.5"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    />
-    <path
-      d="M24 34C29.5228 34 34 29.5228 34 24C34 18.4772 29.5228 14 24 14C18.4772 14 14 18.4772 14 24C14 29.5228 18.4772 34 24 34Z"
-      stroke="#E53E3E"
-      strokeWidth="2.5"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    />
-  </svg>
-);
-
-const ConnectedIcon = () => (
-  <svg
-    width="48"
-    height="48"
-    viewBox="0 0 48 48"
-    fill="none"
-    xmlns="http://www.w3.org/2000/svg"
-    aria-hidden="true"
-  >
-    <circle cx="24" cy="24" r="24" fill="#FEE2E2" />
-    <path
-      d="M20 28C20 28 21.5 30 24 30C26.5 30 28 28 28 28"
-      stroke="#E53E3E"
-      strokeWidth="2.5"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    />
-    <path
-      d="M21 21H21.01"
-      stroke="#E53E3E"
-      strokeWidth="2.5"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    />
-    <path
-      d="M27 21H27.01"
-      stroke="#E53E3E"
-      strokeWidth="2.5"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    />
-    <path
-      d="M24 34C29.5228 34 34 29.5228 34 24C34 18.4772 29.5228 14 24 14C18.4772 14 14 18.4772 14 24C14 29.5228 18.4772 34 24 34Z"
-      stroke="#E53E3E"
-      strokeWidth="2.5"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    />
-  </svg>
-);
-
-const CommunityIcon = () => (
-  <svg
-    width="48"
-    height="48"
-    viewBox="0 0 48 48"
-    fill="none"
-    xmlns="http://www.w3.org/2000/svg"
-    aria-hidden="true"
-  >
-    <circle cx="24" cy="24" r="24" fill="#FEE2E2" />
-    <path
-      d="M30 32V30C30 28.9391 29.5786 27.9217 28.8284 27.1716C28.0783 26.4214 27.0609 26 26 26H22C20.9391 26 19.9217 26.4214 19.1716 27.1716C18.4214 27.9217 18 28.9391 18 30V32"
-      stroke="#E53E3E"
-      strokeWidth="2.5"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    />
-    <path
-      d="M24 22C26.2091 22 28 20.2091 28 18C28 15.7909 26.2091 14 24 14C21.7909 14 20 15.7909 20 18C20 20.2091 21.7909 22 24 22Z"
-      stroke="#E53E3E"
-      strokeWidth="2.5"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    />
-    <path
-      d="M35 32V30C34.9993 29.1137 34.7044 28.2528 34.1614 27.5523C33.6184 26.8519 32.8581 26.3516 32 26.13"
-      stroke="#E53E3E"
-      strokeWidth="2.5"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    />
-    <path
-      d="M29 14.13C29.8604 14.3503 30.623 14.8507 31.1676 15.5523C31.7122 16.2539 32.0078 17.1168 32.0078 18.005C32.0078 18.8932 31.7122 19.7561 31.1676 20.4577C30.623 21.1593 29.8604 21.6597 29 21.88"
-      stroke="#E53E3E"
-      strokeWidth="2.5"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    />
-  </svg>
-);
-
 const benefits: Benefit[] = [
   {
-    icon: <ConvenienceIcon />,
-    title: "More Convenient",
+    title: "One profile, every application",
     description:
-      "Vetriconn's intuitive, user-friendly platform makes it simple to create a profile and apply for jobs, saving time and reducing stress. Whether you're looking for part-time work, volunteer opportunities, or ways to stay engaged, we help you connect with meaningful roles quickly and effortlessly.",
+      "Fill in your details once. Apply to any role with the same profile - no starting over each time.",
     image: "/images/jobs_hero3.jpg",
     imageAlt: "Easy and convenient job searching",
   },
   {
-    icon: <ConnectedIcon />,
-    title: "More Connected",
+    title: "Roles that come to you",
     description:
-      "With personalized job alerts and tailored opportunity notifications, users receive updates that align with their skills, preferences, and interests. Vetriconn goes beyond generic listings—our platform curates opportunities specifically suited to your experience and lifestyle.",
-    image: "/images/Hero/8.svg",
+      "Tell us the work and hours you want. We'll email you new jobs that match.",
+    image: "/images/hero/8.jpg",
     imageAlt: "Connected professionals collaborating",
   },
   {
-    icon: <CommunityIcon />,
-    title: "Stronger Communities",
+    title: "Paid work and volunteering",
     description:
-      "By connecting retirees and veterans with purposeful work and volunteer opportunities, we help strengthen communities. Organizations gain valuable experienced support, while our users find purpose, income, and connection—creating a true win-win for everyone.",
-    image: "/images/Hero/5.svg",
+      "Full-time, part-time, and volunteer placements from Canadian organisations that want experienced people.",
+    image: "/images/hero/5.jpg",
     imageAlt: "Building stronger communities together",
   },
 ];
@@ -155,81 +41,63 @@ interface BenefitsSectionProps {
 export const BenefitsSection = ({ id }: BenefitsSectionProps) => (
   <section
     id={id}
-    className="py-20 bg-gray-bg mobile:py-12 relative overflow-hidden"
+    className="py-20 md:py-28 bg-white mobile:py-14 relative overflow-hidden"
     aria-labelledby="benefits-heading"
   >
     {/* Decorative dots */}
-    <div
-      className="absolute top-10 left-[5%] w-3 h-3 rounded-full bg-primary opacity-40"
-      aria-hidden="true"
-    />
-    <div
-      className="absolute top-20 right-[6%] w-2.5 h-2.5 rounded-full bg-amber-400 opacity-50"
-      aria-hidden="true"
-    />
-    <div
-      className="absolute bottom-14 left-[8%] w-2 h-2 rounded-full bg-amber-400 opacity-40"
-      aria-hidden="true"
-    />
-    <div
-      className="absolute bottom-20 right-[4%] w-3 h-3 rounded-full bg-primary opacity-30"
-      aria-hidden="true"
-    />
-    <div
-      className="absolute top-[50%] left-[2%] w-2 h-2 rounded-full bg-pink-400 opacity-30"
-      aria-hidden="true"
-    />
 
-    <div className="container-main relative z-10">
+    <div className="max-w-[1600px] mx-auto px-[5%] md:px-10 lg:px-14 relative z-10">
       {/* Headline */}
-      <div className="text-center max-w-3xl mx-auto mb-16 mobile:mb-10">
+      <Reveal className="text-center max-w-3xl mx-auto mb-16 mobile:mb-10">
+        <Eyebrow>Why Vetriconn</Eyebrow>
         <h2 id="benefits-heading" className="heading-1 mb-5 mobile:mb-4">
-          Why Choose <span className="text-primary">Vetriconn</span>?
+          Work that fits <span className="text-primary">your life</span>.
         </h2>
         <p className="body-text text-lg mobile:text-base">
-          Discover how our platform makes finding meaningful opportunities
-          easier, more personalized, and more impactful for retirees and
-          veterans across Canada.
+          Search roles chosen for experienced Canadians, apply without
+          rewriting your history, and hear back from people who wanted your
+          experience in the first place.
         </p>
-      </div>
+      </Reveal>
 
       {/* Benefit rows — alternating image + text */}
-      <div className="flex flex-col gap-12 md:gap-20 max-w-5xl mx-auto">
+      <div className="flex flex-col gap-10 md:gap-14 w-full">
         {benefits.map((benefit, idx) => {
           const isReversed = idx % 2 !== 0;
           return (
-            <article
+            <Reveal
+              as="article"
               key={idx}
-              className={`grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6 items-center ${isReversed ? "direction-rtl" : ""}`}
+              index={idx}
+              className={`group grid grid-cols-1 lg:grid-cols-2 gap-6 md:gap-10 lg:gap-16 items-center ${isReversed ? "direction-rtl" : ""}`}
             >
               {/* Image */}
               <div
-                className={`relative w-full aspect-[3/2] rounded-2xl overflow-hidden shadow-lg ${isReversed ? "mobile:order-1 order-2" : "order-1"}`}
+                className={`relative w-full aspect-[16/10] lg:aspect-[5/4] rounded-2xl overflow-hidden shadow-md transition-[transform,box-shadow] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-1 hover:shadow-xl motion-reduce:transition-none motion-reduce:hover:translate-y-0 order-2 ${isReversed ? "lg:order-2" : "lg:order-1"}`}
               >
                 <Image
                   src={benefit.image}
                   alt={benefit.imageAlt}
                   fill
-                  className="object-cover w-full h-full"
+                  className="object-cover w-full h-full transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-[1.03] motion-reduce:transition-none motion-reduce:transform-none"
                   sizes="(max-width: 850px) 100vw, 50vw"
                   loading={idx === 0 ? "eager" : "lazy"}
-                  style={{ aspectRatio: '3/2' }}
+                  
                 />
               </div>
 
               {/* Text */}
               <div
-                className={`${isReversed ? "mobile:order-2 order-1" : "order-2"}`}
+                className={`text-center lg:text-left order-1 ${isReversed ? "lg:order-1" : "lg:order-2"}`}
               >
-                <div className="mb-4">{benefit.icon}</div>
-                <h3 className="font-lato text-lg md:text-2xl font-bold text-text mb-3 leading-tight">
+                <h3 className="font-lato text-xl md:text-[28px] font-bold text-text mb-3 leading-[1.15] tracking-[-0.01em] max-w-[20ch] mx-auto lg:mx-0">
                   {benefit.title}
                 </h3>
-                <p className="font-open-sans text-base text-text-muted leading-relaxed m-0">
+                <p className="font-open-sans text-base md:text-lg text-text-muted leading-relaxed m-0 max-w-[46ch] mx-auto lg:mx-0">
                   {benefit.description}
                 </p>
               </div>
-            </article>
+            </Reveal>
           );
         })}
       </div>

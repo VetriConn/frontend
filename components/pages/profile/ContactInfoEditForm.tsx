@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import { FormField } from "@/components/ui/FormField";
-import { PhoneField, validatePhone } from "@/components/ui/PhoneField";
+import { PhoneField, validatePhone } from "@/components/ui/PhoneField.lazy";
 import { CustomDropdown } from "@/components/ui/CustomDropdown";
 import { CountrySelect } from "@/components/ui/CountrySelect";
 import { regionsFor, hasRegions, regionLabelFor } from "@/lib/regions";
@@ -13,6 +13,17 @@ export interface ContactInfoFormData {
   /** ISO 3166-2 subdivision code where we enumerate them, else free text. */
   state_province: string;
   country: string;
+}
+
+/**
+ * The imperative seam this form hangs off its own container node, so a parent
+ * (and the test) can validate it and read it back without a ref being threaded
+ * through. Declared rather than cast through `any`: the shape is what the
+ * caller relies on, so it should be the thing that breaks when it changes.
+ */
+export interface ContactInfoFormHandle extends HTMLElement {
+  validate?: () => boolean;
+  getData?: () => ContactInfoFormData;
 }
 
 export interface ContactInfoEditFormProps {
@@ -124,10 +135,12 @@ export const ContactInfoEditForm: React.FC<ContactInfoEditFormProps> = ({
   // Expose validation method to parent via ref or callback
   React.useEffect(() => {
     // Store validation function on the form element for parent access
-    const formElement = document.getElementById("contact-info-form");
+    const formElement = document.getElementById(
+      "contact-info-form",
+    ) as ContactInfoFormHandle | null;
     if (formElement) {
-      (formElement as any).validate = validateAll;
-      (formElement as any).getData = () => formData;
+      formElement.validate = validateAll;
+      formElement.getData = () => formData;
     }
   }, [formData]);
 

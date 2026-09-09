@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import clsx from "clsx";
 import {
   HiOutlineLifebuoy,
@@ -33,44 +33,18 @@ import {
   AdminTableTd,
   AdminRowSkeleton,
   AdminEmptyState,
-  RowActions,
+  AdminStatCard,
+  AdminPagination,
+  AdminLoadError,
 } from "./AdminTablePanel";
 import KebabMenu, { type KebabAction } from "./KebabMenu";
 import TicketDetailDialog from "./TicketDetailDialog";
 import { useUserProfile } from "@/hooks/useUserProfile";
 import { useToaster } from "@/components/ui/Toaster";
+import { formatDate } from "@/lib/date-utils";
 
 // ─── Stat card (matches dashboard tone but value-tinted) ─────────────────────
 
-type StatTone = "indigo" | "amber" | "rose";
-
-const STAT_TEXT: Record<StatTone, string> = {
-  indigo: "text-indigo-600",
-  amber: "text-amber-600",
-  rose: "text-rose-600",
-};
-
-const StatCard = ({
-  label,
-  value,
-  tone,
-}: {
-  label: string;
-  value: number;
-  tone: StatTone;
-}) => (
-  <div className="bg-white rounded-2xl border border-gray-200/80 p-5 shadow-[0_1px_2px_rgba(15,23,42,0.04)]">
-    <p className="text-[13px] font-medium text-gray-500">{label}</p>
-    <p
-      className={clsx(
-        "mt-2 text-3xl font-bold tracking-tight tabular-nums",
-        STAT_TEXT[tone],
-      )}
-    >
-      {value}
-    </p>
-  </div>
-);
 
 // ─── Pill styles ─────────────────────────────────────────────────────────────
 
@@ -101,20 +75,19 @@ const FILTER_OPTIONS: { value: FilterValue; label: string }[] = [
   { value: "critical_unresolved", label: "Critical (unresolved)" },
 ];
 
-const formatDate = (iso: string) => {
-  const d = new Date(iso);
-  if (Number.isNaN(d.getTime())) return iso;
-  return d.toISOString().slice(0, 10);
-};
 
 // ─── Page ────────────────────────────────────────────────────────────────────
 
 const SupportTickets = () => {
-  const { tickets, isLoading, mutate } = useAdminSupportTickets();
+  const [page, setPage] = useState(1);
+  const { tickets, pagination, isLoading, isError, mutate } = useAdminSupportTickets(page);
   const { userProfile } = useUserProfile();
   const { showToast } = useToaster();
   const [filter, setFilter] = useState<FilterValue>("all");
   const [scope, setScope] = useState<TicketScope>("all");
+  // A filter change starts back at page 1 - page 3 of a different filter
+  // is meaningless.
+  useEffect(() => setPage(1), [filter, scope]);
   const [openTicketId, setOpenTicketId] = useState<string | null>(null);
 
   const currentAdmin = useMemo(
@@ -163,7 +136,10 @@ const SupportTickets = () => {
 
   const handleTicketChange = async (next: AdminTicket) => {
     await mutate(
-      tickets.map((t) => (t.id === next.id ? next : t)),
+      {
+        tickets: tickets.map((t) => (t.id === next.id ? next : t)),
+        pagination,
+      },
       false,
     );
   };
@@ -184,7 +160,7 @@ const SupportTickets = () => {
         description: t.subject,
       });
     } catch {
-      showToast({ type: "error", title: "Could not claim ticket" });
+      showToast({ type: "error", title: "Couldn't claim ticket" });
     }
   };
 
@@ -194,7 +170,7 @@ const SupportTickets = () => {
       await handleTicketChange({ ...t, status: "resolved" });
       showToast({ type: "success", title: "Ticket resolved", description: t.subject });
     } catch {
-      showToast({ type: "error", title: "Could not resolve ticket" });
+      showToast({ type: "error", title: "Couldn't resolve ticket" });
     }
   };
 
@@ -232,9 +208,9 @@ const SupportTickets = () => {
 
       {/* Stats */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 md:gap-5">
-        <StatCard label="Total Tickets" value={stats.total} tone="indigo" />
-        <StatCard label="Open Tickets" value={stats.open} tone="amber" />
-        <StatCard
+        <AdminStatCard label="Total Tickets" value={stats.total} tone="indigo" />
+        <AdminStatCard label="Open Tickets" value={stats.open} tone="amber" />
+        <AdminStatCard
           label="Critical Unresolved"
           value={stats.criticalUnresolved}
           tone="rose"
@@ -287,7 +263,7 @@ const SupportTickets = () => {
               id="ticket-filter"
               value={filter}
               onChange={(e) => setFilter(e.target.value as FilterValue)}
-              className="appearance-none pl-3.5 pr-9 py-2 rounded-xl border border-gray-200 bg-white text-sm font-medium text-gray-800 outline-none focus:border-primary focus:ring-2 focus:ring-primary/10 transition cursor-pointer"
+              className="appearance-none pl-3.5 pr-9 py-2 rounded-xl border border-gray-200 bg-white text-sm font-medium text-gray-800 outline-none focus:border-primary focus:ring-2 focus:ring-primary/30 transition cursor-pointer"
             >
               {FILTER_OPTIONS.map((opt) => (
                 <option key={opt.value} value={opt.value}>
@@ -325,7 +301,7 @@ const SupportTickets = () => {
                   <AdminRowSkeleton key={i} columns={9} />
                 ))
               : visible.map((t) => (
-                  <AdminTableRow key={t.id}>
+                  <AdminTableRow key={t.id} onOpen={() => setOpenTicketId(t.id)}>
                     <AdminTableTd className="font-semibold text-gray-700 tabular-nums">
                       {t.reference}
                     </AdminTableTd>
@@ -388,7 +364,10 @@ const SupportTickets = () => {
                 ))}
           </AdminTableBody>
         </AdminTable>
-        {!isLoading && visible.length === 0 && (
+        {!isLoading && isError && (
+          <AdminLoadError what="support tickets" onRetry={() => mutate()} />
+        )}
+        {!isLoading && !isError && visible.length === 0 && (
           <AdminEmptyState
             title={
               filter === "all"
@@ -409,6 +388,7 @@ const SupportTickets = () => {
             }
           />
         )}
+        <AdminPagination pagination={pagination} onPage={setPage} />
       </AdminTablePanel>
 
       <TicketDetailDialog

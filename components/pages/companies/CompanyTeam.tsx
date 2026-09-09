@@ -12,6 +12,7 @@ import {
 import {
   inviteMember,
   removeMember,
+  revokeCompanyInvite,
   transferOwnership,
   type Company,
   type CompanyMember,
@@ -38,8 +39,8 @@ interface CompanyTeamProps {
 }
 
 const ROLE_OPTIONS = [
-  { value: "recruiter", label: "Recruiter — review applicants" },
-  { value: "admin", label: "Admin — manage jobs and teammates" },
+  { value: "recruiter", label: "Recruiter - review applicants" },
+  { value: "admin", label: "Admin - manage jobs and teammates" },
 ];
 
 const ROLE_LABEL: Record<CompanyRole, string> = {
@@ -139,8 +140,56 @@ export const CompanyTeam = ({
     }
   };
 
+  // Pending invites used to be action-less: a mistyped address sat as
+  // "Invite pending" until it expired, un-cancellable, and blocked
+  // re-inviting the correct one.
+  const handleRevokeInvite = async (member: CompanyMember, resend: boolean) => {
+    if (!member.invited_email) return;
+    setRemovingId(member.invited_email);
+    try {
+      await revokeCompanyInvite(company._id, member.invited_email);
+      if (resend) {
+        await inviteMember(
+          company._id,
+          member.invited_email,
+          (member.role === "owner" ? "admin" : member.role) as "admin" | "recruiter",
+        );
+        showToast({
+          type: "success",
+          title: "Invite resent",
+          description: `A fresh invite is on its way to ${member.invited_email}.`,
+        });
+      } else {
+        showToast({
+          type: "success",
+          title: "Invite cancelled",
+          description: `${member.invited_email} can be re-invited any time.`,
+        });
+      }
+      onChanged();
+    } catch (err) {
+      showToast({
+        type: "error",
+        title: resend ? "Couldn't resend the invite" : "Couldn't cancel the invite",
+        description:
+          err instanceof Error ? err.message : "Please try again in a moment.",
+      });
+    } finally {
+      setRemovingId(null);
+    }
+  };
+
   const handleRemove = async (member: CompanyMember) => {
     if (!member.user_id) return;
+
+    // A single stray click must not eject a teammate - same rule as every
+    // other destructive action in the app.
+    const who = member.invited_email || "this teammate";
+    const confirmed = window.confirm(
+      `Remove ${who} from ${company.name}?\n\n` +
+        "They will lose access to the company's jobs and applicants immediately.",
+    );
+    if (!confirmed) return;
 
     setRemovingId(member.user_id);
     try {
@@ -180,7 +229,7 @@ export const CompanyTeam = ({
       </div>
       <p className="text-sm text-gray-500 mb-5">
         Teammates manage this company&apos;s jobs and applicants with their own
-        accounts — nobody needs to share a password.
+        accounts - nobody needs to share a password.
       </p>
 
       {inviteOpen && (
@@ -244,7 +293,7 @@ export const CompanyTeam = ({
               <div className="min-w-0 flex-1">
                 {/* Members who joined by invite keep their invited_email, but
                     the owner never had one and the API returns ids rather than
-                    names — so an unlabelled row would show a raw ObjectId. */}
+                    names - so an unlabelled row would show a raw ObjectId. */}
                 <p className="text-sm font-medium text-gray-900 truncate">
                   {member.invited_email ||
                     (member.user_id && member.user_id === myUserId
@@ -302,6 +351,28 @@ export const CompanyTeam = ({
                 >
                   <HiOutlineTrash className="w-4 h-4" />
                 </button>
+              )}
+
+              {canInvite && isInvited && member.invited_email && (
+                <>
+                  <button
+                    type="button"
+                    onClick={() => handleRevokeInvite(member, true)}
+                    disabled={removingId === member.invited_email}
+                    className="text-sm font-medium text-gray-500 hover:text-primary underline-offset-2 hover:underline bg-transparent border-none cursor-pointer min-h-[44px] disabled:opacity-50"
+                  >
+                    Resend
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleRevokeInvite(member, false)}
+                    disabled={removingId === member.invited_email}
+                    aria-label={`Cancel invite to ${member.invited_email}`}
+                    className="text-sm font-medium text-gray-500 hover:text-rose-600 underline-offset-2 hover:underline bg-transparent border-none cursor-pointer min-h-[44px] disabled:opacity-50"
+                  >
+                    Cancel invite
+                  </button>
+                </>
               )}
             </li>
           );

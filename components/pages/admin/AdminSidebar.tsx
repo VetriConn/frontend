@@ -18,7 +18,7 @@ import {
   HiOutlineFlag,
 } from "react-icons/hi2";
 import { useUserProfile } from "@/hooks/useUserProfile";
-import { isSuperAdmin } from "@/lib/admin-permissions";
+import { isSuperAdmin, canSeeAdminSurface } from "@/lib/admin-permissions";
 
 interface AdminSidebarProps {
   isMobileOpen: boolean;
@@ -84,6 +84,7 @@ const AdminSidebar = ({ isMobileOpen, onCloseMobile }: AdminSidebarProps) => {
   const pathname = usePathname();
   const { userProfile } = useUserProfile();
   const isSuper = isSuperAdmin(userProfile);
+
   const [openGroup, setOpenGroup] = useState<string | null>(() =>
     pathname.startsWith("/admin/jobs") ? "Jobs" : null,
   );
@@ -93,7 +94,14 @@ const AdminSidebar = ({ isMobileOpen, onCloseMobile }: AdminSidebarProps) => {
     return pathname === href || pathname.startsWith(href + "/");
   };
 
-  const navItems = isSuper ? [...NAV_ITEMS, ...SUPER_ADMIN_NAV] : NAV_ITEMS;
+  // Each tier sees the queues it can act on - not a wall of 403s. Team
+  // stays super-admin-only via the same map.
+  const visibleNavItems = NAV_ITEMS.filter((item) =>
+    canSeeAdminSurface(userProfile, item.href),
+  );
+  const navItems = isSuper
+    ? [...visibleNavItems, ...SUPER_ADMIN_NAV]
+    : visibleNavItems;
   return (
     <>
       {/* Mobile backdrop */}
@@ -123,7 +131,7 @@ const AdminSidebar = ({ isMobileOpen, onCloseMobile }: AdminSidebarProps) => {
           <Link href="/admin" className="flex items-center gap-2.5">
             <div className="relative w-8 h-8 rounded-lg bg-white/5 ring-1 ring-white/10 overflow-hidden flex items-center justify-center">
               <Image
-                src="/images/logo_1.svg"
+                src="/images/logo.png"
                 alt="Vetriconn"
                 width={20}
                 height={20}

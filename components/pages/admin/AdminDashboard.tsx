@@ -1,5 +1,7 @@
 "use client";
 
+import { AdminStatCard } from "./AdminTablePanel";
+
 import Link from "next/link";
 import clsx from "clsx";
 import {
@@ -13,77 +15,6 @@ import {
 } from "react-icons/hi2";
 import { useAdminOverview } from "@/hooks/useAdminOverview";
 
-type StatTone = "amber" | "emerald" | "indigo" | "rose";
-
-interface StatCardProps {
-  label: string;
-  value: number | string;
-  delta?: { value: string; positive?: boolean };
-  icon: React.ComponentType<{ className?: string }>;
-  tone: StatTone;
-}
-
-const TONE_STYLES: Record<
-  StatTone,
-  { iconBg: string; iconText: string; ring: string }
-> = {
-  amber: {
-    iconBg: "bg-amber-50",
-    iconText: "text-amber-600",
-    ring: "ring-amber-100",
-  },
-  emerald: {
-    iconBg: "bg-emerald-50",
-    iconText: "text-emerald-600",
-    ring: "ring-emerald-100",
-  },
-  indigo: {
-    iconBg: "bg-indigo-50",
-    iconText: "text-indigo-600",
-    ring: "ring-indigo-100",
-  },
-  rose: {
-    iconBg: "bg-rose-50",
-    iconText: "text-rose-600",
-    ring: "ring-rose-100",
-  },
-};
-
-const StatCard = ({ label, value, delta, icon: Icon, tone }: StatCardProps) => {
-  const t = TONE_STYLES[tone];
-  return (
-    <div className="bg-white rounded-2xl border border-gray-200/80 p-5 shadow-[0_1px_2px_rgba(15,23,42,0.04)] hover:shadow-[0_8px_24px_-12px_rgba(15,23,42,0.15)] transition-shadow">
-      <div className="flex items-start justify-between gap-3">
-        <div className="min-w-0">
-          <p className="text-[13px] font-medium text-gray-500">{label}</p>
-          <p className="mt-2 text-3xl font-bold text-gray-900 tracking-tight tabular-nums">
-            {value}
-          </p>
-          {delta && (
-            <p
-              className={clsx(
-                "mt-1.5 inline-flex items-center gap-1 text-xs font-medium",
-                delta.positive ? "text-emerald-600" : "text-gray-500",
-              )}
-            >
-              {delta.value}
-            </p>
-          )}
-        </div>
-        <div
-          className={clsx(
-            "w-11 h-11 rounded-xl ring-1 flex items-center justify-center shrink-0",
-            t.iconBg,
-            t.iconText,
-            t.ring,
-          )}
-        >
-          <Icon className="w-5 h-5" />
-        </div>
-      </div>
-    </div>
-  );
-};
 
 type ActivityStatus = "pending" | "approved" | "rejected";
 
@@ -128,16 +59,16 @@ const AdminDashboard = () => {
 
       {/* Stats */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-5">
-        <StatCard
+        <AdminStatCard
           label="Jobs Pending Review"
-          value={isLoading ? "—" : data.stats.jobsPending}
+          value={isLoading ? "-" : data.stats.jobsPending}
           delta={{ value: "Awaiting moderation" }}
           icon={HiOutlineClock}
           tone="amber"
         />
-        <StatCard
+        <AdminStatCard
           label="Active Jobs"
-          value={isLoading ? "—" : data.stats.activeJobs}
+          value={isLoading ? "-" : data.stats.activeJobs}
           delta={{
             value: `+${data.stats.activeJobsThisWeek} this week`,
             positive: data.stats.activeJobsThisWeek > 0,
@@ -145,9 +76,9 @@ const AdminDashboard = () => {
           icon={HiOutlineCheckCircle}
           tone="emerald"
         />
-        <StatCard
+        <AdminStatCard
           label="Companies Registered"
-          value={isLoading ? "—" : data.stats.companies}
+          value={isLoading ? "-" : data.stats.companies}
           delta={{
             value: `+${data.stats.companiesThisWeek} this week`,
             positive: data.stats.companiesThisWeek > 0,
@@ -155,9 +86,9 @@ const AdminDashboard = () => {
           icon={HiOutlineBuildingOffice2}
           tone="indigo"
         />
-        <StatCard
+        <AdminStatCard
           label="Users Registered"
-          value={isLoading ? "—" : data.stats.users}
+          value={isLoading ? "-" : data.stats.users}
           delta={{
             value: `+${data.stats.usersThisWeek} this week`,
             positive: data.stats.usersThisWeek > 0,

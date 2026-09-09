@@ -428,3 +428,62 @@ export async function getPublicStats(): Promise<PublicStats | null> {
     return null;
   }
 }
+
+// ─── External (scraped) listings ─────────────────────────────────────────────
+
+/**
+ * A scraped listing as the external-jobs table renders it.
+ *
+ * Deliberately not AdminJobRaw: that type carries the moderation fields the
+ * review queue needs, and these rows are not reviewed. What matters here is
+ * provenance — where it came from and when it was last seen — because the
+ * only decisions available are "open the source" and "delete".
+ */
+export interface ExternalJob {
+  _id: string;
+  id?: string;
+  role: string;
+  company_name?: string;
+  location?: string;
+  job_type?: string;
+  compensation?: {
+    min?: number;
+    max?: number;
+    currency: string;
+    basis?: PaymentType;
+    text?: string;
+  };
+  external_url?: string;
+  source_name?: string;
+  /** Stamped on every re-sight; absent means no run has seen it since insert. */
+  last_scraped_at?: string;
+  createdAt?: string;
+  status?: string;
+  moderation_status?: "pending" | "approved" | "rejected";
+  unpublished_reason?: string;
+  never_refreshed?: boolean;
+}
+
+export async function adminListExternalJobs(
+  page = 1,
+  limit = 20,
+  q?: string,
+): Promise<{
+  jobs: ExternalJob[];
+  pagination?: PaginatedApiEnvelope<ExternalJob[]>["pagination"];
+}> {
+  const qs = new URLSearchParams({ page: String(page), limit: String(limit) });
+  if (q?.trim()) qs.set("q", q.trim());
+  const response = await apiFetch<PaginatedApiEnvelope<ExternalJob[]>>(
+    `${API_BASE_URL}/api/v1/jobs/admin/external?${qs.toString()}`,
+    { method: "GET" },
+  );
+  return { jobs: response.data || [], pagination: response.pagination };
+}
+
+/** Removes the listing and anything pointing at it. Not reversible. */
+export async function adminDeleteExternalJob(id: string): Promise<void> {
+  await apiFetch(`${API_BASE_URL}/api/v1/jobs/admin/external/${id}`, {
+    method: "DELETE",
+  });
+}

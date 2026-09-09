@@ -87,9 +87,11 @@ export function useAdminJobQueue(
   status: AdminJobStatus | "all",
   page = 1,
   limit = 20,
+  /** False on the External tab, where this queue is not what is on screen. */
+  enabled = true,
 ) {
   const { data, error, isLoading, mutate } = useSWR(
-    ["admin-jobs", status, page, limit],
+    enabled ? ["admin-jobs", status, page, limit] : null,
     async () => {
       // "all" omits the approval filter, returning every moderation state.
       const res = await adminListJobs(

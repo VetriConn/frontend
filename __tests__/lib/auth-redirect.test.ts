@@ -11,6 +11,8 @@ import {
   resolvePostAuthPath,
   RETURN_URL_PARAM,
   DEFAULT_POST_AUTH_PATH,
+  ADMIN_POST_AUTH_PATH,
+  homePathForRole,
 } from "@/lib/auth-redirect";
 
 describe("sanitizeReturnUrl", () => {
@@ -106,10 +108,62 @@ describe("resolvePostAuthPath", () => {
   it("should fall back to the dashboard for an unsafe value", () => {
     expect(resolvePostAuthPath("https://evil.test")).toBe(
       DEFAULT_POST_AUTH_PATH,
+  ADMIN_POST_AUTH_PATH,
+  homePathForRole,
     );
   });
 
   it("should honour an explicit fallback", () => {
     expect(resolvePostAuthPath(null, "/jobs")).toBe("/jobs");
+  });
+});
+
+/**
+ * Sign-in pushed everyone to /dashboard. For an admin that is the job-seeker
+ * dashboard, and AuthGuard could only bounce them off it once /auth/profile
+ * had answered — so an admin watched the wrong dashboard render, sit there
+ * for a second, and get replaced. It looked like the previous account's UI
+ * persisting. It was the wrong page, arrived at on purpose.
+ */
+describe("homePathForRole", () => {
+  it("sends an admin to the console, not the seeker dashboard", () => {
+    expect(homePathForRole("admin")).toBe(ADMIN_POST_AUTH_PATH);
+  });
+
+  it("sends everyone else to the dashboard", () => {
+    expect(homePathForRole("user")).toBe(DEFAULT_POST_AUTH_PATH);
+  });
+
+  it("falls back to the dashboard when the role is not known yet", () => {
+    // The 2FA path has no role in hand until the profile fetch lands; the
+    // guard still corrects it, so the safe default is the non-privileged one.
+    expect(homePathForRole(undefined)).toBe(DEFAULT_POST_AUTH_PATH);
+    expect(homePathForRole("")).toBe(DEFAULT_POST_AUTH_PATH);
+  });
+
+  it("never treats an unrecognised role as admin", () => {
+    // job_seeker is a pre-unification value still present in the database.
+    for (const role of ["job_seeker", "employer", "ADMIN", "superadmin"]) {
+      expect(homePathForRole(role)).toBe(DEFAULT_POST_AUTH_PATH);
+    }
+  });
+});
+
+describe("resolvePostAuthPath with a role-aware fallback", () => {
+  it("starts an admin session in the console", () => {
+    expect(resolvePostAuthPath(null, homePathForRole("admin"))).toBe("/admin");
+  });
+
+  it("still honours an explicit return url, whoever signs in", () => {
+    // Someone following a company invite goes to the invite, not their home.
+    const invite = "/companies/invites/accept?token=abc";
+    expect(resolvePostAuthPath(invite, homePathForRole("admin"))).toBe(invite);
+    expect(resolvePostAuthPath(invite, homePathForRole("user"))).toBe(invite);
+  });
+
+  it("does not let an unsafe return url override the role's home", () => {
+    expect(resolvePostAuthPath("https://evil.test", homePathForRole("admin"))).toBe(
+      "/admin",
+    );
   });
 });

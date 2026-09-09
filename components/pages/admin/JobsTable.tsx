@@ -44,13 +44,24 @@ import DetailDrawer from "./DetailDrawer";
 import AdminJobDetail from "./AdminJobDetail";
 import ConfirmDialog from "./ConfirmDialog";
 import ScrapeJobsButton from "./ScrapeJobsButton";
+import ExternalJobsTable from "./ExternalJobsTable";
 import { formatDate } from "@/lib/date-utils";
 
-const FILTERS: { value: AdminJobStatus | "all"; label: string }[] = [
+/**
+ * "External" is not a moderation state, which is why it is a view rather than
+ * another value of the approval filter. Scraped listings are ingested already
+ * approved and stay out of the review queue's scope entirely — so they need
+ * their own table, their own endpoint and their own actions, not a fourth
+ * status on a queue that is about deciding things.
+ */
+type JobView = AdminJobStatus | "all" | "external";
+
+const FILTERS: { value: JobView; label: string }[] = [
   { value: "all", label: "All" },
   { value: "pending", label: "Pending" },
   { value: "approved", label: "Approved" },
   { value: "rejected", label: "Rejected" },
+  { value: "external", label: "External" },
 ];
 
 const STATUS_TONE: Record<AdminJobStatus, "amber" | "emerald" | "rose"> = {
@@ -68,10 +79,19 @@ const STATUS_TONE: Record<AdminJobStatus, "amber" | "emerald" | "rose"> = {
  */
 const JobsTable = () => {
   const searchParams = useSearchParams();
-  const [status, setStatus] = useState<AdminJobStatus | "all">("all");
+  const [view, setView] = useState<JobView>("all");
   const [page, setPage] = useState(1);
 
-  const { jobs, pagination, isLoading, isError, mutate } = useAdminJobQueue(status, page);
+  const isExternal = view === "external";
+  // Clamped so the queue key stays stable; `enabled` is what stops it firing.
+  const status: AdminJobStatus | "all" = isExternal ? "all" : view;
+
+  const { jobs, pagination, isLoading, isError, mutate } = useAdminJobQueue(
+    status,
+    page,
+    20,
+    !isExternal,
+  );
   const { counts, mutate: mutateCounts } = useAdminJobCounts();
   const { showToast } = useToaster();
 
@@ -195,6 +215,7 @@ const JobsTable = () => {
         actions={<ScrapeJobsButton />}
       />
 
+      {!isExternal && (
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-5">
         <AdminStatCard
           icon={HiOutlineClock}
@@ -221,23 +242,32 @@ const JobsTable = () => {
           tone="indigo"
         />
       </div>
+      )}
 
       {/* Status filter */}
       <div
         className="inline-flex flex-wrap rounded-xl border border-gray-200 bg-white p-1"
         role="tablist"
-        aria-label="Job status"
+        aria-label="Job views"
       >
         {FILTERS.map((f) => {
-          const active = status === f.value;
-          const count = f.value === "all" ? counts?.total : counts?.[f.value];
+          const active = view === f.value;
+          // No badge on External: these counts come from the moderation
+          // endpoint, whose scope deliberately excludes scraped listings, so
+          // any number here would be describing a different set of rows.
+          const count =
+            f.value === "external"
+              ? undefined
+              : f.value === "all"
+                ? counts?.total
+                : counts?.[f.value];
           return (
             <button
               key={f.value}
               role="tab"
               aria-selected={active}
               onClick={() => {
-                setStatus(f.value);
+                setView(f.value);
                 setPage(1);
               }}
               className={clsx(
@@ -265,80 +295,86 @@ const JobsTable = () => {
         })}
       </div>
 
-      <AdminTablePanel>
-        <AdminTable>
-          <AdminTableHead>
-            <AdminTableTh>Role</AdminTableTh>
-            <AdminTableTh>Company</AdminTableTh>
-            <AdminTableTh>Location</AdminTableTh>
-            <AdminTableTh>Status</AdminTableTh>
-            <AdminTableTh>Submitted</AdminTableTh>
-            <AdminTableTh align="right">Actions</AdminTableTh>
-          </AdminTableHead>
-          <AdminTableBody>
-            {isLoading
-              ? Array.from({ length: 5 }).map((_, i) => (
-                  <AdminRowSkeleton key={i} columns={6} />
-                ))
-              : jobs.map((job) => (
-                  <AdminTableRow key={job.id} onOpen={() => setDrawerId(job.id)}>
-                    <AdminTableTd className="font-semibold text-gray-900">
-                      <div className="flex items-center gap-2">
-                        <button
-                          onClick={() => setDrawerId(job.id)}
-                          className="text-left hover:text-primary"
-                        >
-                          {job.role}
-                        </button>
-                        {!!job.scam_flags?.length && (
-                          <span
-                            title={`Scam signals: ${job.scam_flags.join(", ")}`}
-                            className="inline-flex items-center text-amber-500"
+      {isExternal ? (
+        <ExternalJobsTable />
+      ) : (
+        <>
+        <AdminTablePanel>
+          <AdminTable>
+            <AdminTableHead>
+              <AdminTableTh>Role</AdminTableTh>
+              <AdminTableTh>Company</AdminTableTh>
+              <AdminTableTh>Location</AdminTableTh>
+              <AdminTableTh>Status</AdminTableTh>
+              <AdminTableTh>Submitted</AdminTableTh>
+              <AdminTableTh align="right">Actions</AdminTableTh>
+            </AdminTableHead>
+            <AdminTableBody>
+              {isLoading
+                ? Array.from({ length: 5 }).map((_, i) => (
+                    <AdminRowSkeleton key={i} columns={6} />
+                  ))
+                : jobs.map((job) => (
+                    <AdminTableRow key={job.id} onOpen={() => setDrawerId(job.id)}>
+                      <AdminTableTd className="font-semibold text-gray-900">
+                        <div className="flex items-center gap-2">
+                          <button
+                            onClick={() => setDrawerId(job.id)}
+                            className="text-left hover:text-primary"
                           >
-                            <HiOutlineExclamationTriangle className="w-4 h-4" />
-                          </span>
-                        )}
-                      </div>
-                    </AdminTableTd>
-                    <AdminTableTd className="text-gray-600">
-                      {job.company_name || "-"}
-                    </AdminTableTd>
-                    <AdminTableTd className="text-gray-600">
-                      {job.location || "-"}
-                    </AdminTableTd>
-                    <AdminTableTd>
-                      <StatusPill tone={STATUS_TONE[job.status]}>
-                        {job.status}
-                      </StatusPill>
-                    </AdminTableTd>
-                    <AdminTableTd className="text-gray-600 tabular-nums">
-                      {formatDate(job.submittedAt)}
-                    </AdminTableTd>
-                    <AdminTableTd align="right">
-                      <KebabMenu actions={rowActions(job)} />
-                    </AdminTableTd>
-                  </AdminTableRow>
-                ))}
-          </AdminTableBody>
-        </AdminTable>
+                            {job.role}
+                          </button>
+                          {!!job.scam_flags?.length && (
+                            <span
+                              title={`Scam signals: ${job.scam_flags.join(", ")}`}
+                              className="inline-flex items-center text-amber-500"
+                            >
+                              <HiOutlineExclamationTriangle className="w-4 h-4" />
+                            </span>
+                          )}
+                        </div>
+                      </AdminTableTd>
+                      <AdminTableTd className="text-gray-600">
+                        {job.company_name || "-"}
+                      </AdminTableTd>
+                      <AdminTableTd className="text-gray-600">
+                        {job.location || "-"}
+                      </AdminTableTd>
+                      <AdminTableTd>
+                        <StatusPill tone={STATUS_TONE[job.status]}>
+                          {job.status}
+                        </StatusPill>
+                      </AdminTableTd>
+                      <AdminTableTd className="text-gray-600 tabular-nums">
+                        {formatDate(job.submittedAt)}
+                      </AdminTableTd>
+                      <AdminTableTd align="right">
+                        <KebabMenu actions={rowActions(job)} />
+                      </AdminTableTd>
+                    </AdminTableRow>
+                  ))}
+            </AdminTableBody>
+          </AdminTable>
 
-        {!isLoading && isError && (
-          <AdminLoadError what="jobs" onRetry={() => mutate()} />
-        )}
-        {!isLoading && !isError && jobs.length === 0 && (
-          <AdminEmptyState
-            title="No jobs"
-            description={
-              status === "all"
-                ? "No jobs have been posted yet."
-                : `No ${status} jobs.`
-            }
-            icon={HiOutlineBriefcase}
-          />
-        )}
+          {!isLoading && isError && (
+            <AdminLoadError what="jobs" onRetry={() => mutate()} />
+          )}
+          {!isLoading && !isError && jobs.length === 0 && (
+            <AdminEmptyState
+              title="No jobs"
+              description={
+                status === "all"
+                  ? "No jobs have been posted yet."
+                  : `No ${status} jobs.`
+              }
+              icon={HiOutlineBriefcase}
+            />
+          )}
 
-        <AdminPagination pagination={pagination} onPage={setPage} />
-      </AdminTablePanel>
+          <AdminPagination pagination={pagination} onPage={setPage} />
+        </AdminTablePanel>
+        </>
+      )}
 
       <DetailDrawer
         open={!!drawerId}

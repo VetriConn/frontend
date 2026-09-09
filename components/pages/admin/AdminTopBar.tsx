@@ -16,6 +16,7 @@ import {
 import { useUserProfile } from "@/hooks/useUserProfile";
 import { useAdminNotifications } from "@/hooks/useAdminNotifications";
 import { logoutUser } from "@/lib/api";
+import { useSessionCache } from "@/hooks/useSessionCache";
 import { useToaster } from "@/components/ui/Toaster";
 import { getInitials } from "@/lib/initials";
 
@@ -42,9 +43,13 @@ const AdminTopBar = ({ onOpenMobileMenu }: AdminTopBarProps) => {
     return () => document.removeEventListener("mousedown", onClick);
   }, []);
 
+  const { resetSessionCache } = useSessionCache();
+
   const handleLogout = async () => {
     try {
       await logoutUser();
+      // No revalidate: signed out, every refetch would only earn a 401.
+      await resetSessionCache(false);
       showToast({ type: "success", title: "Logged out" });
       setTimeout(() => router.push("/signin"), 600);
     } catch {

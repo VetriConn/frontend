@@ -31,6 +31,7 @@ import { getInitials } from "@/lib/initials";
 import Image from "next/image";
 import cloudinaryLoader from "@/lib/cloudinary-loader";
 import { logoutUser } from "@/lib/api";
+import { useSessionCache } from "@/hooks/useSessionCache";
 import { useToaster } from "@/components/ui/Toaster";
 import { useUserProfile } from "@/hooks/useUserProfile";
 import { useNotifications } from "@/hooks/useNotifications";
@@ -321,9 +322,13 @@ const DashboardNavbar = () => {
     setIsMobileMenuOpen(false);
   }, []);
 
+  const { resetSessionCache } = useSessionCache();
+
   const handleLogout = async () => {
     try {
       await logoutUser();
+      // No revalidate: signed out, every refetch would only earn a 401.
+      await resetSessionCache(false);
       showToast({
         type: "success",
         title: "Logged out successfully",

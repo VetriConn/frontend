@@ -22,6 +22,16 @@ interface JobResultCardProps {
   jobType: string | null;
   salary: string;
   description: string;
+  /**
+   * True when the signed-in account posted this listing.
+   *
+   * The card offered "Apply Now" on your own posting, and the detail page it
+   * led to answered "You posted this job" with the button disabled. The
+   * detail page had `poster_id` and compared it; the card was simply never
+   * handed it. A button that cannot do what it says is worse than no button,
+   * and worse still on a board where the same account both posts and applies.
+   */
+  isOwnPosting?: boolean;
   onApply?: (id: string) => void;
 }
 
@@ -33,6 +43,7 @@ export const JobResultCard = ({
   jobType,
   salary,
   description,
+  isOwnPosting = false,
   onApply,
 }: JobResultCardProps) => {
   const router = useRouter();
@@ -170,14 +181,28 @@ export const JobResultCard = ({
 
       {/* Apply Button Section - Full width on mobile, auto width on desktop */}
       <div className="flex-shrink-0 md:self-start">
-        <button
-          type="button"
-          onClick={handleApplyClick}
-          className="btn-primary w-full md:w-auto whitespace-nowrap min-h-12"
-          aria-label={`${hasDraft ? "Continue application draft" : "Apply now"} for ${title} at ${company}`}
-        >
-          {hasDraft ? "Continue Draft" : "Apply Now"}
-        </button>
+        {isOwnPosting ? (
+          // Your own listing still belongs in the results — seeing it exactly
+          // as a candidate does is the quickest answer to "is it live, and
+          // does it read right?". What it must not do is offer to apply.
+          <button
+            type="button"
+            onClick={() => router.push(`/jobs/${id}`)}
+            className="w-full md:w-auto whitespace-nowrap min-h-12 px-6 py-3 rounded-lg font-semibold border border-gray-300 text-gray-700 bg-white transition-colors hover:border-primary hover:text-primary"
+            aria-label={`View your posting for ${title}`}
+          >
+            View your posting
+          </button>
+        ) : (
+          <button
+            type="button"
+            onClick={handleApplyClick}
+            className="btn-primary w-full md:w-auto whitespace-nowrap min-h-12"
+            aria-label={`${hasDraft ? "Continue application draft" : "Apply now"} for ${title} at ${company}`}
+          >
+            {hasDraft ? "Continue Draft" : "Apply Now"}
+          </button>
+        )}
       </div>
     </article>
   );

@@ -5,6 +5,7 @@ import { Job } from "@/types/job";
 import { formatJobSalary } from "@/lib/job-display";
 import { fieldLabel, JOB_TYPE_LABELS } from "@/lib/job-fields";
 import { JobResultCard } from "./JobResultCard";
+import { useUserProfile } from "@/hooks/useUserProfile";
 import { Skeleton } from "./Skeleton";
 import { HiOutlineMagnifyingGlass } from "react-icons/hi2";
 import { HiOutlineExclamationTriangle, HiOutlineArrowPath } from "react-icons/hi2";
@@ -117,6 +118,11 @@ export const JobResultsList = ({
   onRetry,
   onApply,
 }: JobResultsListProps) => {
+  // Read here rather than threaded from every caller: the card needs one
+  // boolean, and this hook is cached app-wide on a single key.
+  const { userProfile } = useUserProfile();
+  const viewerId = userProfile?.id;
+
   // Show loading skeletons
   if (isLoading && jobs.length === 0) {
     return (
@@ -181,6 +187,7 @@ export const JobResultsList = ({
               jobType={getJobType(job)}
               salary={formatSalary(job)}
               description={job.summary}
+              isOwnPosting={!!job.poster_id && job.poster_id === viewerId}
               onApply={onApply}
             />
           </div>

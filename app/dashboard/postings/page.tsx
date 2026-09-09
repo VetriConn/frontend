@@ -3,11 +3,13 @@
 import Link from "next/link";
 import { ListLoadError } from "@/components/ui/ListLoadError";
 import { useState, useMemo } from "react";
+import { useRouter } from "next/navigation";
 import useSWR from "swr";
 import { deletePosting, getMyPostings, updatePosting } from "@/lib/api";
 import { useToaster } from "@/components/ui/Toaster";
 import { AuthGuard } from "@/components/auth/AuthGuard";
 import { useModalFocus } from "@/hooks/useModalFocus";
+import KebabMenu from "@/components/pages/admin/KebabMenu";
 import {
   HiOutlineBriefcase,
   HiOutlineCalendar,
@@ -28,6 +30,7 @@ import { formatDate } from "@/lib/date-utils";
 
 export default function ManageJobsPage() {
   const { showToast } = useToaster();
+  const router = useRouter();
   const [busyJobId, setBusyJobId] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
@@ -171,7 +174,18 @@ export default function ManageJobsPage() {
                     {paginatedJobs.map((job) => (
                       <tr
                         key={job._id}
-                        className="hover:bg-gray-50/50 transition-colors"
+                        // A click anywhere on the row opens the public
+                        // posting — but not one that landed on the actions
+                        // menu, which is inside the row and means something
+                        // else entirely. The keyboard path is the title link
+                        // below, deliberately: a <tr> wearing a click handler
+                        // is not focusable and announces as nothing.
+                        onClick={(e) => {
+                          const el = e.target as HTMLElement;
+                          if (el.closest("button, a, input, label, [role='menu']")) return;
+                          router.push(`/jobs/${job._id}`);
+                        }}
+                        className="hover:bg-gray-50/50 transition-colors cursor-pointer"
                       >
                         <td className="px-6 py-4">
                           <div className="flex items-center gap-3">
@@ -179,9 +193,12 @@ export default function ManageJobsPage() {
                               <HiOutlineBriefcase className="w-5 h-5" />
                             </div>
                             <div className="min-w-0">
-                              <p className="text-sm font-semibold text-gray-900 truncate">
+                              <Link
+                                href={`/jobs/${job._id}`}
+                                className="block text-sm font-semibold text-gray-900 truncate no-underline hover:text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+                              >
                                 {job.role}
-                              </p>
+                              </Link>
                               <div className="flex items-center gap-2 mt-0.5 text-sm text-gray-600">
                                 <span className="flex items-center gap-1">
                                   <HiOutlineMapPin className="w-3 h-3" />
@@ -260,55 +277,53 @@ export default function ManageJobsPage() {
                           </div>
                         </td>
                         <td className="px-6 py-4 text-right">
-                          <div className="flex items-center justify-end gap-1">
-                            <Link
-                              href={`/dashboard/post-job?draftId=${job._id}`}
-                              className="p-1.5 rounded-lg text-gray-400 hover:text-primary hover:bg-red-50 transition-colors"
-                              title="Edit Job"
-                            >
-                              <HiOutlinePencilSquare className="w-5 h-5" />
-                            </Link>
-                            <Link
-                              href={`/jobs/${job._id}`}
-                              className="p-1.5 rounded-lg text-gray-400 hover:text-primary hover:bg-red-50 transition-colors"
-                              title="View Public Posting"
-                            >
-                              <HiOutlineArrowTopRightOnSquare className="w-5 h-5" />
-                            </Link>
-                            {job.status === "published" ? (
-                              <button
-                                onClick={() =>
-                                  handleToggleStatus(job._id, "draft")
-                                }
-                                disabled={busyJobId === job._id}
-                                className="p-1.5 rounded-lg text-gray-400 hover:text-amber-600 hover:bg-amber-50 transition-colors"
-                                title="Move to Drafts"
-                              >
-                                <HiOutlineEyeSlash className="w-5 h-5" />
-                              </button>
-                            ) : (
-                              <button
-                                onClick={() =>
-                                  handleToggleStatus(job._id, "published")
-                                }
-                                disabled={busyJobId === job._id}
-                                className="p-1.5 rounded-lg text-gray-400 hover:text-green-600 hover:bg-green-50 transition-colors"
-                                title="Publish Job"
-                              >
-                                <HiOutlineEye className="w-5 h-5" />
-                              </button>
-                            )}
-                            <button
-                              onClick={() =>
-                                setDeleting({ id: job._id, role: job.role })
-                              }
-                              disabled={busyJobId === job._id}
-                              className="p-1.5 rounded-lg text-gray-400 hover:text-red-600 hover:bg-red-50 transition-colors"
-                              title="Delete posting"
-                            >
-                              <HiOutlineTrash className="w-5 h-5" />
-                            </button>
-                          </div>
+                          {/* One menu rather than four icons in a row. The
+                              icons were unlabelled, four abreast and 20px
+                              apart on a board whose audience is 45+ — and the
+                              eye/eye-slash pair asked you to know which of two
+                              near-identical glyphs meant "publish". Named
+                              items in a menu say what they do. */}
+                          <KebabMenu
+                            label={`Actions for ${job.role}`}
+                            actions={[
+                              {
+                                label: "Edit posting",
+                                icon: HiOutlinePencilSquare,
+                                onClick: () =>
+                                  router.push(
+                                    `/dashboard/post-job?draftId=${job._id}`,
+                                  ),
+                              },
+                              {
+                                label: "View public posting",
+                                icon: HiOutlineArrowTopRightOnSquare,
+                                onClick: () => router.push(`/jobs/${job._id}`),
+                              },
+                              job.status === "published"
+                                ? {
+                                    label: "Move to drafts",
+                                    icon: HiOutlineEyeSlash,
+                                    disabled: busyJobId === job._id,
+                                    onClick: () =>
+                                      handleToggleStatus(job._id, "draft"),
+                                  }
+                                : {
+                                    label: "Publish posting",
+                                    icon: HiOutlineEye,
+                                    disabled: busyJobId === job._id,
+                                    onClick: () =>
+                                      handleToggleStatus(job._id, "published"),
+                                  },
+                              {
+                                label: "Delete posting",
+                                icon: HiOutlineTrash,
+                                danger: true,
+                                disabled: busyJobId === job._id,
+                                onClick: () =>
+                                  setDeleting({ id: job._id, role: job.role }),
+                              },
+                            ]}
+                          />
                         </td>
                       </tr>
                     ))}

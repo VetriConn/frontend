@@ -25,7 +25,7 @@ import {
 } from "@/hooks/useAdminJobQueue";
 import { useToaster } from "@/components/ui/Toaster";
 import ConfirmDialog from "./ConfirmDialog";
-import { formatDate } from "@/lib/date-utils";
+import { formatFullDateTime } from "@/lib/date-utils";
 
 interface AdminJobDetailProps {
   jobId: string;
@@ -322,6 +322,22 @@ const AdminJobDetail = ({ jobId, onChanged }: AdminJobDetailProps) => {
               )}
             </section>
 
+            {job.responsibilities?.length > 0 && (
+              <section>
+                <h3 className="text-[11px] font-semibold text-gray-500 uppercase tracking-wide">
+                  Responsibilities
+                </h3>
+                <ul className="mt-1.5 space-y-1.5 text-sm text-gray-600">
+                  {job.responsibilities.map((r, i) => (
+                    <li key={i} className="flex gap-2">
+                      <span className="mt-2 w-1 h-1 rounded-full bg-gray-400 shrink-0" />
+                      <span>{r}</span>
+                    </li>
+                  ))}
+                </ul>
+              </section>
+            )}
+
             {job.requirements?.length === 0 && (
               <section>
                 <h3 className="text-[11px] font-semibold text-gray-500 uppercase tracking-wide">
@@ -349,6 +365,48 @@ const AdminJobDetail = ({ jobId, onChanged }: AdminJobDetailProps) => {
               </section>
             )}
 
+            {job.details.length > 0 && (
+              <section>
+                <h3 className="text-[11px] font-semibold text-gray-500 uppercase tracking-wide">
+                  Posting details
+                </h3>
+                <dl className="mt-1.5 grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-1.5">
+                  {job.details.map((d) => (
+                    <div key={d.label} className="flex justify-between gap-3 text-sm">
+                      <dt className="text-gray-500 shrink-0">{d.label}</dt>
+                      <dd className="text-gray-800 text-right">{d.value}</dd>
+                    </div>
+                  ))}
+                </dl>
+              </section>
+            )}
+
+            {job.screening.length > 0 && (
+              <section>
+                <h3 className="text-[11px] font-semibold text-gray-500 uppercase tracking-wide">
+                  Screening questions
+                </h3>
+                {/* What every applicant is made to answer before they can
+                    apply. A reviewer approving a posting is approving these
+                    too — a question can be intrusive or disqualifying in ways
+                    the description never hints at. */}
+                <ol className="mt-1.5 space-y-2 text-sm text-gray-600">
+                  {job.screening.map((q, i) => (
+                    <li key={i} className="flex gap-2">
+                      <span className="text-gray-400 shrink-0">{i + 1}.</span>
+                      <span>
+                        {q.question}
+                        <span className="ml-1.5 text-xs text-gray-400">
+                          ({q.type}
+                          {q.required ? ", required" : ""})
+                        </span>
+                      </span>
+                    </li>
+                  ))}
+                </ol>
+              </section>
+            )}
+
             {job.rejection_reason && (
               <section className="rounded-xl bg-rose-50/60 border border-rose-200/60 p-3.5">
                 <h3 className="text-xs font-semibold text-rose-700 uppercase tracking-wide">
@@ -361,21 +419,24 @@ const AdminJobDetail = ({ jobId, onChanged }: AdminJobDetailProps) => {
             )}
           </div>
 
+          {/* Time of day, not just the date. A moderation record is an audit
+              trail — "Sep 9" cannot tell you whether a decision came before or
+              after the report that prompted it. */}
           <dl className="mt-8 pt-5 border-t border-gray-100 grid grid-cols-2 sm:grid-cols-4 gap-x-6 gap-y-4 text-xs text-gray-500">
             <div>
               <dt className="font-semibold text-gray-600">Submitted</dt>
-              <dd className="tabular-nums text-sm font-semibold text-gray-900 mt-0.5">{formatDate(job.submittedAt)}</dd>
+              <dd className="tabular-nums text-sm font-semibold text-gray-900 mt-0.5">{formatFullDateTime(job.submittedAt)}</dd>
             </div>
             {job.approvedAt && (
               <div>
                 <dt className="font-semibold text-gray-600">Approved</dt>
-                <dd className="tabular-nums text-sm font-semibold text-gray-900 mt-0.5">{formatDate(job.approvedAt)}</dd>
+                <dd className="tabular-nums text-sm font-semibold text-gray-900 mt-0.5">{formatFullDateTime(job.approvedAt)}</dd>
               </div>
             )}
             {job.rejectedAt && (
               <div>
                 <dt className="font-semibold text-gray-600">Rejected</dt>
-                <dd className="tabular-nums text-sm font-semibold text-gray-900 mt-0.5">{formatDate(job.rejectedAt)}</dd>
+                <dd className="tabular-nums text-sm font-semibold text-gray-900 mt-0.5">{formatFullDateTime(job.rejectedAt)}</dd>
               </div>
             )}
             {typeof job.applications === "number" && (

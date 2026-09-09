@@ -108,8 +108,6 @@ describe("resolvePostAuthPath", () => {
   it("should fall back to the dashboard for an unsafe value", () => {
     expect(resolvePostAuthPath("https://evil.test")).toBe(
       DEFAULT_POST_AUTH_PATH,
-  ADMIN_POST_AUTH_PATH,
-  homePathForRole,
     );
   });
 

@@ -10,7 +10,7 @@ import {
   PaginatedApiEnvelope,
 } from "./client";
 import type { ApplicationItem, JobsResponse } from "@/types/api";
-import type { PaymentType } from "@/lib/job-fields";
+import type { ScreeningQuestion, PaymentType } from "@/lib/job-fields";
 
 /** Per-source outcome of one scraper run. */
 export interface ScraperSourceSummary {
@@ -59,6 +59,37 @@ export interface AdminJobRaw {
   description?: string;
   responsibilities?: string[];
   qualifications?: string[];
+  /**
+   * Everything else the employer filled in.
+   *
+   * The detail drawer reads the public job endpoint, so these have always
+   * been on the wire — they were simply never declared here, and so never
+   * reached the reviewer. The console showed strictly less than the public
+   * job page it exists to vet.
+   */
+  job_category?: string;
+  work_arrangement?: string;
+  experience_level?: string;
+  min_qualification?: string;
+  security_clearance?: string;
+  work_schedule?: string;
+  physical_demands?: string;
+  skills?: string;
+  requires_drivers_license?: boolean;
+  visa_sponsorship?: boolean;
+  veteran_friendly?: boolean;
+  accommodations_offered?: boolean;
+  physically_accessible?: boolean;
+  open_to_returners?: boolean;
+  languages?: string[];
+  benefits?: string[];
+  certifications?: string[];
+  openings?: number;
+  application_deadline?: string;
+  start_date?: string;
+  screening_questions?: ScreeningQuestion[];
+  status?: string;
+  unpublished_reason?: string;
   moderation_status?: "pending" | "approved" | "rejected";
   __v?: number;
   approved_at?: string;

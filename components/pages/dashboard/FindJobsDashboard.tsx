@@ -55,8 +55,56 @@ const RecommendedJobs = dynamic(
 // target (this is the dashboard, where accessibility settings scale text) and
 // the theme's focus ring.
 const FILTER_FIELD =
-  "w-full min-h-[44px] px-3 py-2 border border-gray-200 rounded-lg bg-white text-sm " +
-  "focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary";
+  "w-full h-11 px-3 py-2 border border-gray-200 rounded-lg bg-white text-sm " +
+  "focus:outline-none focus:border-gray-500 focus:ring-2 focus:ring-gray-300/60";
+
+/**
+ * One label slot, one control height, for every field in the filter row.
+ *
+ * The row was `items-end` over four children that each built their own
+ * label and control: the hand-rolled labels used mb-1.5, CustomDropdown's
+ * used `mb-1.5 md:mb-2`, the segmented control was p-1 around 44px buttons
+ * so it stood 52px tall, and the submit button had no label at all. Four
+ * different heights bottom-aligned means four different label baselines,
+ * which is exactly what it looked like.
+ *
+ * A fixed-height label slot and a fixed-height control make the row line up
+ * by construction rather than by everything happening to agree.
+ */
+const FILTER_LABEL =
+  "flex h-5 items-end mb-1.5 text-sm font-medium text-gray-700";
+
+function FilterField({
+  label,
+  htmlFor,
+  labelId,
+  as = "label",
+  className,
+  children,
+}: {
+  /** Empty renders a spacer, so an unlabelled control still lines up. */
+  label?: string;
+  htmlFor?: string;
+  labelId?: string;
+  as?: "label" | "span";
+  className?: string;
+  children: React.ReactNode;
+}) {
+  const Tag = as;
+  return (
+    <div className={className}>
+      <Tag
+        id={labelId}
+        {...(as === "label" && htmlFor ? { htmlFor } : {})}
+        className={FILTER_LABEL}
+        aria-hidden={label ? undefined : true}
+      >
+        {label ?? "\u00A0"}
+      </Tag>
+      {children}
+    </div>
+  );
+}
 
 // Every work arrangement the vocabulary has — this row used to omit
 // "hybrid", making hybrid jobs unreachable from the dashboard filter.
@@ -173,15 +221,16 @@ const FindJobsDashboard = () => {
             every control keeps a 44px target; the row wraps rather than
             clipping. Popular shortcuts sit below. */}
         <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-4 md:p-5 mb-6">
-          <div className="flex flex-wrap items-end gap-3 md:gap-4">
-            {/* Job Search */}
-            <div className="flex-1 min-w-56">
-              <label
-                htmlFor="dashboard-job-search"
-                className="block text-sm font-medium text-gray-700 mb-1.5"
-              >
-                Job Search
-              </label>
+          {/* items-stretch, not items-end: every child now has the same
+              label slot and the same control height, so they line up by
+              construction rather than by four different heights happening
+              to agree at the bottom. */}
+          <div className="flex flex-wrap items-start gap-3 md:gap-4">
+            <FilterField
+              label="Job Search"
+              htmlFor="dashboard-job-search"
+              className="flex-1 min-w-56"
+            >
               <div className="relative">
                 <HiMagnifyingGlass className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5 pointer-events-none" />
                 <input
@@ -196,14 +245,15 @@ const FindJobsDashboard = () => {
                   className={`${FILTER_FIELD} pl-10`}
                 />
               </div>
-            </div>
+            </FilterField>
 
             {/* Location — province codes match the state_province column the
                 backend filters on. CustomDropdown like every other select on
                 the dashboard; this page kept the last native ones. */}
-            <div className="min-w-[44px]">
+            <div className="min-w-44">
               <CustomDropdown
                 label="Location"
+                labelClassName={FILTER_LABEL}
                 name="dashboard-location"
                 placeholder="All locations"
                 value={location}
@@ -212,18 +262,17 @@ const FindJobsDashboard = () => {
               />
             </div>
 
-            {/* Work Type */}
-            <div>
-              <span
-                id="dashboard-work-type-label"
-                className="block text-sm font-medium text-gray-700 mb-1.5"
-              >
-                Work Type
-              </span>
+            <FilterField
+              label="Work Type"
+              as="span"
+              labelId="dashboard-work-type-label"
+            >
               <div
                 role="group"
                 aria-labelledby="dashboard-work-type-label"
-                className="flex gap-1 rounded-lg bg-gray-100 p-1"
+                // h-11 to match every other control; the inner buttons take
+                // the remaining height inside the 2px inset.
+                className="flex h-11 items-stretch gap-1 rounded-lg bg-gray-100 p-1"
               >
                 {WORK_TYPES.map((wt) => (
                   <button
@@ -231,7 +280,7 @@ const FindJobsDashboard = () => {
                     type="button"
                     onClick={() => setWorkType(wt.value)}
                     aria-pressed={workType === wt.value}
-                    className={`min-h-[44px] rounded-md px-3 text-sm font-medium transition-colors ${
+                    className={`rounded-md px-3 text-sm font-medium transition-colors ${
                       workType === wt.value
                         ? "bg-primary text-white shadow-sm"
                         : "text-gray-600 hover:bg-gray-200"
@@ -241,12 +290,12 @@ const FindJobsDashboard = () => {
                   </button>
                 ))}
               </div>
-            </div>
+            </FilterField>
 
-            {/* Experience Level */}
             <div className="min-w-40">
               <CustomDropdown
                 label="Experience Level"
+                labelClassName={FILTER_LABEL}
                 name="dashboard-experience"
                 placeholder="All levels"
                 value={experienceLevel}
@@ -255,15 +304,19 @@ const FindJobsDashboard = () => {
               />
             </div>
 
-            {/* Find Jobs */}
-            <button
-              type="button"
-              onClick={handleFindJobs}
-              className="min-h-[44px] inline-flex items-center gap-2 rounded-lg bg-primary px-6 text-sm font-medium text-white transition-colors hover:bg-primary-hover"
-            >
-              <HiMagnifyingGlass className="w-4 h-4" />
-              Find jobs
-            </button>
+            {/* A spacer label, so the button sits on the row's control line
+                instead of being bottom-aligned against three taller
+                neighbours. */}
+            <FilterField>
+              <button
+                type="button"
+                onClick={handleFindJobs}
+                className="h-11 inline-flex items-center gap-2 rounded-lg bg-primary px-6 text-sm font-medium text-white transition-colors hover:bg-primary-hover"
+              >
+                <HiMagnifyingGlass className="w-4 h-4" />
+                Find jobs
+              </button>
+            </FilterField>
           </div>
 
           {/* Popular searches */}

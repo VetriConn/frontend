@@ -30,6 +30,12 @@ interface DropdownOption {
 }
 
 interface CustomDropdownProps {
+  /**
+   * Overrides the shared FIELD_LABEL. For rows that need every label on one
+   * baseline — FIELD_LABEL's `md:mb-2` differs from the mb-1.5 hand-rolled
+   * labels use, which is enough to knock a filter row out of alignment.
+   */
+  labelClassName?: string;
   label?: string;
   name: string;
   placeholder: string;
@@ -46,6 +52,7 @@ interface CustomDropdownProps {
 
 export const CustomDropdown = ({
   label,
+  labelClassName,
   name,
   placeholder,
   value,
@@ -332,7 +339,7 @@ export const CustomDropdown = ({
     <div className={clsx("w-full", FIELD_WRAPPER)}>
       {/* Label */}
       {label && (
-        <label htmlFor={name} className={FIELD_LABEL}>
+        <label htmlFor={name} className={labelClassName ?? FIELD_LABEL}>
           {label}
           {required && <RequiredMark />}
         </label>

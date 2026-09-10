@@ -26,7 +26,11 @@ export type PrefillProfile = Pick<
  * the server resolves it against this account's own documents. A URL from a
  * client is an invitation to name somebody else's file.
  */
-export function storedResumes(profile: PrefillProfile | null | undefined) {
+export function storedResumes(
+  // Only the documents matter here; asking for the whole profile would make
+  // this untestable without inventing a name and an email for every case.
+  profile: Pick<PrefillProfile, "documents"> | null | undefined,
+) {
   return (profile?.documents ?? [])
     .filter((doc) => !!doc._id && !!doc.url)
     .sort((a, b) => {

@@ -64,6 +64,34 @@ export function ConversationList({
 
       {/* Conversations List */}
       <div className="overflow-y-auto flex-1 custom-scrollbar">
+        {/* Rows shaped like the ones arriving, not a line of text somewhere
+            else on the page. The banner that used to announce this sat
+            outside the list and was never told when the list was told, so
+            "Loading conversations…" and "No conversations found" were on
+            screen together — the list had no isLoading passed to it at all. */}
+        {isLoading &&
+          conversations.length === 0 &&
+          Array.from({ length: 5 }).map((_, i) => (
+            <div
+              key={i}
+              className="px-4 py-4 border-b border-gray-100"
+              aria-hidden="true"
+            >
+              <div className="flex items-start gap-3">
+                <div className="w-10 h-10 rounded-full bg-gray-100 animate-pulse shrink-0" />
+                <div className="flex-1 min-w-0 space-y-2">
+                  <div className="h-3.5 w-1/2 rounded bg-gray-100 animate-pulse" />
+                  <div className="h-3 w-3/4 rounded bg-gray-100 animate-pulse" />
+                </div>
+              </div>
+            </div>
+          ))}
+        {isLoading && conversations.length === 0 && (
+          <span className="sr-only" role="status">
+            Loading conversations
+          </span>
+        )}
+
         {conversations.map((convo) => (
           <button
             key={convo.id}

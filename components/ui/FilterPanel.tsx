@@ -214,7 +214,7 @@ const FilterDropdown = ({
           className={clsx(
             "w-full px-4 py-3 text-left bg-white border rounded-lg transition-all",
             "flex items-center justify-between",
-            "focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent",
+            "focus:outline-none focus:border-gray-500 focus:ring-2 focus:ring-gray-300/60",
             "border-gray-200 hover:border-gray-300",
             !selectedOption?.value && "text-gray-400"
           )}

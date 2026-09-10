@@ -324,20 +324,39 @@ const DashboardNavbar = () => {
 
   const { resetSessionCache } = useSessionCache();
 
+  /**
+   * Signing out says so while it happens, and says nothing when it works.
+   *
+   * Before: the click did nothing visible until a "Logged out successfully"
+   * toast appeared, so the only feedback arrived after the thing was already
+   * over — long enough on a cold instance to click again wondering whether
+   * it had registered. The button reports its own state now, from the first
+   * frame.
+   *
+   * Not optimistic, deliberately. Navigating first and signing out in the
+   * background would feel faster and would sometimes be a lie: a failed
+   * request would leave a live session behind on a machine the person
+   * believes they have left. This audience uses library and community-centre
+   * computers. Half a second of "Signing out…" is the honest trade.
+   *
+   * No success toast. The sign-in page IS the confirmation, and an
+   * announcement of something already self-evident is a delay wearing a
+   * helpful expression.
+   */
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
+
   const handleLogout = async () => {
+    if (isLoggingOut) return;
+    setIsLoggingOut(true);
     try {
       await logoutUser();
       // No revalidate: signed out, every refetch would only earn a 401.
       await resetSessionCache(false);
-      showToast({
-        type: "success",
-        title: "Logged out successfully",
-        description: "Taking you to sign in...",
-      });
       // replace, not push: the dashboard is behind auth now, so Back should
       // not return to a page that will only bounce them out again.
       router.replace("/signin");
     } catch {
+      setIsLoggingOut(false);
       showToast({
         type: "error",
         title: "Couldn't sign you out",
@@ -572,10 +591,11 @@ const DashboardNavbar = () => {
 
                       <button
                         onClick={handleLogout}
-                        className="flex items-center gap-3 px-4 py-2.5 text-sm text-primary hover:bg-red-50 w-full text-left font-medium"
+                        disabled={isLoggingOut}
+                        className="flex items-center gap-3 px-4 py-2.5 text-sm text-primary hover:bg-red-50 w-full text-left font-medium disabled:opacity-60 disabled:cursor-not-allowed"
                       >
                         <HiOutlineArrowRightOnRectangle className="w-5 h-5" />
-                        Sign Out
+                        {isLoggingOut ? "Signing out…" : "Sign Out"}
                       </button>
                     </>
               </div>
@@ -712,10 +732,11 @@ const DashboardNavbar = () => {
               handleLogout();
               closeMobileMenu();
             }}
-            className="flex items-center gap-3 px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 w-full text-left min-h-[44px]"
+            disabled={isLoggingOut}
+            className="flex items-center gap-3 px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 w-full text-left min-h-[44px] disabled:opacity-60 disabled:cursor-not-allowed"
           >
             <HiOutlineArrowRightOnRectangle className="w-5 h-5 text-gray-400" />
-            Logout
+            {isLoggingOut ? "Signing out…" : "Logout"}
           </button>
         </div>
       </div>

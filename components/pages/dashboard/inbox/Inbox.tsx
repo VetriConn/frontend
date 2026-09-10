@@ -169,11 +169,10 @@ export default function Inbox() {
           </p>
         </div>
 
-        {threadsLoading && (
-          <div className="bg-white rounded-lg border border-gray-200 p-4 text-sm text-gray-600 mb-4 shrink-0">
-            Loading conversations…
-          </div>
-        )}
+        {/* No standalone "Loading conversations…" banner. The list renders
+            its own skeleton rows, so one component speaks for one fetch —
+            this banner used to contradict the list's empty state, because
+            the list was never passed isLoading. */}
         {threadsError && (
           <div className="bg-red-50 rounded-lg border border-red-200 p-4 text-sm text-red-600 mb-4 shrink-0">
             Unable to load messages. Please refresh and try again.
@@ -183,6 +182,7 @@ export default function Inbox() {
         <div className="flex-1 bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden flex min-h-0">
           <ConversationList
             conversations={filteredConversations}
+            isLoading={threadsLoading}
             hiddenOnMobile={!!selectedId}
             selectedId={resolvedSelectedId}
             onSelect={(id) => {

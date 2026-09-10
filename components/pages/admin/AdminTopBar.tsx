@@ -45,14 +45,21 @@ const AdminTopBar = ({ onOpenMobileMenu }: AdminTopBarProps) => {
 
   const { resetSessionCache } = useSessionCache();
 
+  /** See DashboardNavbar.handleLogout — same reasoning, same trade. */
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
+
   const handleLogout = async () => {
+    if (isLoggingOut) return;
+    setIsLoggingOut(true);
     try {
       await logoutUser();
       // No revalidate: signed out, every refetch would only earn a 401.
       await resetSessionCache(false);
-      showToast({ type: "success", title: "Logged out" });
-      setTimeout(() => router.push("/signin"), 600);
+      // Straight there. The 600ms pause existed to let a success toast be
+      // read; without the toast it was just a delay.
+      router.replace("/signin");
     } catch {
+      setIsLoggingOut(false);
       showToast({ type: "error", title: "Logout failed" });
     }
     setIsMenuOpen(false);
@@ -144,10 +151,11 @@ const AdminTopBar = ({ onOpenMobileMenu }: AdminTopBarProps) => {
               </Link>
               <button
                 onClick={handleLogout}
-                className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 text-left"
+                disabled={isLoggingOut}
+                className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 text-left disabled:opacity-60 disabled:cursor-not-allowed"
               >
                 <HiOutlineArrowRightOnRectangle className="w-4 h-4 text-gray-500" />
-                Sign out
+                {isLoggingOut ? "Signing out…" : "Sign out"}
               </button>
             </div>
           )}

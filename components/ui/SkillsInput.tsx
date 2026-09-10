@@ -118,8 +118,9 @@ export const SkillsInput: React.FC<SkillsInputProps> = ({
       if (!el) return;
       const rect = el.getBoundingClientRect();
       setCoords({
-        top: rect.bottom + window.scrollY + 4,
-        left: rect.left + window.scrollX,
+        // Viewport coordinates, to match position:fixed below.
+        top: rect.bottom + 4,
+        left: rect.left,
         width: rect.width,
       });
     };
@@ -240,7 +241,21 @@ export const SkillsInput: React.FC<SkillsInputProps> = ({
               id={`${id}-listbox`}
               role="listbox"
               style={{
-                position: "absolute",
+                /**
+                 * Fixed, not absolute.
+                 *
+                 * The menu is portaled to <body>, and EditDialog sets
+                 * `document.body.style.overflow = "hidden"` while it is open
+                 * — which makes the body a clipping box, so an absolutely
+                 * positioned child extending past it was simply cut off.
+                 * Inside the Edit Skills dialog the list was chopped at the
+                 * dialog's edge with nothing able to scroll it into view.
+                 *
+                 * A fixed element is positioned against the viewport and is
+                 * not clipped by an ancestor's overflow, so it works the same
+                 * in a dialog and on an ordinary page.
+                 */
+                position: "fixed",
                 top: coords.top,
                 left: coords.left,
                 width: coords.width,

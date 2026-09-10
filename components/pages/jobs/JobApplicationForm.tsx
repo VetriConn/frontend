@@ -44,6 +44,7 @@ import { RequiredMark } from "@/components/ui/RequiredMark";
 import type { UserProfile } from "@/types/api";
 import { fieldLabel, JOB_TYPE_LABELS } from "@/lib/job-fields";
 import { formatDate } from "@/lib/date-utils";
+import { addSkill } from "@/lib/application-skills";
 import {
   prefillFromProfile,
   storedResumes,
@@ -181,12 +182,11 @@ export default function JobApplicationForm({
             // edited the listing's skills since the draft was saved, and an
             // invisible, un-deselectable pick must not ride into the
             // submission.
-            selectedSkills: (draft.selectedSkills || prev.selectedSkills).filter(
-              (skill) => {
-                const pool = jobSkillPool(job.skills);
-                return (pool.length > 0 ? pool : FALLBACK_SKILLS).includes(skill);
-              },
-            ),
+            // Everything saved is kept. This used to drop anything outside
+            // the rendered pool, which was right when the pool was the only
+            // source — and would now silently delete the skills the
+            // applicant typed themselves, between saving and coming back.
+            selectedSkills: draft.selectedSkills || prev.selectedSkills,
             earliestStartDate: draft.earliestStartDate || prev.earliestStartDate,
             preferredSchedule: draft.preferredSchedule || prev.preferredSchedule,
             workLocationPreference:
@@ -278,6 +278,12 @@ export default function JobApplicationForm({
 
   /** Résumés already on the profile, offered instead of a fresh upload. */
   const profileResumes = useMemo(() => storedResumes(userProfile), [userProfile]);
+
+  /** What the form offers to tick: the employer's list, else the fallback. */
+  const offeredSkills = useMemo(() => {
+    const pool = jobSkillPool(job.skills);
+    return pool.length > 0 ? pool : FALLBACK_SKILLS;
+  }, [job.skills]);
 
   const completedCount = sectionComplete.filter(Boolean).length;
 
@@ -385,6 +391,17 @@ export default function JobApplicationForm({
     value: FormData[K],
   ) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
+  };
+
+  const [newSkill, setNewSkill] = useState("");
+
+  /** The rule lives in lib/application-skills so it can be tested. */
+  const addCustomSkill = () => {
+    setFormData((prev) => ({
+      ...prev,
+      selectedSkills: addSkill(prev.selectedSkills, offeredSkills, newSkill),
+    }));
+    setNewSkill("");
   };
 
   const toggleSkill = (skill: string) => {
@@ -846,10 +863,18 @@ export default function JobApplicationForm({
                     : "Choose any skills that apply to you."}
                 </p>
                 <div className="flex flex-wrap gap-2.5">
-                  {(jobSkillPool(job.skills).length > 0
-                    ? jobSkillPool(job.skills)
-                    : FALLBACK_SKILLS
-                  ).map((skill) => {
+                  {/* The employer's list (or the fallback), plus anything the
+                      applicant typed. A pool cannot know every trade — a
+                      forklift ticket or thirty years on a switchboard is
+                      exactly the experience this board exists to surface,
+                      and it was unofferable. Their own skills come first:
+                      they are the ones that were worth the typing. */}
+                  {[
+                    ...formData.selectedSkills.filter(
+                      (skill) => !offeredSkills.includes(skill),
+                    ),
+                    ...offeredSkills,
+                  ].map((skill) => {
                     const selected = formData.selectedSkills.includes(skill);
                     return (
                       <button
@@ -869,6 +894,35 @@ export default function JobApplicationForm({
                       </button>
                     );
                   })}
+                </div>
+
+                <div className="mt-3 flex flex-wrap items-center gap-2">
+                  <label htmlFor="app-add-skill" className="sr-only">
+                    Add a skill that is not listed
+                  </label>
+                  <input
+                    id="app-add-skill"
+                    type="text"
+                    value={newSkill}
+                    onChange={(e) => setNewSkill(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") {
+                        // Enter adds the skill; it must not submit the form.
+                        e.preventDefault();
+                        addCustomSkill();
+                      }
+                    }}
+                    placeholder="Add a skill that isn't listed"
+                    className="form-input flex-1 min-w-52 max-w-xs"
+                  />
+                  <button
+                    type="button"
+                    onClick={addCustomSkill}
+                    disabled={!newSkill.trim()}
+                    className="min-h-[44px] px-4 rounded-lg border border-gray-300 text-sm font-medium text-gray-700 transition-colors hover:border-primary hover:text-primary disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:border-gray-300 disabled:hover:text-gray-700"
+                  >
+                    Add
+                  </button>
                 </div>
               </div>
             </div>

@@ -217,7 +217,10 @@ const CountrySelect = ({
           onChange={(event) => setQuery(event.target.value)}
           placeholder="Search countries"
           aria-label="Search countries"
-          className="w-full rounded-md border border-gray-200 px-2.5 py-1.5 text-xs outline-none focus:ring-1 focus:ring-primary"
+          // No border of its own: it sits in a row that already has a
+          // bottom rule, inside a panel that already has an outline, so a
+          // third line four pixels from the second read as a double border.
+          className="w-full rounded-md bg-gray-50 px-2.5 py-1.5 text-xs outline-none focus:bg-white focus:ring-2 focus:ring-gray-300/60"
         />
       </div>
 
@@ -273,7 +276,7 @@ const CountrySelect = ({
         title={selectedLabel}
         className={clsx(
           "flex shrink-0 items-center gap-1 rounded-md px-1 py-1 transition-colors",
-          "focus:outline-none focus:ring-1 focus:ring-primary",
+          "focus:outline-none focus:ring-2 focus:ring-gray-300/60",
           disabled ? "cursor-not-allowed opacity-60" : "hover:bg-gray-100",
         )}
       >
@@ -344,7 +347,9 @@ export const PhoneInputControl = ({
   // number input read as a single control.
   const wrapperClasses = clsx(
     "flex items-center gap-2 transition-colors",
-    "focus-within:ring-2 focus-within:ring-primary focus-within:border-transparent",
+    // Matches fieldStyles.FIELD_BASE: focus is a quiet halo, not a red ring
+    // that reads as an error.
+    "focus-within:border-gray-500 focus-within:ring-2 focus-within:ring-gray-300/60",
     className ?? DEFAULT_BOX_CLASSES,
     invalid && "border-red-500",
     disabled && "bg-gray-100 cursor-not-allowed",

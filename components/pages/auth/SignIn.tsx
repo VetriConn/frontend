@@ -19,7 +19,6 @@ import {
   RETURN_URL_PARAM,
   resolvePostAuthPath,
   homePathForRole,
-  sanitizeReturnUrl,
   withReturnUrl,
 } from "@/lib/auth-redirect";
 
@@ -49,10 +48,6 @@ export const SignIn = () => {
   // Someone arriving from a company invite needs to land back on the invite,
   // not the dashboard. Unsafe values fall back to the dashboard.
   const rawReturnUrl = searchParams.get(RETURN_URL_PARAM);
-  // Whether a usable destination was carried in, rather than comparing the
-  // resolved path against "/dashboard" — that literal stopped meaning "no
-  // return url" the moment admins started landing on /admin.
-  const isReturningSomewhere = sanitizeReturnUrl(rawReturnUrl) !== null;
   const sessionExpired = searchParams.get("reason") === "session-expired";
 
   // Carry the destination through if they need an account first.
@@ -68,14 +63,10 @@ export const SignIn = () => {
    * it instead.
    */
   const finishSignIn = async (roleHint?: string) => {
-    showToast({
-      type: "success",
-      title: "Login successful",
-      description: isReturningSomewhere
-        ? "Welcome back! Taking you back to where you left off..."
-        : "Welcome back!",
-    });
-
+    // No success toast. Landing on the dashboard IS the confirmation, and
+    // announcing something already self-evident is a delay wearing a helpful
+    // expression. Failures still speak up — those are not self-evident.
+    //
     // Drops the previous account's cache and seeds this one's profile, so the
     // destination renders the right person immediately.
     let role = roleHint;

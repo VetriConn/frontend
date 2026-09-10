@@ -34,14 +34,23 @@ import { useToaster } from "@/components/ui/Toaster";
 import { CustomDropdown } from "@/components/ui/CustomDropdown";
 import { PhoneInputControl } from "@/components/ui/PhoneField.lazy";
 import { ScreeningQuestionField } from "./ScreeningQuestionField";
+import {
+  ApplicationReview,
+  type ReviewGroup,
+} from "./ApplicationReview";
+import { RequiredMark } from "@/components/ui/RequiredMark";
 
 // Canonical profile shape subset used for pre-filling application form
 import type { UserProfile } from "@/types/api";
 import { fieldLabel, JOB_TYPE_LABELS } from "@/lib/job-fields";
-type CanonicalUserProfile = Pick<
-  UserProfile,
-  "full_name" | "email" | "phone_number"
->;
+import { formatDate } from "@/lib/date-utils";
+import {
+  prefillFromProfile,
+  storedResumes,
+  type PrefillProfile,
+} from "@/lib/application-prefill";
+/** Contact details, plus the two facts the experience opener is built from. */
+type CanonicalUserProfile = PrefillProfile;
 
 interface JobApplicationFormProps {
   job: Job;
@@ -93,6 +102,19 @@ const LOCATION_OPTIONS = [
   { value: "no-preference", label: "No Preference" },
 ];
 
+/** Suggested length, shown as a counter. Not a limit. */
+const COVER_LETTER_SUGGESTED = 500;
+/** The actual cap, matching the column's maxlength on the server. */
+const COVER_LETTER_MAX = 5000;
+
+/** A stored option value as the reader saw it, not as we store it. */
+function labelFor(
+  options: { value: string; label: string }[],
+  value: string,
+): string {
+  return options.find((o) => o.value === value && o.value !== "")?.label ?? "";
+}
+
 const ACCEPTED_FILE_TYPES = [".pdf", ".doc", ".docx"];
 const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
 
@@ -101,11 +123,16 @@ interface FormData {
   email: string;
   phone: string;
   relevantExperience: string;
+  /** Why this role. Separate from experience, which is what they have done. */
+  coverLetter: string;
+  portfolioUrl: string;
+  personalWebsite: string;
   selectedSkills: string[];
   earliestStartDate: string;
   preferredSchedule: string;
   workLocationPreference: string;
   resume: File | null;
+  resumeDocumentId: string;
   additionalInfo: string;
   // Phase-2 screening answers, keyed by the job's question id.
   screeningAnswers: Record<string, string[]>;
@@ -126,11 +153,16 @@ export default function JobApplicationForm({
     email: userProfile?.email || "",
     phone: userProfile?.phone_number || "",
     relevantExperience: "",
+    coverLetter: "",
+    portfolioUrl: "",
+    personalWebsite: "",
     selectedSkills: [],
     earliestStartDate: "",
     preferredSchedule: "",
     workLocationPreference: "",
     resume: null,
+    /** A document already on the profile, chosen instead of uploading. */
+    resumeDocumentId: "",
     additionalInfo: "",
     screeningAnswers: {},
   });
@@ -171,6 +203,15 @@ export default function JobApplicationForm({
     return () => { cancelled = true; };
   }, [job.id]);
 
+  /**
+   * Fill from the profile when it ARRIVES, not only when the form mounts.
+   * The rule itself lives in lib/application-prefill so it can be tested.
+   */
+  useEffect(() => {
+    if (!userProfile) return;
+    setFormData((prev) => ({ ...prev, ...prefillFromProfile(prev, userProfile) }));
+  }, [userProfile]);
+
   // Track which fields were pre-filled
   const preFilled = useMemo(
     () => ({
@@ -180,48 +221,6 @@ export default function JobApplicationForm({
     }),
     [userProfile],
   );
-
-  // Section completion checks
-  const sectionComplete = useMemo(() => {
-    const s1 =
-      formData.fullName.trim() !== "" &&
-      formData.email.trim() !== "" &&
-      formData.phone.trim() !== "";
-    const s2 =
-      formData.relevantExperience.trim() !== "" &&
-      formData.selectedSkills.length > 0;
-    const s3 =
-      formData.earliestStartDate !== "" &&
-      formData.preferredSchedule !== "" &&
-      formData.workLocationPreference !== "";
-    const s4 = formData.resume !== null;
-    return [s1, s2, s3, s4];
-  }, [formData]);
-
-  const completedCount = sectionComplete.filter(Boolean).length;
-
-  // The stored column, labelled; null renders nothing. The old tag scan here
-  // defaulted to "Part-time" while the detail page's copy defaulted to
-  // "Full-Time" — two invented answers for the same silent job.
-  const derivedJobType = fieldLabel(JOB_TYPE_LABELS, job.job_type);
-
-  // ── Handlers ──────────────────────────────────────────────
-
-  const updateField = <K extends keyof FormData>(
-    field: K,
-    value: FormData[K],
-  ) => {
-    setFormData((prev) => ({ ...prev, [field]: value }));
-  };
-
-  const toggleSkill = (skill: string) => {
-    setFormData((prev) => ({
-      ...prev,
-      selectedSkills: prev.selectedSkills.includes(skill)
-        ? prev.selectedSkills.filter((s) => s !== skill)
-        : [...prev.selectedSkills, skill],
-    }));
-  };
 
   // ── Screening questions ───────────────────────────────────
   const screeningQuestions = useMemo(
@@ -246,6 +245,158 @@ export default function JobApplicationForm({
     [screeningQuestions, formData.screeningAnswers],
   );
 
+  /**
+   * One entry per section rendered, which was not true before.
+   *
+   * This returned four booleans while the form rendered six cards, and the
+   * bar read "{n} of 4 sections completed" — so it could sit at "4 of 4"
+   * with the screening questions unanswered and the last section untouched.
+   * A progress bar that reaches the end before the form does is worse than
+   * no progress bar.
+   */
+  const sectionComplete = useMemo(() => {
+    const s1 =
+      formData.fullName.trim() !== "" &&
+      formData.email.trim() !== "" &&
+      formData.phone.trim() !== "";
+    const s2 =
+      formData.relevantExperience.trim() !== "" &&
+      formData.selectedSkills.length > 0;
+    const s3 =
+      formData.earliestStartDate !== "" &&
+      formData.preferredSchedule !== "" &&
+      formData.workLocationPreference !== "";
+    const s4 = formData.resume !== null || formData.resumeDocumentId !== "";
+    // Screening only counts when the job asks something; an absent section
+    // must not hold the bar back.
+    const s5 = screeningQuestions.length === 0 || !requiredScreeningMissing;
+    // The last section is genuinely optional — complete by default, so it
+    // never reads as unfinished work.
+    const s6 = true;
+    return [s1, s2, s3, s4, s5, s6];
+  }, [formData, screeningQuestions.length, requiredScreeningMissing]);
+
+  /** Résumés already on the profile, offered instead of a fresh upload. */
+  const profileResumes = useMemo(() => storedResumes(userProfile), [userProfile]);
+
+  const completedCount = sectionComplete.filter(Boolean).length;
+
+  /**
+   * The last look. Not a wizard step — the form stays one page filled in any
+   * order, and this is a summary of it reached once at the end.
+   */
+  const [reviewing, setReviewing] = useState(false);
+
+  const reviewGroups: ReviewGroup[] = useMemo(
+    () => [
+      {
+        title: "Personal information",
+        editTargetId: "section-contact",
+        fields: [
+          { label: "Full name", value: formData.fullName },
+          { label: "Email address", value: formData.email },
+          { label: "Phone number", value: formData.phone },
+          { label: "Personal website", value: formData.personalWebsite },
+          { label: "Portfolio URL", value: formData.portfolioUrl },
+        ],
+      },
+      {
+        title: "Experience and skills",
+        editTargetId: "section-experience",
+        fields: [
+          { label: "Relevant experience", value: formData.relevantExperience },
+          { label: "Cover letter", value: formData.coverLetter },
+          { label: "Skills", value: formData.selectedSkills },
+        ],
+      },
+      {
+        title: "Availability",
+        editTargetId: "section-availability",
+        fields: [
+          { label: "Earliest start", value: formData.earliestStartDate },
+          {
+            label: "Preferred schedule",
+            value: labelFor(SCHEDULE_OPTIONS, formData.preferredSchedule),
+          },
+          {
+            label: "Work location",
+            value: labelFor(LOCATION_OPTIONS, formData.workLocationPreference),
+          },
+        ],
+      },
+      {
+        title: "Résumé",
+        editTargetId: "section-resume",
+        fields: [
+          {
+            label: "Attached",
+            value:
+              formData.resume?.name ??
+              profileResumes.find(
+                (d) => String(d._id) === formData.resumeDocumentId,
+              )?.name ??
+              "",
+          },
+        ],
+      },
+      ...(screeningQuestions.length > 0
+        ? [
+            {
+              title: "Screening questions",
+              editTargetId: "section-screening",
+              fields: screeningQuestions.map((q) => ({
+                label: q.question,
+                value: formData.screeningAnswers[q.id] ?? [],
+              })),
+            },
+          ]
+        : []),
+      {
+        title: "Additional information",
+        editTargetId: "section-extra",
+        fields: [{ label: "Anything else", value: formData.additionalInfo }],
+      },
+    ],
+    [formData, profileResumes, screeningQuestions],
+  );
+
+  /** Back to the form, at the section they asked to change. */
+  const handleEditSection = useCallback((targetId: string) => {
+    setReviewing(false);
+    // After the form is back in the tree.
+    requestAnimationFrame(() => {
+      document
+        .getElementById(targetId)
+        ?.scrollIntoView({ behavior: "smooth", block: "start" });
+    });
+  }, []);
+
+
+  // The stored column, labelled; null renders nothing. The old tag scan here
+  // defaulted to "Part-time" while the detail page's copy defaulted to
+  // "Full-Time" — two invented answers for the same silent job.
+  const derivedJobType = fieldLabel(JOB_TYPE_LABELS, job.job_type);
+
+
+  // ── Handlers ──────────────────────────────────────────────
+
+  const updateField = <K extends keyof FormData>(
+    field: K,
+    value: FormData[K],
+  ) => {
+    setFormData((prev) => ({ ...prev, [field]: value }));
+  };
+
+  const toggleSkill = (skill: string) => {
+    setFormData((prev) => ({
+      ...prev,
+      selectedSkills: prev.selectedSkills.includes(skill)
+        ? prev.selectedSkills.filter((s) => s !== skill)
+        : [...prev.selectedSkills, skill],
+    }));
+  };
+
+
   // File handling
   const handleFile = useCallback((file: File) => {
     const ext = "." + file.name.split(".").pop()?.toLowerCase();
@@ -257,7 +408,9 @@ export default function JobApplicationForm({
       alert("File size must be under 5MB");
       return;
     }
-    setFormData((prev) => ({ ...prev, resume: file }));
+    // One résumé goes with an application, so picking a file drops any
+    // stored document that was chosen, and choosing one drops the file.
+    setFormData((prev) => ({ ...prev, resume: file, resumeDocumentId: "" }));
   }, []);
 
   const handleDrop = useCallback(
@@ -331,6 +484,9 @@ export default function JobApplicationForm({
         formData.workLocationPreference,
       );
       apiFormData.append("additionalInfo", formData.additionalInfo);
+      apiFormData.append("coverLetter", formData.coverLetter);
+      apiFormData.append("portfolioUrl", formData.portfolioUrl);
+      apiFormData.append("personalWebsite", formData.personalWebsite);
       // Only answered questions are sent, shaped as the API expects.
       const screeningPayload = screeningQuestions
         .map((q) => ({
@@ -348,6 +504,10 @@ export default function JobApplicationForm({
       }
       if (formData.resume) {
         apiFormData.append("resume", formData.resume);
+      } else if (formData.resumeDocumentId) {
+        // An id, never a URL. The server resolves it against this account's
+        // own documents — see services/resumeSource.
+        apiFormData.append("resumeDocumentId", formData.resumeDocumentId);
       }
       await submitJobApplication(job.id, apiFormData);
       // Clear draft on successful submission
@@ -482,13 +642,15 @@ export default function JobApplicationForm({
               Application Progress
             </span>
             <span className="text-xs text-gray-400">
-              {completedCount} of 4 sections completed
+              {completedCount} of {sectionComplete.length} sections completed
             </span>
           </div>
           <div className="w-full h-2 bg-gray-100 rounded-full overflow-hidden">
             <div
               className="h-full bg-primary rounded-full transition-all duration-500"
-              style={{ width: `${(completedCount / 4) * 100}%` }}
+              style={{
+                width: `${(completedCount / sectionComplete.length) * 100}%`,
+              }}
             />
           </div>
         </div>
@@ -528,284 +690,498 @@ export default function JobApplicationForm({
           </p>
         </div>
 
-        {/* ─── Section 1: Personal Information ─── */}
-        <SectionCard
-          number={1}
-          title="Personal Information"
-          subtitle="Please verify your contact details are correct."
-          complete={sectionComplete[0]}
-        >
-          <div className="space-y-5">
-            <FormField label="Full Name" preFilled={preFilled.fullName}>
-              <input
-                type="text"
-                value={formData.fullName}
-                onChange={(e) => updateField("fullName", e.target.value)}
-                className="form-input"
-                placeholder="Your full name"
+        {reviewing ? (
+          <ApplicationReview groups={reviewGroups} onEdit={handleEditSection} />
+        ) : (
+          <>
+          {/* ─── Section 1: Personal Information ─── */}
+          <SectionCard
+            anchorId="section-contact"
+            number={1}
+            title="Personal Information"
+            subtitle="Please verify your contact details are correct."
+            complete={sectionComplete[0]}
+          >
+            <div className="space-y-5">
+              {/* Paired two-up on desktop: these are short single-line fields
+                  and stacking them made a form of six sections longer than it
+                  needed to be. Only short fields pair — a textarea or the
+                  résumé in half-width reads worse, not better. */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                <FormField
+                  id="app-full-name"
+                  label="Full Name"
+                  required
+                  help="As it appears on your ID, so an employer can match it to your references."
+                  preFilled={preFilled.fullName}
+                  valid={formData.fullName.trim().length > 1}
+                >
+                  <input
+                    id="app-full-name"
+                    type="text"
+                    value={formData.fullName}
+                    onChange={(e) => updateField("fullName", e.target.value)}
+                    className="form-input"
+                    placeholder="Your full name"
+                  />
+                </FormField>
+
+                <FormField
+                  id="app-email"
+                  label="Email Address"
+                  required
+                  help="Where the employer replies. Check it carefully."
+                  preFilled={preFilled.email}
+                  valid={/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email.trim())}
+                >
+                  <input
+                    id="app-email"
+                    type="email"
+                    value={formData.email}
+                    onChange={(e) => updateField("email", e.target.value)}
+                    className="form-input"
+                    placeholder="your@email.com"
+                  />
+                </FormField>
+              </div>
+
+              <FormField
+                id="app-phone"
+                label="Phone Number"
+                required
+                help="We only use this to contact you about this application."
+                preFilled={preFilled.phone}
+              >
+                <PhoneInputControl
+                  name="phone"
+                  value={formData.phone}
+                  onChange={(value) => updateField("phone", value)}
+                  className="form-input"
+                  countryLabel="Phone country"
+                />
+              </FormField>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                <FormField
+                  id="app-website"
+                  label="Personal Website"
+                  help="Your home page, blog or company site."
+                  valid={formData.personalWebsite.trim().length > 3}
+                >
+                  <input
+                    id="app-website"
+                    type="url"
+                    inputMode="url"
+                    value={formData.personalWebsite}
+                    onChange={(e) => updateField("personalWebsite", e.target.value)}
+                    className="form-input"
+                    placeholder="example.com"
+                  />
+                </FormField>
+
+                <FormField
+                  id="app-portfolio"
+                  label="Portfolio URL"
+                  help="Only shared with this employer."
+                  valid={formData.portfolioUrl.trim().length > 3}
+                >
+                  <input
+                    id="app-portfolio"
+                    type="url"
+                    inputMode="url"
+                    value={formData.portfolioUrl}
+                    onChange={(e) => updateField("portfolioUrl", e.target.value)}
+                    className="form-input"
+                    placeholder="dribbble.com/yourname"
+                  />
+                </FormField>
+              </div>
+
+              <p className="text-xs text-gray-400 flex items-center gap-2">
+                <InfoCircle />
+                We&apos;ll only use this to contact you about your application.
+              </p>
+            </div>
+          </SectionCard>
+
+          {/* ─── Section 2: Work Experience & Skills ─── */}
+          <SectionCard
+            anchorId="section-experience"
+            number={2}
+            title="Work Experience & Skills"
+            subtitle="Tell us about your relevant experience and skills."
+            complete={sectionComplete[1]}
+          >
+            <div className="space-y-6">
+              <div>
+                <label
+                  htmlFor="app-experience"
+                  className="block text-sm font-semibold text-gray-900 mb-1.5 md:mb-2"
+                >
+                  Describe Your Relevant Experience
+                  <RequiredMark />
+                </label>
+                <textarea
+                  id="app-experience"
+                  value={formData.relevantExperience}
+                  onChange={(e) =>
+                    updateField("relevantExperience", e.target.value)
+                  }
+                  rows={5}
+                  className="form-input resize-none"
+                  placeholder="Share your experience related to this role..."
+                />
+                <p className="text-xs text-gray-400 flex items-start gap-2 mt-2">
+                  <InfoCircle className="shrink-0 mt-0.5" />
+                  <span>
+                    For example: &quot;I have 10 years of customer service
+                    experience in healthcare settings, helping patients and
+                    families navigate their care options.&quot;
+                  </span>
+                </p>
+              </div>
+
+              {/* The letter, under the name everyone uses for it.
+                  The experience box above answers "what have you done"; this
+                  answers "why this role", and people write them differently.
+                  Naming it matters — applicants did not know they were writing
+                  a cover letter and employers did not know they were reading
+                  one. */}
+              <div>
+                <div className="flex items-baseline justify-between gap-3 mb-1.5 md:mb-2">
+                  <label
+                    htmlFor="app-cover-letter"
+                    className="block text-sm font-semibold text-gray-900"
+                  >
+                    Cover Letter
+                  </label>
+                  {/* A counter, because "how much should I write?" is the
+                      question that stalls people at an empty box. It reports
+                      length rather than enforcing it — running past the
+                      suggestion is not an error. */}
+                  <span
+                    className={`text-xs tabular-nums ${
+                      formData.coverLetter.length > COVER_LETTER_SUGGESTED
+                        ? "text-amber-600"
+                        : "text-gray-400"
+                    }`}
+                  >
+                    {formData.coverLetter.length}/{COVER_LETTER_SUGGESTED}
+                  </span>
+                </div>
+                <textarea
+                  id="app-cover-letter"
+                  value={formData.coverLetter}
+                  onChange={(e) => updateField("coverLetter", e.target.value)}
+                  rows={6}
+                  maxLength={COVER_LETTER_MAX}
+                  className="form-input resize-none"
+                  placeholder="Why this role, and why you…"
+                />
+                <p className="mt-1.5 text-xs text-gray-500">
+                  Optional, and the part most employers read first. A short
+                  paragraph is plenty.
+                </p>
+              </div>
+
+              <div>
+                <label className="block text-sm font-semibold text-gray-900 mb-1.5 md:mb-2">
+                  Select your skills
+                </label>
+                <p className="text-xs text-gray-500 mb-3">
+                  {jobSkillPool(job.skills).length > 0
+                    ? "These are the skills the employer listed - pick the ones you have."
+                    : "Choose any skills that apply to you."}
+                </p>
+                <div className="flex flex-wrap gap-2.5">
+                  {(jobSkillPool(job.skills).length > 0
+                    ? jobSkillPool(job.skills)
+                    : FALLBACK_SKILLS
+                  ).map((skill) => {
+                    const selected = formData.selectedSkills.includes(skill);
+                    return (
+                      <button
+                        key={skill}
+                        type="button"
+                        onClick={() => toggleSkill(skill)}
+                        className={`px-4 py-2 min-h-[44px] rounded-lg text-sm font-medium border transition-colors cursor-pointer ${
+                          selected
+                            ? "bg-red-50 text-red-700 border-red-200"
+                            : "bg-white text-gray-600 border-gray-200 hover:border-gray-300 hover:bg-gray-50"
+                        }`}
+                      >
+                        {selected && (
+                          <span className="mr-1.5 text-red-400">✓</span>
+                        )}
+                        {skill}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+          </SectionCard>
+
+          {/* ─── Section 3: Availability & Preferences ─── */}
+          <SectionCard
+            anchorId="section-availability"
+            number={3}
+            title="Availability & Preferences"
+            subtitle="Let us know when you can start and your schedule preferences."
+            complete={sectionComplete[2]}
+          >
+            <div className="space-y-5">
+              <DatePickerField
+                label="Earliest Start Date"
+                value={formData.earliestStartDate}
+                onChange={(val) => updateField("earliestStartDate", val)}
+                hint="When would you be available to begin work?"
               />
-            </FormField>
 
-            <FormField label="Email Address" preFilled={preFilled.email}>
-              <input
-                type="email"
-                value={formData.email}
-                onChange={(e) => updateField("email", e.target.value)}
-                className="form-input"
-                placeholder="your@email.com"
+              <CustomDropdown
+                name="preferredSchedule"
+                label="Preferred Schedule"
+                value={formData.preferredSchedule}
+                onChange={(v) => updateField("preferredSchedule", v)}
+                options={SCHEDULE_OPTIONS}
+                placeholder="Select a schedule"
+                hideHeader
               />
-            </FormField>
 
-            <FormField label="Phone Number" preFilled={preFilled.phone}>
-              <PhoneInputControl
-                name="phone"
-                value={formData.phone}
-                onChange={(value) => updateField("phone", value)}
-                className="form-input"
-                countryLabel="Phone country"
+              <CustomDropdown
+                name="workLocationPreference"
+                label="Work Location Preference"
+                value={formData.workLocationPreference}
+                onChange={(v) => updateField("workLocationPreference", v)}
+                options={LOCATION_OPTIONS}
+                placeholder="Select a preference"
+                hideHeader
               />
-            </FormField>
+            </div>
+          </SectionCard>
 
-            <p className="text-xs text-gray-400 flex items-center gap-2">
-              <InfoCircle />
-              We&apos;ll only use this to contact you about your application.
-            </p>
-          </div>
-        </SectionCard>
+          {/* ─── Section 4: Upload Your Resume ─── */}
+          <SectionCard
+            anchorId="section-resume"
+            number={4}
+            title="Upload Your Resume"
+            subtitle="Share your resume so we can learn more about your background."
+            complete={sectionComplete[3]}
+          >
+            {/* Something already on the profile, before asking for a file.
+                Most applicants have uploaded a résumé once and should not have
+                to find the PDF again — least of all on a phone, and least of
+                all on the fourth section of a form they are most likely to
+                abandon here. Uploading stays exactly where it was. */}
+            {profileResumes.length > 0 && !formData.resume && (
+              <fieldset className="mb-4 min-w-0">
+                <legend className="block text-sm font-semibold text-gray-900 mb-2">
+                  Use a résumé from your profile
+                </legend>
+                <div className="space-y-2">
+                  {profileResumes.map((doc) => {
+                    const id = String(doc._id);
+                    const chosen = formData.resumeDocumentId === id;
+                    return (
+                      <label
+                        key={id}
+                        className={`flex items-center gap-3 rounded-lg border p-3 cursor-pointer transition-colors ${
+                          chosen
+                            ? "border-primary bg-red-50/40"
+                            : "border-gray-200 hover:border-gray-300"
+                        }`}
+                      >
+                        <input
+                          type="radio"
+                          name="profile-resume"
+                          value={id}
+                          checked={chosen}
+                          onChange={() =>
+                            setFormData((prev) => ({
+                              ...prev,
+                              resumeDocumentId: id,
+                              resume: null,
+                            }))
+                          }
+                          className="h-4 w-4 accent-[var(--color-primary)] shrink-0"
+                        />
+                        <HiOutlineDocumentText className="w-5 h-5 text-gray-400 shrink-0" />
+                        <span className="min-w-0 flex-1">
+                          <span className="block text-sm font-medium text-gray-900 truncate">
+                            {doc.name}
+                          </span>
+                          {doc.upload_date && (
+                            <span className="block text-xs text-gray-500">
+                              Added {formatDate(doc.upload_date)}
+                            </span>
+                          )}
+                        </span>
+                      </label>
+                    );
+                  })}
+                </div>
+                {formData.resumeDocumentId && (
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setFormData((prev) => ({ ...prev, resumeDocumentId: "" }))
+                    }
+                    className="mt-2 text-sm text-gray-600 underline underline-offset-2 hover:text-primary"
+                  >
+                    Upload a different one instead
+                  </button>
+                )}
+              </fieldset>
+            )}
 
-        {/* ─── Section 2: Work Experience & Skills ─── */}
-        <SectionCard
-          number={2}
-          title="Work Experience & Skills"
-          subtitle="Tell us about your relevant experience and skills."
-          complete={sectionComplete[1]}
-        >
-          <div className="space-y-6">
+            {/* Outside every branch below. It used to live inside the
+                dropzone, which now unmounts once a file is attached — so
+                "Choose a different file" would have had nothing to click. */}
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept=".pdf,.doc,.docx"
+              onChange={handleFileChange}
+              className="hidden"
+            />
+
+            {formData.resume ? (
+              <div className="flex items-center gap-3 bg-gray-50 border border-gray-200 rounded-lg p-4">
+                <div className="w-10 h-10 rounded-lg bg-red-50 flex items-center justify-center shrink-0">
+                  <HiOutlineDocumentText className="w-5 h-5 md:w-6 md:h-6 text-red-500" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm md:text-base font-medium text-gray-900 truncate">
+                    {formData.resume.name}
+                  </p>
+                  <p className="text-xs text-gray-400">
+                    {formatFileSize(formData.resume.size)}
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={removeFile}
+                  className="p-2 min-h-[44px] min-w-[44px] flex items-center justify-center text-gray-400 hover:text-red-500 hover:bg-gray-100 rounded-md transition-colors cursor-pointer"
+                  aria-label="Remove file"
+                >
+                  <HiOutlineXMark className="w-5 h-5 md:w-6 md:h-6" />
+                </button>
+              </div>
+            ) : null}
+
+            {/* "Choose a different file" stays available with one attached.
+                Swapping the dropzone out entirely meant replacing a résumé
+                required finding the remove button first — two steps for what
+                should be one. */}
+            {formData.resume && (
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                className="mt-3 inline-flex items-center gap-2 min-h-[44px] text-sm font-medium text-gray-600 underline underline-offset-2 hover:text-primary"
+              >
+                <HiOutlineArrowUpTray className="w-4 h-4" />
+                Choose a different file
+              </button>
+            )}
+
+            {!formData.resume && !formData.resumeDocumentId && (
+              <div
+                onDragOver={(e) => {
+                  e.preventDefault();
+                  setIsDragging(true);
+                }}
+                onDragLeave={() => setIsDragging(false)}
+                onDrop={handleDrop}
+                onClick={() => fileInputRef.current?.click()}
+                className={`flex flex-col items-center justify-center py-10 px-6 border-2 border-dashed rounded-xl cursor-pointer transition-colors ${
+                  isDragging
+                    ? "border-primary bg-red-50/50"
+                    : "border-gray-200 hover:border-gray-300 hover:bg-gray-50/50"
+                }`}
+              >
+                <div className="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center mb-3">
+                  <HiOutlineArrowUpTray className="w-6 h-6 md:w-8 md:h-8 text-gray-400" />
+                </div>
+                <p className="text-sm md:text-base font-medium text-gray-700 mb-1">
+                  Drag and drop your resume here
+                </p>
+                <p className="text-xs text-gray-400 mb-3">
+                  or click to browse your files
+                </p>
+                <div className="flex items-center gap-2">
+                  <span className="px-2 py-0.5 bg-gray-100 text-gray-500 text-xs md:text-sm font-medium rounded">
+                    PDF
+                  </span>
+                  <span className="px-2 py-0.5 bg-gray-100 text-gray-500 text-xs md:text-sm font-medium rounded">
+                    DOCX
+                  </span>
+                  <span className="text-xs md:text-sm text-gray-400">
+                    Max 5MB
+                  </span>
+                </div>
+              </div>
+            )}
+          </SectionCard>
+
+          {/* ─── Screening questions (only when the job has them) ─── */}
+          {screeningQuestions.length > 0 && (
+            <SectionCard
+              anchorId="section-screening"
+            number={5}
+              title="Screening Questions"
+              subtitle="A few quick questions from the employer."
+              complete={!requiredScreeningMissing}
+              optional={!screeningQuestions.some((q) => q.required)}
+            >
+              <div className="space-y-6">
+                {screeningQuestions.map((q) => (
+                  <ScreeningQuestionField
+                    key={q.id}
+                    question={q}
+                    value={formData.screeningAnswers[q.id] ?? []}
+                    onChange={(values) => setScreeningAnswer(q.id, values)}
+                  />
+                ))}
+              </div>
+            </SectionCard>
+          )}
+
+          {/* ─── Section 6: Additional Information ─── */}
+          <SectionCard
+            anchorId="section-extra"
+            number={6}
+            title="Additional Information"
+            subtitle="Optional: Share anything else you'd like us to know."
+            complete={false}
+            optional
+          >
             <div>
               <label className="block text-sm font-semibold text-gray-900 mb-1.5 md:mb-2">
-                Describe Your Relevant Experience
+                Is there anything else you&apos;d like to share with us?
               </label>
               <textarea
-                value={formData.relevantExperience}
-                onChange={(e) =>
-                  updateField("relevantExperience", e.target.value)
-                }
-                rows={5}
+                value={formData.additionalInfo}
+                onChange={(e) => updateField("additionalInfo", e.target.value)}
+                rows={4}
                 className="form-input resize-none"
-                placeholder="Share your experience related to this role..."
+                placeholder="Type your response here..."
               />
               <p className="text-xs text-gray-400 flex items-start gap-2 mt-2">
                 <InfoCircle className="shrink-0 mt-0.5" />
                 <span>
-                  For example: &quot;I have 10 years of customer service
-                  experience in healthcare settings, helping patients and
-                  families navigate their care options.&quot;
+                  This could include availability constraints, accommodation
+                  needs, or additional qualifications.
                 </span>
               </p>
-            </div>
-
-            <div>
-              <label className="block text-sm font-semibold text-gray-900 mb-1.5 md:mb-2">
-                Select your skills
-              </label>
-              <p className="text-xs text-gray-500 mb-3">
-                {jobSkillPool(job.skills).length > 0
-                  ? "These are the skills the employer listed - pick the ones you have."
-                  : "Choose any skills that apply to you."}
-              </p>
-              <div className="flex flex-wrap gap-2.5">
-                {(jobSkillPool(job.skills).length > 0
-                  ? jobSkillPool(job.skills)
-                  : FALLBACK_SKILLS
-                ).map((skill) => {
-                  const selected = formData.selectedSkills.includes(skill);
-                  return (
-                    <button
-                      key={skill}
-                      type="button"
-                      onClick={() => toggleSkill(skill)}
-                      className={`px-4 py-2 min-h-[44px] rounded-lg text-sm font-medium border transition-colors cursor-pointer ${
-                        selected
-                          ? "bg-red-50 text-red-700 border-red-200"
-                          : "bg-white text-gray-600 border-gray-200 hover:border-gray-300 hover:bg-gray-50"
-                      }`}
-                    >
-                      {selected && (
-                        <span className="mr-1.5 text-red-400">✓</span>
-                      )}
-                      {skill}
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-          </div>
-        </SectionCard>
-
-        {/* ─── Section 3: Availability & Preferences ─── */}
-        <SectionCard
-          number={3}
-          title="Availability & Preferences"
-          subtitle="Let us know when you can start and your schedule preferences."
-          complete={sectionComplete[2]}
-        >
-          <div className="space-y-5">
-            <DatePickerField
-              label="Earliest Start Date"
-              value={formData.earliestStartDate}
-              onChange={(val) => updateField("earliestStartDate", val)}
-              hint="When would you be available to begin work?"
-            />
-
-            <CustomDropdown
-              name="preferredSchedule"
-              label="Preferred Schedule"
-              value={formData.preferredSchedule}
-              onChange={(v) => updateField("preferredSchedule", v)}
-              options={SCHEDULE_OPTIONS}
-              placeholder="Select a schedule"
-              hideHeader
-            />
-
-            <CustomDropdown
-              name="workLocationPreference"
-              label="Work Location Preference"
-              value={formData.workLocationPreference}
-              onChange={(v) => updateField("workLocationPreference", v)}
-              options={LOCATION_OPTIONS}
-              placeholder="Select a preference"
-              hideHeader
-            />
-          </div>
-        </SectionCard>
-
-        {/* ─── Section 4: Upload Your Resume ─── */}
-        <SectionCard
-          number={4}
-          title="Upload Your Resume"
-          subtitle="Share your resume so we can learn more about your background."
-          complete={sectionComplete[3]}
-        >
-          {formData.resume ? (
-            <div className="flex items-center gap-3 bg-gray-50 border border-gray-200 rounded-lg p-4">
-              <div className="w-10 h-10 rounded-lg bg-red-50 flex items-center justify-center shrink-0">
-                <HiOutlineDocumentText className="w-5 h-5 md:w-6 md:h-6 text-red-500" />
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-sm md:text-base font-medium text-gray-900 truncate">
-                  {formData.resume.name}
-                </p>
-                <p className="text-xs text-gray-400">
-                  {formatFileSize(formData.resume.size)}
-                </p>
-              </div>
-              <button
-                type="button"
-                onClick={removeFile}
-                className="p-2 min-h-[44px] min-w-[44px] flex items-center justify-center text-gray-400 hover:text-red-500 hover:bg-gray-100 rounded-md transition-colors cursor-pointer"
-                aria-label="Remove file"
-              >
-                <HiOutlineXMark className="w-5 h-5 md:w-6 md:h-6" />
-              </button>
-            </div>
-          ) : (
-            <div
-              onDragOver={(e) => {
-                e.preventDefault();
-                setIsDragging(true);
-              }}
-              onDragLeave={() => setIsDragging(false)}
-              onDrop={handleDrop}
-              onClick={() => fileInputRef.current?.click()}
-              className={`flex flex-col items-center justify-center py-10 px-6 border-2 border-dashed rounded-xl cursor-pointer transition-colors ${
-                isDragging
-                  ? "border-primary bg-red-50/50"
-                  : "border-gray-200 hover:border-gray-300 hover:bg-gray-50/50"
-              }`}
-            >
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept=".pdf,.doc,.docx"
-                onChange={handleFileChange}
-                className="hidden"
-              />
-              <div className="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center mb-3">
-                <HiOutlineArrowUpTray className="w-6 h-6 md:w-8 md:h-8 text-gray-400" />
-              </div>
-              <p className="text-sm md:text-base font-medium text-gray-700 mb-1">
-                Drag and drop your resume here
-              </p>
-              <p className="text-xs text-gray-400 mb-3">
-                or click to browse your files
-              </p>
-              <div className="flex items-center gap-2">
-                <span className="px-2 py-0.5 bg-gray-100 text-gray-500 text-xs md:text-sm font-medium rounded">
-                  PDF
-                </span>
-                <span className="px-2 py-0.5 bg-gray-100 text-gray-500 text-xs md:text-sm font-medium rounded">
-                  DOCX
-                </span>
-                <span className="text-xs md:text-sm text-gray-400">
-                  Max 5MB
-                </span>
-              </div>
-            </div>
-          )}
-        </SectionCard>
-
-        {/* ─── Screening questions (only when the job has them) ─── */}
-        {screeningQuestions.length > 0 && (
-          <SectionCard
-            number={5}
-            title="Screening Questions"
-            subtitle="A few quick questions from the employer."
-            complete={!requiredScreeningMissing}
-            optional={!screeningQuestions.some((q) => q.required)}
-          >
-            <div className="space-y-6">
-              {screeningQuestions.map((q) => (
-                <ScreeningQuestionField
-                  key={q.id}
-                  question={q}
-                  value={formData.screeningAnswers[q.id] ?? []}
-                  onChange={(values) => setScreeningAnswer(q.id, values)}
-                />
-              ))}
             </div>
           </SectionCard>
+          </>
         )}
 
-        {/* ─── Section 6: Additional Information ─── */}
-        <SectionCard
-          number={6}
-          title="Additional Information"
-          subtitle="Optional: Share anything else you'd like us to know."
-          complete={false}
-          optional
-        >
-          <div>
-            <label className="block text-sm font-semibold text-gray-900 mb-1.5 md:mb-2">
-              Is there anything else you&apos;d like to share with us?
-            </label>
-            <textarea
-              value={formData.additionalInfo}
-              onChange={(e) => updateField("additionalInfo", e.target.value)}
-              rows={4}
-              className="form-input resize-none"
-              placeholder="Type your response here..."
-            />
-            <p className="text-xs text-gray-400 flex items-start gap-2 mt-2">
-              <InfoCircle className="shrink-0 mt-0.5" />
-              <span>
-                This could include availability constraints, accommodation
-                needs, or additional qualifications.
-              </span>
-            </p>
-          </div>
-        </SectionCard>
-
         {/* Review notice */}
+        {/* Only while editing. On the review screen it would be telling
+            somebody to do the thing they are already doing. */}
+        {!reviewing && (
         <div className="flex items-start gap-3 bg-red-50 border border-red-100 rounded-xl p-4 mb-6">
           <HiOutlineExclamationCircle className="w-5 h-5 md:w-6 md:h-6 text-red-500 shrink-0 mt-0.5" />
           <div>
@@ -818,27 +1194,57 @@ export default function JobApplicationForm({
             </p>
           </div>
         </div>
+        )}
 
         {/* Action buttons */}
         <div className="flex flex-col md:flex-row items-center gap-3">
-          <button
-            type="button"
-            onClick={handleSubmit}
-            disabled={isSubmitting || requiredScreeningMissing}
-            className="flex items-center justify-center gap-2 px-8 py-3 bg-primary hover:bg-primary-hover disabled:opacity-60 text-white font-semibold text-sm rounded-lg transition-colors cursor-pointer disabled:cursor-not-allowed tablet:w-full"
-          >
-            {isSubmitting ? (
-              <>
-                <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                Submitting...
-              </>
-            ) : (
-              <>
-                <HiOutlinePaperAirplane className="w-5 h-5 md:w-6 md:h-6 -rotate-45" />
-                Submit Application
-              </>
-            )}
-          </button>
+          {/* Review, then send. Submitting straight from the bottom of six
+              sections meant the top was several screens away and checking
+              was on you. */}
+          {!reviewing ? (
+            <button
+              type="button"
+              onClick={() => {
+                setReviewing(true);
+                window.scrollTo({ top: 0, behavior: "smooth" });
+              }}
+              disabled={isSubmitting || requiredScreeningMissing}
+              className="flex items-center justify-center gap-2 px-8 py-3 bg-primary hover:bg-primary-hover disabled:opacity-60 text-white font-semibold text-sm rounded-lg transition-colors cursor-pointer disabled:cursor-not-allowed tablet:w-full"
+            >
+              <HiOutlineCheckCircle className="w-5 h-5 md:w-6 md:h-6" />
+              Review &amp; Submit
+            </button>
+          ) : (
+            <button
+              type="button"
+              onClick={handleSubmit}
+              disabled={isSubmitting || requiredScreeningMissing}
+              className="flex items-center justify-center gap-2 px-8 py-3 bg-primary hover:bg-primary-hover disabled:opacity-60 text-white font-semibold text-sm rounded-lg transition-colors cursor-pointer disabled:cursor-not-allowed tablet:w-full"
+            >
+              {isSubmitting ? (
+                <>
+                  <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                  Submitting...
+                </>
+              ) : (
+                <>
+                  <HiOutlinePaperAirplane className="w-5 h-5 md:w-6 md:h-6 -rotate-45" />
+                  Submit Application
+                </>
+              )}
+            </button>
+          )}
+
+          {reviewing && (
+            <button
+              type="button"
+              onClick={() => setReviewing(false)}
+              disabled={isSubmitting}
+              className="flex items-center justify-center gap-2 px-6 py-3 bg-white border border-gray-200 text-gray-700 font-semibold text-sm rounded-lg hover:bg-gray-50 transition-colors cursor-pointer disabled:opacity-60 tablet:w-full"
+            >
+              Back to editing
+            </button>
+          )}
 
           <button
             type="button"
@@ -858,12 +1264,14 @@ export default function JobApplicationForm({
 // ─── Sub-components ───────────────────────────────────────────
 
 function SectionCard({
+  anchorId,
   number,
   title,
   subtitle,
   complete,
   children,
 }: {
+  anchorId?: string;
   number: number;
   title: string;
   subtitle: string;
@@ -872,7 +1280,12 @@ function SectionCard({
   children: React.ReactNode;
 }) {
   return (
-    <div className="bg-white rounded-xl border border-gray-200 p-6 mb-6">
+    <div
+      id={anchorId}
+      // scroll-mt so an Edit jump does not tuck the heading under the
+      // sticky header it lands beneath.
+      className="bg-white rounded-xl border border-gray-200 p-6 mb-6 scroll-mt-24"
+    >
       <div className="flex items-start gap-3 mb-5">
         <div
           className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold shrink-0 ${
@@ -893,27 +1306,64 @@ function SectionCard({
   );
 }
 
+/**
+ * A labelled field.
+ *
+ * `htmlFor` is the point. This rendered a `<label>` with no association that
+ * did not wrap its input either, so every field on the application form was
+ * an unnamed control — a screen reader announced "edit text, blank" for the
+ * applicant's name, email and phone. The id is required now rather than
+ * optional, so a new field cannot repeat it.
+ *
+ * `help` and `valid` come from the reference designs: a line of plain
+ * English under each field, and a tick when it is filled in properly. We only
+ * ever told people what they had got wrong. Confirmation matters more the
+ * less confident the person, and that is most of this audience.
+ */
 function FormField({
+  id,
   label,
+  required,
+  help,
   preFilled,
+  valid,
   children,
 }: {
+  id: string;
   label: string;
+  required?: boolean;
+  help?: string;
   preFilled?: boolean;
+  valid?: boolean;
   children: React.ReactNode;
 }) {
   return (
     <div>
-      <div className="flex items-center justify-between mb-1.5 md:mb-2">
-        <label className="text-sm font-semibold text-gray-900">{label}</label>
+      <div className="flex items-center justify-between gap-3 mb-1.5 md:mb-2">
+        <label
+          htmlFor={id}
+          className="text-sm font-semibold text-gray-900"
+        >
+          {label}
+          {required && <RequiredMark />}
+        </label>
         {preFilled && (
-          <span className="text-xs text-emerald-500 font-medium flex items-center gap-2">
-            <HiOutlineCheckCircle className="w-4 h-4 md:w-5 md:h-5" />
-            Pre-filled from your profile
+          <span className="text-xs text-emerald-600 font-medium flex items-center gap-1.5 shrink-0">
+            <HiOutlineCheckCircle className="w-4 h-4" />
+            From your profile
           </span>
         )}
       </div>
-      {children}
+      <div className="relative">
+        {children}
+        {valid && (
+          <HiOutlineCheckCircle
+            className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-emerald-500"
+            aria-hidden="true"
+          />
+        )}
+      </div>
+      {help && <p className="mt-1.5 text-xs text-gray-500">{help}</p>}
     </div>
   );
 }

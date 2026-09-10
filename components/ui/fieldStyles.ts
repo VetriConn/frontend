@@ -13,10 +13,24 @@
  */
 
 /** The box: a text input, a select, or a dropdown trigger. */
+/**
+ * A note on focus: it is not red.
+ *
+ * It was `ring-2 ring-primary`, and primary is #c53030 — so focusing a field
+ * drew a heavy red ring around it, in the same colour and nearly the same
+ * weight as `border-red-500`, which is how this file marks an ERROR. Tabbing
+ * through a form lit each field up as if it had just been rejected. On a
+ * board whose audience is 45+ and which ships its own accessibility panel,
+ * "you are here" and "you got this wrong" cannot be the same signal.
+ *
+ * A one-pixel darkened border plus a soft halo instead: unmistakable as
+ * focus, quiet enough not to alarm, and it leaves red free to mean the one
+ * thing it should.
+ */
 export const FIELD_BASE =
   "block w-full px-3 py-2 md:px-4 md:py-3 border rounded-lg " +
   "text-sm md:text-base bg-white outline-none transition-colors " +
-  "focus:ring-2 focus:ring-primary focus:border-transparent";
+  "focus:border-gray-500 focus:ring-2 focus:ring-gray-300/60";
 
 /** Border colour, which is the only thing an error state changes. */
 export const fieldBorder = (hasError: boolean): string =>

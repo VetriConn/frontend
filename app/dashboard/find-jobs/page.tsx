@@ -126,6 +126,7 @@ const SearchResultsPage = () => {
     jobs: allJobs,
     isLoading,
     isError,
+    isRefreshing,
     mutate,
     total: totalJobs,
     totalPages,
@@ -319,7 +320,26 @@ const SearchResultsPage = () => {
             <div
               ref={resultsRef}
               className="lg:col-span-3 min-h-0 overflow-y-auto pb-6"
+              // Dimmed and inert while the next page is on its way. Paging
+              // scrolled the reader to the top of the page they had just
+              // left and gave them nothing — no spinner, no change — for the
+              // length of the round trip, which reads as a dead click. The
+              // old rows stay legible on purpose; they are simply marked as
+              // no longer current.
+              aria-busy={isRefreshing || undefined}
             >
+              {isRefreshing && (
+                <span className="sr-only" role="status">
+                  Loading results
+                </span>
+              )}
+              <div
+                className={
+                  isRefreshing
+                    ? "opacity-50 pointer-events-none transition-opacity duration-150"
+                    : "transition-opacity duration-150"
+                }
+              >
               {/* A thin result is not necessarily the final answer: the
                   server may be fetching more from its sources right now. Say
                   so, rather than letting an empty list read as "nothing
@@ -350,7 +370,13 @@ const SearchResultsPage = () => {
                 onApply={handleApply}
               />
 
-              {!isLoading && !effectiveError && effectiveJobs.length > 0 && (
+              </div>
+
+              {/* The pagination stays put while the next page loads. Hiding
+                  it made the control vanish from under the cursor, and with
+                  keepPreviousData the list below it is still perfectly
+                  readable — there was never a reason to take it away. */}
+              {!effectiveError && effectiveJobs.length > 0 && (
                 <Pagination
                   page={currentPage}
                   totalPages={totalPages}

@@ -33,7 +33,7 @@ export function useJobs(options?: UseJobsOptions) {
     experience ? `&experience=${experience}` : ""
   }${arrangement ? `&arrangement=${arrangement}` : ""}`;
 
-  const { data, error, mutate, isLoading } = useSWR(
+  const { data, error, mutate, isLoading, isValidating } = useSWR(
     cacheKey,
     () => getJobs(options),
     {
@@ -56,6 +56,15 @@ export function useJobs(options?: UseJobsOptions) {
   return {
     jobs,
     isLoading,
+    /**
+     * A fetch is in flight over data we are still showing.
+     *
+     * keepPreviousData means `isLoading` is false while paging — the old
+     * page stays on screen, which is right — but nothing then told the
+     * reader anything was happening. Clicking Next scrolled them to the top
+     * of the page they had just left and left them there for the round trip.
+     */
+    isRefreshing: isValidating && !isLoading,
     isError: !!error,
     error,
     mutate,

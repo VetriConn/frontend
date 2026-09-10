@@ -30,6 +30,12 @@ interface DropdownOption {
 }
 
 interface CustomDropdownProps {
+  /**
+   * Overrides the shared FIELD_LABEL. For rows that need every label on one
+   * baseline — FIELD_LABEL's `md:mb-2` differs from the mb-1.5 hand-rolled
+   * labels use, which is enough to knock a filter row out of alignment.
+   */
+  labelClassName?: string;
   label?: string;
   name: string;
   placeholder: string;
@@ -46,6 +52,7 @@ interface CustomDropdownProps {
 
 export const CustomDropdown = ({
   label,
+  labelClassName,
   name,
   placeholder,
   value,
@@ -291,7 +298,7 @@ export const CustomDropdown = ({
             aria-activedescendant={
               activeIndex >= 0 ? optionId(activeIndex) : undefined
             }
-            className="w-full rounded-md border border-gray-200 px-3 py-2 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+            className="w-full rounded-md bg-gray-50 px-3 py-2 text-sm outline-none focus:bg-white focus:ring-2 focus:ring-gray-300/60"
           />
         </div>
       )}
@@ -332,7 +339,7 @@ export const CustomDropdown = ({
     <div className={clsx("w-full", FIELD_WRAPPER)}>
       {/* Label */}
       {label && (
-        <label htmlFor={name} className={FIELD_LABEL}>
+        <label htmlFor={name} className={labelClassName ?? FIELD_LABEL}>
           {label}
           {required && <RequiredMark />}
         </label>

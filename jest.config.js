@@ -33,5 +33,22 @@ const customJestConfig = {
   ],
 }
 
-// createJestConfig is exported this way to ensure that next/jest can load the Next.js config which is async
-module.exports = createJestConfig(customJestConfig)
+/**
+ * createJestConfig is exported this way so next/jest can load the Next.js
+ * config, which is async — and so the SVG mapping can be moved in front of
+ * the one next/jest adds.
+ *
+ * next/jest maps every .svg to a file stub, which is an object. The build
+ * uses @svgr/webpack, so an SVG import is a React component — a component
+ * rendering one worked in the browser and threw "Element type is invalid"
+ * in tests. moduleNameMapper matches in insertion order and next/jest
+ * prepends its own, so the only way to win is to reorder afterwards.
+ */
+module.exports = async () => {
+  const config = await createJestConfig(customJestConfig)()
+  config.moduleNameMapper = {
+    '\\.svg$': '<rootDir>/__mocks__/svgMock.tsx',
+    ...config.moduleNameMapper,
+  }
+  return config
+}

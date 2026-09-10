@@ -2,8 +2,9 @@
 
 import { Suspense } from "react";
 import { useEffect, useState } from "react";
-import { useSearchParams, useRouter } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { AuthHeader } from "@/components/ui/AuthHeader";
+import { AccountReadyPanel } from "@/components/pages/auth/AccountReadyPanel";
 import { getApiUrl } from "@/lib/api-config";
 import Link from "next/link";
 
@@ -23,7 +24,6 @@ function VerifyingSpinner() {
 
 function EmailVerificationContent() {
   const searchParams = useSearchParams();
-  const router = useRouter();
   const [status, setStatus] = useState<"loading" | "success" | "error">(
     "loading",
   );
@@ -50,10 +50,9 @@ function EmailVerificationContent() {
       if (response.ok && data.success) {
         setStatus("success");
         setMessage("Your email has been verified successfully!");
-
-        setTimeout(() => {
-          router.push("/auth/welcome");
-        }, 2000);
+        // The panel owns what happens next, countdown included. This used to
+        // push to /auth/welcome after 2s while the copy on screen promised
+        // the sign-in page — two different destinations, one of them named.
       } else {
         setStatus("error");
         setMessage(
@@ -82,32 +81,7 @@ function EmailVerificationContent() {
     <>
       {status === "loading" && <VerifyingSpinner />}
 
-      {status === "success" && (
-        <>
-          <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
-            <svg
-              className="w-10 h-10 text-green-500"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M5 13l4 4L19 7"
-              />
-            </svg>
-          </div>
-          <h1 className="text-2xl font-bold text-gray-800 mb-2">
-            Email verified
-          </h1>
-          <p className="text-gray-600 mb-6">{message}</p>
-          <p className="text-sm text-gray-500">
-            Redirecting to sign in page...
-          </p>
-        </>
-      )}
+      {status === "success" && <AccountReadyPanel redirectAfter={5} />}
 
       {status === "error" && (
         <>

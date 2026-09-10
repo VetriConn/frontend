@@ -38,10 +38,12 @@ import { ScreeningQuestionField } from "./ScreeningQuestionField";
 // Canonical profile shape subset used for pre-filling application form
 import type { UserProfile } from "@/types/api";
 import { fieldLabel, JOB_TYPE_LABELS } from "@/lib/job-fields";
-type CanonicalUserProfile = Pick<
-  UserProfile,
-  "full_name" | "email" | "phone_number"
->;
+import {
+  prefillFromProfile,
+  type PrefillProfile,
+} from "@/lib/application-prefill";
+/** Contact details, plus the two facts the experience opener is built from. */
+type CanonicalUserProfile = PrefillProfile;
 
 interface JobApplicationFormProps {
   job: Job;
@@ -170,6 +172,15 @@ export default function JobApplicationForm({
     loadDraft();
     return () => { cancelled = true; };
   }, [job.id]);
+
+  /**
+   * Fill from the profile when it ARRIVES, not only when the form mounts.
+   * The rule itself lives in lib/application-prefill so it can be tested.
+   */
+  useEffect(() => {
+    if (!userProfile) return;
+    setFormData((prev) => ({ ...prev, ...prefillFromProfile(prev, userProfile) }));
+  }, [userProfile]);
 
   // Track which fields were pre-filled
   const preFilled = useMemo(

@@ -32,7 +32,7 @@ import {
 } from "@/lib/applicationDrafts";
 import { useToaster } from "@/components/ui/Toaster";
 import { CustomDropdown } from "@/components/ui/CustomDropdown";
-import { PhoneInputControl } from "@/components/ui/PhoneField.lazy";
+import { PhoneField } from "@/components/ui/PhoneField.lazy";
 import { ScreeningQuestionField } from "./ScreeningQuestionField";
 import {
   ApplicationReview,
@@ -625,7 +625,12 @@ export default function JobApplicationForm({
 
   return (
     <div className="min-h-screen bg-gray-50 pb-8">
-      <div className="max-w-2xl mx-auto px-6 py-8 tablet:px-4 tablet:py-6">
+      {/* Two columns from lg up. The form was max-w-2xl centred, so most of
+          a wide screen was empty margin — and merely stretching the form
+          would have pushed the textareas past a comfortable line length.
+          The width goes to what is worth keeping in view while filling this
+          in: the role itself, and how far along you are. */}
+      <div className="max-w-6xl mx-auto px-6 py-8 tablet:px-4 tablet:py-6">
         {/* Page header */}
         <h1 className="text-2xl md:text-4xl font-bold text-gray-900 mb-1.5">
           Submit Your Application
@@ -635,60 +640,17 @@ export default function JobApplicationForm({
           information from your profile to save you time.
         </p>
 
-        {/* Progress bar */}
-        <div className="bg-white rounded-xl border border-gray-200 p-4 mb-6">
-          <div className="flex items-center justify-between mb-2.5">
-            <span className="text-sm font-semibold text-gray-900">
-              Application Progress
-            </span>
-            <span className="text-xs text-gray-400">
-              {completedCount} of {sectionComplete.length} sections completed
-            </span>
-          </div>
-          <div className="w-full h-2 bg-gray-100 rounded-full overflow-hidden">
-            <div
-              className="h-full bg-primary rounded-full transition-all duration-500"
-              style={{
-                width: `${(completedCount / sectionComplete.length) * 100}%`,
-              }}
-            />
-          </div>
-        </div>
+        {/* flex with a fixed-width aside, rather than an arbitrary grid
+            template. The template version did not turn up in the emitted
+            stylesheet when I looked, and I could not establish why — so
+            rather than ship a layout resting on a class I could not prove
+            was real, this uses plain utilities whose output I did check in
+            the production bundle. The precedent is `rounded-10`, which was
+            not a Tailwind class at all and left every input square-cornered
+            for as long as nobody looked. */}
+        <div className="lg:flex lg:items-start gap-6 lg:gap-8">
+          <div className="min-w-0 flex-1">
 
-        {/* Job summary card */}
-        <div className="bg-white rounded-xl border border-gray-200 p-5 mb-6">
-          <div className="flex items-start gap-3 md:gap-4 mb-3">
-            <div className="w-10 h-10 rounded-lg bg-red-50 flex items-center justify-center shrink-0">
-              <HiOutlineBriefcase className="w-5 h-5 md:w-6 md:h-6 text-red-500" />
-            </div>
-            <div>
-              <h3 className="text-lg md:text-2xl font-bold text-gray-900">
-                {job.role}
-              </h3>
-              <p className="text-sm md:text-base text-gray-500">
-                {job.company_name}
-              </p>
-              <div className="flex flex-wrap items-center gap-3 md:gap-4 mt-1.5 text-xs text-gray-400">
-                {job.location && (
-                  <span className="inline-flex items-center gap-2">
-                    <HiOutlineMapPin className="w-4 h-4 md:w-5 md:h-5" />
-                    {job.location}
-                  </span>
-                )}
-                {derivedJobType && (
-                  <span className="inline-flex items-center gap-2">
-                    <HiOutlineClock className="w-4 h-4 md:w-5 md:h-5" />
-                    {derivedJobType}
-                  </span>
-                )}
-              </div>
-            </div>
-          </div>
-          <p className="text-xs text-emerald-600 font-medium flex items-center gap-2">
-            <HiOutlineCheckCircle className="w-4 h-4 md:w-5 md:h-5" />
-            You&apos;re applying for this role.
-          </p>
-        </div>
 
         {reviewing ? (
           <ApplicationReview groups={reviewGroups} onEdit={handleEditSection} />
@@ -745,21 +707,20 @@ export default function JobApplicationForm({
                 </FormField>
               </div>
 
-              <FormField
-                id="app-phone"
+              {/* PhoneField, the same component the signup and profile use.
+                  This built its own label around the bare control and passed
+                  `className="form-input"`, which replaced the shared box
+                  styling — so the one field on the page with two inputs
+                  inside one border also had different padding and a
+                  different focus colour from everything around it. */}
+              <PhoneField
                 label="Phone Number"
+                name="phone"
+                value={formData.phone}
+                onChange={(value) => updateField("phone", value)}
                 required
-                help="We only use this to contact you about this application."
-                preFilled={preFilled.phone}
-              >
-                <PhoneInputControl
-                  name="phone"
-                  value={formData.phone}
-                  onChange={(value) => updateField("phone", value)}
-                  className="form-input"
-                  countryLabel="Phone country"
-                />
-              </FormField>
+                helperText="We only use this to contact you about this application."
+              />
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                 <FormField
@@ -796,11 +757,6 @@ export default function JobApplicationForm({
                   />
                 </FormField>
               </div>
-
-              <p className="text-xs text-gray-400 flex items-center gap-2">
-                <InfoCircle />
-                We&apos;ll only use this to contact you about your application.
-              </p>
             </div>
           </SectionCard>
 
@@ -831,13 +787,9 @@ export default function JobApplicationForm({
                   className="form-input resize-none"
                   placeholder="Share your experience related to this role..."
                 />
-                <p className="text-xs text-gray-400 flex items-start gap-2 mt-2">
-                  <InfoCircle className="shrink-0 mt-0.5" />
-                  <span>
-                    For example: &quot;I have 10 years of customer service
-                    experience in healthcare settings, helping patients and
-                    families navigate their care options.&quot;
-                  </span>
+                <p className="mt-1.5 text-xs text-gray-500">
+                  What you have done, and where. The letter below is for why
+                  this role.
                 </p>
               </div>
 
@@ -1256,6 +1208,65 @@ export default function JobApplicationForm({
             Save and Finish Later
           </button>
         </div>
+          </div>
+
+          <aside className="mt-6 lg:mt-0 lg:w-80 lg:shrink-0 lg:sticky lg:top-24 space-y-6">
+            {/* Job summary card */}
+            <div className="bg-white rounded-xl border border-gray-200 p-5 mb-6">
+              <div className="flex items-start gap-3 md:gap-4 mb-3">
+                <div className="w-10 h-10 rounded-lg bg-red-50 flex items-center justify-center shrink-0">
+                  <HiOutlineBriefcase className="w-5 h-5 md:w-6 md:h-6 text-red-500" />
+                </div>
+                <div>
+                  <h3 className="text-lg md:text-2xl font-bold text-gray-900">
+                    {job.role}
+                  </h3>
+                  <p className="text-sm md:text-base text-gray-500">
+                    {job.company_name}
+                  </p>
+                  <div className="flex flex-wrap items-center gap-3 md:gap-4 mt-1.5 text-xs text-gray-400">
+                    {job.location && (
+                      <span className="inline-flex items-center gap-2">
+                        <HiOutlineMapPin className="w-4 h-4 md:w-5 md:h-5" />
+                        {job.location}
+                      </span>
+                    )}
+                    {derivedJobType && (
+                      <span className="inline-flex items-center gap-2">
+                        <HiOutlineClock className="w-4 h-4 md:w-5 md:h-5" />
+                        {derivedJobType}
+                      </span>
+                    )}
+                  </div>
+                </div>
+              </div>
+              <p className="text-xs text-emerald-600 font-medium flex items-center gap-2">
+                <HiOutlineCheckCircle className="w-4 h-4 md:w-5 md:h-5" />
+                You&apos;re applying for this role.
+              </p>
+            </div>
+
+            {/* Progress bar */}
+            <div className="bg-white rounded-xl border border-gray-200 p-4 mb-6">
+              <div className="flex items-center justify-between mb-2.5">
+                <span className="text-sm font-semibold text-gray-900">
+                  Application Progress
+                </span>
+                <span className="text-xs text-gray-400">
+                  {completedCount} of {sectionComplete.length} sections completed
+                </span>
+              </div>
+              <div className="w-full h-2 bg-gray-100 rounded-full overflow-hidden">
+                <div
+                  className="h-full bg-primary rounded-full transition-all duration-500"
+                  style={{
+                    width: `${(completedCount / sectionComplete.length) * 100}%`,
+                  }}
+                />
+              </div>
+            </div>
+          </aside>
+        </div>
       </div>
     </div>
   );
@@ -1287,15 +1298,22 @@ function SectionCard({
       className="bg-white rounded-xl border border-gray-200 p-6 mb-6 scroll-mt-24"
     >
       <div className="flex items-start gap-3 mb-5">
+        {/* A soft tinted square, matching the job card, rather than a solid
+            brand-red disc. At 3xl the section heading was larger than the
+            page's own h1, and a filled red circle competed with the primary
+            button — two things shouting on a form whose job is to be calm. */}
         <div
-          className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold shrink-0 ${
-            complete ? "bg-emerald-500 text-white" : "bg-primary text-white"
+          className={`w-9 h-9 rounded-lg flex items-center justify-center text-sm font-bold shrink-0 ${
+            complete
+              ? "bg-emerald-50 text-emerald-600"
+              : "bg-red-50 text-primary"
           }`}
+          aria-hidden="true"
         >
           {complete ? "✓" : number}
         </div>
         <div>
-          <h2 className="text-xl md:text-3xl font-bold text-gray-900">
+          <h2 className="text-lg md:text-xl font-semibold text-gray-900">
             {title}
           </h2>
           <p className="text-xs md:text-sm text-gray-400 mt-0.5">{subtitle}</p>

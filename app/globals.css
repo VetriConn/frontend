@@ -165,9 +165,16 @@
     padding: 0.75rem 1rem;
     font-size: 1rem;
   }
+  /* Focus is not red. See components/ui/fieldStyles — the same reasoning,
+     and this is the second place it was written. red-500 is how an error is
+     marked, so a red focus ring made every field you touched look rejected;
+     tabbing through a form lit it up like a list of mistakes.
+
+     The rgba here was #e53e3e too, the primary from before the contrast fix,
+     so it had also stopped matching the colour it was copied from. */
   &:focus {
-    border-color: var(--color-primary);
-    box-shadow: 0 0 0 3px rgba(229, 62, 62, 0.08);
+    border-color: #6b7280;
+    box-shadow: 0 0 0 3px rgba(107, 114, 128, 0.18);
     outline: 2px solid transparent;
     outline-offset: 2px;
   }

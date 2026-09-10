@@ -137,13 +137,14 @@ const CountrySelect = ({
     const openUpward = spaceBelow < MENU_MAX_HEIGHT && rect.top > spaceBelow;
 
     setCoords({
+      // Viewport coordinates throughout — the menu is position:fixed.
       top: openUpward
-        ? rect.top + window.scrollY - MENU_MAX_HEIGHT - 8
-        : rect.bottom + window.scrollY + 8,
+        ? rect.top - MENU_MAX_HEIGHT - 8
+        : rect.bottom + 8,
       left: Math.max(
         8,
         Math.min(
-          rect.left + window.scrollX,
+          rect.left,
           window.innerWidth - MENU_WIDTH - 8,
         ),
       ),
@@ -201,9 +202,9 @@ const CountrySelect = ({
   const menu = isOpen && (
     <div
       ref={menuRef}
-      className="absolute z-[9999] rounded-lg border border-gray-200 bg-white shadow-lg overflow-hidden"
+      className="z-[9999] rounded-lg border border-gray-200 bg-white shadow-lg overflow-hidden"
       style={{
-        position: "absolute",
+        position: "fixed",
         top: coords.top,
         left: coords.left,
         width: MENU_WIDTH,

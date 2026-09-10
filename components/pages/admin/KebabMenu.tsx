@@ -74,8 +74,8 @@ const KebabMenu = ({
       if (!el) return;
       const r = el.getBoundingClientRect();
       setCoords({
-        top: r.bottom + window.scrollY + 4,
-        left: r.right + window.scrollX - MENU_WIDTH, // right-aligned to the ⋮
+        top: r.bottom + 4,
+        left: r.right - MENU_WIDTH, // right-aligned to the ⋮
       });
     };
     place();
@@ -174,7 +174,7 @@ const KebabMenu = ({
             aria-label={label}
             onKeyDown={handleMenuKeyDown}
             style={{
-              position: "absolute",
+              position: "fixed",
               top: coords.top,
               left: coords.left,
               width: MENU_WIDTH,

@@ -8,6 +8,7 @@ import {
 } from "react-icons/hi2";
 import { HiOutlineRectangleGroup } from "react-icons/hi2";
 import { searchSkills, ALL_SKILLS } from "@/lib/skills-data";
+import { useAnchoredMenu } from "@/hooks/useAnchoredMenu";
 
 // ─── Types ──────────────────────────────────────────────────────────────────────
 
@@ -99,6 +100,16 @@ export const SkillsEditForm: React.FC<SkillsEditProps> = ({
   const inputRef = useRef<HTMLInputElement>(null);
   const suggestionsRef = useRef<HTMLUListElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
+
+  /**
+   * The suggestion list is `fixed`, not `absolute`.
+   *
+   * Same bug as the other five: an absolutely positioned menu is clipped by
+   * any ancestor with overflow set, and profile cards have it. A fixed
+   * element is positioned against the viewport and ancestor overflow cannot
+   * reach it. See hooks/useAnchoredMenu.
+   */
+  const { coords } = useAnchoredMenu(showSuggestions, containerRef);
 
   // Max skills allowed
   const MAX_SKILLS = 25;
@@ -270,7 +281,14 @@ export const SkillsEditForm: React.FC<SkillsEditProps> = ({
             id="skills-suggestions"
             ref={suggestionsRef}
             role="listbox"
-            className="absolute z-50 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-[200px] overflow-y-auto py-1"
+            style={{
+              position: "fixed",
+              top: coords.top,
+              left: coords.left,
+              width: coords.width,
+              zIndex: 9999,
+            }}
+            className="bg-white border border-gray-200 rounded-lg shadow-lg max-h-[200px] overflow-y-auto py-1"
           >
             {suggestions.map((suggestion, idx) => (
               <li

@@ -26,36 +26,26 @@ import {
   type ApplicationSource,
 } from "@/hooks/useApplications";
 import { EditDialog } from "@/components/ui/EditDialog";
+import { useAnchoredMenu } from "@/hooks/useAnchoredMenu";
+import { createPortal } from "react-dom";
 import { useToaster } from "@/components/ui/Toaster";
 import { Avatar } from "@/components/ui/Avatar";
 import { AuthGuard } from "@/components/auth/AuthGuard";
 
-// --- Status Badge ---
-
-function StatusBadge({ status }: { status: ApplicationStatus }) {
-  const config = APPLICATION_STATUS_CONFIG[status];
-  return (
-    <span
-      className={`inline-flex items-center gap-2 px-3 py-1 rounded-full text-sm font-semibold border ${config.textColor} ${config.bgColor} ${config.borderColor}`}
-    >
-      <span className="text-sm">{config.icon}</span>
-      {config.label}
-    </span>
-  );
-}
+// --- Status controls ---
 
 function SourceBadge({ source }: { source: ApplicationSource }) {
   if (source === "vetriconn") {
     return (
-      <span className="inline-flex items-center gap-2 text-sm text-primary font-medium">
-        <HiOutlineBriefcase className="w-4 h-4 md:w-5 md:h-5" />
+      <span className="inline-flex items-center gap-1.5 text-xs text-gray-500">
+        <HiOutlineBriefcase className="w-3.5 h-3.5 shrink-0" />
         Via Vetriconn
       </span>
     );
   }
   return (
-    <span className="inline-flex items-center gap-2 text-sm text-gray-500 font-medium">
-      <HiOutlineGlobeAlt className="w-4 h-4 md:w-5 md:h-5" />
+    <span className="inline-flex items-center gap-1.5 text-xs text-gray-500">
+      <HiOutlineGlobeAlt className="w-3.5 h-3.5 shrink-0" />
       External
     </span>
   );
@@ -143,21 +133,32 @@ function StatusDropdown({
     }
   }, [isOpen]);
 
+  const config = APPLICATION_STATUS_CONFIG[currentStatus];
+
+  // Portaled and viewport-positioned: this menu lives inside a table wrapper
+  // with overflow-x-auto, which clipped it at the wrapper's edge with no way
+  // to scroll the rest into view. See hooks/useAnchoredMenu.
+  const { coords } = useAnchoredMenu(isOpen, triggerRef);
+
   return (
-    <div className="relative">
+    <div className="relative inline-block">
       <button
         ref={triggerRef}
+        type="button"
         onClick={() => setIsOpen(!isOpen)}
         aria-haspopup="menu"
         aria-expanded={isOpen}
-        className="inline-flex items-center gap-1 text-sm text-gray-600 hover:text-gray-700 cursor-pointer transition-colors min-h-[44px]"
+        aria-label={`Status: ${config.label}. Change status`}
+        className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-sm font-semibold border cursor-pointer transition-colors hover:opacity-90 ${config.textColor} ${config.bgColor} ${config.borderColor}`}
       >
-        Update status
+        <span className="text-sm leading-none">{config.icon}</span>
+        {config.label}
         <HiOutlineChevronDown
-          className={`w-3 h-3 transition-transform ${isOpen ? "rotate-180" : ""}`}
+          className={`w-3.5 h-3.5 opacity-70 transition-transform ${isOpen ? "rotate-180" : ""}`}
         />
       </button>
-      {isOpen && (
+      {isOpen && typeof document !== "undefined" &&
+        createPortal(
         <>
           <div
             className="fixed inset-0 z-40"
@@ -168,31 +169,39 @@ function StatusDropdown({
             role="menu"
             aria-label="Update status"
             onKeyDown={handleMenuKeys}
-            className="absolute right-0 top-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg min-w-[160px] py-1 z-50"
+            style={{
+              position: "fixed",
+              top: coords.top,
+              left: coords.left,
+              zIndex: 9999,
+            }}
+            className="bg-white border border-gray-200 rounded-lg shadow-lg min-w-[160px] py-1"
           >
             {statuses.map((status) => {
-              const config = APPLICATION_STATUS_CONFIG[status];
+              const item = APPLICATION_STATUS_CONFIG[status];
               return (
                 <button
                   key={status}
+                  type="button"
                   role="menuitem"
                   onClick={() => {
                     onStatusChange(status);
                     close();
                   }}
-                  className={`w-full text-left px-4 py-2 min-h-[44px] text-sm transition-colors cursor-pointer ${
+                  className={`w-full text-left px-4 py-2.5 text-sm transition-colors cursor-pointer ${
                     currentStatus === status
                       ? "bg-red-50 text-primary font-medium"
                       : "text-gray-700 hover:bg-gray-50"
                   }`}
                 >
-                  <span className="mr-2 text-sm">{config.icon}</span>
-                  {config.label}
+                  <span className="mr-2 text-sm">{item.icon}</span>
+                  {item.label}
                 </button>
               );
             })}
           </div>
-        </>
+        </>,
+        document.body,
       )}
     </div>
   );
@@ -298,9 +307,9 @@ function WithdrawButton({ onWithdraw }: { onWithdraw: () => Promise<void> }) {
         ref={armRef}
         type="button"
         onClick={() => setArming(true)}
-        className="text-sm font-medium text-gray-500 hover:text-primary underline-offset-2 hover:underline bg-transparent border-none cursor-pointer p-0 min-h-[44px]"
+        className="text-xs font-medium text-gray-500 hover:text-primary underline-offset-2 hover:underline bg-transparent border-none cursor-pointer p-0"
       >
-        Withdraw application
+        Withdraw
       </button>
     );
   }
@@ -314,9 +323,9 @@ function WithdrawButton({ onWithdraw }: { onWithdraw: () => Promise<void> }) {
           setArming(false);
         }
       }}
-      className="inline-flex items-center gap-2 text-sm"
+      className="inline-flex flex-wrap items-center gap-x-2 gap-y-1 text-xs"
     >
-      <span className="text-gray-600">Withdraw? The employer won&apos;t see it anymore.</span>
+      <span className="text-gray-600">Withdraw?</span>
       <button
         ref={confirmRef}
         type="button"
@@ -330,16 +339,16 @@ function WithdrawButton({ onWithdraw }: { onWithdraw: () => Promise<void> }) {
             setArming(false);
           }
         }}
-        className="font-semibold text-primary bg-transparent border-none cursor-pointer p-0 min-h-[44px] disabled:opacity-60"
+        className="font-semibold text-primary bg-transparent border-none cursor-pointer p-0 disabled:opacity-60"
       >
-        {busy ? "Withdrawing..." : "Yes, withdraw"}
+        {busy ? "Withdrawing..." : "Yes"}
       </button>
       <button
         type="button"
         onClick={() => setArming(false)}
-        className="font-medium text-gray-500 bg-transparent border-none cursor-pointer p-0 min-h-[44px]"
+        className="font-medium text-gray-500 bg-transparent border-none cursor-pointer p-0"
       >
-        Keep it
+        Keep
       </button>
     </span>
   );
@@ -384,7 +393,12 @@ function ApplicationCard({
             </h3>
 
             <div className="flex flex-wrap items-center gap-3 mb-3">
-              <StatusBadge status={application.status} />
+              <StatusDropdown
+                currentStatus={application.status}
+                onStatusChange={(status) =>
+                  onStatusChange(application.id, status)
+                }
+              />
               {employerStatus && <EmployerDecisionBadge status={employerStatus} />}
               <SourceBadge source={application.source} />
               {onWithdraw && <WithdrawButton onWithdraw={onWithdraw} />}
@@ -424,11 +438,6 @@ function ApplicationCard({
 
         {/* Actions */}
         <div className="flex flex-col gap-2 shrink-0 items-end mobile:items-start mobile:flex-row mobile:flex-wrap mobile:w-full">
-          <StatusDropdown
-            currentStatus={application.status}
-            onStatusChange={(status) => onStatusChange(application.id, status)}
-          />
-
           <button
             onClick={() => onEditNotes(application)}
             className="inline-flex items-center gap-2 text-sm text-gray-600 hover:text-gray-700 cursor-pointer transition-colors"
@@ -494,7 +503,7 @@ function ApplicationCard({
 const FILTER_TABS: { label: string; value: string }[] = [
   { label: "All", value: "all" },
   { label: "Active", value: "active" },
-  { label: "Interview", value: "interview" },
+  { label: "Interviews", value: "interview" },
   { label: "Offers", value: "offer" },
   { label: "Closed", value: "closed" },
 ];
@@ -723,7 +732,7 @@ export default function AppliedJobsPage() {
 
   if (!isLoaded) {
     return (
-      <div className="max-w-3xl mx-auto">
+      <div className="max-w-5xl mx-auto">
         <div className="animate-pulse space-y-4">
           <div className="h-8 bg-gray-200 rounded w-1/3" />
           <div className="h-4 bg-gray-200 rounded w-1/2" />
@@ -740,7 +749,7 @@ export default function AppliedJobsPage() {
 
   return (
     <AuthGuard>
-      <div className="max-w-3xl mx-auto">
+      <div className="max-w-5xl mx-auto">
         {/* Page Header */}
         <div className="flex items-start justify-between mb-2 mobile:flex-col mobile:gap-3">
           <div>
@@ -814,23 +823,23 @@ export default function AppliedJobsPage() {
             ) : (
               <>
                 {/* Desktop Table View */}
-                <div className="hidden md:block bg-white rounded-xl border border-gray-200 overflow-hidden">
-                  <table className="w-full">
+                <div className="hidden md:block bg-white rounded-xl border border-gray-200 overflow-x-auto">
+                  <table className="w-full min-w-[720px] table-fixed">
                     <thead>
                       <tr className="bg-gray-50 border-b border-gray-200">
-                        <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">
+                        <th className="w-[26%] px-4 py-3 text-left text-sm font-semibold text-gray-700">
                           Position
                         </th>
-                        <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">
+                        <th className="w-[22%] px-4 py-3 text-left text-sm font-semibold text-gray-700">
                           Company
                         </th>
-                        <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">
+                        <th className="w-[20%] px-4 py-3 text-left text-sm font-semibold text-gray-700">
                           Status
                         </th>
-                        <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">
+                        <th className="w-[14%] px-4 py-3 text-left text-sm font-semibold text-gray-700">
                           Applied
                         </th>
-                        <th className="px-4 py-3 text-right text-sm font-semibold text-gray-700">
+                        <th className="w-[18%] px-4 py-3 text-right text-sm font-semibold text-gray-700">
                           Actions
                         </th>
                       </tr>
@@ -844,75 +853,80 @@ export default function AppliedJobsPage() {
                           day: "numeric",
                           year: "numeric",
                         });
+                        const withdrawId = withdrawableIdFor(app.job_id);
 
                         return (
                           <tr
                             key={app.id}
-                            className="border-b border-gray-200 hover:bg-gray-50 transition-colors"
+                            className="border-b border-gray-200 last:border-b-0 hover:bg-gray-50 transition-colors"
                           >
-                            <td className="px-4 py-4">
-                              <div className="text-sm font-semibold text-gray-900">
+                            <td className="px-4 py-4 align-middle">
+                              <div className="text-sm font-semibold text-gray-900 truncate">
                                 {app.position}
                               </div>
                               {app.location && (
-                                <div className="flex items-center gap-1 text-sm text-gray-600 mt-1">
-                                  <HiOutlineMapPin className="w-3 h-3" />
-                                  {app.location}
+                                <div className="flex items-center gap-1 text-xs text-gray-500 mt-1">
+                                  <HiOutlineMapPin className="w-3.5 h-3.5 shrink-0" />
+                                  <span className="truncate">{app.location}</span>
                                 </div>
                               )}
                             </td>
-                            <td className="px-4 py-4">
-                              <div className="flex items-center gap-3 text-sm text-gray-900">
+                            <td className="px-4 py-4 align-middle">
+                              <div className="flex items-center gap-2.5 min-w-0">
                                 <Avatar
                                   src={null}
                                   name={app.company}
                                   size={32}
+                                  className="shrink-0"
                                 />
-                                {app.company}
-                              </div>
-                              <div className="mt-1">
-                                <SourceBadge source={app.source} />
-                              </div>
-                            </td>
-                            <td className="px-4 py-4">
-                              <StatusBadge status={app.status} />
-                              {decisionFor(app.job_id) && (
-                                <div className="mt-1.5">
-                                  <EmployerDecisionBadge
-                                    status={decisionFor(app.job_id)!}
-                                  />
+                                <div className="min-w-0">
+                                  <div className="text-sm text-gray-900 truncate">
+                                    {app.company}
+                                  </div>
+                                  <div className="mt-0.5">
+                                    <SourceBadge source={app.source} />
+                                  </div>
                                 </div>
-                              )}
-                              {withdrawableIdFor(app.job_id) && (
-                                <div className="mt-1.5">
-                                  <WithdrawButton
-                                    onWithdraw={() =>
-                                      handleWithdraw(withdrawableIdFor(app.job_id)!, app.id)
-                                    }
-                                  />
-                                </div>
-                              )}
-                            </td>
-                            <td className="px-4 py-4">
-                              <div className="flex items-center gap-2 text-sm text-gray-600">
-                                <HiOutlineCalendarDays className="w-4 h-4 md:w-5 md:h-5" />
-                                {appliedDate}
                               </div>
                             </td>
-                            <td className="px-4 py-4">
-                              <div className="flex items-center justify-end gap-2">
+                            <td className="px-4 py-4 align-middle">
+                              <div className="flex flex-col items-start gap-1.5">
                                 <StatusDropdown
                                   currentStatus={app.status}
                                   onStatusChange={(status) =>
                                     handleStatusChange(app.id, status)
                                   }
                                 />
+                                {decisionFor(app.job_id) && (
+                                  <EmployerDecisionBadge
+                                    status={decisionFor(app.job_id)!}
+                                  />
+                                )}
+                                {withdrawId && (
+                                  <WithdrawButton
+                                    onWithdraw={() =>
+                                      handleWithdraw(withdrawId, app.id)
+                                    }
+                                  />
+                                )}
+                              </div>
+                            </td>
+                            <td className="px-4 py-4 align-middle">
+                              <div className="flex items-center gap-1.5 text-sm text-gray-600 whitespace-nowrap">
+                                <HiOutlineCalendarDays className="w-4 h-4 shrink-0 text-gray-400" />
+                                {appliedDate}
+                              </div>
+                            </td>
+                            <td className="px-4 py-4 align-middle">
+                              <div className="flex items-center justify-end gap-0.5 whitespace-nowrap">
                                 <button
+                                  type="button"
                                   onClick={() => handleEditNotes(app)}
-                                  className="p-2 min-h-[44px] min-w-[44px] text-gray-600 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
+                                  className="inline-flex items-center justify-center p-2 h-9 w-9 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors cursor-pointer"
                                   aria-label={
                                     app.notes ? "Edit notes" : "Add notes"
                                   }
+                                  title={app.notes ? "Edit notes" : "Add notes"}
                                 >
                                   <HiOutlinePencilSquare className="w-4 h-4" />
                                 </button>
@@ -923,14 +937,15 @@ export default function AppliedJobsPage() {
                                         ? `/jobs/${app.job_id}`
                                         : app.url
                                     }
-                                    target={app.url ? "_blank" : undefined}
+                                    target={app.url && !app.job_id ? "_blank" : undefined}
                                     rel={
-                                      app.url
+                                      app.url && !app.job_id
                                         ? "noopener noreferrer"
                                         : undefined
                                     }
-                                    className="p-2 min-h-[44px] min-w-[44px] text-primary hover:text-primary-hover hover:bg-red-50 rounded-lg transition-colors"
+                                    className="inline-flex items-center justify-center p-2 h-9 w-9 text-gray-500 hover:text-primary hover:bg-red-50 rounded-lg transition-colors"
                                     aria-label="View job posting"
+                                    title="View job posting"
                                   >
                                     {app.job_id ? (
                                       <HiOutlineBriefcase className="w-4 h-4" />
@@ -940,9 +955,11 @@ export default function AppliedJobsPage() {
                                   </a>
                                 )}
                                 <button
+                                  type="button"
                                   onClick={() => handleDelete(app.id)}
-                                  className="p-2 min-h-[44px] min-w-[44px] text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                                  className="inline-flex items-center justify-center p-2 h-9 w-9 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors cursor-pointer"
                                   aria-label="Remove application"
+                                  title="Remove application"
                                 >
                                   <HiOutlineTrash className="w-4 h-4" />
                                 </button>

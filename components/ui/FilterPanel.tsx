@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect, useId, useCallback } from "react";
 import clsx from "clsx";
+import { useAnchoredMenu } from "@/hooks/useAnchoredMenu";
 import {
   HiOutlineMapPin,
   HiOutlineBriefcase,
@@ -95,6 +96,17 @@ const FilterDropdown = ({
   const [isOpen, setIsOpen] = useState(false);
   const [focusedIndex, setFocusedIndex] = useState(-1);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  /**
+   * The list is `fixed`, not `absolute`.
+   *
+   * This panel sits in a column with lg:overflow-y-auto, and an absolutely
+   * positioned child is clipped at that column's edge with no way to scroll
+   * the rest into view. A fixed element is positioned against the viewport
+   * and ancestor overflow cannot reach it — so no portal is needed here,
+   * only real coordinates. See hooks/useAnchoredMenu.
+   */
+  const { coords } = useAnchoredMenu(isOpen, dropdownRef);
+
   const listboxRef = useRef<HTMLDivElement>(null);
   const optionRefs = useRef<(HTMLButtonElement | null)[]>([]);
   const buttonId = useId();
@@ -239,7 +251,14 @@ const FilterDropdown = ({
           <div
             ref={listboxRef}
             id={listboxId}
-            className="absolute z-50 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg overflow-hidden"
+            style={{
+              position: "fixed",
+              top: coords.top,
+              left: coords.left,
+              width: coords.width,
+              zIndex: 9999,
+            }}
+            className="bg-white border border-gray-200 rounded-lg shadow-lg overflow-hidden"
             role="listbox"
             aria-labelledby={`${buttonId}-label`}
             aria-activedescendant={focusedIndex >= 0 ? `${listboxId}-option-${focusedIndex}` : undefined}

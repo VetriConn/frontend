@@ -264,15 +264,18 @@ export const CustomDropdown = ({
     <div
       ref={dropdownRef}
       className={clsx(
-        "absolute z-[9999] bg-white border border-gray-200 rounded-lg shadow-lg overflow-hidden"
+        "z-[9999] bg-white border border-gray-200 rounded-lg shadow-lg overflow-hidden"
       )}
       style={{
         width: coords.width,
         left: coords.left,
+        // No window.scrollY: the menu is position:fixed, so these are
+        // viewport coordinates. Adding the page offset put it a screenful
+        // away the moment anything had been scrolled.
         top: openUpward
-          ? coords.top - (options.length * 44 + (hideHeader ? 0 : 44)) - 8 + window.scrollY
-          : coords.top + 36 + window.scrollY, // Fallback offsets adjusted for window scroll
-        position: "absolute",
+          ? coords.top - (options.length * 44 + (hideHeader ? 0 : 44)) - 8
+          : coords.top + 36,
+        position: "fixed",
       }}
     >
       {/* Header */}

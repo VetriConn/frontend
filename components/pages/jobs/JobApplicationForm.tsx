@@ -38,8 +38,10 @@ import { ScreeningQuestionField } from "./ScreeningQuestionField";
 // Canonical profile shape subset used for pre-filling application form
 import type { UserProfile } from "@/types/api";
 import { fieldLabel, JOB_TYPE_LABELS } from "@/lib/job-fields";
+import { formatDate } from "@/lib/date-utils";
 import {
   prefillFromProfile,
+  storedResumes,
   type PrefillProfile,
 } from "@/lib/application-prefill";
 /** Contact details, plus the two facts the experience opener is built from. */
@@ -108,6 +110,7 @@ interface FormData {
   preferredSchedule: string;
   workLocationPreference: string;
   resume: File | null;
+  resumeDocumentId: string;
   additionalInfo: string;
   // Phase-2 screening answers, keyed by the job's question id.
   screeningAnswers: Record<string, string[]>;
@@ -133,6 +136,8 @@ export default function JobApplicationForm({
     preferredSchedule: "",
     workLocationPreference: "",
     resume: null,
+    /** A document already on the profile, chosen instead of uploading. */
+    resumeDocumentId: "",
     additionalInfo: "",
     screeningAnswers: {},
   });
@@ -205,7 +210,7 @@ export default function JobApplicationForm({
       formData.earliestStartDate !== "" &&
       formData.preferredSchedule !== "" &&
       formData.workLocationPreference !== "";
-    const s4 = formData.resume !== null;
+    const s4 = formData.resume !== null || formData.resumeDocumentId !== "";
     return [s1, s2, s3, s4];
   }, [formData]);
 
@@ -215,6 +220,9 @@ export default function JobApplicationForm({
   // defaulted to "Part-time" while the detail page's copy defaulted to
   // "Full-Time" — two invented answers for the same silent job.
   const derivedJobType = fieldLabel(JOB_TYPE_LABELS, job.job_type);
+
+  /** Résumés already on the profile, offered instead of a fresh upload. */
+  const profileResumes = useMemo(() => storedResumes(userProfile), [userProfile]);
 
   // ── Handlers ──────────────────────────────────────────────
 
@@ -268,7 +276,9 @@ export default function JobApplicationForm({
       alert("File size must be under 5MB");
       return;
     }
-    setFormData((prev) => ({ ...prev, resume: file }));
+    // One résumé goes with an application, so picking a file drops any
+    // stored document that was chosen, and choosing one drops the file.
+    setFormData((prev) => ({ ...prev, resume: file, resumeDocumentId: "" }));
   }, []);
 
   const handleDrop = useCallback(
@@ -359,6 +369,10 @@ export default function JobApplicationForm({
       }
       if (formData.resume) {
         apiFormData.append("resume", formData.resume);
+      } else if (formData.resumeDocumentId) {
+        // An id, never a URL. The server resolves it against this account's
+        // own documents — see services/resumeSource.
+        apiFormData.append("resumeDocumentId", formData.resumeDocumentId);
       }
       await submitJobApplication(job.id, apiFormData);
       // Clear draft on successful submission
@@ -697,6 +711,72 @@ export default function JobApplicationForm({
           subtitle="Share your resume so we can learn more about your background."
           complete={sectionComplete[3]}
         >
+          {/* Something already on the profile, before asking for a file.
+              Most applicants have uploaded a résumé once and should not have
+              to find the PDF again — least of all on a phone, and least of
+              all on the fourth section of a form they are most likely to
+              abandon here. Uploading stays exactly where it was. */}
+          {profileResumes.length > 0 && !formData.resume && (
+            <fieldset className="mb-4 min-w-0">
+              <legend className="block text-sm font-semibold text-gray-900 mb-2">
+                Use a résumé from your profile
+              </legend>
+              <div className="space-y-2">
+                {profileResumes.map((doc) => {
+                  const id = String(doc._id);
+                  const chosen = formData.resumeDocumentId === id;
+                  return (
+                    <label
+                      key={id}
+                      className={`flex items-center gap-3 rounded-lg border p-3 cursor-pointer transition-colors ${
+                        chosen
+                          ? "border-primary bg-red-50/40"
+                          : "border-gray-200 hover:border-gray-300"
+                      }`}
+                    >
+                      <input
+                        type="radio"
+                        name="profile-resume"
+                        value={id}
+                        checked={chosen}
+                        onChange={() =>
+                          setFormData((prev) => ({
+                            ...prev,
+                            resumeDocumentId: id,
+                            resume: null,
+                          }))
+                        }
+                        className="h-4 w-4 accent-[var(--color-primary)] shrink-0"
+                      />
+                      <HiOutlineDocumentText className="w-5 h-5 text-gray-400 shrink-0" />
+                      <span className="min-w-0 flex-1">
+                        <span className="block text-sm font-medium text-gray-900 truncate">
+                          {doc.name}
+                        </span>
+                        {doc.upload_date && (
+                          <span className="block text-xs text-gray-500">
+                            Added {formatDate(doc.upload_date)}
+                          </span>
+                        )}
+                      </span>
+                    </label>
+                  );
+                })}
+              </div>
+              {formData.resumeDocumentId && (
+                <button
+                  type="button"
+                  onClick={() =>
+                    setFormData((prev) => ({ ...prev, resumeDocumentId: "" }))
+                  }
+                  className="mt-2 text-sm text-gray-600 underline underline-offset-2 hover:text-primary"
+                >
+                  Upload a different one instead
+                </button>
+              )}
+            </fieldset>
+          )}
+
           {formData.resume ? (
             <div className="flex items-center gap-3 bg-gray-50 border border-gray-200 rounded-lg p-4">
               <div className="w-10 h-10 rounded-lg bg-red-50 flex items-center justify-center shrink-0">
@@ -719,7 +799,7 @@ export default function JobApplicationForm({
                 <HiOutlineXMark className="w-5 h-5 md:w-6 md:h-6" />
               </button>
             </div>
-          ) : (
+          ) : formData.resumeDocumentId ? null : (
             <div
               onDragOver={(e) => {
                 e.preventDefault();

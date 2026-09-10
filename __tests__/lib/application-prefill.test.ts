@@ -11,6 +11,7 @@
 import {
   prefillFromProfile,
   experienceOpener,
+  storedResumes,
   type PrefillableFields,
   type PrefillProfile,
 } from "@/lib/application-prefill";
@@ -102,5 +103,49 @@ describe("experienceOpener", () => {
     expect(experienceOpener({ ...profile, job_title: undefined })).toBe("");
     expect(experienceOpener({ ...profile, years_of_experience: undefined })).toBe("");
     expect(experienceOpener({ ...profile, job_title: "   " })).toBe("");
+  });
+});
+
+/**
+ * Résumés already on the profile, offered instead of a fresh upload.
+ *
+ * The application sends the document's ID and the server resolves it against
+ * that account's own documents (services/resumeSource) — never a URL, which
+ * would be an invitation to name somebody else's file.
+ */
+describe("storedResumes", () => {
+  const doc = (over: Record<string, unknown> = {}) => ({
+    _id: "d1",
+    name: "My CV.pdf",
+    url: "https://res.cloudinary.com/x/cv.pdf",
+    upload_date: "2026-01-01T00:00:00.000Z",
+    ...over,
+  });
+
+  it("offers what the profile holds", () => {
+    expect(storedResumes({ documents: [doc()] })).toHaveLength(1);
+  });
+
+  it("puts the most recent first, since that is the one they mean", () => {
+    const older = doc({ _id: "old", upload_date: "2025-01-01T00:00:00.000Z" });
+    const newer = doc({ _id: "new", upload_date: "2026-06-01T00:00:00.000Z" });
+    expect(storedResumes({ documents: [older, newer] }).map((d) => d._id)).toEqual([
+      "new",
+      "old",
+    ]);
+  });
+
+  it("skips anything that cannot actually be attached", () => {
+    // No id means nothing to send; no url means nothing behind it. Either
+    // would render a choice that silently fails on submit.
+    const usable = storedResumes({
+      documents: [doc(), doc({ _id: undefined }), doc({ url: "" })],
+    });
+    expect(usable).toHaveLength(1);
+  });
+
+  it("offers nothing when there is no profile yet", () => {
+    expect(storedResumes(null)).toEqual([]);
+    expect(storedResumes({})).toEqual([]);
   });
 });

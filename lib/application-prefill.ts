@@ -10,8 +10,31 @@ import type { UserProfile } from "@/types/api";
 
 export type PrefillProfile = Pick<
   UserProfile,
-  "full_name" | "email" | "phone_number" | "years_of_experience" | "job_title"
+  | "full_name"
+  | "email"
+  | "phone_number"
+  | "years_of_experience"
+  | "job_title"
+  // Résumés already on the profile, offered instead of a fresh upload.
+  | "documents"
 >;
+
+/**
+ * The résumés on a profile, newest first.
+ *
+ * Only ever offered as a choice — the application sends the document's ID and
+ * the server resolves it against this account's own documents. A URL from a
+ * client is an invitation to name somebody else's file.
+ */
+export function storedResumes(profile: PrefillProfile | null | undefined) {
+  return (profile?.documents ?? [])
+    .filter((doc) => !!doc._id && !!doc.url)
+    .sort((a, b) => {
+      const at = new Date(a.upload_date ?? 0).getTime();
+      const bt = new Date(b.upload_date ?? 0).getTime();
+      return bt - at;
+    });
+}
 
 export interface PrefillableFields {
   fullName: string;

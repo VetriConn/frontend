@@ -1,7 +1,7 @@
 export default function AppliedJobsLoading() {
   return (
     <div className="min-h-screen bg-gray-50">
-      <div className="max-w-5xl mx-auto px-6 py-10 mobile:px-4 mobile:py-6">
+      <div className="w-full">
         {/* Page Header */}
         <div className="animate-pulse">
           <div className="flex items-start justify-between mb-2 mobile:flex-col mobile:gap-3">

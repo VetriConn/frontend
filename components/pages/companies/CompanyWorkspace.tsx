@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { HiOutlineBriefcase } from "react-icons/hi2";
+import { HiOutlineBriefcase, HiOutlineEye } from "react-icons/hi2";
 import { useCompany, useCompanyJobs } from "@/hooks/useCompanies";
 import { useUserProfile } from "@/hooks/useUserProfile";
 import { getMyRole } from "@/lib/api";
@@ -54,9 +54,26 @@ export const CompanyWorkspace = ({ companyId }: { companyId: string }) => {
         ← Back to companies
       </Link>
 
-      <h1 className="text-2xl md:text-3xl font-bold text-gray-900 mb-8">
-        {company.name}
-      </h1>
+      {/* The public profile already exists at /companies/[id], banner and
+          all, but nothing in the dashboard pointed at it. So an owner could
+          upload a banner here and never see it, and had no way to look at
+          their own company the way a candidate does. Approved only: an
+          unapproved company's page is not live yet, and offering a link to
+          it would be offering a 404. */}
+      <div className="mb-8 flex flex-wrap items-center justify-between gap-3">
+        <h1 className="text-2xl md:text-3xl font-bold text-gray-900">
+          {company.name}
+        </h1>
+        {company.status === "approved" && (
+          <Link
+            href={`/companies/${company._id}`}
+            className="inline-flex min-h-[44px] items-center gap-2 rounded-lg border border-gray-300 px-4 text-sm font-semibold text-gray-700 no-underline transition-colors hover:border-primary hover:text-primary"
+          >
+            <HiOutlineEye className="h-4 w-4" aria-hidden="true" />
+            View public profile
+          </Link>
+        )}
+      </div>
 
       {company.status === "suspended" && (
         <div className="mb-6 rounded-xl border border-amber-200 bg-amber-50 p-5">

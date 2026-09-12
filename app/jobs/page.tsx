@@ -384,9 +384,9 @@ export default async function JobsPage({
         {/* The board is thin for this query and the scraper is fetching more
             from the source in the background. */}
         {searchingMore && (
-          <p className="text-sm text-gray-500 -mt-4 mb-6">
-            We&apos;re checking more sources for this search. Check back in a
-            minute for more results.
+          <p className="text-sm text-gray-500 -mt-4 mb-6" role="status">
+            We&apos;re checking more sources for this search. New listings will
+            appear when you refresh, or search again in a moment.
           </p>
         )}
 

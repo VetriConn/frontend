@@ -222,7 +222,7 @@ export default function SavedSearchesPage() {
 
   if (!isLoaded) {
     return (
-      <div className="max-w-3xl mx-auto">
+      <div className="w-full">
         <div className="animate-pulse space-y-4">
           <div className="h-8 bg-gray-200 rounded w-1/3" />
           <div className="h-4 bg-gray-200 rounded w-1/2" />
@@ -235,7 +235,7 @@ export default function SavedSearchesPage() {
 
   return (
     <AuthGuard>
-      <div className="max-w-3xl mx-auto">
+      <div className="w-full">
         {/* Page Header */}
         <div className="flex items-start justify-between mb-2">
           <h1 className="font-lato text-xl md:text-3xl font-bold text-gray-900">

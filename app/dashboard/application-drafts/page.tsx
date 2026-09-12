@@ -65,7 +65,7 @@ export default function ApplicationDraftsPage() {
   if (isLoading) {
     return (
       <AuthGuard>
-        <div className="max-w-4xl mx-auto py-8 px-4 md:px-6">
+        <div className="w-full">
           <div className="animate-pulse space-y-4">
             <div className="h-8 bg-gray-200 rounded w-1/3" />
             <div className="h-4 bg-gray-200 rounded w-1/2" />
@@ -79,7 +79,7 @@ export default function ApplicationDraftsPage() {
 
   return (
     <AuthGuard>
-      <div className="max-w-4xl mx-auto py-8 px-4 md:px-6">
+      <div className="w-full">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
           <div>
             <h1 className="text-2xl md:text-3xl font-bold text-gray-900 mb-1">

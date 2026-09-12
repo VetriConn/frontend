@@ -352,9 +352,23 @@ describe("country picker dropdown", () => {
     await openPicker();
 
     // The native select rendered ~250 rows tall; this list scrolls instead.
+    // The cap is rem, not px, so it grows with the accessibility panel's
+    // font-size steps instead of showing fewer countries as the rows get
+    // taller. 14.75rem is the 236px this used to be at the default size.
     const listbox = screen.getByRole("listbox");
     expect(listbox).toHaveClass("overflow-y-auto");
-    expect(listbox.style.maxHeight).toBe("236px");
+    expect(listbox.style.maxHeight).toBe("14.75rem");
+  });
+
+  it("should size the panel in rem so long country names keep their tails", async () => {
+    await openPicker();
+
+    // The panel was a frozen 288px while its padding and labels were rem, so
+    // the label column shrank as the accessibility panel scaled the text and
+    // "Bosnia and Herzegovina" ended in an ellipsis. 18rem is that same 288px
+    // at the default size, and it grows with the names it holds.
+    const panel = screen.getByRole("listbox").parentElement;
+    expect(panel).toHaveStyle({ width: "18rem" });
   });
 
   it("should filter options by the search query", async () => {

@@ -7,13 +7,25 @@ interface AvatarProps {
   src?: string | null;
   /** Name to generate initials from if no image */
   name: string;
-  /** Size in pixels */
+  /**
+   * Size at 100% text, in pixels. Emitted as rem so it grows with the
+   * accessibility text setting. Ignored when `className` sizes the box.
+   */
   size?: number;
   /** Additional CSS classes */
   className?: string;
   /** Alt text for the image */
   alt?: string;
 }
+
+/**
+ * Does the caller size this themselves?
+ *
+ * The inline width/height below beat any class, silently: ProfileHeader
+ * passed `w-full h-full` and got 96px anyway. So a caller who states a size
+ * in classes gets no inline size at all, and their classes decide.
+ */
+const SIZE_CLASS = /(?:^|\s)(?:w-|h-|size-|min-w-|min-h-|max-w-|max-h-)\S/;
 
 /**
  * Avatar component that displays profile pictures or company logos
@@ -27,6 +39,18 @@ export function Avatar({ src, name, size = 40, className = "", alt }: AvatarProp
   const hasValidSrc = src && src.trim() !== "";
   const initials = getInitials(name);
   const altText = alt || name;
+  const callerSizes = SIZE_CLASS.test(className);
+  /**
+   * rem, not px.
+   *
+   * The accessibility panel scales text by setting a root font-size, so
+   * everything measured in rem grows with it and everything in px does not.
+   * A px avatar inside a rem-sized button drifts apart at 125%: the button
+   * grew to 120px, this stayed at 96, and the gap showed as a ring of
+   * parent background. The `size` prop stays in pixels because that is what
+   * it means at 100% and what the image loader wants.
+   */
+  const boxRem = `${size / 16}rem`;
 
   const hasBgClass = className.split(" ").some((c) => c.startsWith("bg-"));
   const defaultBg = hasBgClass ? "" : "bg-gray-200";
@@ -37,7 +61,11 @@ export function Avatar({ src, name, size = 40, className = "", alt }: AvatarProp
   return (
     <div
       className={`rounded-full ${defaultBg} flex items-center justify-center overflow-hidden shrink-0 ${className}`}
-      style={{ width: size, height: size, aspectRatio: '1' }}
+      style={
+        callerSizes
+          ? { aspectRatio: "1" }
+          : { width: boxRem, height: boxRem, aspectRatio: "1" }
+      }
     >
       {hasValidSrc ? (
         <Image
@@ -51,7 +79,10 @@ export function Avatar({ src, name, size = 40, className = "", alt }: AvatarProp
           loading="lazy"
         />
       ) : (
-        <span className={`${defaultText} font-medium`} style={{ fontSize: `${size * 0.35}px` }}>
+        <span
+          className={`${defaultText} font-medium`}
+          style={{ fontSize: `${(size * 0.35) / 16}rem` }}
+        >
           {initials}
         </span>
       )}

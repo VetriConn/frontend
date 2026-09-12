@@ -89,7 +89,12 @@ export const DocumentsCard: React.FC<DocumentsCardProps> = ({
                     className="flex-1 min-w-0 text-left group focus:outline-none cursor-pointer"
                     title={`View ${doc.name}`}
                   >
-                    <h3 className="text-sm md:text-base font-medium text-gray-700 group-hover:text-red-600 transition-colors truncate">
+                    {/* Two lines rather than one truncated one. The action
+                        pair beside this holds a fixed width that does not
+                        scale, so at 125% the name column shrinks while the
+                        name grows, and "Resume_2024_Final.pdf" lost the part
+                        that says what it is. */}
+                    <h3 className="text-sm md:text-base font-medium text-gray-700 group-hover:text-red-600 transition-colors line-clamp-2 break-words">
                       {doc.name}
                     </h3>
                     <p className="text-xs text-gray-400 group-hover:text-red-500/80 transition-colors">

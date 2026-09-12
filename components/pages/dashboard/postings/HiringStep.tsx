@@ -129,13 +129,28 @@ function ScreeningQuestionCard({
     });
   };
 
+  /**
+   * Only yes_no is held to a single preferred answer, and for a reason rather
+   * than for tidiness: preferring both "yes" and "no" scores every applicant
+   * full marks, which makes the question unrankable and silently disarms its
+   * knockout — the scorer only flags when the fraction comes in under 1.
+   *
+   * single_choice used to be held to one as well, which threw away a
+   * distinction the rest of the stack already carries. The scorer marks
+   * single-answer types all-or-nothing AGAINST THE SET, so "6-10" plus "10+"
+   * is how you say "six years or more" — a preference the schema stores, the
+   * score honours and the applicants table ticks, but that this editor was
+   * alone in being unable to express.
+   */
+  const singlePreferred = question.type === "yes_no";
+
   const togglePreferred = (value: string) => {
     const current = question.preferred_answers ?? [];
     const next = current.includes(value)
       ? current.filter((v) => v !== value)
-      : question.type === "multi_choice"
-        ? [...current, value]
-        : [value]; // single-answer types keep exactly one preferred value
+      : singlePreferred
+        ? [value]
+        : [...current, value];
     patch({ preferred_answers: next });
   };
 
@@ -251,7 +266,7 @@ function ScreeningQuestionCard({
       {canScore && preferredCandidates.length > 0 && (
         <div className="mt-4">
           <p className="mb-1.5 text-sm font-medium text-gray-600">
-            Preferred answer{question.type === "multi_choice" ? "s" : ""}{" "}
+            Preferred answer{singlePreferred ? "" : "s"}{" "}
             <span className="font-normal text-gray-400">
               (used for ranking - optional)
             </span>
@@ -276,6 +291,18 @@ function ScreeningQuestionCard({
               );
             })}
           </div>
+          {/* Both multi-select types are the same row of pills and score
+              nothing alike, so the difference is spelled out rather than left
+              to be inferred: highlighting three answers on a single-choice
+              question widens what you will accept, and on a multi-choice one
+              raises what full marks costs. */}
+          {!singlePreferred && (
+            <p className="mt-2 text-sm text-gray-500">
+              {question.type === "single_choice"
+                ? "Applicants pick one, so any answer you highlight earns full marks. Highlight several to accept a range."
+                : "Applicants pick as many as apply and score in proportion: two of three highlighted answers earns two thirds of this question."}
+            </p>
+          )}
         </div>
       )}
 

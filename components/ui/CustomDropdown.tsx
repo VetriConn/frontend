@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect } from "react";
 import { createPortal } from "react-dom";
 import clsx from "clsx";
+import { useAnchoredMenu } from "@/hooks/useAnchoredMenu";
 import {
   FIELD_BASE,
   fieldBorder,
@@ -47,7 +48,6 @@ interface CustomDropdownProps {
   helperText?: string;
   disabled?: boolean;
   hideHeader?: boolean;
-  openUpward?: boolean;
 }
 
 export const CustomDropdown = ({
@@ -63,10 +63,8 @@ export const CustomDropdown = ({
   helperText,
   disabled = false,
   hideHeader = false,
-  openUpward = false,
 }: CustomDropdownProps) => {
   const [isOpen, setIsOpen] = useState(false);
-  const [coords, setCoords] = useState({ top: 0, left: 0, width: 0 });
   // Keyboard model: focus never enters the portaled menu. The trigger keeps
   // focus and steers a highlighted option via aria-activedescendant - the
   // select-only combobox pattern - so Tab order, Escape and screen readers
@@ -75,6 +73,25 @@ export const CustomDropdown = ({
   const typeahead = useRef({ buffer: "", at: 0 });
   const dropdownRef = useRef<HTMLDivElement>(null);
   const triggerRef = useRef<HTMLButtonElement>(null);
+
+  /**
+   * The menu hangs off the trigger's measured bottom edge, never a constant.
+   *
+   * It used to be `rect.top + 36`, where 36 stood in for the height of the
+   * trigger. The trigger is FIELD_BASE, which is rem all the way down: it
+   * measures 50px at the default text size, 56px at 112% and 62px at 125%.
+   * So the menu opened 14px up inside its own trigger for the default
+   * reader, and 26px inside it for anyone who had scaled their text — the
+   * accessibility panel moves html font-size and nothing else, so the gap
+   * widened with every step, and the menu covered the label of the control
+   * that had just been clicked. rect.bottom is right at every size.
+   *
+   * offset 0 rather than the hook's default 4: this menu is drawn as an
+   * extension of the trigger (shared width, header on top), so it wants to
+   * sit flush against it, which is what the 36 was reaching for.
+   */
+  const { coords } = useAnchoredMenu(isOpen, triggerRef, { offset: 0 });
+
   const listboxId = `${name}-listbox`;
   const optionId = (i: number) => `${name}-option-${i}`;
 
@@ -117,29 +134,6 @@ export const CustomDropdown = ({
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
-
-  const updateCoords = () => {
-    if (triggerRef.current) {
-      const rect = triggerRef.current.getBoundingClientRect();
-      setCoords({
-        top: rect.top,
-        left: rect.left,
-        width: rect.width,
-      });
-    }
-  };
-
-  useEffect(() => {
-    if (isOpen) {
-      updateCoords();
-      window.addEventListener("scroll", updateCoords, true);
-      window.addEventListener("resize", updateCoords);
-    }
-    return () => {
-      window.removeEventListener("scroll", updateCoords, true);
-      window.removeEventListener("resize", updateCoords);
-    };
-  }, [isOpen]);
 
   // Clear the filter each time the menu closes.
   useEffect(() => {
@@ -272,9 +266,7 @@ export const CustomDropdown = ({
         // No window.scrollY: the menu is position:fixed, so these are
         // viewport coordinates. Adding the page offset put it a screenful
         // away the moment anything had been scrolled.
-        top: openUpward
-          ? coords.top - (options.length * 44 + (hideHeader ? 0 : 44)) - 8
-          : coords.top + 36,
+        top: coords.top,
         position: "fixed",
       }}
     >

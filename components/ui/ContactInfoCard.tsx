@@ -63,11 +63,17 @@ export const ContactInfoCard: React.FC<ContactInfoCardProps> = ({
           <div className="w-10 h-10 rounded-full bg-red-50 flex items-center justify-center shrink-0">
             <HiOutlineEnvelope className="w-5 h-5 md:w-6 md:h-6 text-red-500" />
           </div>
-          <div className="flex-1">
+          {/* min-w-0 because a flex item defaults to min-width:auto, and
+              break-all because browsers offer no soft-wrap opportunity inside
+              an email address. Without both, a long address overflows the
+              card rather than wrapping once the text grows. */}
+          <div className="flex-1 min-w-0">
             <label className="text-sm font-medium text-gray-500 block mb-1">
               Email address
             </label>
-            <p className="text-base text-gray-900 font-medium">{email}</p>
+            <p className="text-base text-gray-900 font-medium break-all">
+              {email}
+            </p>
           </div>
         </div>
 

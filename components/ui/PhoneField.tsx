@@ -41,8 +41,60 @@ export const DEFAULT_PHONE_COUNTRY = "CA" as const;
 const DEFAULT_BOX_CLASSES =
   "w-full rounded-lg border border-gray-300 bg-white px-3 py-2 md:px-4 md:py-3";
 
-const MENU_WIDTH = 288;
-const MENU_MAX_HEIGHT = 288;
+/**
+ * The picker panel is measured in rem, not px.
+ *
+ * Everything inside it already was — the padding, the search box, the country
+ * labels are all rem, and the accessibility panel scales html font-size
+ * (100% / 112% / 125%) and nothing else. A frozen 288px panel therefore held
+ * larger text in the same box: the label column lost roughly a character per
+ * step, and "Bosnia and Herzegovina", "Central African Republic", "United
+ * States Minor Outlying Islands" ended in an ellipsis in a list whose only
+ * job is letting someone read the name. In rem the panel grows with its
+ * contents, so a name that fits at 100% still fits at 125%.
+ *
+ * 18rem is the old 288px at the default text size, so nothing moves for a
+ * reader who has not scaled anything.
+ */
+const MENU_WIDTH_REM = 18;
+const MENU_MAX_HEIGHT_REM = 18;
+
+/**
+ * Height the search row takes out of the panel, in rem.
+ *
+ * This was `MENU_MAX_HEIGHT - 52`. The row it stands for is rem padding
+ * around a text-xs input, so it measures about 45px at the default size and
+ * about 55px at 125%, while the 52 stayed put: the list kept its full 236px
+ * and the panel quietly grew past the MENU_MAX_HEIGHT that updateCoords
+ * positions against, which is the number that decides whether the panel
+ * clears the bottom of the window or has to flip above the field. Reserving
+ * the row in rem keeps the panel the height the positioning maths believes
+ * it is, and lets the list show the same number of countries at every size
+ * instead of fewer as the rows grow. 3.25rem is the old 52px at 100%.
+ */
+const SEARCH_ROW_REM = 3.25;
+
+/**
+ * A rem measurement in the pixels it currently occupies.
+ *
+ * CSS resolves rem on its own; getBoundingClientRect arithmetic does not.
+ * The panel is sized in rem, and its width and height still have to be
+ * compared against the viewport edges to decide where it opens, so those two
+ * answers have to be read in the same units. A hard 288 in that comparison
+ * would keep opening a 360px panel downward at 125% and let the window clip
+ * its last rows.
+ *
+ * Called from updateCoords, which runs in effects and event handlers, never
+ * during render.
+ */
+const remToPx = (rem: number): number => {
+  const rootFontSize = parseFloat(
+    getComputedStyle(document.documentElement).fontSize,
+  );
+  // Falls back on the browser default when the root has no resolved size,
+  // which is jsdom's answer in unit tests.
+  return rem * (rootFontSize || 16);
+};
 
 /** A `+` followed by digits only — the shape PhoneInput accepts as `value`. */
 const E164_PATTERN = /^\+\d+$/;
@@ -133,19 +185,21 @@ const CountrySelect = ({
     if (!trigger) return;
 
     const rect = trigger.getBoundingClientRect();
+    const menuWidth = remToPx(MENU_WIDTH_REM);
+    const menuMaxHeight = remToPx(MENU_MAX_HEIGHT_REM);
     const spaceBelow = window.innerHeight - rect.bottom;
-    const openUpward = spaceBelow < MENU_MAX_HEIGHT && rect.top > spaceBelow;
+    const openUpward = spaceBelow < menuMaxHeight && rect.top > spaceBelow;
 
     setCoords({
       // Viewport coordinates throughout — the menu is position:fixed.
       top: openUpward
-        ? rect.top - MENU_MAX_HEIGHT - 8
+        ? rect.top - menuMaxHeight - 8
         : rect.bottom + 8,
       left: Math.max(
         8,
         Math.min(
           rect.left,
-          window.innerWidth - MENU_WIDTH - 8,
+          window.innerWidth - menuWidth - 8,
         ),
       ),
       openUpward,
@@ -207,7 +261,7 @@ const CountrySelect = ({
         position: "fixed",
         top: coords.top,
         left: coords.left,
-        width: MENU_WIDTH,
+        width: `${MENU_WIDTH_REM}rem`,
       }}
     >
       <div className="border-b border-gray-100 p-2">
@@ -229,7 +283,7 @@ const CountrySelect = ({
         role="listbox"
         aria-label={ariaLabel}
         className="overflow-y-auto"
-        style={{ maxHeight: MENU_MAX_HEIGHT - 52 }}
+        style={{ maxHeight: `${MENU_MAX_HEIGHT_REM - SEARCH_ROW_REM}rem` }}
       >
         {filtered.length === 0 ? (
           <p className="px-3 py-4 text-center text-xs text-gray-400">

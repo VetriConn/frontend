@@ -196,7 +196,7 @@ export default function SavedJobsPage() {
 
   if (isLoading) {
     return (
-      <div className="max-w-200 mx-auto">
+      <div className="w-full">
         <div className="h-8 w-48 bg-gray-200 rounded animate-shimmer mb-4" />
         <div className="h-4 w-72 bg-gray-200 rounded animate-shimmer mb-8" />
       </div>
@@ -205,7 +205,7 @@ export default function SavedJobsPage() {
 
   return (
     <AuthGuard>
-      <div className="max-w-200 mx-auto">
+      <div className="w-full">
         {/* Page Header */}
         <div className="flex items-start justify-between mb-2">
           <h1 className="font-lato text-xl md:text-3xl font-bold text-gray-900">
@@ -231,7 +231,12 @@ export default function SavedJobsPage() {
         ) : (
           <>
             {/* Desktop Table View */}
-            <div className="hidden md:block bg-white rounded-xl border border-gray-200 overflow-hidden">
+            {/* overflow-x-auto, not overflow-hidden: the cell padding and
+                text are rem and the table's floor grows with them, so at 125%
+                the last columns fall outside the card. Clipping made them
+                unreachable; scrolling keeps them. rounded-xl still clips the
+                corners. */}
+            <div className="hidden md:block bg-white rounded-xl border border-gray-200 overflow-x-auto">
               <table className="w-full">
                 <thead>
                   <tr className="bg-gray-50 border-b border-gray-200">

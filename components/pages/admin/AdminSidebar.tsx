@@ -140,7 +140,7 @@ const AdminSidebar = ({ isMobileOpen, onCloseMobile }: AdminSidebarProps) => {
             </div>
             <div className="leading-tight">
               <p className="text-sm font-semibold text-white">Vetriconn</p>
-              <p className="text-[11px] text-gray-500 font-medium tracking-wide">
+              <p className="text-[0.6875rem] text-gray-500 font-medium tracking-wide">
                 Admin Console
               </p>
             </div>
@@ -221,7 +221,7 @@ const AdminSidebar = ({ isMobileOpen, onCloseMobile }: AdminSidebarProps) => {
                           href={child.href}
                           onClick={onCloseMobile}
                           className={clsx(
-                            "block px-3 py-2 rounded-md text-[13px] transition-colors",
+                            "block px-3 py-2 rounded-md text-[0.8125rem] transition-colors",
                             childActive
                               ? "text-white bg-white/5"
                               : "text-gray-500 hover:text-white hover:bg-white/5",
@@ -240,7 +240,7 @@ const AdminSidebar = ({ isMobileOpen, onCloseMobile }: AdminSidebarProps) => {
 
         {/* Footer */}
         <div className="px-5 py-4 border-t border-white/5 shrink-0">
-          <div className="flex items-center gap-2 text-[11px] text-gray-500">
+          <div className="flex items-center gap-2 text-[0.6875rem] text-gray-500">
             <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
             All systems operational
           </div>

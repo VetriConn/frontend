@@ -177,7 +177,7 @@ const Field = ({
   <div className="flex items-start gap-3">
     <Icon className="w-4 h-4 text-gray-400 mt-0.5 shrink-0" />
     <div className="min-w-0">
-      <p className="text-[11px] font-semibold text-gray-500 uppercase tracking-wide">
+      <p className="text-[0.6875rem] font-semibold text-gray-500 uppercase tracking-wide">
         {label}
       </p>
       <p className="text-sm text-gray-900 truncate">{value}</p>

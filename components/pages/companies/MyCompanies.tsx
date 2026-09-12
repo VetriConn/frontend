@@ -129,12 +129,24 @@ const CompanyCard = ({
           )}
 
           {company.status === "approved" && (
-            <Link
-              href={`/dashboard/companies/${company._id}`}
-              className="inline-block mt-3 text-sm text-primary font-medium hover:underline no-underline"
-            >
-              Manage company →
-            </Link>
+            /* Two destinations, because they answer different questions:
+               manage is where you change things, view is what a candidate
+               actually sees. Only the first existed, so an owner had no way
+               to look at their own company page. */
+            <div className="mt-3 flex flex-wrap items-center gap-4">
+              <Link
+                href={`/dashboard/companies/${company._id}`}
+                className="inline-flex min-h-[44px] items-center text-sm font-medium text-primary no-underline hover:underline"
+              >
+                Manage company →
+              </Link>
+              <Link
+                href={`/companies/${company._id}`}
+                className="inline-flex min-h-[44px] items-center text-sm font-medium text-gray-600 no-underline hover:text-gray-900 hover:underline"
+              >
+                View public profile
+              </Link>
+            </div>
           )}
         </div>
       </div>

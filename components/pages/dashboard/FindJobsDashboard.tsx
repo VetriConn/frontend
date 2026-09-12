@@ -108,12 +108,12 @@ function FilterField({
 
 // Every work arrangement the vocabulary has — this row used to omit
 // "hybrid", making hybrid jobs unreachable from the dashboard filter.
-const WORK_TYPES = [
-  { value: "all", label: "All" },
+const WORK_TYPE_OPTIONS = [
+  { value: "", label: "All" },
   { value: "remote", label: "Remote" },
   { value: "hybrid", label: "Hybrid" },
   { value: "onsite", label: "On-site" },
-] as const;
+];
 
 // One option list with the same labels the find-jobs filter panel derives
 // from the shared vocabulary — not a hand-typed near-copy.
@@ -147,7 +147,7 @@ const FindJobsDashboard = () => {
   // Search and filter state
   const [searchQuery, setSearchQuery] = useState("");
   const [location, setLocation] = useState("");
-  const [workType, setWorkType] = useState<"all" | "remote" | "hybrid" | "onsite">("all");
+  const [workType, setWorkType] = useState("");
   const [experienceLevel, setExperienceLevel] = useState("");
 
   // A rotating, time-and-country greeting — a fresh one each visit. Falls back
@@ -189,7 +189,7 @@ const FindJobsDashboard = () => {
     // which find-jobs forwards to the backend as jobType — so the Remote
     // button silently filtered for a job *type* called "remote" and matched
     // nothing.
-    if (workType !== "all") params.set("arrangement", workType);
+    if (workType) params.set("arrangement", workType);
     if (experienceLevel) params.set("experience", experienceLevel);
     router.push(`/dashboard/find-jobs${params.toString() ? `?${params.toString()}` : ""}`);
   };
@@ -200,7 +200,7 @@ const FindJobsDashboard = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <div className="max-w-screen-xl mx-auto px-6 py-8">
+      <div className="w-full">
         {/* Header — a rotating, localized greeting; "Find Your Next
             Opportunity" moved up here from the search card it used to title. */}
         <div className="mb-5">
@@ -262,35 +262,17 @@ const FindJobsDashboard = () => {
               />
             </div>
 
-            <FilterField
-              label="Work Type"
-              as="span"
-              labelId="dashboard-work-type-label"
-            >
-              <div
-                role="group"
-                aria-labelledby="dashboard-work-type-label"
-                // h-11 to match every other control; the inner buttons take
-                // the remaining height inside the 2px inset.
-                className="flex h-11 items-stretch gap-1 rounded-lg bg-gray-100 p-1"
-              >
-                {WORK_TYPES.map((wt) => (
-                  <button
-                    key={wt.value}
-                    type="button"
-                    onClick={() => setWorkType(wt.value)}
-                    aria-pressed={workType === wt.value}
-                    className={`rounded-md px-3 text-sm font-medium transition-colors ${
-                      workType === wt.value
-                        ? "bg-primary text-white shadow-sm"
-                        : "text-gray-600 hover:bg-gray-200"
-                    }`}
-                  >
-                    {wt.label}
-                  </button>
-                ))}
-              </div>
-            </FilterField>
+            <div className="min-w-40">
+              <CustomDropdown
+                label="Work Type"
+                labelClassName={FILTER_LABEL}
+                name="dashboard-work-type"
+                placeholder="All"
+                value={workType}
+                onChange={setWorkType}
+                options={WORK_TYPE_OPTIONS}
+              />
+            </div>
 
             <div className="min-w-40">
               <CustomDropdown

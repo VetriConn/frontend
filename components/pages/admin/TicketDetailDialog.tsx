@@ -149,12 +149,12 @@ const TicketDetailDialog = ({
         <div className="px-5 md:px-6 py-4 border-b border-gray-100 flex items-start gap-3 shrink-0">
           <div className="flex-1 min-w-0">
             <div className="flex flex-wrap items-center gap-2 mb-2">
-              <span className="text-[11px] font-semibold text-gray-500 tracking-wider tabular-nums">
+              <span className="text-[0.6875rem] font-semibold text-gray-500 tracking-wider tabular-nums">
                 {ticket.reference}
               </span>
               <span
                 className={clsx(
-                  "inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold ring-1",
+                  "inline-flex items-center px-2 py-0.5 rounded-full text-[0.6875rem] font-semibold ring-1",
                   STATUS_TONE[ticket.status],
                 )}
               >
@@ -162,7 +162,7 @@ const TicketDetailDialog = ({
               </span>
               <span
                 className={clsx(
-                  "inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold ring-1",
+                  "inline-flex items-center px-2 py-0.5 rounded-full text-[0.6875rem] font-semibold ring-1",
                   PRIORITY_TONE[ticket.priority],
                 )}
               >
@@ -234,7 +234,7 @@ const TicketDetailDialog = ({
                       >
                         {r.authorName}
                       </span>
-                      <span className="text-[11px] text-gray-500 tabular-nums">
+                      <span className="text-[0.6875rem] text-gray-500 tabular-nums">
                         {formatDate(r.createdAt)}
                       </span>
                     </div>

@@ -10,7 +10,7 @@ import {
   HiOutlineCurrencyDollar,
 } from "react-icons/hi2";
 import { hasApplicationDraft } from "@/lib/applicationDrafts";
-import { splitDescriptionParts } from "@/lib/job-display";
+import { jobPreviewParts } from "@/lib/job-display";
 import { CARD_SURFACE, CARD_FOCUS, CARD_TITLE } from "./cardStyles";
 
 interface JobResultCardProps {
@@ -22,6 +22,14 @@ interface JobResultCardProps {
   jobType: string | null;
   salary: string;
   description: string;
+  /**
+   * The first few duties, as the list endpoint already ships them.
+   *
+   * They follow the brief in the same clamped preview rather than getting a
+   * row of their own: the card's rhythm is fixed by `line-clamp-2`, and a
+   * second block would break it on every card to help only some.
+   */
+  responsibilities?: string[];
   /**
    * True when the signed-in account posted this listing.
    *
@@ -43,6 +51,7 @@ export const JobResultCard = ({
   jobType,
   salary,
   description,
+  responsibilities,
   isOwnPosting = false,
   onApply,
 }: JobResultCardProps) => {
@@ -173,9 +182,13 @@ export const JobResultCard = ({
             duty as a bulleted list. Here the fragments are separated by a
             middot rather than the source's raw pipes, which read as one
             run-on sentence. A separator survives line-clamp; a <ul> does not
-            clamp predictably, and the card's fixed rhythm depends on it. */}
+            clamp predictably, and the card's fixed rhythm depends on it.
+
+            The brief comes first and the duties continue it, so a posting
+            that put its substance under "What You'll Do" is no longer the
+            one with the emptiest card. See jobPreviewParts. */}
         <p className="text-xs md:text-sm text-gray-600 leading-relaxed line-clamp-2">
-          {splitDescriptionParts(description).join(" · ")}
+          {jobPreviewParts(description, responsibilities).join(" · ")}
         </p>
       </div>
 

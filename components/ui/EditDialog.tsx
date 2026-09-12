@@ -13,6 +13,33 @@ export interface EditDialogProps {
   children: React.ReactNode;
   submitLabel?: string;
   cancelLabel?: string;
+  /**
+   * Blocks the primary action while the form has nothing to submit.
+   *
+   * Added for ImageUploadDialog, whose Save means nothing until an image has
+   * actually been picked. Every other caller has fields that are valid empty,
+   * so it defaults to false and they are unaffected.
+   */
+  submitDisabled?: boolean;
+  /**
+   * "lg" widens the panel from 512px to 896px.
+   *
+   * Added for ImageUploadDialog. 896px is what the photo editor it replaces
+   * used (max-w-4xl), and it held that ONE width through all four of its
+   * steps, so the panel never jumped as you moved between them. It is a size,
+   * not a variant, so there are exactly two values and no theming.
+   */
+  size?: "md" | "lg";
+  /**
+   * Replaces the default Cancel/Save pair.
+   *
+   * For ImageUploadDialog, whose footer is different in each of its four
+   * modes: view offers Edit, Update and Delete, the camera offers only Back,
+   * and only the edit step has anything to save. A fixed pair could not
+   * express that, and reimplementing the dialog to get a footer would have
+   * meant a second copy of the focus trap.
+   */
+  footer?: React.ReactNode;
 }
 
 /**
@@ -37,6 +64,9 @@ export const EditDialog: React.FC<EditDialogProps> = ({
   children,
   submitLabel = "Save Changes",
   cancelLabel = "Cancel",
+  submitDisabled = false,
+  size = "md",
+  footer,
 }) => {
   const dialogRef = useRef<HTMLDivElement>(null);
   const previousActiveElement = useRef<HTMLElement | null>(null);
@@ -177,7 +207,8 @@ export const EditDialog: React.FC<EditDialogProps> = ({
         ref={dialogRef}
         className={clsx(
           "bg-white rounded-xl shadow-2xl",
-          "w-[95%] md:w-full max-w-lg",
+          "w-[95%] md:w-full",
+          size === "lg" ? "max-w-4xl" : "max-w-lg",
           "max-h-[90vh] overflow-hidden flex flex-col"
         )}
         onClick={(e) => e.stopPropagation()}
@@ -206,7 +237,16 @@ export const EditDialog: React.FC<EditDialogProps> = ({
           <div className="p-4 md:p-6 overflow-y-auto flex-1">{children}</div>
 
           {/* Dialog Footer */}
-          <div className="flex gap-3 p-4 md:p-6 pt-4 justify-end border-t border-gray-200 sticky bottom-0 bg-white shrink-0">
+          {/* Muted band, so the actions read as a separate surface from the
+              content above rather than floating at the bottom of it. */}
+          {/* flex-wrap: ImageUploadDialog's choose step ships three pill
+              buttons (Cancel / Use camera / Upload photo), and at 125%
+              their combined width passes the panel, putting the primary
+              action outside the dialog. Wrapping just makes the footer
+              taller, which the shrink-0 band accommodates. */}
+          <div className="flex flex-wrap gap-3 p-4 md:p-6 pt-4 justify-end border-t border-gray-200 sticky bottom-0 bg-gray-50 shrink-0">
+            {footer ?? (
+              <>
             <button
               type="button"
               className="bg-gray-100 text-gray-700 border-none rounded-lg py-2.5 px-5 text-sm font-medium cursor-pointer transition-colors hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed min-h-[44px]"
@@ -224,7 +264,7 @@ export const EditDialog: React.FC<EditDialogProps> = ({
                 "disabled:opacity-50 disabled:cursor-not-allowed",
                 "flex items-center gap-2 min-h-[44px]"
               )}
-              disabled={isSubmitting}
+              disabled={isSubmitting || submitDisabled}
               aria-label={submitLabel}
               aria-busy={isSubmitting}
             >
@@ -253,6 +293,8 @@ export const EditDialog: React.FC<EditDialogProps> = ({
               )}
               {isSubmitting ? "Saving..." : submitLabel}
             </button>
+              </>
+            )}
           </div>
         </form>
       </div>

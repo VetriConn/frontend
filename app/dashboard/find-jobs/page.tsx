@@ -238,13 +238,26 @@ const SearchResultsPage = () => {
   // post-mount remeasure, no resize listener; dvh tracks the mobile URL-bar
   // collapse that vh ignores. The constants live in the shared layout — if
   // its chrome changes, retune these two calc()s.
+  //
+  // The floor is 20rem, not the 320px it used to be. Identical length at the
+  // default root size, so nothing moves for a reader at 100% — but it was the
+  // one term in these two expressions that ignored the text-size setting,
+  // while everything it has to cover is rem and grows with it: the back link,
+  // the h1, the subtitle, the SearchBar and the save-search row all live
+  // INSIDE the shell, unlike the chrome subtracted above. At 125% on a short
+  // window the shell stayed pinned at 320px while that in-shell header grew
+  // past two thirds of it, leaving the results column less than one card — on
+  // the one setting a reader picks precisely because they need more room to
+  // read. The floor still does not reserve a card ON TOP OF that header:
+  // sizing it that way would push the shell past a short viewport for the
+  // 100% reader, which is a worse bug than the one it would fix.
   return (
     <div
-      className="flex flex-col bg-gray-50 overflow-hidden h-[max(320px,calc(100dvh-66px-7rem))] md:h-[max(320px,calc(100dvh-66px-8rem))]"
+      className="flex flex-col bg-gray-50 overflow-hidden h-[max(20rem,calc(100dvh-66px-7rem))] md:h-[max(20rem,calc(100dvh-66px-8rem))]"
     >
       {/* Main Content */}
       <main id="main-content" className="flex-1 min-h-0 flex flex-col" tabIndex={-1}>
-        <div className="max-w-screen-xl mx-auto w-full flex-1 min-h-0 flex flex-col px-4 md:px-6 pt-4">
+        <div className="w-full flex-1 min-h-0 flex flex-col pt-4">
           <Link
             href="/dashboard"
             className="inline-flex items-center gap-2 text-sm text-gray-600 hover:text-gray-900 font-medium transition-colors no-underline mb-3"
@@ -270,6 +283,7 @@ const SearchResultsPage = () => {
               value={searchQuery}
               onChange={setSearchQuery}
               onSearch={handleSearch}
+              isSearching={isLoading || isRefreshing}
             />
 
             {/* Save Search Button */}
@@ -300,11 +314,38 @@ const SearchResultsPage = () => {
           </div>
 
           {/* Main Content Grid */}
-          <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 md:gap-6 flex-1 min-h-0">
-            {/* Sticky on desktop so the filters never scroll away, with its own
-                overflow in case the filter list outgrows the viewport. */}
+          {/* The split starts at md, which is exactly where FilterPanel swaps
+              its one-line mobile button for the full filter card. It used to
+              start at lg, and between the two the card stacked above the
+              results inside a shell with a definite height — which does not
+              work: both are auto-sized rows, auto rows do not shrink to fit,
+              so the results row kept its entire content height, the shell's
+              overflow-hidden clipped it, and the results column's own
+              overflow-y-auto never engaged. Between 768px and 1023px the tail
+              of the list and the pagination could not be reached at all.
+
+              A third of the width at md rather than a quarter: a quarter of
+              768px leaves the filter column narrower than the controls it
+              holds ("Any arrangement" plus its chevron), where a third of it
+              is about the same 222px the column already gets at the narrowest
+              lg width, so nothing is squeezed into a width it has never had
+              to render at.
+
+              Below md the panel really is one short button, so the stack is
+              right there — it just has to say so: the row template gives the
+              results the space that is LEFT instead of the space it wants,
+              which is what lets it scroll inside the shell rather than
+              overflow it. From md up there is only one row, so the template
+              goes away again and the columns do the work. */}
+          <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 grid-rows-[auto_minmax(0,1fr)] md:grid-rows-none gap-4 md:gap-6 flex-1 min-h-0">
+            {/* Sticky from md so the filters never scroll away, with its own
+                overflow in case the filter list outgrows the row. Between md
+                and lg that is the normal case rather than the exception — the
+                full card is taller than the grid area at those widths — so
+                the aside scrolls itself instead of stealing the room the
+                results need. */}
             <aside
-              className="lg:col-span-1 lg:self-start lg:sticky lg:top-0 lg:max-h-full lg:overflow-y-auto"
+              className="md:col-span-1 md:self-start md:sticky md:top-0 md:max-h-full md:overflow-y-auto"
               aria-label="Job filters"
             >
               <FilterPanel
@@ -319,7 +360,7 @@ const SearchResultsPage = () => {
                 the pagination are not flush against the viewport edge. */}
             <div
               ref={resultsRef}
-              className="lg:col-span-3 min-h-0 overflow-y-auto pb-6"
+              className="md:col-span-2 lg:col-span-3 min-h-0 overflow-y-auto pb-6"
               // Dimmed and inert while the next page is on its way. Paging
               // scrolled the reader to the top of the page they had just
               // left and gave them nothing — no spinner, no change — for the
@@ -328,10 +369,43 @@ const SearchResultsPage = () => {
               // no longer current.
               aria-busy={isRefreshing || undefined}
             >
+              {/* Above the dim, deliberately. The one line that has to stay
+                  legible while the results fade is the line explaining why
+                  they faded — putting it inside the faded block at 50% opacity
+                  would be the least readable text on the page at the moment it
+                  matters most, on a board whose readers skew 45+.
+
+                  It takes the place of the result count, which the list holds
+                  back while a query is in flight, so nothing jumps. */}
               {isRefreshing && (
-                <span className="sr-only" role="status">
-                  Loading results
-                </span>
+                <div
+                  role="status"
+                  className="flex items-center gap-2 text-sm text-gray-600 mb-4"
+                >
+                  <svg
+                    className="animate-spin h-4 w-4 text-primary shrink-0"
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    aria-hidden="true"
+                  >
+                    <circle
+                      className="opacity-25"
+                      cx="12"
+                      cy="12"
+                      r="10"
+                      stroke="currentColor"
+                      strokeWidth="4"
+                    />
+                    <path
+                      className="opacity-75"
+                      fill="currentColor"
+                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
+                    />
+                  </svg>
+                  Searching
+                  {appliedSearchQuery ? ` for “${appliedSearchQuery}”` : ""}…
+                </div>
               )}
               <div
                 className={
@@ -345,17 +419,24 @@ const SearchResultsPage = () => {
                   so, rather than letting an empty list read as "nothing
                   exists". */}
               {searchingMore && !isLoading && (
-                <div className="bg-red-50 border border-red-100 rounded-xl p-4 mb-4 flex items-start gap-3">
-                  <HiOutlineMagnifyingGlass className="w-5 h-5 text-primary shrink-0 mt-0.5" />
-                  <div>
-                    <p className="text-sm font-medium text-gray-900">
+                <div
+                  className="bg-gray-50 border border-gray-200 rounded-xl p-4 mb-4 flex items-start gap-3"
+                  role="status"
+                  aria-live="polite"
+                >
+                  <span className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-white border border-gray-200">
+                    <HiOutlineMagnifyingGlass className="w-4 h-4 text-primary animate-pulse" />
+                  </span>
+                  <div className="min-w-0">
+                    <p className="text-sm font-semibold text-gray-900">
                       Still looking for more matches
                     </p>
-                    <p className="text-sm text-gray-600">
+                    <p className="text-sm text-gray-600 mt-0.5">
                       We&apos;re searching further afield for
-                      {appliedSearchQuery ? ` “${appliedSearchQuery}”` : " this"}
-                      . Check back in a moment - new listings are added as we
-                      find them.
+                      {appliedSearchQuery
+                        ? ` “${appliedSearchQuery}”`
+                        : " this"}
+                      . New listings will appear here as we find them.
                     </p>
                   </div>
                 </div>
@@ -365,6 +446,7 @@ const SearchResultsPage = () => {
                 jobs={effectiveJobs}
                 totalCount={totalJobs}
                 isLoading={isLoading}
+                isRefreshing={isRefreshing}
                 isError={effectiveError}
                 onRetry={handleRetry}
                 onApply={handleApply}

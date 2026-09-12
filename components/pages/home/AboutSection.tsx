@@ -68,7 +68,7 @@ export const AboutSection = ({ id }: AboutSectionProps) => (
 
           {/* The tracked line the hero uses — the ✓ pills were the pattern
               rejected there, and two treatments for one idea is one too many. */}
-          <p className="meta-list mb-8 flex flex-wrap items-center justify-center lg:justify-start gap-y-1 text-[13px] font-semibold uppercase tracking-[0.08em] text-gray-500">
+          <p className="meta-list mb-8 flex flex-wrap items-center justify-center lg:justify-start gap-y-1 text-[0.8125rem] font-semibold uppercase tracking-[0.08em] text-gray-500">
             {aboutContent.features.map((feature) => (
               <span key={feature}>{feature}</span>
             ))}

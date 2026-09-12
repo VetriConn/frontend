@@ -47,7 +47,7 @@ const StepUpFields = ({
 
   return (
     <div className="space-y-3">
-      {note && <p className="text-[11px] text-gray-500">{note}</p>}
+      {note && <p className="text-[0.6875rem] text-gray-500">{note}</p>}
       <label className="block">
         <span className="text-xs font-semibold text-gray-700">
           Your password

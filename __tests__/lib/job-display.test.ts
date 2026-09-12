@@ -13,6 +13,7 @@ import {
   formatJobSalary,
   getPayBasis,
   hasComparableSalary,
+  jobPreviewParts,
 } from "@/lib/job-display";
 
 /**
@@ -296,5 +297,69 @@ describe("formatJobSalary", () => {
         formatJobSalary(pay({ min: 0, max: 0 })),
       ).toBeNull();
     });
+  });
+});
+
+/**
+ * What a result card says about a job.
+ *
+ * The card showed the brief and nothing else, which penalised the postings
+ * that used the builder as intended: `summary` derives from the Job Brief
+ * alone, so putting the substance under "What You'll Do" produced a
+ * near-empty card, while an aggregated listing whose whole body is one run of
+ * duties looked full.
+ */
+describe("jobPreviewParts", () => {
+  it("continues a brief with the duties it did not state", () => {
+    expect(
+      jobPreviewParts("Lead a crew of twelve on our Burnaby floor.", [
+        "Run the daily shift plan",
+        "Own the safety walk",
+      ]),
+    ).toEqual([
+      "Lead a crew of twelve on our Burnaby floor.",
+      "Run the daily shift plan",
+      "Own the safety walk",
+    ]);
+  });
+
+  it("gives a posting with no brief something to say", () => {
+    // A real row in the database: no summary at all, three duties. The card
+    // rendered an empty paragraph and no reason to click.
+    expect(jobPreviewParts(undefined, ["Greet people", "Heal people"])).toEqual([
+      "Greet people",
+      "Heal people",
+    ]);
+    expect(jobPreviewParts("", [])).toEqual([]);
+  });
+
+  it("does not repeat what a truncated brief already began", () => {
+    // Aggregated listings: the brief is the first 280 characters of the same
+    // text the duties were pulled from, so it ends part-way through the list.
+    const brief =
+      "Tasks: Collect and document user's requirements. Coordinate the development, installation, integration a…";
+    expect(
+      jobPreviewParts(brief, [
+        "Collect and document user's requirements",
+        "Define system functionality",
+      ]),
+    ).toEqual([brief, "Define system functionality"]);
+  });
+
+  it("matches a restated duty regardless of casing or spacing", () => {
+    expect(
+      jobPreviewParts("Tasks: define system   functionality.", [
+        "Define System Functionality",
+        "Upgrade and maintain software",
+      ]),
+    ).toEqual(["Tasks: define system   functionality.", "Upgrade and maintain software"]);
+  });
+
+  it("still splits a piped brief into its fragments", () => {
+    expect(jobPreviewParts("Sort freight | Load trucks", ["Close the yard"])).toEqual([
+      "Sort freight",
+      "Load trucks",
+      "Close the yard",
+    ]);
   });
 });

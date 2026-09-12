@@ -206,7 +206,7 @@ export default function AboutPage() {
                 engagement, and community for those transitioning from full-time
                 service into retirement.
               </p>
-              <p className="meta-list flex flex-wrap items-center gap-y-1 text-[13px] font-semibold uppercase tracking-[0.08em] text-gray-500">
+              <p className="meta-list flex flex-wrap items-center gap-y-1 text-[0.8125rem] font-semibold uppercase tracking-[0.08em] text-gray-500">
                 {["Part-time", "Full-time", "Volunteer"].map((item) => (
                   <span key={item}>{item}</span>
                 ))}

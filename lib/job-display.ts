@@ -240,6 +240,47 @@ export function splitDescriptionParts(text: string): string[] {
     .filter(Boolean);
 }
 
+/** Loose enough to catch a duty the brief already states in other casing. */
+const normalise = (text: string): string =>
+  text.toLowerCase().replace(/\s+/g, " ").trim();
+
+/**
+ * What a result card should say about a job, in reading order.
+ *
+ * The card used to show the brief and nothing else, which quietly punished
+ * the postings that used the builder properly. `summary` is derived from the
+ * Job Brief alone, so an employer who wrote two lines of prose and put the
+ * substance in "What You'll Do" got a near-empty card, while a scraped
+ * listing, whose whole body is one run of duties, looked full. A posting with
+ * no brief at all rendered an empty paragraph and no reason to click.
+ *
+ * So the duties follow the brief rather than being held back for the detail
+ * page. The list endpoint has shipped the first three of them per row for a
+ * while (JOB_LIST_PROJECTION's `$slice: 3`); nothing rendered them.
+ *
+ * The filter is what makes this safe on aggregated listings. Their brief is
+ * the first 280 characters of the same text the duties were extracted from,
+ * so it usually ends mid-way through duty two — appending the list raw would
+ * repeat the opening and then continue it. Dropping the duties the brief has
+ * already said leaves exactly the remainder.
+ *
+ * Order matters more than length: `line-clamp-2` decides what actually fits,
+ * and the card's fixed rhythm depends on that clamp rather than on this
+ * trimming anything.
+ */
+export function jobPreviewParts(
+  summary: string | undefined,
+  responsibilities: string[] | undefined,
+): string[] {
+  const brief = splitDescriptionParts(summary ?? "");
+  const said = normalise(summary ?? "");
+  const duties = (responsibilities ?? [])
+    .map((duty) => duty.trim())
+    .filter(Boolean)
+    .filter((duty) => !said.includes(normalise(duty)));
+  return [...brief, ...duties];
+}
+
 /**
  * A tag as a person should read it.
  *

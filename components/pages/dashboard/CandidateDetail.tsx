@@ -6,8 +6,8 @@ import useSWR from "swr";
 import {
   HiOutlineMapPin,
   HiOutlineEnvelope,
+  HiOutlinePhone,
   HiOutlineBriefcase,
-  HiOutlineChevronRight,
   HiOutlineSparkles,
   HiOutlineCheck,
   HiOutlineXMark,
@@ -50,6 +50,19 @@ function ScoreBar({ label, value }: { label: string; value: number }) {
   );
 }
 
+/**
+ * Why a section is empty, in place of the section quietly disappearing.
+ *
+ * Every panel here used to be wrapped in a truthiness check with no else, so
+ * a candidate who had filled nothing in rendered as a header card and a page
+ * of white space — indistinguishable from a broken page, and giving the
+ * employer no idea the profile had a shape at all. Same rule as the
+ * application review: an absent row tells you nothing.
+ */
+function EmptyNote({ children }: { children: React.ReactNode }) {
+  return <p className="text-sm italic text-gray-400">{children}</p>;
+}
+
 export function CandidateDetail({ applicationId }: { applicationId: string }) {
   const { data, isLoading, error } = useSWR(
     applicationId ? ["received-application", applicationId] : null,
@@ -70,25 +83,103 @@ export function CandidateDetail({ applicationId }: { applicationId: string }) {
     () =>
       skillMatch(
         [...splitSkills(job?.skills), ...(job?.qualifications ?? [])],
-        [
-          ...(candidate?.skills ?? []),
-          ...(application?.selected_skills ?? []),
-        ],
+        [...(candidate?.skills ?? []), ...(application?.selected_skills ?? [])],
       ),
     [job, candidate, application],
   );
 
   if (isLoading) {
     return (
-      <div className="mx-auto max-w-6xl px-6 py-10 text-sm text-gray-600">
-        Loading candidate…
+      <div
+        className="w-full animate-pulse"
+        aria-busy="true"
+        aria-label="Loading candidate"
+      >
+        {/* Breadcrumb */}
+        <div className="mb-4 flex items-center gap-2">
+          <div className="h-4 w-24 bg-gray-200 rounded" />
+          <div className="h-3 w-3 bg-gray-100 rounded" />
+          <div className="h-4 w-32 bg-gray-200 rounded" />
+          <div className="h-3 w-3 bg-gray-100 rounded" />
+          <div className="h-4 w-28 bg-gray-200 rounded" />
+        </div>
+
+        {/* Header card */}
+        <div className="mb-6 rounded-2xl border border-gray-200 bg-white p-6">
+          <div className="flex flex-wrap items-start justify-between gap-4">
+            <div className="flex items-center gap-4">
+              <div className="h-16 w-16 shrink-0 rounded-full bg-gray-200" />
+              <div>
+                <div className="h-7 w-48 bg-gray-200 rounded mb-2" />
+                <div className="flex flex-wrap gap-3">
+                  <div className="h-4 w-36 bg-gray-100 rounded" />
+                  <div className="h-4 w-40 bg-gray-100 rounded" />
+                  <div className="h-4 w-28 bg-gray-100 rounded" />
+                </div>
+              </div>
+            </div>
+            <div className="h-10 w-32 bg-gray-200 rounded-lg" />
+          </div>
+          <div className="mt-6 grid grid-cols-2 gap-4 border-t border-gray-100 pt-5 md:grid-cols-4">
+            {[1, 2, 3, 4].map((i) => (
+              <div key={i}>
+                <div className="h-3 w-16 bg-gray-100 rounded mb-2" />
+                <div className="h-4 w-24 bg-gray-200 rounded" />
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Two-column body */}
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+          <div className="space-y-6">
+            <div className="rounded-2xl border border-gray-200 bg-white p-6">
+              <div className="h-5 w-36 bg-gray-200 rounded mb-4" />
+              <div className="space-y-2">
+                <div className="h-3 w-full bg-gray-100 rounded" />
+                <div className="h-3 w-11/12 bg-gray-100 rounded" />
+                <div className="h-3 w-4/5 bg-gray-100 rounded" />
+              </div>
+            </div>
+            <div className="rounded-2xl border border-gray-200 bg-white p-6">
+              <div className="h-5 w-44 bg-gray-200 rounded mb-4" />
+              <div className="space-y-3">
+                <div className="h-12 w-full bg-gray-50 rounded-lg" />
+                <div className="h-12 w-full bg-gray-50 rounded-lg" />
+              </div>
+            </div>
+            <div className="rounded-2xl border border-gray-200 bg-white p-6">
+              <div className="h-5 w-48 bg-gray-200 rounded mb-4" />
+              <div className="space-y-2">
+                <div className="h-3 w-full bg-gray-100 rounded" />
+                <div className="h-3 w-3/4 bg-gray-100 rounded" />
+              </div>
+            </div>
+          </div>
+          <div className="space-y-6">
+            {[1, 2, 3].map((i) => (
+              <div
+                key={i}
+                className="rounded-2xl border border-gray-200 bg-white p-6"
+              >
+                <div className="h-5 w-40 bg-gray-200 rounded mb-4" />
+                <div className="space-y-3">
+                  <div className="h-3 w-full bg-gray-100 rounded" />
+                  <div className="h-3 w-4/5 bg-gray-100 rounded" />
+                  <div className="h-8 w-full bg-gray-50 rounded-lg" />
+                  <div className="h-8 w-full bg-gray-50 rounded-lg" />
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
       </div>
     );
   }
 
   if (error || !application) {
     return (
-      <div className="mx-auto max-w-6xl px-6 py-10">
+      <div className="w-full">
         <Link
           href="/dashboard/applications"
           className="mb-4 inline-flex items-center gap-1.5 text-sm text-gray-600 hover:text-gray-700"
@@ -104,6 +195,11 @@ export function CandidateDetail({ applicationId }: { applicationId: string }) {
   }
 
   const name = application.full_name || "Candidate";
+  // Populated by the detail endpoint, as the list endpoint already did.
+  const picture =
+    typeof application.user_id === "object"
+      ? application.user_id.picture
+      : undefined;
   const currentRole = candidate?.work_experience?.[0];
   const headline =
     candidate?.job_title && currentRole?.company
@@ -134,55 +230,60 @@ export function CandidateDetail({ applicationId }: { applicationId: string }) {
   const professionalSkills = candidate?.skills ?? [];
 
   return (
-    <div className="mx-auto max-w-6xl px-6 py-8">
-      {/* Breadcrumb */}
-      <nav className="mb-4 flex items-center gap-1.5 text-sm text-gray-600">
-        <Link
-          href="/dashboard/applications"
-          className="hover:text-gray-700 no-underline text-gray-600"
-        >
-          Applications
-        </Link>
-        <HiOutlineChevronRight className="h-4 w-4 text-gray-400" />
-        {job && (
-          <>
-            <span className="text-gray-500">{job.role}</span>
-            <HiOutlineChevronRight className="h-4 w-4 text-gray-400" />
-          </>
-        )}
-        <span className="font-medium text-gray-700">{name}</span>
-      </nav>
-
+    <div className="w-full">
       {/* Header card */}
       <div className="mb-6 rounded-2xl border border-gray-200 bg-white p-6">
-        <div className="flex flex-wrap items-start justify-between gap-4">
-          <div className="flex items-center gap-4">
-            <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full bg-primary/10 text-lg font-bold text-primary">
-              {getInitials(name, "C")}
-            </div>
-            <div>
-              <h1 className="text-2xl font-bold text-gray-900">{name}</h1>
-              <div className="mt-1 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-gray-600">
-                <span className="flex items-center gap-1.5">
-                  <HiOutlineBriefcase className="h-4 w-4" />
-                  {headline}
-                </span>
-                {location && (
-                  <span className="flex items-center gap-1.5">
-                    <HiOutlineMapPin className="h-4 w-4" />
-                    {location}
-                  </span>
-                )}
-              </div>
-            </div>
+        <div className="flex items-start gap-4">
+          <div className="flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-full bg-primary/10 text-lg font-bold text-primary">
+            {picture ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={picture}
+                alt=""
+                className="h-full w-full object-cover"
+              />
+            ) : (
+              getInitials(name, "C")
+            )}
           </div>
-          <a
-            href={`mailto:${application.email}`}
-            className="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-primary-hover no-underline"
-          >
-            <HiOutlineEnvelope className="h-5 w-5" />
-            Send Email
-          </a>
+          <div className="min-w-0 flex-1">
+            <h1 className="text-2xl font-bold text-gray-900">{name}</h1>
+            <div className="mt-1 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-gray-600">
+              <span className="flex items-center gap-1.5">
+                <HiOutlineBriefcase className="h-4 w-4 shrink-0" />
+                {headline}
+              </span>
+              <a
+                href={`mailto:${application.email}`}
+                className="flex items-center gap-1.5 text-gray-600 no-underline hover:text-primary hover:underline"
+              >
+                <HiOutlineEnvelope className="h-4 w-4 shrink-0" />
+                {application.email}
+              </a>
+              {application.phone && (
+                <a
+                  href={`tel:${application.phone}`}
+                  className="flex items-center gap-1.5 text-gray-600 no-underline hover:text-primary hover:underline"
+                >
+                  <HiOutlinePhone className="h-4 w-4 shrink-0" />
+                  {application.phone}
+                </a>
+              )}
+              {location && (
+                <span className="flex items-center gap-1.5">
+                  <HiOutlineMapPin className="h-4 w-4 shrink-0" />
+                  {location}
+                </span>
+              )}
+            </div>
+            <a
+              href={`mailto:${application.email}`}
+              className="mt-4 inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-primary-hover no-underline"
+            >
+              <HiOutlineEnvelope className="h-5 w-5" />
+              Send Email
+            </a>
+          </div>
         </div>
 
         {/* Meta row */}
@@ -213,21 +314,31 @@ export function CandidateDetail({ applicationId }: { applicationId: string }) {
         {/* ── Left column ── */}
         <div className="space-y-6">
           {/* About */}
-          {candidate?.bio && (
-            <section className="rounded-2xl border border-gray-200 bg-white p-6">
-              <h2 className="mb-3 text-lg font-bold text-gray-900">About</h2>
+          <section className="rounded-2xl border border-gray-200 bg-white p-6">
+            <h2 className="mb-3 text-lg font-bold text-gray-900">About</h2>
+            {candidate?.bio ? (
               <p className="text-sm leading-relaxed text-gray-600 whitespace-pre-line">
                 {candidate.bio}
               </p>
-            </section>
-          )}
+            ) : (
+              <EmptyNote>
+                This candidate hasn&apos;t written an About section on their
+                profile.
+              </EmptyNote>
+            )}
+          </section>
 
           {/* Work Experience */}
-          {(candidate?.work_experience?.length ?? 0) > 0 && (
-            <section className="rounded-2xl border border-gray-200 bg-white p-6">
-              <h2 className="mb-4 text-lg font-bold text-gray-900">
-                Work Experience
-              </h2>
+          <section className="rounded-2xl border border-gray-200 bg-white p-6">
+            <h2 className="mb-4 text-lg font-bold text-gray-900">
+              Work Experience
+            </h2>
+            {(candidate?.work_experience?.length ?? 0) === 0 ? (
+              <EmptyNote>
+                No work history on their profile yet. Their application
+                answers below may still tell you what you need.
+              </EmptyNote>
+            ) : (
               <ol className="relative space-y-5">
                 {candidate!.work_experience!.map((exp, i) => (
                   <li key={i} className="flex gap-3">
@@ -256,58 +367,72 @@ export function CandidateDetail({ applicationId }: { applicationId: string }) {
                   </li>
                 ))}
               </ol>
-            </section>
-          )}
+            )}
+          </section>
 
           {/* The free-text parts of the application itself */}
-          {(application.relevant_experience || application.additional_info) && (
-            <section className="rounded-2xl border border-gray-200 bg-white p-6 space-y-4">
-              <h2 className="text-lg font-bold text-gray-900">
-                From their application
-              </h2>
-              {application.relevant_experience && (
-                <div>
-                  <p className="mb-1 text-sm font-semibold text-gray-800">
-                    Relevant experience
-                  </p>
-                  <p className="text-sm text-gray-600 whitespace-pre-line">
-                    {application.relevant_experience}
-                  </p>
-                </div>
+          <section className="rounded-2xl border border-gray-200 bg-white p-6 space-y-4">
+            <h2 className="text-lg font-bold text-gray-900">
+              From their application
+            </h2>
+            {!application.relevant_experience &&
+              !application.additional_info && (
+                <EmptyNote>
+                  They didn&apos;t add any written notes to this application.
+                </EmptyNote>
               )}
-              {application.additional_info && (
-                <div>
-                  <p className="mb-1 text-sm font-semibold text-gray-800">
-                    Additional information
-                  </p>
-                  <p className="text-sm text-gray-600 whitespace-pre-line">
-                    {application.additional_info}
-                  </p>
-                </div>
-              )}
-              {application.resume_url && (
-                <a
-                  href={application.resume_url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-2 text-sm font-medium text-primary hover:text-primary-hover"
-                >
-                  <HiOutlineDocumentArrowDown className="h-5 w-5" />
-                  Download résumé
-                </a>
-              )}
-            </section>
-          )}
+            {application.relevant_experience && (
+              <div>
+                <p className="mb-1 text-sm font-semibold text-gray-800">
+                  Relevant experience
+                </p>
+                <p className="text-sm text-gray-600 whitespace-pre-line">
+                  {application.relevant_experience}
+                </p>
+              </div>
+            )}
+            {application.additional_info && (
+              <div>
+                <p className="mb-1 text-sm font-semibold text-gray-800">
+                  Additional information
+                </p>
+                <p className="text-sm text-gray-600 whitespace-pre-line">
+                  {application.additional_info}
+                </p>
+              </div>
+            )}
+            {/* This sat inside the free-text condition, so an applicant who
+                  attached a CV and wrote nothing had no download link at all
+                  — the one attachment on the page, hidden by an unrelated
+                  field being blank. */}
+            {application.resume_url ? (
+              <a
+                href={application.resume_url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 text-sm font-medium text-primary hover:text-primary-hover"
+              >
+                <HiOutlineDocumentArrowDown className="h-5 w-5" />
+                Download résumé
+              </a>
+            ) : (
+              <EmptyNote>No résumé attached.</EmptyNote>
+            )}
+          </section>
         </div>
 
         {/* ── Right column ── */}
         <div className="space-y-6">
           {/* Professional Skills */}
-          {professionalSkills.length > 0 && (
-            <section className="rounded-2xl border border-gray-200 bg-white p-6">
-              <h2 className="mb-3 text-lg font-bold text-gray-900">
-                Professional Skills
-              </h2>
+          <section className="rounded-2xl border border-gray-200 bg-white p-6">
+            <h2 className="mb-3 text-lg font-bold text-gray-900">
+              Professional Skills
+            </h2>
+            {professionalSkills.length === 0 ? (
+              <EmptyNote>
+                No skills listed, on their profile or in this application.
+              </EmptyNote>
+            ) : (
               <div className="flex flex-wrap gap-2">
                 {professionalSkills.map((skill) => (
                   <span
@@ -318,61 +443,78 @@ export function CandidateDetail({ applicationId }: { applicationId: string }) {
                   </span>
                 ))}
               </div>
-            </section>
-          )}
+            )}
+          </section>
 
           {/* Skill and Experience Matching */}
-          {match.required.length > 0 && (
-            <section className="rounded-2xl border border-gray-200 bg-white p-6">
-              <h2 className="mb-3 text-lg font-bold text-gray-900">
-                Skill &amp; Experience Matching
-              </h2>
-              <div className="mb-4 flex items-baseline gap-2">
-                <span className="text-3xl font-extrabold text-primary">
-                  {match.percent}%
-                </span>
-                <span className="text-sm text-gray-600">
-                  Matched · {match.matched.length} of {match.required.length}{" "}
-                  skills
-                </span>
-              </div>
-              <div className="flex flex-wrap gap-2">
-                {match.matched.map((s) => (
-                  <span
-                    key={s}
-                    className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-3 py-1 text-sm font-medium text-emerald-700"
-                  >
-                    <HiOutlineCheck className="h-4 w-4" />
-                    {s}
+          <section className="rounded-2xl border border-gray-200 bg-white p-6">
+            <h2 className="mb-3 text-lg font-bold text-gray-900">
+              Skill &amp; Experience Matching
+            </h2>
+            {match.required.length === 0 ? (
+              /* Explains the dash in the header's Match Score, which
+                 otherwise reads as a score of zero. */
+              <EmptyNote>
+                This job doesn&apos;t list required skills, so there is nothing
+                to match against.
+              </EmptyNote>
+            ) : (
+              <>
+                <div className="mb-4 flex items-baseline gap-2">
+                  <span className="text-3xl font-extrabold text-primary">
+                    {match.percent}%
                   </span>
-                ))}
-                {match.unmatched.map((s) => (
-                  <span
-                    key={s}
-                    className="inline-flex items-center gap-1 rounded-full bg-gray-100 px-3 py-1 text-sm text-gray-500"
-                  >
-                    <HiOutlineXMark className="h-4 w-4" />
-                    {s}
+                  <span className="text-sm text-gray-600">
+                    Matched · {match.matched.length} of {match.required.length}{" "}
+                    skills
                   </span>
-                ))}
-              </div>
-              <div className="mt-4 flex items-start gap-2.5 rounded-xl border border-primary/15 bg-primary/5 p-3">
-                <HiOutlineSparkles className="mt-0.5 h-5 w-5 shrink-0 text-primary" />
-                <p className="text-sm text-gray-600">
-                  {match.percent !== null && match.percent >= 70
-                    ? `Strong fit - meets ${match.matched.length} of ${match.required.length} required skills.`
-                    : `Partial fit - meets ${match.matched.length} of ${match.required.length} required skills.`}
-                </p>
-              </div>
-            </section>
-          )}
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  {match.matched.map((s) => (
+                    <span
+                      key={s}
+                      className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-3 py-1 text-sm font-medium text-emerald-700"
+                    >
+                      <HiOutlineCheck className="h-4 w-4" />
+                      {s}
+                    </span>
+                  ))}
+                  {match.unmatched.map((s) => (
+                    <span
+                      key={s}
+                      className="inline-flex items-center gap-1 rounded-full bg-gray-100 px-3 py-1 text-sm text-gray-500"
+                    >
+                      <HiOutlineXMark className="h-4 w-4" />
+                      {s}
+                    </span>
+                  ))}
+                </div>
+                <div className="mt-4 flex items-start gap-2.5 rounded-xl border border-primary/15 bg-primary/5 p-3">
+                  <HiOutlineSparkles className="mt-0.5 h-5 w-5 shrink-0 text-primary" />
+                  <p className="text-sm text-gray-600">
+                    {match.percent !== null && match.percent >= 70
+                      ? `Strong fit - meets ${match.matched.length} of ${match.required.length} required skills.`
+                      : `Partial fit - meets ${match.matched.length} of ${match.required.length} required skills.`}
+                  </p>
+                </div>
+              </>
+            )}
+          </section>
 
           {/* Screening answers */}
-          {(application.screening_answers?.length ?? 0) > 0 && (
-            <section className="rounded-2xl border border-gray-200 bg-white p-6">
-              <h2 className="mb-3 text-lg font-bold text-gray-900">
-                Screening Answers
-              </h2>
+          <section className="rounded-2xl border border-gray-200 bg-white p-6">
+            <h2 className="mb-3 text-lg font-bold text-gray-900">
+              Screening Answers
+            </h2>
+            {/* Two different absences, and they are not the same news: a job
+                that asked nothing, versus an applicant who answered nothing. */}
+            {(job?.screening_questions?.length ?? 0) === 0 ? (
+              <EmptyNote>This job had no screening questions.</EmptyNote>
+            ) : (application.screening_answers?.length ?? 0) === 0 ? (
+              <EmptyNote>
+                They didn&apos;t answer the screening questions.
+              </EmptyNote>
+            ) : (
               <ul className="space-y-3">
                 {(job?.screening_questions ?? []).map((q) => {
                   const ans =
@@ -401,7 +543,20 @@ export function CandidateDetail({ applicationId }: { applicationId: string }) {
                         <p className="text-sm font-medium text-gray-800">
                           {q.question}
                         </p>
-                        <p className="text-sm capitalize text-gray-600">
+                        {/* Only yes_no answers are machine tokens stored
+                            lower-case ("yes"), and only they want title-casing.
+                            Applied to every answer it rewrote whatever the
+                            applicant typed into a short_text box: "rotating
+                            days and afternoons" came back as "Rotating Days And
+                            Afternoons", which reads like a form field rather
+                            than like a person answering a question. Choice
+                            options are the employer's own strings and are
+                            already cased how they wrote them. */}
+                        <p
+                          className={`text-sm text-gray-600 ${
+                            q.type === "yes_no" ? "capitalize" : ""
+                          }`}
+                        >
                           {ans.length ? ans.join(", ") : "No answer"}
                         </p>
                       </div>
@@ -409,40 +564,49 @@ export function CandidateDetail({ applicationId }: { applicationId: string }) {
                   );
                 })}
               </ul>
-            </section>
-          )}
+            )}
+          </section>
 
           {/* Candidate Score */}
-          {(overall !== null || screeningScore !== null) && (
-            <section className="rounded-2xl border border-gray-200 bg-white p-6">
-              <h2 className="mb-4 text-lg font-bold text-gray-900">
-                Candidate Score
-              </h2>
-              <div className="mb-4 flex items-center gap-3">
-                <HiStar className="h-8 w-8 text-yellow-400" />
-                <div>
-                  <p className="text-3xl font-extrabold text-gray-900">
-                    {stars ?? "-"}
-                  </p>
-                  <p className="text-sm text-gray-500">Overall score (of 5)</p>
+          <section className="rounded-2xl border border-gray-200 bg-white p-6">
+            <h2 className="mb-4 text-lg font-bold text-gray-900">
+              Candidate Score
+            </h2>
+            {overall === null && screeningScore === null ? (
+              <EmptyNote>
+                Not enough to score on yet. Scoring needs required skills on
+                the job, or screening answers from the applicant.
+              </EmptyNote>
+            ) : (
+              <>
+                <div className="mb-4 flex items-center gap-3">
+                  <HiStar className="h-8 w-8 text-yellow-400" />
+                  <div>
+                    <p className="text-3xl font-extrabold text-gray-900">
+                      {stars ?? "-"}
+                    </p>
+                    <p className="text-sm text-gray-500">
+                      Overall score (of 5)
+                    </p>
+                  </div>
                 </div>
-              </div>
-              <div className="space-y-3">
-                {match.percent !== null && (
-                  <ScoreBar label="Skills match" value={match.percent} />
+                <div className="space-y-3">
+                  {match.percent !== null && (
+                    <ScoreBar label="Skills match" value={match.percent} />
+                  )}
+                  {screeningScore !== null && (
+                    <ScoreBar label="Screening" value={screeningScore} />
+                  )}
+                </div>
+                {application.screening_flagged && (
+                  <p className="mt-3 text-sm font-medium text-red-600">
+                    Flagged: a knockout screening question wasn&apos;t met -
+                    worth a closer look.
+                  </p>
                 )}
-                {screeningScore !== null && (
-                  <ScoreBar label="Screening" value={screeningScore} />
-                )}
-              </div>
-              {application.screening_flagged && (
-                <p className="mt-3 text-sm font-medium text-red-600">
-                  Flagged: a knockout screening question wasn&apos;t met - worth
-                  a closer look.
-                </p>
-              )}
-            </section>
-          )}
+              </>
+            )}
+          </section>
         </div>
       </div>
     </div>

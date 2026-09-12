@@ -209,7 +209,7 @@ const ReportsQueue = () => {
                 {tab.value === "open" && openTotal > 0 && (
                   <span
                     className={clsx(
-                      "ml-1.5 inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 rounded-full text-[11px] font-bold",
+                      "ml-1.5 inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 rounded-full text-[0.6875rem] font-bold",
                       active ? "bg-white/20 text-white" : "bg-rose-100 text-rose-700",
                     )}
                   >
@@ -285,7 +285,7 @@ const ReportsQueue = () => {
                           // is worse than plain text.
                           <span>{r.target_label}</span>
                         )}
-                        <span className="text-[11px] font-medium text-gray-400">
+                        <span className="text-[0.6875rem] font-medium text-gray-400">
                           {TARGET_TYPE_LABEL[r.target_type]}
                         </span>
                       </div>
@@ -297,7 +297,7 @@ const ReportsQueue = () => {
                         </StatusPill>
                         {r.details && (
                           <span
-                            className="text-[11px] text-gray-500 max-w-xs truncate"
+                            className="text-[0.6875rem] text-gray-500 max-w-xs truncate"
                             title={r.details}
                           >
                             {r.details}
@@ -313,7 +313,7 @@ const ReportsQueue = () => {
                               {r.reporter.name}
                             </span>
                           )}
-                          <span className="text-[11px] text-gray-400">
+                          <span className="text-[0.6875rem] text-gray-400">
                             {r.reporter.email || "-"}
                           </span>
                         </div>

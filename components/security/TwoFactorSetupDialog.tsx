@@ -249,7 +249,7 @@ const TwoFactorSetupDialog = ({
                 />
               </div>
               <div className="rounded-xl bg-gray-50 border border-gray-100 px-3.5 py-3">
-                <p className="text-[11px] font-semibold text-gray-500 uppercase tracking-wide">
+                <p className="text-[0.6875rem] font-semibold text-gray-500 uppercase tracking-wide">
                   Can&apos;t scan? Enter this key manually
                 </p>
                 <div className="mt-1 flex items-center gap-2">
@@ -288,7 +288,7 @@ const TwoFactorSetupDialog = ({
               {verifyError && (
                 <p className="text-xs text-rose-600">{verifyError}</p>
               )}
-              <p className="text-[11px] text-gray-500">
+              <p className="text-[0.6875rem] text-gray-500">
                 Codes refresh every 30 seconds. If a code doesn&apos;t work,
                 wait for a new one.
               </p>
@@ -378,7 +378,7 @@ const TwoFactorSetupDialog = ({
           )}
           {step === "recovery" && (
             <>
-              <span className="text-[11px] text-gray-500">
+              <span className="text-[0.6875rem] text-gray-500">
                 Store these somewhere safe before continuing.
               </span>
               <button

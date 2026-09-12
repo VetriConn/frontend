@@ -11,7 +11,7 @@ import { usePathname, useRouter } from "next/navigation";
 import clsx from "clsx";
 import {
   HiOutlineBriefcase,
-  HiOutlineUsers,
+  // HiOutlineUsers,
   HiOutlineInbox,
   HiOutlineBell,
   HiOutlineChevronDown,
@@ -25,7 +25,7 @@ import {
   HiOutlineClipboardDocument,
   HiOutlineDocumentText,
   HiOutlineUserGroup,
-  HiOutlineCreditCard,
+  // HiOutlineCreditCard,
 } from "react-icons/hi2";
 import { getInitials } from "@/lib/initials";
 import Image from "next/image";
@@ -34,6 +34,7 @@ import { logoutUser } from "@/lib/api";
 import { useSessionCache } from "@/hooks/useSessionCache";
 import { useToaster } from "@/components/ui/Toaster";
 import { useUserProfile } from "@/hooks/useUserProfile";
+import { useAccessibility } from "@/hooks/useAccessibility";
 import { useNotifications } from "@/hooks/useNotifications";
 import { useMyCompanies } from "@/hooks/useCompanies";
 
@@ -102,11 +103,11 @@ const navItemsForEveryone: NavItem[] = [
       },
     ],
   },
-  {
-    name: "Community",
-    href: "/dashboard/community",
-    icon: <HiOutlineUsers className="w-5 h-5" />,
-  },
+  // {
+  //   name: "Community",
+  //   href: "/dashboard/community",
+  //   icon: <HiOutlineUsers className="w-5 h-5" />,
+  // },
   {
     name: "Inbox",
     href: "/dashboard/inbox",
@@ -141,11 +142,11 @@ const COMPANY_LINKS: NavLink[] = [
     href: "/dashboard/companies",
     icon: <HiOutlineBuildingOffice2 className="w-5 h-5 text-gray-400" />,
   },
-  {
-    name: "Billing",
-    href: "/dashboard/billing",
-    icon: <HiOutlineCreditCard className="w-5 h-5 text-gray-400" />,
-  },
+  // {
+  //   name: "Billing",
+  //   href: "/dashboard/billing",
+  //   icon: <HiOutlineCreditCard className="w-5 h-5 text-gray-400" />,
+  // },
 ];
 
 /**
@@ -165,11 +166,11 @@ const ACCOUNT_LINKS: NavLink[] = [
     href: "/dashboard/profile",
     icon: <HiOutlineUser className="w-5 h-5 text-gray-400" />,
   },
-  {
-    name: "Billing",
-    href: "/dashboard/billing",
-    icon: <HiOutlineCreditCard className="w-5 h-5 text-gray-400" />,
-  },
+  // {
+  //   name: "Billing",
+  //   href: "/dashboard/billing",
+  //   icon: <HiOutlineCreditCard className="w-5 h-5 text-gray-400" />,
+  // },
   {
     name: "Account Settings",
     href: "/dashboard/settings",
@@ -193,6 +194,28 @@ const DashboardNavbar = () => {
   const router = useRouter();
   const { showToast } = useToaster();
   const { userProfile } = useUserProfile();
+  /**
+   * Where the bar gives way to the drawer, chosen in JS rather than by a
+   * media query.
+   *
+   * `lg:` compiles to min-width:64rem, and rem inside a media query resolves
+   * against the browser's INITIAL 16px, never the scaled root font-size. So
+   * the desktop bar switched on at exactly 1024px however large the text
+   * was, while everything inside it grew up to 25%. Between 1024 and 1280 at
+   * extra-large the row no longer fits: labels wrap inside their pills, the
+   * account name truncates to an initial, and the overflow gives every
+   * dashboard page a horizontal scrollbar whose nav background stops
+   * mid-page.
+   *
+   * Both class strings are written out in full because Tailwind reads source
+   * literally and would not generate a name assembled at runtime. At normal
+   * text this is exactly the previous behaviour.
+   */
+  const { textSize } = useAccessibility();
+  const scaled = textSize !== "normal";
+  const desktopBar = scaled ? "hidden xl:flex" : "hidden lg:flex";
+  const drawerOnly = scaled ? "xl:hidden" : "lg:hidden";
+
   const { unreadCount } = useNotifications();
   const { companies } = useMyCompanies();
   const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false);
@@ -396,6 +419,11 @@ const DashboardNavbar = () => {
       <div className="max-w-7xl mx-auto flex items-center justify-between py-3 px-4 md:px-6">
         {/* Logo */}
         <Link href="/dashboard" className="flex items-center shrink-0">
+          {/* width/height stay as the intrinsic ratio for the loader; the
+              rendered size is a rem class so the mark grows with the rest of
+              the bar under the accessibility text setting. Bare attributes
+              render as literal pixels and would leave the logo shrinking
+              relative to every label beside it. */}
           <Image
             src="/images/logo.png"
             alt="Vetriconn"
@@ -403,11 +431,15 @@ const DashboardNavbar = () => {
             height={64}
             priority
             sizes="140px"
+            className="w-[8.75rem] h-auto"
           />
         </Link>
 
         {/* Right Side - All Navigation Items */}
-        <div className="hidden lg:flex items-center gap-2" ref={jobsDropdownRef}>
+        <div
+          className={`${desktopBar} items-center gap-2 min-w-0`}
+          ref={jobsDropdownRef}
+        >
           {/* Center Navigation */}
           {navItems.map((item) => (
             <div key={item.name} className="relative">
@@ -604,7 +636,7 @@ const DashboardNavbar = () => {
         </div>
 
         {/* Mobile Menu Button */}
-        <div className="lg:hidden">
+        <div className={drawerOnly}>
           <button
             ref={mobileMenuButtonRef}
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
@@ -624,7 +656,8 @@ const DashboardNavbar = () => {
       {/* Mobile Menu Backdrop */}
       <div
         className={clsx(
-          "fixed inset-0 bg-black/50 z-40 lg:hidden transition-opacity duration-300 ease-in-out",
+          "fixed inset-0 bg-black/50 z-40 transition-opacity duration-300 ease-in-out",
+          drawerOnly,
           isMobileMenuOpen ? "opacity-100" : "opacity-0 pointer-events-none",
         )}
         onClick={closeMobileMenu}
@@ -635,7 +668,8 @@ const DashboardNavbar = () => {
       <div
         ref={mobileMenuRef}
         className={clsx(
-          "fixed top-0 right-0 bottom-0 w-80 bg-white border-l border-gray-200 shadow-xl z-50 lg:hidden overflow-y-auto transition-transform duration-300 ease-in-out",
+          "fixed top-0 right-0 bottom-0 w-80 bg-white border-l border-gray-200 shadow-xl z-50 overflow-y-auto transition-transform duration-300 ease-in-out",
+          drawerOnly,
           isMobileMenuOpen ? "translate-x-0" : "translate-x-full",
         )}
         // Translating a panel off-screen leaves it in the tab order and

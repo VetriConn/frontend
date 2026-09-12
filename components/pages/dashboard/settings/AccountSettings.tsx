@@ -936,19 +936,58 @@ export default function AccountSettings() {
           </div>
         </SectionCard>
 
-        {/* Change Password Modal */}
+        {/*
+          Change Password Modal
+
+          Height-capped with a scrolling body because this panel grows after
+          it opens: the five password requirements appear the moment anything
+          is typed into New Password, and at the accessibility panel's 125%
+          root font size every rem in here grows with the text. Uncapped, the
+          panel ran off the bottom of the viewport and took Cancel and Update
+          Password with it. The wrapper is fixed rather than a scroll
+          container, so there was nothing to scroll to reach them — and when
+          mustChangePassword is set there is no close button, the backdrop
+          ignores clicks and nothing here handles Escape, which left the
+          dialog a dead end with no way to submit and no way out.
+
+          The cap is in vh deliberately: a rem cap would grow along with the
+          text it exists to contain, which is no cap at all. Header and
+          footer are shrink-0 so the flex column takes the whole overflow out
+          of the body and the buttons stay put.
+
+          overflow-y-auto on the wrapper is the second line of defence, for
+          mobile browsers where vh measures the URL-bar-hidden viewport and
+          90vh can still overshoot what is visible, and for a short landscape
+          phone where 90vh plus the wrapper's own p-4 is taller than the
+          screen.
+
+          Centring is the panel's my-auto rather than the wrapper's
+          items-center, which is what lets that fallback do anything at all:
+          a flex item centred by the alignment property overflows its line in
+          both directions, and the overflow past the top edge is unreachable
+          — no scrollbar reaches above the start of the content — so the
+          header, the error slot and the first field would be exactly the
+          part that disappeared. An auto margin in the cross axis collapses
+          to zero the moment free space goes negative, so an overlong panel
+          drops to the top of a wrapper that can scroll, while a panel that
+          fits is centred to the same pixel as before.
+
+          That is also why the backdrop is fixed and not absolute: an
+          absolute backdrop is sized to the wrapper's padding box and scrolls
+          away with it, uncovering the page underneath.
+        */}
         {showPasswordModal && (
-          <div className="fixed inset-0 z-[200] flex items-center justify-center">
+          <div className="fixed inset-0 z-[200] flex items-start justify-center overflow-y-auto p-4">
             {/* Backdrop */}
             <div
-              className="absolute inset-0 bg-black/40 backdrop-blur-[2px]"
+              className="fixed inset-0 bg-black/40 backdrop-blur-[2px]"
               onClick={mustChangePassword ? undefined : handleClosePasswordModal}
             />
 
             {/* Modal */}
-            <div className="relative bg-white rounded-2xl shadow-xl max-w-md w-full mx-4 overflow-hidden">
+            <div className="relative bg-white rounded-2xl shadow-xl max-w-md w-full my-auto max-h-[90vh] flex flex-col overflow-hidden">
               {/* Header */}
-              <div className="flex items-center justify-between px-6 py-5 border-b border-gray-100">
+              <div className="flex items-center justify-between shrink-0 px-6 py-5 border-b border-gray-100">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-full bg-red-50 flex items-center justify-center">
                     <HiOutlineLockClosed className="w-5 h-5 text-primary" />
@@ -978,7 +1017,7 @@ export default function AccountSettings() {
 
               {/* Success State */}
               {passwordSuccess ? (
-                <div className="px-6 py-12 text-center">
+                <div className="flex-1 overflow-y-auto px-6 py-12 text-center">
                   <div className="w-14 h-14 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-4">
                     <HiOutlineCheckCircle className="w-7 h-7 text-emerald-500" />
                   </div>
@@ -992,7 +1031,7 @@ export default function AccountSettings() {
               ) : (
                 <>
                   {/* Body */}
-                  <div className="px-6 py-6 space-y-5">
+                  <div className="flex-1 overflow-y-auto px-6 py-6 space-y-5">
                     {/* Error message */}
                     {passwordError && (
                       <div className="flex items-center gap-2 px-4 py-3 bg-red-50 border border-red-100 rounded-lg">
@@ -1159,7 +1198,7 @@ export default function AccountSettings() {
                   </div>
 
                   {/* Footer */}
-                  <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-gray-100 bg-gray-50/50">
+                  <div className="flex items-center justify-end shrink-0 gap-3 px-6 py-4 border-t border-gray-100 bg-gray-50/50">
                     <button
                       onClick={handleClosePasswordModal}
                       className="px-5 py-2.5 bg-white border border-gray-200 text-gray-700 font-semibold text-sm rounded-lg hover:bg-gray-50 transition-colors cursor-pointer"
@@ -1187,19 +1226,28 @@ export default function AccountSettings() {
           </div>
         )}
 
-        {/* ─── Deactivate Account Modal ─── */}
+        {/*
+          ─── Deactivate Account Modal ───
+
+          Same cap, same reason as the password modal above: a three-item
+          warning list, two labelled fields and an error slot that appears on
+          a failed attempt, all in rem. It clears a laptop viewport at 100%
+          and stops clearing it at 125%, taking the confirm button with it.
+          Structured identically, down to the my-auto centring, so the two
+          dialogs cannot drift apart again.
+        */}
         {showDeactivateModal && (
-          <div className="fixed inset-0 z-[200] flex items-center justify-center">
+          <div className="fixed inset-0 z-[200] flex items-start justify-center overflow-y-auto p-4">
             {/* Backdrop */}
             <div
-              className="absolute inset-0 bg-black/40 backdrop-blur-[2px]"
+              className="fixed inset-0 bg-black/40 backdrop-blur-[2px]"
               onClick={handleCloseDeactivateModal}
             />
 
             {/* Modal */}
-            <div className="relative bg-white rounded-2xl shadow-xl max-w-md w-full mx-4 overflow-hidden">
+            <div className="relative bg-white rounded-2xl shadow-xl max-w-md w-full my-auto max-h-[90vh] flex flex-col overflow-hidden">
               {/* Header */}
-              <div className="flex items-center justify-between px-6 py-5 border-b border-gray-100">
+              <div className="flex items-center justify-between shrink-0 px-6 py-5 border-b border-gray-100">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center">
                     <HiOutlineExclamationTriangle className="w-5 h-5 text-red-500" />
@@ -1222,7 +1270,7 @@ export default function AccountSettings() {
               </div>
 
               {/* Body */}
-              <div className="px-6 py-6 space-y-5">
+              <div className="flex-1 overflow-y-auto px-6 py-6 space-y-5">
                 <div className="bg-red-50 border border-red-100 rounded-lg p-4">
                   <p className="text-sm text-red-700 leading-relaxed">
                     <strong>Warning:</strong> Deactivating your account will:
@@ -1307,7 +1355,7 @@ export default function AccountSettings() {
               </div>
 
               {/* Footer */}
-              <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-gray-100 bg-gray-50/50">
+              <div className="flex items-center justify-end shrink-0 gap-3 px-6 py-4 border-t border-gray-100 bg-gray-50/50">
                 <button
                   onClick={handleCloseDeactivateModal}
                   className="px-5 py-2.5 bg-white border border-gray-200 text-gray-700 font-semibold text-sm rounded-lg hover:bg-gray-50 transition-colors cursor-pointer"

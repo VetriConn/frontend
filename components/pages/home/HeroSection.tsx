@@ -58,7 +58,7 @@ export const HeroSection = () => {
               the CTAs; a tracked line reads as a caption and lets the buttons
               stay the loudest thing in the column. */}
           <div className="mt-8 max-w-lg mx-auto lg:mx-0">
-            <p className="meta-list flex flex-wrap items-center justify-center lg:justify-start gap-y-1 text-[13px] font-semibold uppercase tracking-[0.08em] text-gray-500">
+            <p className="meta-list flex flex-wrap items-center justify-center lg:justify-start gap-y-1 text-[0.8125rem] font-semibold uppercase tracking-[0.08em] text-gray-500">
               {["Part-time", "Full-time", "Volunteer", "Remote & on-site"].map(
                 (item) => (
                   <span key={item}>{item}</span>

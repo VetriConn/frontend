@@ -90,7 +90,7 @@ export const BenefitsSection = ({ id }: BenefitsSectionProps) => (
               <div
                 className={`text-center lg:text-left order-1 ${isReversed ? "lg:order-1" : "lg:order-2"}`}
               >
-                <h3 className="font-lato text-xl md:text-[28px] font-bold text-text mb-3 leading-[1.15] tracking-[-0.01em] max-w-[20ch] mx-auto lg:mx-0">
+                <h3 className="font-lato text-xl md:text-[1.75rem] font-bold text-text mb-3 leading-[1.15] tracking-[-0.01em] max-w-[20ch] mx-auto lg:mx-0">
                   {benefit.title}
                 </h3>
                 <p className="font-open-sans text-base md:text-lg text-text-muted leading-relaxed m-0 max-w-[46ch] mx-auto lg:mx-0">

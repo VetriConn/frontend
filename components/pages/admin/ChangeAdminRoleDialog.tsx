@@ -105,7 +105,7 @@ const ChangeAdminRoleDialog = ({
                     <p className="text-sm font-semibold text-gray-900">
                       {ROLE_LABEL[r]}
                       {r === currentRole && (
-                        <span className="ml-1.5 text-[11px] font-medium text-gray-400">
+                        <span className="ml-1.5 text-[0.6875rem] font-medium text-gray-400">
                           (current)
                         </span>
                       )}

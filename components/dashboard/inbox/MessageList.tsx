@@ -76,8 +76,16 @@ export function MessageList({
                 </a>
               </div>
             )}
+            {/* An arbitrary value on purpose, and the unit is the point:
+                0.625rem is the same 10px at 100%, but a px timestamp is the
+                one string in a thread the accessibility text-size setting
+                cannot reach, so at Extra Large every other line in the bubble
+                would grow around a time that stayed small. text-xs scales too
+                and is the tidier class, but it would also enlarge the
+                timestamp for every reader at 100%, which is a different
+                decision from this one. */}
             <p
-              className={`text-[10px] mt-1.5 ${
+              className={`text-[0.625rem] mt-1.5 ${
                 msg.sender === "me" ? "text-white/70" : "text-gray-400"
               }`}
             >

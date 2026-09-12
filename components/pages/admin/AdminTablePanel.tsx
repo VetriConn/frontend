@@ -93,7 +93,7 @@ export const AdminTableTh = ({
 }: AdminTableThProps) => (
   <th
     className={clsx(
-      "px-5 md:px-6 py-3 text-[11px] font-semibold uppercase tracking-wider text-gray-500",
+      "px-5 md:px-6 py-3 text-[0.6875rem] font-semibold uppercase tracking-wider text-gray-500",
       align === "right" ? "text-right" : "text-left",
       className,
     )}
@@ -190,7 +190,7 @@ interface StatusPillProps {
 export const StatusPill = ({ tone, children, icon: Icon }: StatusPillProps) => (
   <span
     className={clsx(
-      "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold ring-1",
+      "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[0.6875rem] font-semibold ring-1",
       TONES[tone],
     )}
   >
@@ -350,7 +350,7 @@ export const AdminStatCard = ({
   <div className="bg-white rounded-2xl border border-gray-200/80 p-5 shadow-[0_1px_2px_rgba(15,23,42,0.04)] hover:shadow-[0_8px_24px_-12px_rgba(15,23,42,0.15)] transition-shadow">
     <div className="flex items-start justify-between gap-3">
       <div className="min-w-0">
-        <p className="text-[13px] font-medium text-gray-500">{label}</p>
+        <p className="text-[0.8125rem] font-medium text-gray-500">{label}</p>
         <p
           className={clsx(
             "mt-2 text-3xl font-bold tracking-tight tabular-nums",

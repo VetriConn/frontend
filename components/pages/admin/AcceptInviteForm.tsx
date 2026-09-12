@@ -86,7 +86,7 @@ const AcceptInviteForm = ({ token }: AcceptInviteFormProps) => {
             )}
             {error && <p className="text-xs text-rose-600">{error}</p>}
 
-            <p className="text-[11px] text-gray-500 leading-relaxed">
+            <p className="text-[0.6875rem] text-gray-500 leading-relaxed">
               You&apos;ll be asked to set up two-factor authentication on your
               first sign-in. Admin sessions are short-lived and every action you
               take is recorded in the audit log.

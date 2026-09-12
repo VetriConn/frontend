@@ -238,7 +238,7 @@ const AdminJobDetail = ({ jobId, onChanged }: AdminJobDetailProps) => {
           {meta && StatusIcon && (
             <span
               className={clsx(
-                "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold ring-1",
+                "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[0.6875rem] font-semibold ring-1",
                 meta.pillClass,
               )}
             >
@@ -260,7 +260,7 @@ const AdminJobDetail = ({ jobId, onChanged }: AdminJobDetailProps) => {
                 {job.scam_flags.map((flag) => (
                   <li
                     key={flag}
-                    className="px-2 py-0.5 rounded-md bg-white/70 border border-amber-200 text-[11px] font-medium text-amber-900"
+                    className="px-2 py-0.5 rounded-md bg-white/70 border border-amber-200 text-[0.6875rem] font-medium text-amber-900"
                   >
                     {flag.replace(/_/g, " ")}
                   </li>
@@ -269,7 +269,7 @@ const AdminJobDetail = ({ jobId, onChanged }: AdminJobDetailProps) => {
             </div>
           )}
 
-          <h2 className="mt-3 text-[28px] leading-[1.15] font-bold text-gray-900 tracking-[-0.02em]">
+          <h2 className="mt-3 text-[1.75rem] leading-[1.15] font-bold text-gray-900 tracking-[-0.02em]">
             {job.role}
           </h2>
 
@@ -302,7 +302,7 @@ const AdminJobDetail = ({ jobId, onChanged }: AdminJobDetailProps) => {
 
           <div className="mt-6 space-y-5">
             <section>
-              <h3 className="text-[11px] font-semibold text-gray-500 uppercase tracking-wide">
+              <h3 className="text-[0.6875rem] font-semibold text-gray-500 uppercase tracking-wide">
                 Job Description
               </h3>
               {!job.description?.trim() ? (
@@ -324,7 +324,7 @@ const AdminJobDetail = ({ jobId, onChanged }: AdminJobDetailProps) => {
 
             {job.responsibilities?.length > 0 && (
               <section>
-                <h3 className="text-[11px] font-semibold text-gray-500 uppercase tracking-wide">
+                <h3 className="text-[0.6875rem] font-semibold text-gray-500 uppercase tracking-wide">
                   Responsibilities
                 </h3>
                 <ul className="mt-1.5 space-y-1.5 text-sm text-gray-600">
@@ -340,7 +340,7 @@ const AdminJobDetail = ({ jobId, onChanged }: AdminJobDetailProps) => {
 
             {job.requirements?.length === 0 && (
               <section>
-                <h3 className="text-[11px] font-semibold text-gray-500 uppercase tracking-wide">
+                <h3 className="text-[0.6875rem] font-semibold text-gray-500 uppercase tracking-wide">
                   Requirements
                 </h3>
                 <p className="mt-1.5 text-sm text-gray-400 italic">
@@ -351,7 +351,7 @@ const AdminJobDetail = ({ jobId, onChanged }: AdminJobDetailProps) => {
 
             {job.requirements?.length > 0 && (
               <section>
-                <h3 className="text-[11px] font-semibold text-gray-500 uppercase tracking-wide">
+                <h3 className="text-[0.6875rem] font-semibold text-gray-500 uppercase tracking-wide">
                   Requirements
                 </h3>
                 <ul className="mt-1.5 space-y-1.5 text-sm text-gray-600">
@@ -367,7 +367,7 @@ const AdminJobDetail = ({ jobId, onChanged }: AdminJobDetailProps) => {
 
             {job.details.length > 0 && (
               <section>
-                <h3 className="text-[11px] font-semibold text-gray-500 uppercase tracking-wide">
+                <h3 className="text-[0.6875rem] font-semibold text-gray-500 uppercase tracking-wide">
                   Posting details
                 </h3>
                 <dl className="mt-1.5 grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-1.5">
@@ -383,7 +383,7 @@ const AdminJobDetail = ({ jobId, onChanged }: AdminJobDetailProps) => {
 
             {job.screening.length > 0 && (
               <section>
-                <h3 className="text-[11px] font-semibold text-gray-500 uppercase tracking-wide">
+                <h3 className="text-[0.6875rem] font-semibold text-gray-500 uppercase tracking-wide">
                   Screening questions
                 </h3>
                 {/* What every applicant is made to answer before they can
@@ -455,7 +455,7 @@ const AdminJobDetail = ({ jobId, onChanged }: AdminJobDetailProps) => {
           </h2>
 
           <div className="mt-4 rounded-xl bg-gray-50 border border-gray-100 px-3.5 py-3">
-            <p className="text-[11px] font-semibold text-gray-500 uppercase tracking-wide">
+            <p className="text-[0.6875rem] font-semibold text-gray-500 uppercase tracking-wide">
               Reviewing
             </p>
             <p className="mt-0.5 text-sm font-semibold text-gray-900 truncate">
@@ -470,12 +470,12 @@ const AdminJobDetail = ({ jobId, onChanged }: AdminJobDetailProps) => {
             <fieldset className="mt-5 pt-4 border-t border-gray-100">
               <legend className="sr-only">Review checklist</legend>
               <div className="flex items-center justify-between gap-2">
-                <p className="text-[11px] font-semibold text-gray-500 uppercase tracking-wide">
+                <p className="text-[0.6875rem] font-semibold text-gray-500 uppercase tracking-wide">
                   Review checklist
                 </p>
                 <span
                   className={clsx(
-                    "text-[11px] font-bold tabular-nums",
+                    "text-[0.6875rem] font-bold tabular-nums",
                     allChecked ? "text-emerald-600" : "text-gray-400",
                   )}
                 >
@@ -537,7 +537,7 @@ const AdminJobDetail = ({ jobId, onChanged }: AdminJobDetailProps) => {
           {job.status === "pending" && (
             <div className="mt-4 space-y-2.5">
               {!allChecked && (
-                <p className="text-[11px] text-gray-500 leading-snug">
+                <p className="text-[0.6875rem] text-gray-500 leading-snug">
                   Complete the checklist to approve. You can reject at any time.
                 </p>
               )}

@@ -732,7 +732,7 @@ export default function AppliedJobsPage() {
 
   if (!isLoaded) {
     return (
-      <div className="max-w-5xl mx-auto">
+      <div className="w-full">
         <div className="animate-pulse space-y-4">
           <div className="h-8 bg-gray-200 rounded w-1/3" />
           <div className="h-4 bg-gray-200 rounded w-1/2" />
@@ -749,7 +749,7 @@ export default function AppliedJobsPage() {
 
   return (
     <AuthGuard>
-      <div className="max-w-5xl mx-auto">
+      <div className="w-full">
         {/* Page Header */}
         <div className="flex items-start justify-between mb-2 mobile:flex-col mobile:gap-3">
           <div>
@@ -861,7 +861,14 @@ export default function AppliedJobsPage() {
                             className="border-b border-gray-200 last:border-b-0 hover:bg-gray-50 transition-colors"
                           >
                             <td className="px-4 py-4 align-middle">
-                              <div className="text-sm font-semibold text-gray-900 truncate">
+                              {/* title, because this and the company name are
+                                  what identify the row, and a fixed-percentage
+                                  column at 125% cuts them short with no other
+                                  way to read the whole value. */}
+                              <div
+                                className="text-sm font-semibold text-gray-900 truncate"
+                                title={app.position}
+                              >
                                 {app.position}
                               </div>
                               {app.location && (
@@ -880,7 +887,10 @@ export default function AppliedJobsPage() {
                                   className="shrink-0"
                                 />
                                 <div className="min-w-0">
-                                  <div className="text-sm text-gray-900 truncate">
+                                  <div
+                                    className="text-sm text-gray-900 truncate"
+                                    title={app.company}
+                                  >
                                     {app.company}
                                   </div>
                                   <div className="mt-0.5">
@@ -912,7 +922,12 @@ export default function AppliedJobsPage() {
                               </div>
                             </td>
                             <td className="px-4 py-4 align-middle">
-                              <div className="flex items-center gap-1.5 text-sm text-gray-600 whitespace-nowrap">
+                              {/* No whitespace-nowrap: this sits in a
+                                  table-fixed percentage column, so the cell
+                                  cannot widen, and forbidding the wrap left
+                                  the date to overflow its column at 125%
+                                  rather than take a second line. */}
+                              <div className="flex items-center gap-1.5 text-sm text-gray-600">
                                 <HiOutlineCalendarDays className="w-4 h-4 shrink-0 text-gray-400" />
                                 {appliedDate}
                               </div>

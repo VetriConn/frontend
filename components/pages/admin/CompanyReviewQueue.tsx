@@ -278,7 +278,7 @@ export const CompanyReviewQueue = () => {
               {typeof count === "number" && count > 0 && (
                 <span
                   className={clsx(
-                    "ml-1.5 inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 rounded-full text-[11px] font-bold",
+                    "ml-1.5 inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 rounded-full text-[0.6875rem] font-bold",
                     active ? "bg-white/20 text-white" : "bg-gray-100 text-gray-600",
                   )}
                 >

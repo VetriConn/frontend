@@ -13,6 +13,15 @@ export interface KebabAction {
   disabled?: boolean;
 }
 
+/**
+ * The menu's width at normal text, and its floor thereafter.
+ *
+ * It used to be the whole story: a frozen 208px box whose padding, gap, icon
+ * and label are all rem, so at 125% "View public posting" wrapped to two
+ * lines inside a box that had not grown. The number stays because the
+ * right-alignment maths needs something to subtract, but the box may exceed
+ * it.
+ */
 const MENU_WIDTH = 208;
 
 /**
@@ -177,7 +186,9 @@ const KebabMenu = ({
               position: "fixed",
               top: coords.top,
               left: coords.left,
-              width: MENU_WIDTH,
+              minWidth: MENU_WIDTH,
+              width: "max-content",
+              maxWidth: "min(20rem, calc(100vw - 2rem))",
               zIndex: 9999,
             }}
             className="rounded-xl border border-gray-200 bg-white py-1 shadow-lg"

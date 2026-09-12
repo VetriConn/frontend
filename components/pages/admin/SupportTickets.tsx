@@ -317,7 +317,7 @@ const SupportTickets = () => {
                     <AdminTableTd>
                       <span
                         className={clsx(
-                          "inline-flex items-center px-2.5 py-1 rounded-full text-[11px] font-semibold ring-1",
+                          "inline-flex items-center px-2.5 py-1 rounded-full text-[0.6875rem] font-semibold ring-1",
                           PRIORITY_TONE[t.priority],
                         )}
                       >
@@ -327,7 +327,7 @@ const SupportTickets = () => {
                     <AdminTableTd>
                       <span
                         className={clsx(
-                          "inline-flex items-center px-2.5 py-1 rounded-full text-[11px] font-semibold ring-1",
+                          "inline-flex items-center px-2.5 py-1 rounded-full text-[0.6875rem] font-semibold ring-1",
                           STATUS_TONE[t.status],
                         )}
                       >
@@ -338,7 +338,7 @@ const SupportTickets = () => {
                       {t.assignedTo ? (
                         <span
                           className={clsx(
-                            "inline-flex items-center px-2.5 py-1 rounded-full text-[11px] font-semibold ring-1",
+                            "inline-flex items-center px-2.5 py-1 rounded-full text-[0.6875rem] font-semibold ring-1",
                             t.assignedTo.id === currentAdmin.id
                               ? "bg-primary/10 text-primary ring-primary/20"
                               : "bg-gray-100 text-gray-700 ring-gray-200/70",

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { useThreadSocket } from "@/hooks/useThreadSocket";
 import useSWR from "swr";
 import { useUserProfile } from "@/hooks/useUserProfile";
@@ -48,6 +48,7 @@ export default function Inbox() {
   const [sendError, setSendError] = useState("");
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const paneRef = useRef<HTMLDivElement>(null);
 
   const resolvedSelectedId =
     selectedId || (threads.length > 0 ? threads[0].application_id : "");
@@ -157,8 +158,70 @@ export default function Inbox() {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [resolvedSelectedId, messages.length]);
 
+  /**
+   * Fit the inbox to the window by measuring the chrome above it.
+   *
+   * This pane used to be `h-[calc(100vh-73px)]`. 73px is the height of the
+   * mobile drawer's own header, not of anything on this page: the chrome here
+   * is the sticky dashboard navbar plus the breadcrumb bar plus <main>'s top
+   * padding, which is nearer 89px at 100%. All three are sized in rem, so the
+   * accessibility text-size setting grows them — the navbar alone reaches
+   * ~111px at 125% — while a hard-coded 73 stays where it is. The pane was
+   * therefore always too tall, and got a little taller at every notch of the
+   * setting, pushing the message input below the fold for exactly the readers
+   * who had asked for bigger text.
+   *
+   * The measurement is written straight to the node rather than kept in
+   * state: nothing else renders from it, and setState here would buy a second
+   * render pass on every resize and every observer callback.
+   */
+  useLayoutEffect(() => {
+    const pane = paneRef.current;
+    if (!pane) return;
+
+    const fit = () => {
+      // Offset within the document, not within the viewport. A bare
+      // getBoundingClientRect().top shrinks as the page scrolls, and feeding
+      // that back into the height would take a slice off the pane every time
+      // someone scrolled.
+      const top = pane.getBoundingClientRect().top + window.scrollY;
+      // The layout leaves a gutter below the page content. Ignoring it makes
+      // the document one gutter taller than the window, which is a page
+      // scrollbar on a pane whose whole purpose is not to need one.
+      const parent = pane.parentElement;
+      const gutter = parent
+        ? parseFloat(getComputedStyle(parent).paddingBottom) || 0
+        : 0;
+      const available = window.innerHeight - top - gutter;
+      // A window shorter than its own chrome would ask for a negative height.
+      // Hand the pane back to content height and let the page scroll instead,
+      // which is legible where a collapsed pane is not.
+      pane.style.height = available > 0 ? `${available}px` : "";
+    };
+
+    fit();
+
+    // The navbar is what moves this pane's top edge, and it moves for reasons
+    // a resize listener never hears: the text-size setting changing, a font
+    // finishing loading, nav items wrapping onto a second line. The observer
+    // fires after layout, so re-reading the pane's offset then also picks up
+    // the breadcrumbs and the padding growing in the same breath.
+    //
+    // `nav.sticky` is the dashboard navbar, and CreateJobPosting pins its own
+    // sticky offsets off the same selector — if that class is ever renamed,
+    // both go quiet rather than break, so grep for it before renaming.
+    const navbar = document.querySelector("nav.sticky");
+    const observer = new ResizeObserver(fit);
+    if (navbar) observer.observe(navbar);
+    window.addEventListener("resize", fit);
+    return () => {
+      observer.disconnect();
+      window.removeEventListener("resize", fit);
+    };
+  }, []);
+
   return (
-    <div className="h-[calc(100vh-73px)] flex flex-col bg-gray-50 overflow-hidden">
+    <div ref={paneRef} className="flex flex-col bg-gray-50 overflow-hidden">
       <div className="max-w-[1400px] mx-auto w-full h-full flex flex-col px-4 md:px-6 py-4 md:py-6">
         <div className="mb-4 md:mb-6 shrink-0">
           <h1 className="text-xl md:text-2xl font-bold text-gray-900">

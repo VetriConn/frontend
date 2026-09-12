@@ -152,6 +152,51 @@ describe("CustomDropdown", () => {
     });
   });
 
+  describe("menu position", () => {
+    /**
+     * The menu used to open at `rect.top + 36`, where 36 stood in for the
+     * height of the trigger. The trigger is FIELD_BASE, which is rem: 50px at
+     * the default text size, 62px at the accessibility panel's 125% step. So
+     * the menu opened inside its own trigger, and further inside it the
+     * larger the reader had set their text. It anchors to the measured bottom
+     * edge now, which holds at every size.
+     */
+    const triggerRect = (top: number, height: number): DOMRect => ({
+      top,
+      bottom: top + height,
+      height,
+      left: 24,
+      right: 324,
+      width: 300,
+      x: 24,
+      y: top,
+      toJSON: () => ({}),
+    });
+
+    afterEach(() => {
+      jest.restoreAllMocks();
+    });
+
+    it.each([
+      ["the default text size", 50],
+      ["the 125% text size", 62],
+    ])("should open flush under the trigger at %s", async (_label, height) => {
+      jest
+        .spyOn(HTMLButtonElement.prototype, "getBoundingClientRect")
+        .mockReturnValue(triggerRect(120, height));
+      const { user } = setup();
+
+      await user.click(screen.getByRole("combobox"));
+
+      const menu = screen.getByRole("listbox").parentElement;
+      expect(menu).toHaveStyle({
+        top: `${120 + height}px`,
+        left: "24px",
+        width: "300px",
+      });
+    });
+  });
+
   describe("disabled state", () => {
     it("should not open when disabled", async () => {
       const { user } = setup({ disabled: true });

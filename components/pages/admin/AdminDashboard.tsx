@@ -107,7 +107,7 @@ const AdminDashboard = () => {
           <HiOutlineBriefcase className="w-4 h-4" />
           Approve Jobs
           {!isLoading && data.stats.jobsPending > 0 && (
-            <span className="ml-0.5 inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-full bg-white/20 text-[11px] font-bold tabular-nums">
+            <span className="ml-0.5 inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-full bg-white/20 text-[0.6875rem] font-bold tabular-nums">
               {data.stats.jobsPending}
             </span>
           )}
@@ -168,7 +168,7 @@ const AdminDashboard = () => {
 
                   <span
                     className={clsx(
-                      "shrink-0 inline-flex items-center px-2.5 py-1 rounded-full text-[11px] font-semibold ring-1",
+                      "shrink-0 inline-flex items-center px-2.5 py-1 rounded-full text-[0.6875rem] font-semibold ring-1",
                       STATUS_PILL[item.status],
                     )}
                   >

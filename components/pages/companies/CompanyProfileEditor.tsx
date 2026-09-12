@@ -1,6 +1,11 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
+import { ImageUploadDialog } from "@/components/ui/ImageUploadDialog";
+import {
+  MAX_COMPANY_BANNER_BYTES,
+  MAX_COMPANY_LOGO_BYTES,
+} from "@/lib/upload-limits";
 import { COMPANY_INDUSTRY_OPTIONS } from "@/lib/company-fields";
 import { CustomDropdown } from "@/components/ui/CustomDropdown";
 import {
@@ -47,7 +52,6 @@ const toFormState = (company: Company): FormState => ({
   registration_authority: company.registration_authority || "",
 });
 
-const MAX_ASSET_BYTES = 5 * 1024 * 1024;
 
 export const CompanyProfileEditor = ({
   company,
@@ -60,10 +64,10 @@ export const CompanyProfileEditor = ({
   const [form, setForm] = useState<FormState>(() => toFormState(company));
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSaving, setIsSaving] = useState(false);
-  const [uploading, setUploading] = useState<"logo" | "banner" | null>(null);
+  const [assetDialog, setAssetDialog] = useState<"logo" | "banner" | null>(
+    null,
+  );
 
-  const logoInputRef = useRef<HTMLInputElement>(null);
-  const bannerInputRef = useRef<HTMLInputElement>(null);
 
   // Re-seed when the company reloads after a save or an upload.
   useEffect(() => {
@@ -121,50 +125,31 @@ export const CompanyProfileEditor = ({
     }
   };
 
-  const handleAssetChange = async (
-    asset: "logo" | "banner",
-    file: File | undefined,
-  ) => {
-    if (!file) return;
-
-    if (file.size > MAX_ASSET_BYTES) {
-      showToast({
-        type: "error",
-        title: "Image is too large",
-        description: "Please choose a file under 5MB.",
-      });
-      return;
+  /**
+   * Both assets now go through the same dialog the user avatar uses, which is
+   * the point of the change: these two buttons sat beside each other offering
+   * a bare file picker while a person's own photo got a full editor.
+   *
+   * The dialog owns the busy state, the inline error and closing itself, so
+   * these are the network call and the toast. They must throw on failure,
+   * because that is how the dialog knows to stay open and say why.
+   *
+   * The size ceilings come from lib/upload-limits, which mirrors the server.
+   * The flat 5MB this replaces was wrong in both directions: it refused
+   * banners the server would have taken, and accepted logos it would not.
+   */
+  const handleAssetSubmit = async (asset: "logo" | "banner", file: File) => {
+    if (asset === "logo") {
+      await uploadCompanyLogo(company._id, file);
+    } else {
+      await uploadCompanyBanner(company._id, file);
     }
-
-    setUploading(asset);
-    try {
-      if (asset === "logo") {
-        await uploadCompanyLogo(company._id, file);
-      } else {
-        await uploadCompanyBanner(company._id, file);
-      }
-      showToast({
-        type: "success",
-        title: asset === "logo" ? "Logo updated" : "Banner updated",
-        description: "Your new image is live.",
-      });
-      onChanged();
-    } catch (err) {
-      showToast({
-        type: "error",
-        title: "Upload failed",
-        description:
-          err instanceof Error ? err.message : "Please try again in a moment.",
-      });
-    } finally {
-      setUploading(null);
-      if (asset === "logo" && logoInputRef.current) {
-        logoInputRef.current.value = "";
-      }
-      if (asset === "banner" && bannerInputRef.current) {
-        bannerInputRef.current.value = "";
-      }
-    }
+    showToast({
+      type: "success",
+      title: asset === "logo" ? "Logo updated" : "Banner updated",
+      description: "Your new image is live.",
+    });
+    onChanged();
   };
 
   return (
@@ -195,41 +180,64 @@ export const CompanyProfileEditor = ({
 
         {canEdit && (
           <div className="flex flex-wrap gap-2">
-            <input
-              ref={logoInputRef}
-              type="file"
-              accept="image/*"
-              className="hidden"
-              onChange={(e) => handleAssetChange("logo", e.target.files?.[0])}
-            />
             <button
               type="button"
-              onClick={() => logoInputRef.current?.click()}
-              disabled={uploading !== null}
-              className="inline-flex items-center gap-2 py-2 px-3.5 bg-white border border-gray-200 hover:bg-gray-50 disabled:opacity-60 text-gray-700 font-medium text-sm rounded-lg transition-colors"
+              onClick={() => setAssetDialog("logo")}
+              className="inline-flex items-center gap-2 min-h-[44px] py-2 px-3.5 bg-white border border-gray-200 hover:bg-gray-50 text-gray-700 font-medium text-sm rounded-lg transition-colors"
             >
-              <HiOutlinePhoto className="w-4 h-4" />
-              {uploading === "logo" ? "Uploading…" : "Change logo"}
+              <HiOutlinePhoto className="w-4 h-4" aria-hidden="true" />
+              Change logo
             </button>
 
-            <input
-              ref={bannerInputRef}
-              type="file"
-              accept="image/*"
-              className="hidden"
-              onChange={(e) => handleAssetChange("banner", e.target.files?.[0])}
-            />
             <button
               type="button"
-              onClick={() => bannerInputRef.current?.click()}
-              disabled={uploading !== null}
-              className="inline-flex items-center gap-2 py-2 px-3.5 bg-white border border-gray-200 hover:bg-gray-50 disabled:opacity-60 text-gray-700 font-medium text-sm rounded-lg transition-colors"
+              onClick={() => setAssetDialog("banner")}
+              className="inline-flex items-center gap-2 min-h-[44px] py-2 px-3.5 bg-white border border-gray-200 hover:bg-gray-50 text-gray-700 font-medium text-sm rounded-lg transition-colors"
             >
-              <HiOutlinePhoto className="w-4 h-4" />
-              {uploading === "banner" ? "Uploading…" : "Change banner"}
+              <HiOutlinePhoto className="w-4 h-4" aria-hidden="true" />
+              Change banner
             </button>
           </div>
         )}
+
+        {/* Siblings of the form, never nested inside another dialog. Both are
+            the same component the profile photo uses; only the output shape,
+            the ceiling and the words differ. */}
+        <ImageUploadDialog
+          isOpen={assetDialog === "logo"}
+          onClose={() => setAssetDialog(null)}
+          title="Company logo"
+          headline={`Add a logo for ${company.name}`}
+          description="Square works best. This shows on your company profile and on every job you post."
+          output={{ width: 1200, height: 1200 }}
+          mask="rect"
+          maxBytes={MAX_COMPANY_LOGO_BYTES}
+          currentImageUrl={company.logo_url || undefined}
+          placeholder={
+            <HiOutlineBuildingOffice2
+              className="w-16 h-16 text-gray-400"
+              aria-hidden="true"
+            />
+          }
+          onSubmit={(file) => handleAssetSubmit("logo", file)}
+        />
+
+        <ImageUploadDialog
+          isOpen={assetDialog === "banner"}
+          onClose={() => setAssetDialog(null)}
+          title="Company banner"
+          headline={`Add a banner for ${company.name}`}
+          description="A wide image across the top of your profile. Keep the important part in the middle, because the sides are cropped on a phone."
+          output={{ width: 1600, height: 300 }}
+          mask="rect"
+          maxBytes={MAX_COMPANY_BANNER_BYTES}
+          currentImageUrl={company.banner_url || undefined}
+          placeholder={
+            <HiOutlinePhoto className="w-10 h-10 text-gray-400" aria-hidden="true" />
+          }
+          onSubmit={(file) => handleAssetSubmit("banner", file)}
+        />
+
       </div>
 
       <form onSubmit={handleSave} noValidate>

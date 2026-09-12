@@ -24,14 +24,15 @@ import { AddEducationForm } from "@/components/pages/profile/AddEducationForm";
 import { UploadDocumentForm } from "@/components/pages/profile/UploadDocumentForm";
 import { ErrorState } from "@/components/ui/ErrorState";
 import { ProfilePreviewDialog } from "@/components/ui/ProfilePreviewDialog";
-import { ProfilePhotoModal } from "@/components/security/ProfilePhotoModal";
+import { ImageUploadDialog } from "@/components/ui/ImageUploadDialog";
+import { MAX_PROFILE_PHOTO_BYTES } from "@/lib/upload-limits";
+import { getInitials } from "@/lib/initials";
 import {
   uploadProfilePicture,
   deleteProfilePicture,
   getUserAttachments,
   uploadAttachment,
   deleteAttachment,
-  updateUserSettings,
   getUploadSignature,
   uploadDirectToCloudinary,
 } from "@/lib/api";
@@ -115,7 +116,6 @@ export default function ProfilePage() {
   // ─── Photo upload state ───────────────────────────────────────────────────
   const [, setPhotoFile] = useState<File | null>(null);
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
-  const [isUploadingPhoto, setIsUploadingPhoto] = useState(false);
   const [isUploadingDoc, setIsUploadingDoc] = useState(false);
   const [deletingDocId, setDeletingDocId] = useState<string | null>(null);
 
@@ -491,69 +491,27 @@ export default function ProfilePage() {
     setEditSection("photo");
   }, []);
 
+  /**
+   * Just the three hops. The dialog owns the busy state, keeps itself open on
+   * failure and shows the reason inline, so this no longer toasts the error
+   * and no longer rethrows a flattened one. It must still throw, because that
+   * is how the dialog learns the upload did not land.
+   */
   const handlePhotoSave = async (croppedFile: File) => {
-    setIsUploadingPhoto(true);
-    try {
-      const signatureData = await getUploadSignature("profile_picture");
-      const uploadRes = await uploadDirectToCloudinary(croppedFile, signatureData);
-      await uploadProfilePicture(uploadRes.secure_url);
-      mutateProfile();
-      setEditSection(null);
-      showToast({
-        type: "success",
-        title: "Photo updated",
-        description: "Your profile picture has been updated successfully.",
-      });
-    } catch (err) {
-      showToast({
-        type: "error",
-        title: "Upload failed",
-        description:
-          err instanceof Error
-            ? err.message
-            : "Failed to upload photo. Please check your connection and try again.",
-      });
-      throw new Error("Failed to upload photo.");
-    } finally {
-      setIsUploadingPhoto(false);
-    }
+    const signatureData = await getUploadSignature("profile_picture");
+    const uploadRes = await uploadDirectToCloudinary(croppedFile, signatureData);
+    await uploadProfilePicture(uploadRes.secure_url);
+    mutateProfile();
+    showToast({
+      type: "success",
+      title: "Photo updated",
+      description: "Your profile picture has been updated successfully.",
+    });
   };
 
   const handleDeletePhoto = async () => {
-    setIsUploadingPhoto(true);
-    try {
-      await deleteProfilePicture();
-      mutateProfile();
-      setEditSection(null);
-    } catch {
-      showToast({
-        type: "error",
-        title: "Delete failed",
-        description: "Failed to remove photo. Please try again.",
-      });
-    } finally {
-      setIsUploadingPhoto(false);
-    }
-  };
-
-  const handleVisibilityChange = async (visibility: "everyone" | "employers-only" | "private") => {
-    try {
-      await updateUserSettings({ profileVisibility: visibility });
-      mutateProfile();
-      showToast({
-        type: "success",
-        title: "Visibility updated",
-        description: `Your profile photo visibility is now set to ${
-          visibility === "everyone" ? "Anyone" : visibility === "employers-only" ? "Employers only" : "Private"
-        }.`,
-      });
-    } catch {
-      showToast({
-        type: "error",
-        title: "Update failed",
-        description: "Failed to update photo visibility. Please try again.",
-      });
-    }
+    await deleteProfilePicture();
+    mutateProfile();
   };
 
   // --- Skills handlers ---
@@ -1101,16 +1059,24 @@ export default function ProfilePage() {
         </EditDialog>
 
         {/* Photo Upload & Edit Dialog */}
-        <ProfilePhotoModal
+        <ImageUploadDialog
           isOpen={editSection === "photo"}
-          currentPhotoUrl={userProfile.picture || undefined}
-          userName={userProfile.full_name}
-          currentVisibility={userProfile?.privacy_preferences?.profile_visibility}
           onClose={handleCloseDialog}
-          onSave={handlePhotoSave}
-          onDelete={handleDeletePhoto}
-          onVisibilityChange={handleVisibilityChange}
-          isSubmitting={isUploadingPhoto}
+          title="Profile photo"
+          headline={`${userProfile.full_name}, help others recognise you`}
+          description="On Vetriconn we ask members to use their real identity, so take or upload a photo of yourself. Then crop, rotate and adjust it until it looks right."
+          output={{ width: 1200, height: 1200 }}
+          mask="circle"
+          maxBytes={MAX_PROFILE_PHOTO_BYTES}
+          currentImageUrl={userProfile.picture || undefined}
+          placeholder={
+            <span className="text-4xl font-medium text-gray-600">
+              {getInitials(userProfile.full_name)}
+            </span>
+          }
+          allowCamera
+          onSubmit={handlePhotoSave}
+          onRemove={handleDeletePhoto}
         />
 
         {/* Skills Edit Dialog */}

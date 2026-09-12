@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { adminCompanyCounts } from "@/lib/api/companies";
 import useSWR from "swr";
 import { useUserProfile } from "@/hooks/useUserProfile";
@@ -23,13 +23,24 @@ export function useMyCompanies() {
     getMyCompanies,
   );
 
-  const companies: Company[] = data || [];
+  // SWR hands back a stable `data` reference between renders, so the derived
+  // views are memoised to be stable too. Without this they were fresh arrays
+  // every render, which is invisible in a list but not in a dependency array:
+  // the job builder derives which company a posting belongs to from
+  // approvedCompanies, and feeds that into a useCallback.
+  const companies: Company[] = useMemo(() => data || [], [data]);
+  const derived = useMemo(
+    () => ({
+      pendingCompany: companies.find((c) => c.status === "pending") || null,
+      approvedCompanies: companies.filter((c) => c.status === "approved"),
+    }),
+    [companies],
+  );
 
   return {
     companies,
     /** A company still awaiting admin review, if any. */
-    pendingCompany: companies.find((c) => c.status === "pending") || null,
-    approvedCompanies: companies.filter((c) => c.status === "approved"),
+    ...derived,
     isLoading,
     isError: !!error,
     error,

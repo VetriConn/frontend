@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useCallback, useRef, useEffect } from "react";
+import React, { useState, useCallback, useMemo, useRef, useEffect } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { mutate } from "swr";
@@ -83,12 +83,90 @@ const CreateJobPosting = ({
   const { showToast } = useToaster();
   const { userProfile } = useUserProfile();
   const [currentStep, setCurrentStep] = useState(1);
-  const [builderMode, setBuilderMode] = useState<"full" | "lite">(variant);
+  const [modeRequest, setModeRequest] = useState<"full" | "lite">(variant);
   const [formData, setFormData] = useState<JobFormData>(INITIAL_FORM_DATA);
   const [errors, setErrors] = useState<FormErrors>({});
   const [isSaving, setIsSaving] = useState(false);
   const [isDraftLoading, setIsDraftLoading] = useState(false);
   const [editingJobId, setEditingJobId] = useState<string>("");
+
+  // Empty means posting as the individual employer — the quick-post default,
+  // and the only thing available to an account with no approved Company Page.
+  const [postAsCompanyId, setPostAsCompanyId] = useState("");
+  const { approvedCompanies, pendingCompany, isLoading: companiesLoading } =
+    useMyCompanies();
+
+  // Companies this user may post under: approved, and they're an owner/admin.
+  // Recruiters can review applicants but not create postings, matching the
+  // server's check — so the control simply won't list those companies.
+  //
+  // Memoised because the company it resolves to feeds buildPayload's
+  // dependency array; a fresh array each render leaves the compiler unable to
+  // preserve that callback's memoisation. useMyCompanies memoises its own
+  // derived lists for the same reason, so this dependency is stable.
+  const postableCompanies = useMemo(
+    () =>
+      approvedCompanies.filter((company) =>
+        canPostJobsFor(company, userProfile?.id),
+      ),
+    [approvedCompanies, userProfile?.id],
+  );
+
+  /**
+   * The full builder is a company surface.
+   *
+   * Its extra fields — screening questions, hiring stages, an FAQ, the
+   * benefits and accessibility columns that drive matching — describe an
+   * employer with a hiring process, and the postings they produce are owned
+   * by a company workspace where teammates can work the applicants. An
+   * individual quick-posting a single role has no workspace to put any of
+   * that in, so the builder is gated on holding a Company Page rather than
+   * merely offered and then half-applicable.
+   *
+   * `companiesLoading` guards the gate itself: the list arrives over the
+   * network, so before it lands every account looks companyless. Deciding on
+   * that would bounce a company owner into quick-post for a beat and tell
+   * them to create the company they already have.
+   */
+  const hasCompany = postableCompanies.length > 0;
+  const companyGateResolved = !companiesLoading;
+
+  // Editing is gated the same way, so the wizard waits for the company answer
+  // either way — which mode a posting is edited in is not knowable until the
+  // list has landed.
+  const modeResolved = companyGateResolved;
+
+  /**
+   * The toggle records what was ASKED for; the gate decides what runs. Derived
+   * rather than corrected in an effect — an effect that rewrote stored state
+   * once the company list landed would render the six-step builder first and
+   * cascade a second render to replace it, which is the flash `modeResolved`
+   * exists to prevent.
+   *
+   * Before the list lands this reads "lite", and nothing renders from it: the
+   * wizard body waits on `modeResolved`, so no step is ever entered under a
+   * mode the gate has not confirmed.
+   *
+   * Editing is gated identically. An account with no company edits its posting
+   * through the essentials, and nothing is lost by that: the form loads every
+   * column the job has and the payload submits all of them, so the fields this
+   * mode doesn't show are sent back exactly as they were.
+   */
+  const builderMode: "full" | "lite" =
+    modeRequest === "full" && !hasCompany ? "lite" : modeRequest;
+
+  /**
+   * Who the posting will belong to, as against what has been picked.
+   *
+   * In the full builder an unset selection does not mean "post as an
+   * individual" — that option isn't offered there — so it resolves to the
+   * first company. With one company there is no choice to make and the control
+   * merely states which; the picker earns its place from two.
+   */
+  const effectiveCompanyId =
+    builderMode === "full" && !postAsCompanyId && hasCompany
+      ? postableCompanies[0]._id
+      : postAsCompanyId;
 
   const steps = builderMode === "lite" ? LITE_STEPS : WIZARD_STEPS;
   const totalSteps = steps.length;
@@ -96,11 +174,24 @@ const CreateJobPosting = ({
 
   // Switch between quick-post and the full builder. Form data is a superset, so
   // nothing is lost either way; we just reset to the first step.
-  const switchMode = useCallback((next: "full" | "lite") => {
-    setBuilderMode(next);
-    setCurrentStep(1);
-    setErrors({});
-  }, []);
+  //
+  // The guard is not only belt-and-braces for a disabled button: the toggle is
+  // hidden below the sm breakpoint, and the quick-post panel offers its own
+  // way in, so "full" can be asked for from more than one place.
+  const switchMode = useCallback(
+    (next: "full" | "lite") => {
+      if (next === "full" && !hasCompany) return;
+      // Full mode selects a company for you (below). Dropping back to quick
+      // post drops that with it, rather than filing the posting under a
+      // company the employer never picked — quick post still offers the
+      // choice to anyone who wants to make it deliberately.
+      if (next === "lite") setPostAsCompanyId("");
+      setModeRequest(next);
+      setCurrentStep(1);
+      setErrors({});
+    },
+    [hasCompany],
+  );
 
   // Pin the header just below the sticky dashboard navbar, and the stepper just
   // below the header — measured at runtime so the offsets stay correct whatever
@@ -364,18 +455,6 @@ const CreateJobPosting = ({
     [currentStep],
   );
 
-  // Empty means posting as the individual employer, which is the default and
-  // the only option for anyone without an approved Company Page.
-  const [postAsCompanyId, setPostAsCompanyId] = useState("");
-  const { approvedCompanies } = useMyCompanies();
-
-  // Companies this user may post under: approved, and they're an owner/admin.
-  // Recruiters can review applicants but not create postings, matching the
-  // server's check — so the control simply won't list those companies.
-  const postableCompanies = approvedCompanies.filter((company) =>
-    canPostJobsFor(company, userProfile?.id),
-  );
-
   // Typed against the wire contract. The old payload also sent tags,
   // qualifications, responsibilities, salary_range and a draft_payload blob —
   // all silently stripped by the backend validator; the flat fields below are
@@ -448,9 +527,9 @@ const CreateJobPosting = ({
       hiring_stages: cleanStages(formData.hiring_stages),
       status,
       // Empty means posting as the individual employer.
-      company_id: postAsCompanyId || undefined,
+      company_id: effectiveCompanyId || undefined,
     }),
-    [formData, postAsCompanyId],
+    [formData, effectiveCompanyId],
   );
 
   const handleSaveDraft = useCallback(async () => {
@@ -648,7 +727,7 @@ const CreateJobPosting = ({
                 {editingJobId ? "Edit Your Posting" : "Post a Job"}
               </h1>
               <p className="text-sm text-gray-600">
-                Step {currentStep} of {totalSteps}
+                {modeResolved ? `Step ${currentStep} of ${totalSteps}` : "\u00a0"}
               </p>
             </div>
           </div>
@@ -665,21 +744,35 @@ const CreateJobPosting = ({
                     ["lite", "Quick post"],
                     ["full", "Full builder"],
                   ] as const
-                ).map(([mode, label]) => (
-                  <button
-                    key={mode}
-                    type="button"
-                    onClick={() => switchMode(mode)}
-                    aria-pressed={builderMode === mode}
-                    className={`rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${
-                      builderMode === mode
-                        ? "bg-primary text-white"
-                        : "text-gray-600 hover:text-gray-900"
-                    }`}
-                  >
-                    {label}
-                  </button>
-                ))}
+                ).map(([mode, label]) => {
+                  // Disabled rather than hidden: an employer who can't reach
+                  // the full builder should still see that it exists, and
+                  // the panel below the toggle says how to unlock it.
+                  const locked = mode === "full" && !hasCompany;
+                  return (
+                    <button
+                      key={mode}
+                      type="button"
+                      onClick={() => switchMode(mode)}
+                      aria-pressed={builderMode === mode}
+                      disabled={locked}
+                      title={
+                        locked
+                          ? "The full builder posts under a company profile"
+                          : undefined
+                      }
+                      className={`rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${
+                        builderMode === mode
+                          ? "bg-primary text-white"
+                          : locked
+                            ? "cursor-not-allowed text-gray-300"
+                            : "text-gray-600 hover:text-gray-900"
+                      }`}
+                    >
+                      {label}
+                    </button>
+                  );
+                })}
               </div>
             )}
             <Link
@@ -692,131 +785,204 @@ const CreateJobPosting = ({
           </div>
         </div>
 
-        {/* Two-column layout: vertical stepper rail + form content */}
-        <div className="lg:grid lg:grid-cols-[260px_minmax(0,1fr)] lg:gap-12">
-          {/* Left rail — vertical stepper. Sticky on the grid item itself with
-              self-start (the reliable grid pattern), pinned just below the
-              sticky header (measured stickyTops.rail) so the steps stay put
-              while only the form scrolls. */}
-          <div
-            style={{ top: stickyTops.rail }}
-            className="mb-8 lg:mb-0 lg:sticky lg:self-start"
-          >
-            <VerticalStepper
-              steps={steps}
-              currentStep={currentStep}
-              onStepClick={goToStep}
-            />
+        {/* Which mode the wizard is in depends on whether this account
+            holds a Company Page, and that answer arrives over the network.
+            Rendering the six-step builder first and snapping to two steps a
+            moment later is worse than a short wait, so the wizard waits for
+            the answer. Editing skips the wait: the posting exists already. */}
+        {!modeResolved ? (
+          <div className="rounded-xl border border-gray-200 bg-white p-6 text-sm text-gray-600">
+            Checking your company profile…
           </div>
-
-          {/* Right column — step content + actions */}
-          <div>
-        {/* Quick-post nudge: the full builder's richer data drives visibility
-            and matching, so encourage it (posting as a company most of all). */}
-        {builderMode === "lite" && (
-          <div className="mb-6 flex items-start gap-3 rounded-xl border border-primary/20 bg-red-50 p-4">
-            <HiOutlineBriefcase className="mt-0.5 h-5 w-5 shrink-0 text-primary" />
-            <div className="text-sm text-gray-700">
-              <span className="font-semibold">Want more visibility and better matches?</span>{" "}
-              Posting as a company with the full builder captures the details
-              that power candidate matching.{" "}
-              <button
-                type="button"
-                onClick={() => switchMode("full")}
-                className="font-semibold text-primary underline underline-offset-2 hover:text-primary-hover"
-              >
-                Switch to the full builder
-              </button>
-            </div>
-          </div>
-        )}
-
-        {/* Step Content */}
-        <div className="bg-white rounded-xl border border-gray-200 p-6 md:p-8 mb-6">
-          {/* Only shown when there's genuinely a choice to make — solo
-              employers see the form exactly as before. */}
-          {postableCompanies.length > 0 && (
-            <div className="mb-6 pb-6 border-b border-gray-100">
-              <SelectField
-                id="post_as"
-                label="Post as"
-                value={postAsCompanyId}
-                onChange={setPostAsCompanyId}
-                placeholder={`${userProfile?.full_name || "Myself"} (individual)`}
-                options={[
-                  {
-                    value: "",
-                    label: `${userProfile?.full_name || "Myself"} (individual)`,
-                  },
-                  ...postableCompanies.map((company) => ({
-                    value: company._id,
-                    label: company.name,
-                  })),
-                ]}
-                helperText={
-                  postAsCompanyId
-                    ? "This posting and its applicants belong to the company, and your teammates can manage them."
-                    : "This posting belongs to you personally."
-                }
+        ) : (
+          <>
+          {/* Two-column layout: vertical stepper rail + form content */}
+          <div className="lg:grid lg:grid-cols-[260px_minmax(0,1fr)] lg:gap-12">
+            {/* Left rail — vertical stepper. Sticky on the grid item itself with
+                self-start (the reliable grid pattern), pinned just below the
+                sticky header (measured stickyTops.rail) so the steps stay put
+                while only the form scrolls. */}
+            <div
+              style={{ top: stickyTops.rail }}
+              className="mb-8 lg:mb-0 lg:sticky lg:self-start"
+            >
+              <VerticalStepper
+                steps={steps}
+                currentStep={currentStep}
+                onStepClick={goToStep}
               />
             </div>
+
+            {/* Right column — step content + actions */}
+            <div>
+          {/* Quick post's own account of the full builder — and, when the
+              builder is out of reach, of why and what to do about it. Three
+              distinct states, because "create a company" is wrong advice for
+              someone who created one yesterday and is waiting on review, and
+              "switch to the full builder" is a dead end for someone who has no
+              company at all. Nothing is claimed until the company list has
+              actually arrived. */}
+          {builderMode === "lite" && companyGateResolved && (
+            <div className="mb-6 flex items-start gap-3 rounded-xl border border-primary/20 bg-red-50 p-4">
+              <HiOutlineBriefcase className="mt-0.5 h-5 w-5 shrink-0 text-primary" />
+              <div className="text-sm text-gray-700">
+                {hasCompany ? (
+                  <>
+                    <span className="font-semibold">
+                      Want more visibility and better matches?
+                    </span>{" "}
+                    Posting as a company with the full builder captures the
+                    details that power candidate matching.{" "}
+                    <button
+                      type="button"
+                      onClick={() => switchMode("full")}
+                      className="font-semibold text-primary underline underline-offset-2 hover:text-primary-hover"
+                    >
+                      Switch to the full builder
+                    </button>
+                  </>
+                ) : pendingCompany ? (
+                  <>
+                    <span className="font-semibold">
+                      {pendingCompany.name} is under review.
+                    </span>{" "}
+                    The full builder opens up once it&apos;s approved.{" "}
+                    {editingJobId
+                      ? "Until then you're editing the essentials, and the rest of this posting stays as it is."
+                      : "In the meantime you can post this role as an individual right here. Quick post asks for the essentials and nothing more."}{" "}
+                    <Link
+                      href="/dashboard/companies"
+                      className="font-semibold text-primary underline underline-offset-2 hover:text-primary-hover"
+                    >
+                      Check its status
+                    </Link>
+                  </>
+                ) : (
+                  <>
+                    <span className="font-semibold">
+                      No company on your account yet.
+                    </span>{" "}
+                    The full builder posts under a company profile. Screening
+                    questions, hiring stages and an FAQ all belong to a company
+                    workspace your teammates can work from.{" "}
+                    <Link
+                      href="/dashboard/companies/apply"
+                      className="font-semibold text-primary underline underline-offset-2 hover:text-primary-hover"
+                    >
+                      Create a company
+                    </Link>{" "}
+                    to unlock it.{" "}
+                    {editingJobId
+                      ? "Until then you're editing the essentials. Anything this posting already has beyond them stays exactly as it is."
+                      : "For now you can still post as an individual with quick post, below."}
+                  </>
+                )}
+              </div>
+            </div>
           )}
 
-          {isDraftLoading ? (
-            <div className="text-sm text-gray-600">Loading draft...</div>
-          ) : (
-            renderStep()
-          )}
-        </div>
-
-        {/* Action Buttons */}
-        <div className="flex items-center justify-between">
-          <button
-            type="button"
-            onClick={handleSaveDraft}
-            disabled={isSaving}
-            className="inline-flex items-center gap-2 px-4 py-2.5 border border-gray-200 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors disabled:opacity-50"
-          >
-            <HiOutlineClipboardDocument className="w-4 h-4" />
-            Save as Draft
-          </button>
-
-          <div className="flex items-center gap-3">
-            {currentStep > 1 && (
-              <button
-                type="button"
-                onClick={handleBack}
-                className="inline-flex items-center gap-1.5 px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 rounded-lg transition-colors"
-              >
-                <HiOutlineArrowLeft className="w-4 h-4" />
-                Back
-              </button>
+          {/* Step Content */}
+          <div className="bg-white rounded-xl border border-gray-200 p-6 md:p-8 mb-6">
+            {/* Who the posting belongs to.
+                Hidden while editing, because ownership is fixed once a posting
+                exists: updateJobSchema doesn't accept company_id, so the control
+                was offering a choice the server discards.
+                In the full builder the individual option is gone — that mode is
+                the company surface — so with one company this states which, and
+                with several it picks. Quick post keeps the full choice for
+                anyone who wants to post personally. */}
+            {!editingJobId && postableCompanies.length > 0 && (
+              <div className="mb-6 pb-6 border-b border-gray-100">
+                <SelectField
+                  id="post_as"
+                  label="Post as"
+                  value={effectiveCompanyId}
+                  onChange={setPostAsCompanyId}
+                  placeholder={
+                    builderMode === "full"
+                      ? "Select a company"
+                      : `${userProfile?.full_name || "Myself"} (individual)`
+                  }
+                  options={[
+                    ...(builderMode === "full"
+                      ? []
+                      : [
+                          {
+                            value: "",
+                            label: `${userProfile?.full_name || "Myself"} (individual)`,
+                          },
+                        ]),
+                    ...postableCompanies.map((company) => ({
+                      value: company._id,
+                      label: company.name,
+                    })),
+                  ]}
+                  helperText={
+                    effectiveCompanyId
+                      ? "This posting and its applicants belong to the company, and your teammates can manage them."
+                      : "This posting belongs to you personally."
+                  }
+                />
+              </div>
             )}
 
-            {currentStep < totalSteps ? (
-              <button
-                type="button"
-                onClick={handleContinue}
-                className="inline-flex items-center gap-2 bg-primary text-white px-5 py-2.5 rounded-lg text-sm font-medium hover:bg-primary-hover transition-colors"
-              >
-                Continue
-                <HiOutlineArrowRight className="w-4 h-4" />
-              </button>
+            {isDraftLoading ? (
+              <div className="text-sm text-gray-600">Loading draft...</div>
             ) : (
-              <button
-                type="button"
-                onClick={handlePublish}
-                disabled={isSaving}
-                className="inline-flex items-center gap-2 bg-primary text-white px-6 py-2.5 rounded-lg text-sm font-medium hover:bg-primary-hover transition-colors disabled:opacity-50"
-              >
-                {isSaving ? "Publishing..." : "Publish Job"}
-                {!isSaving && <HiOutlineArrowRight className="w-4 h-4" />}
-              </button>
+              renderStep()
             )}
           </div>
-        </div>
+
+          {/* Action Buttons */}
+          <div className="flex items-center justify-between">
+            <button
+              type="button"
+              onClick={handleSaveDraft}
+              disabled={isSaving}
+              className="inline-flex items-center gap-2 px-4 py-2.5 border border-gray-200 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors disabled:opacity-50"
+            >
+              <HiOutlineClipboardDocument className="w-4 h-4" />
+              Save as Draft
+            </button>
+
+            <div className="flex items-center gap-3">
+              {currentStep > 1 && (
+                <button
+                  type="button"
+                  onClick={handleBack}
+                  className="inline-flex items-center gap-1.5 px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 rounded-lg transition-colors"
+                >
+                  <HiOutlineArrowLeft className="w-4 h-4" />
+                  Back
+                </button>
+              )}
+
+              {currentStep < totalSteps ? (
+                <button
+                  type="button"
+                  onClick={handleContinue}
+                  className="inline-flex items-center gap-2 bg-primary text-white px-5 py-2.5 rounded-lg text-sm font-medium hover:bg-primary-hover transition-colors"
+                >
+                  Continue
+                  <HiOutlineArrowRight className="w-4 h-4" />
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  onClick={handlePublish}
+                  disabled={isSaving}
+                  className="inline-flex items-center gap-2 bg-primary text-white px-6 py-2.5 rounded-lg text-sm font-medium hover:bg-primary-hover transition-colors disabled:opacity-50"
+                >
+                  {isSaving ? "Publishing..." : "Publish Job"}
+                  {!isSaving && <HiOutlineArrowRight className="w-4 h-4" />}
+                </button>
+              )}
+            </div>
           </div>
-        </div>
+            </div>
+          </div>
+          </>
+        )}
       </div>
     </div>
   );

@@ -15,6 +15,13 @@ interface JobResultsListProps {
   /** Total matches across all pages; falls back to the page length. */
   totalCount?: number;
   isLoading: boolean;
+  /**
+   * A different query is on its way, over results still on screen.
+   *
+   * The count below sits in an aria-live region, so left alone it announces
+   * the previous query's total as though it were the answer to the new one.
+   */
+  isRefreshing?: boolean;
   isError: boolean;
   onRetry?: () => void;
   onApply?: (id: string) => void;
@@ -114,6 +121,7 @@ export const JobResultsList = ({
   jobs,
   totalCount,
   isLoading,
+  isRefreshing = false,
   isError,
   onRetry,
   onApply,
@@ -157,17 +165,26 @@ export const JobResultsList = ({
       className="space-y-4"
       aria-label="Job search results"
     >
-      {/* Results counter - aria-live for screen reader announcements */}
+      {/* Results counter - aria-live for screen reader announcements.
+          Held back while a new query is in flight: the number on hand belongs
+          to the query before it, and stating it — out loud, to a screen reader
+          — as the result of the search just run is worse than saying nothing.
+          The caller shows "Searching…" in its place. */}
       <div
         role="status"
         aria-live="polite"
         aria-atomic="true"
         className="text-sm text-gray-600 mb-4"
       >
-        {/* The count of MATCHES, not of rows on screen. This read jobs.length,
-            which was the whole board back when the page fetched all of it and
-            sliced in the browser - and would now say 10 regardless. */}
-        {totalCount ?? jobs.length} {(totalCount ?? jobs.length) === 1 ? "job" : "jobs"} found
+        {isRefreshing
+          ? ""
+          : /* The count of MATCHES, not of rows on screen. This read
+               jobs.length, which was the whole board back when the page
+               fetched all of it and sliced in the browser - and would now say
+               10 regardless. */
+            `${totalCount ?? jobs.length} ${
+              (totalCount ?? jobs.length) === 1 ? "job" : "jobs"
+            } found`}
       </div>
 
       {/* Job cards list */}
@@ -187,6 +204,7 @@ export const JobResultsList = ({
               jobType={getJobType(job)}
               salary={formatSalary(job)}
               description={job.summary}
+              responsibilities={job.responsibilities}
               isOwnPosting={!!job.poster_id && job.poster_id === viewerId}
               onApply={onApply}
             />

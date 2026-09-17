@@ -138,7 +138,7 @@ export const AddExperienceForm: React.FC<AddExperienceFormProps> = ({
           type="checkbox"
           checked={isCurrentRole}
           onChange={handleCurrentRoleToggle}
-          className="w-4 h-4 rounded border-gray-300 text-red-600 focus:ring-red-500"
+          className="w-4 h-4 rounded border-gray-300 text-red-600 focus:ring-red-500 accent-primary"
         />
         I currently work here
       </label>

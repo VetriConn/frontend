@@ -159,7 +159,7 @@ export const CreateAccountStep = ({
           onChange={(event) =>
             onFieldChange("promotional_emails", event.target.checked)
           }
-          className="mt-0.5 h-5 w-5 shrink-0 cursor-pointer rounded border-gray-300 text-primary focus-visible:ring-2 focus-visible:ring-gray-400 focus-visible:ring-offset-2"
+          className="mt-0.5 h-5 w-5 shrink-0 cursor-pointer rounded border-gray-300 focus-visible:ring-2 focus-visible:ring-gray-400 focus-visible:ring-offset-2 accent-primary"
         />
         <span className="text-sm text-gray-600 leading-relaxed">
           Email me occasional news about Vetriconn and hiring in Canada.

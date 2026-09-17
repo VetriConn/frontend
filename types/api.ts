@@ -362,6 +362,7 @@ export type NotificationType =
   | "job_rejected"
   | "saved_search_matches"
   | "profile_reminder"
+  | "welcome"
   | "system";
 
 export interface NotificationItem {

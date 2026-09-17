@@ -301,5 +301,3 @@ export const EditDialog: React.FC<EditDialogProps> = ({
     </div>
   );
 };
-
-export default EditDialog;

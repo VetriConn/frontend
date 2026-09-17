@@ -100,7 +100,6 @@ export const JobSeekingStatusBadge = ({
   );
 };
 
-export default JobSeekingStatusBadge;
 
 /**
  * The statuses as dropdown options, generated rather than written out.

@@ -12,7 +12,7 @@ import clsx from "clsx";
  * `preserveAspectRatio="none"` lets one path stretch to any word length, so the
  * stroke stays proportional whether it underlines "cook" or "veterans".
  */
-export const BrushUnderline = ({
+const BrushUnderline = ({
   children,
   className,
 }: {

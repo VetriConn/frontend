@@ -207,5 +207,3 @@ export const ContactInfoEditForm: React.FC<ContactInfoEditFormProps> = ({
     </div>
   );
 };
-
-export default ContactInfoEditForm;

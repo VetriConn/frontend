@@ -117,5 +117,3 @@ export function JsonLd({ data }: JsonLdProps) {
     />
   );
 }
-
-export default JsonLd;

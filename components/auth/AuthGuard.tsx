@@ -69,5 +69,3 @@ export function AuthGuard({
 
   return <>{children}</>;
 }
-
-export default AuthGuard;

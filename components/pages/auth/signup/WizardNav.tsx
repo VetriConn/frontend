@@ -77,5 +77,3 @@ export const WizardNav = ({
     </div>
   );
 };
-
-export default WizardNav;

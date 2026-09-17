@@ -15,7 +15,7 @@ import clsx from "clsx";
  * for less motion gets the finished layout immediately — and if the observer
  * never runs, nothing is left invisible.
  */
-export const Reveal = ({
+const Reveal = ({
   children,
   index = 0,
   className,

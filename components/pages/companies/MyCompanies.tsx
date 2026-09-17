@@ -154,7 +154,7 @@ const CompanyCard = ({
   );
 };
 
-export const MyCompanies = () => {
+const MyCompanies = () => {
   const { companies, isLoading, isError, error } = useMyCompanies();
   const { userProfile } = useUserProfile();
 

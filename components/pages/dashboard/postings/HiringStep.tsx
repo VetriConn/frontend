@@ -552,5 +552,3 @@ export function StepHiring({
     </div>
   );
 }
-
-export default StepHiring;

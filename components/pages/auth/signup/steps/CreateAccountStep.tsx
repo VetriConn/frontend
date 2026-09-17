@@ -142,6 +142,34 @@ export const CreateAccountStep = ({
         />
       </div>
 
+      {/*
+        Unticked, and it stays unticked unless the person ticks it. Vetriconn
+        emails Canadian recipients, so CASL applies: consent must be an
+        affirmative act, and a pre-ticked box is not one.
+
+        Worded so the choice is legible — it says what the mail is and what it
+        is not, because "promotional emails" alone leaves people assuming it
+        covers the messages about their own applications.
+      */}
+      <label className="mt-5 flex items-start gap-3 cursor-pointer">
+        <input
+          type="checkbox"
+          name="promotional_emails"
+          checked={formData.promotional_emails}
+          onChange={(event) =>
+            onFieldChange("promotional_emails", event.target.checked)
+          }
+          className="mt-0.5 h-5 w-5 shrink-0 cursor-pointer rounded border-gray-300 text-primary focus-visible:ring-2 focus-visible:ring-gray-400 focus-visible:ring-offset-2"
+        />
+        <span className="text-sm text-gray-600 leading-relaxed">
+          Email me occasional news about Vetriconn and hiring in Canada.
+          <span className="block text-gray-400">
+            Optional. You&apos;ll still get messages about your applications,
+            postings and account either way, and you can stop these any time.
+          </span>
+        </span>
+      </label>
+
       <WizardNav
         onBack={onBack}
         onNext={handleContinue}

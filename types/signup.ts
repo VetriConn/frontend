@@ -10,6 +10,12 @@ export interface SignupFormData {
   email: string;
   password: string;
   confirmPassword: string;
+  /**
+   * Express consent to marketing email. Starts false and is only ever true by
+   * the person ticking it — a pre-ticked box is not consent under CASL, which
+   * is the law this signup has to satisfy for Canadian recipients.
+   */
+  promotional_emails: boolean;
 
   // Step 3 - Contact Info
   phone_number: string;
@@ -119,6 +125,9 @@ export const INITIAL_FORM_DATA: SignupFormData = {
   email: "",
   password: "",
   confirmPassword: "",
+  // Unticked. Consent is an affirmative act; a box that arrives already ticked
+  // is not one, and under CASL it is not express consent at all.
+  promotional_emails: false,
   phone_number: "",
   city: "",
   state_province: "",

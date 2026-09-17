@@ -50,6 +50,7 @@ interface SettingsState {
   newApplications: boolean;
   messages: boolean;
   communityUpdates: boolean;
+  promotionalEmails: boolean;
 
   // Privacy
   profileVisibility: string;
@@ -165,6 +166,7 @@ export default function AccountSettings() {
     newApplications: userProfile?.notification_preferences?.new_applications ?? true,
     messages: userProfile?.notification_preferences?.messages ?? true,
     communityUpdates: userProfile?.notification_preferences?.community_updates ?? false,
+    promotionalEmails: userProfile?.promotional_emails ?? false,
 
     profileVisibility: userProfile?.privacy_preferences?.profile_visibility || "everyone",
   });
@@ -184,6 +186,7 @@ export default function AccountSettings() {
         newApplications: userProfile.notification_preferences?.new_applications ?? true,
         messages: userProfile.notification_preferences?.messages ?? true,
         communityUpdates: userProfile.notification_preferences?.community_updates ?? false,
+        promotionalEmails: userProfile.promotional_emails ?? false,
         profileVisibility: userProfile.privacy_preferences?.profile_visibility || "everyone",
       });
     }
@@ -715,6 +718,41 @@ export default function AccountSettings() {
                   enabled={settings.communityUpdates}
                   onToggle={() =>
                     update("communityUpdates", !settings.communityUpdates)
+                  }
+                />
+              </div>
+            </div>
+
+            {/*
+              Set apart from the toggles above it, because it is not the same
+              kind of thing. Those decide which of the emails about your own
+              activity you want; this is consent to be marketed to, which the
+              law treats separately — it has to be given by an affirmative act
+              and withdrawable at any time, which is what this control is.
+            */}
+            <div className="pt-6 border-t border-gray-200 flex items-start justify-between gap-4">
+              <div className="flex items-start gap-3.5">
+                <div className="w-10 h-10 rounded-full bg-red-50 flex items-center justify-center shrink-0 mt-0.5">
+                  <HiOutlineEnvelope className="w-5 h-5 text-primary" />
+                </div>
+                <div>
+                  <h4 className="text-sm font-semibold text-gray-900 mb-0.5">
+                    Marketing Email
+                  </h4>
+                  <p className="text-sm text-gray-600">
+                    Occasional news about Vetriconn and hiring in Canada. Off
+                    unless you turn it on, and turning it off stops it
+                    immediately — it doesn&apos;t affect messages about your
+                    applications, postings or account.
+                  </p>
+                </div>
+              </div>
+              <div className="shrink-0 pt-1">
+                <Toggle
+                  ariaLabel="Marketing email"
+                  enabled={settings.promotionalEmails}
+                  onToggle={() =>
+                    update("promotionalEmails", !settings.promotionalEmails)
                   }
                 />
               </div>

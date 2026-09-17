@@ -39,7 +39,7 @@ export async function registerUser(
       email: formData.email,
       password: formData.password,
       confirmPassword: formData.confirmPassword,
-      promotional_emails: false,
+      promotional_emails: formData.promotional_emails,
     };
 
     // One signup. There is no account type to choose and no company to name —

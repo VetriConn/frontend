@@ -2,7 +2,6 @@
 
 import BrushUnderline from "@/components/ui/BrushUnderline";
 import Eyebrow from "@/components/ui/Eyebrow";
-import React from "react";
 import Link from "next/link";
 import { HiOutlineArrowRight } from "react-icons/hi2";
 import { Header } from "@/components/ui/Header";

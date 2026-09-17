@@ -1,6 +1,5 @@
 import Eyebrow from "@/components/ui/Eyebrow";
 import Reveal from "@/components/ui/Reveal";
-import React from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { HiOutlineArrowRight } from "react-icons/hi2";

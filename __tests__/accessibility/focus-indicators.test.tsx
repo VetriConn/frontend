@@ -8,7 +8,6 @@
  * Task: 23.1 Verify focus indicators at all breakpoints
  */
 
-import React from 'react';
 import { render, screen } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import { Button } from '@/components/ui/Button';

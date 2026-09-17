@@ -1,4 +1,3 @@
-import React from "react";
 import { HiOutlineArrowLeft } from "react-icons/hi2";
 import { Avatar } from "@/components/ui/Avatar";
 

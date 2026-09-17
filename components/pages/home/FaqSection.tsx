@@ -1,7 +1,7 @@
 "use client";
 import Reveal from "@/components/ui/Reveal";
 import Eyebrow from "@/components/ui/Eyebrow";
-import React, { useState } from "react";
+import { useState } from "react";
 import Link from "next/link";
 import { Accordion } from "@/components/ui/Accordion";
 import { HiOutlineArrowRight, HiOutlineChevronDown } from "react-icons/hi2";

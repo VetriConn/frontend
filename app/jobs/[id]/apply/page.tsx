@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect } from "react";
+import { useEffect } from "react";
 import { removeApplicationDraft } from "@/lib/applicationDrafts";
 import Link from "next/link";
 import dynamic from "next/dynamic";

@@ -1,4 +1,3 @@
-import React from "react";
 import { HiOutlineBell } from "react-icons/hi2";
 
 export function NotificationsEmptyState() {

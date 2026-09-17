@@ -71,7 +71,7 @@ const STATUS_TONE: Record<CompanyStatus, "amber" | "emerald" | "rose" | "gray"> 
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
-export const CompanyReviewQueue = () => {
+const CompanyReviewQueue = () => {
   const searchParams = useSearchParams();
   // One page for every company; standing is a filter, not a separate route.
   const [status, setStatus] = useState<CompanyStatus | "all">("all");

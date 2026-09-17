@@ -53,7 +53,7 @@ const toFormState = (company: Company): FormState => ({
 });
 
 
-export const CompanyProfileEditor = ({
+const CompanyProfileEditor = ({
   company,
   myRole,
   onChanged,

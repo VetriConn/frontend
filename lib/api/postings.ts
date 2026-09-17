@@ -93,7 +93,7 @@ export async function getMyPostings(): Promise<PostedJobSummary[]> {
   return response.data?.jobs || [];
 }
 
-export interface ReceivedApplicationsPage {
+interface ReceivedApplicationsPage {
   applications: ApplicationItem[];
   pagination?: {
     currentPage: number;

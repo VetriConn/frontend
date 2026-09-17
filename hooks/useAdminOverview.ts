@@ -3,7 +3,7 @@ import { adminGetOverview } from "@/lib/api/admin";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
-export interface AdminStats {
+interface AdminStats {
   jobsPending: number;
   activeJobs: number;
   companies: number;
@@ -17,7 +17,7 @@ export interface AdminStats {
   usersThisWeek: number;
 }
 
-export interface AdminActivityItem {
+interface AdminActivityItem {
   id: string;
   title: string;
   company: string;
@@ -25,7 +25,7 @@ export interface AdminActivityItem {
   date: string; // ISO
 }
 
-export interface AdminOverview {
+interface AdminOverview {
   stats: AdminStats;
   recentActivity: AdminActivityItem[];
 }

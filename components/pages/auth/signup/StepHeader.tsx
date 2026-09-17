@@ -45,5 +45,3 @@ export const StepHeader = ({
     </div>
   );
 };
-
-export default StepHeader;

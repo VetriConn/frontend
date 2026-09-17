@@ -54,7 +54,7 @@ function mapFromBackend(raw: SavedSearchResponse): SavedSearch {
 /**
  * Build a human-readable name from search filters.
  */
-export function buildSearchName(filters: SavedSearchFilters): string {
+function buildSearchName(filters: SavedSearchFilters): string {
   const parts: string[] = [];
 
   if (filters.keyword) parts.push(`"${filters.keyword}"`);

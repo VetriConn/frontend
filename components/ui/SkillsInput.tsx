@@ -315,5 +315,3 @@ export const SkillsInput: React.FC<SkillsInputProps> = ({
     </div>
   );
 };
-
-export default SkillsInput;

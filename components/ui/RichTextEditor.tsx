@@ -144,5 +144,3 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
     </div>
   );
 };
-
-export default RichTextEditor;

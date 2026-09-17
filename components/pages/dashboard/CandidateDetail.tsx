@@ -612,5 +612,3 @@ export function CandidateDetail({ applicationId }: { applicationId: string }) {
     </div>
   );
 }
-
-export default CandidateDetail;

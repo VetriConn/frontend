@@ -1,4 +1,3 @@
-import React from "react";
 import Link from "next/link";
 import { HiOutlineCheck, HiOutlineTrash } from "react-icons/hi2";
 import { NotificationItem as NotificationItemType } from "@/types/api";

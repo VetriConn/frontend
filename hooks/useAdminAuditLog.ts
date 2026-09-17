@@ -130,7 +130,7 @@ export function actionLabel(eventType: string): string {
   return lower.charAt(0).toUpperCase() + lower.slice(1);
 }
 
-export type ActionTone = "rose" | "emerald" | "indigo" | "amber" | "gray";
+type ActionTone = "rose" | "emerald" | "indigo" | "amber" | "gray";
 
 /** Colour by outcome — destructive red, positive green, neutral gray. */
 export function actionTone(eventType: string): ActionTone {

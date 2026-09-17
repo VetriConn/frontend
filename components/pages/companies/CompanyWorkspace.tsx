@@ -13,7 +13,7 @@ import CompanyTeam from "./CompanyTeam";
  * Everything for one company in a single page: profile, hiring team, and the
  * jobs posted under it. Recruiters see the same page with editing disabled.
  */
-export const CompanyWorkspace = ({ companyId }: { companyId: string }) => {
+const CompanyWorkspace = ({ companyId }: { companyId: string }) => {
   const { company, isLoading, isError, error, mutate } = useCompany(companyId);
   const { jobs, isLoading: jobsLoading } = useCompanyJobs(companyId);
   const { userProfile } = useUserProfile();

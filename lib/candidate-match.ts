@@ -5,7 +5,7 @@
  */
 
 /** Trim + lowercase, the comparison form used throughout. */
-export const lc = (s: string): string => s.trim().toLowerCase();
+const lc = (s: string): string => s.trim().toLowerCase();
 
 /** Split a free-text skills string (comma / newline / semicolon) into a list. */
 export function splitSkills(raw: string | undefined): string[] {
@@ -30,7 +30,7 @@ export function uniqueCI(items: string[]): string[] {
   return out;
 }
 
-export interface SkillMatch {
+interface SkillMatch {
   /** The de-duplicated required skills. */
   required: string[];
   matched: string[];
@@ -58,7 +58,7 @@ export function skillMatch(
   return { required: req, matched, unmatched, percent };
 }
 
-export type AnswerMatch = "full" | "partial" | "none" | "info";
+type AnswerMatch = "full" | "partial" | "none" | "info";
 
 /**
  * How a candidate's screening answer measures against the preferred answer(s).

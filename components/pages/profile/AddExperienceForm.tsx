@@ -4,7 +4,7 @@ import React, { useState } from "react";
 import { FormField } from "@/components/ui/FormField";
 import { WorkExperience } from "@/types/api";
 
-export interface AddExperienceFormProps {
+interface AddExperienceFormProps {
   initialData?: WorkExperience;
   onDataChange: (data: WorkExperience) => void;
 }

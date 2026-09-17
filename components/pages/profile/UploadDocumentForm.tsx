@@ -3,7 +3,7 @@
 import React, { useRef, useState } from "react";
 import { HiOutlineArrowUpTray, HiOutlineDocumentText } from "react-icons/hi2";
 
-export interface UploadDocumentFormProps {
+interface UploadDocumentFormProps {
   onFileSelected: (file: File) => void;
 }
 

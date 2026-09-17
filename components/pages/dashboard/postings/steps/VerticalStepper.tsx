@@ -1,6 +1,5 @@
 "use client";
 
-import React from "react";
 import { HiCheck } from "react-icons/hi2";
 
 export function VerticalStepper({

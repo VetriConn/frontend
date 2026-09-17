@@ -236,7 +236,7 @@ export function clampPan(
   };
 }
 
-export interface DrawGeometry {
+interface DrawGeometry {
   translateX: number;
   translateY: number;
   rotateRadians: number;
@@ -248,7 +248,7 @@ export interface DrawGeometry {
   drawHeight: number;
 }
 
-export interface GeometryInput {
+interface GeometryInput {
   transform: ImageTransform;
   /** naturalWidth and naturalHeight of the decoded source. */
   source: ImageOutputSize;
@@ -313,8 +313,6 @@ export function computeDrawGeometry(input: GeometryInput): DrawGeometry {
 /** Wording for the three ways a source can fail to become a file. */
 const CANNOT_DECODE_MESSAGE =
   "That image could not be opened. Please choose another file.";
-const CANNOT_FETCH_MESSAGE =
-  "The image on file could not be loaded for editing. Please try again.";
 const CANNOT_ENCODE_MESSAGE =
   "That image could not be saved. Please try again.";
 
@@ -335,26 +333,6 @@ export function loadImageElement(src: string): Promise<HTMLImageElement> {
   });
 }
 
-/**
- * Copies a remote image into an object URL so the canvas is never tainted.
- * Rejects on failure, so re-editing an image already on file reports a
- * problem instead of leaving Save inert: today the failure is console.error'd
- * and execution falls through to a bare `return`
- * (ProfilePhotoModal.tsx:282-286), which is a Save button that does nothing,
- * silently, for as long as the dialog stays open. The caller revokes the URL.
- */
-export async function toLocalObjectUrl(remoteUrl: string): Promise<string> {
-  let response: Response;
-  try {
-    response = await fetch(remoteUrl);
-  } catch {
-    // fetch rejects with a bare "Failed to fetch" on a network error, and
-    // this message is rendered to the user verbatim.
-    throw new Error(CANNOT_FETCH_MESSAGE);
-  }
-  if (!response.ok) throw new Error(CANNOT_FETCH_MESSAGE);
-  return URL.createObjectURL(await response.blob());
-}
 
 /**
  * The two formats this module ever writes. WebP is readable but never
@@ -364,7 +342,7 @@ export async function toLocalObjectUrl(remoteUrl: string): Promise<string> {
  */
 type EncodedImageType = "image/jpeg" | "image/png";
 
-export interface RenderEditedImageArgs {
+interface RenderEditedImageArgs {
   /** Always an object URL. Remote sources go through toLocalObjectUrl. */
   sourceUrl: string;
   /** MIME of the original, which decides whether alpha is even possible. */

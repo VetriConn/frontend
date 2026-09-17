@@ -12,7 +12,7 @@ import type { NotificationItem } from "@/types/api";
  *
  * TODO: the notifications page needs a "load more" for anyone past this.
  */
-export const NOTIFICATION_PAGE_SIZE = 50;
+const NOTIFICATION_PAGE_SIZE = 50;
 
 export async function getNotifications(): Promise<{
   notifications: NotificationItem[];

@@ -10,7 +10,7 @@ import type {
 /**
  * Site-wide SEO configuration
  */
-export interface SiteConfig {
+interface SiteConfig {
   name: string;
   description: string;
   url: string;
@@ -23,7 +23,7 @@ export interface SiteConfig {
 /**
  * Page-specific metadata input
  */
-export interface PageSeoInput {
+interface PageSeoInput {
   title: string;
   description: string;
   path: string;

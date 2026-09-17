@@ -7,7 +7,7 @@
  * lands. Kept beside the logout call so signing out cannot leave a stale
  * "Dashboard" label behind.
  */
-export const AUTH_HINT_KEY = "vc:signed-in";
+const AUTH_HINT_KEY = "vc:signed-in";
 
 export function setAuthHint(signedIn: boolean): void {
   try {

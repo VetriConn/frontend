@@ -1,6 +1,5 @@
 "use client";
 
-import React from "react";
 import { SkillsInput } from "@/components/ui/SkillsInput";
 import {
   FieldLabel,

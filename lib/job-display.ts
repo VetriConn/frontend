@@ -105,7 +105,7 @@ export function getExternalApplyUrl(job: SourceFields): string | null {
  * silently disappear from results — most likely a separate pay-basis filter,
  * which needs a backend field to be correct across pagination.
  */
-export type PayBasis = "hourly" | "annual" | "unspecified";
+type PayBasis = "hourly" | "annual" | "unspecified";
 
 const HOURLY_PATTERN = /\b(hour|hourly|hr|per\s*hour)\b/i;
 const PERIODIC_PATTERN = /\b(week|weekly|day|daily|month|monthly)\b/i;

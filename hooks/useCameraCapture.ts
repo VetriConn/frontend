@@ -94,7 +94,7 @@ function shouldMirror(stream: MediaStream | null): boolean {
   return facingMode === undefined || facingMode === "user";
 }
 
-export interface UseCameraCaptureResult {
+interface UseCameraCaptureResult {
   videoRef: React.RefObject<HTMLVideoElement | null>;
   isActive: boolean;
   error: string | null;

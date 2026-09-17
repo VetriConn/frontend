@@ -16,8 +16,6 @@ import {
 // ─── Types ───────────────────────────────────────────────────────────────────
 
 export type AdminMemberRole = AdminRole; // super_admin | reviewer | moderator | billing
-export type AdminMemberStatus = "active" | "suspended";
-export type AdminInviteStatus = "pending" | "accepted" | "revoked" | "expired";
 
 export type AdminMember = AdminTeamMember;
 export type AdminInvite = AdminTeamInvite;
@@ -48,7 +46,7 @@ export function useAdminTeam() {
 // Every mutating call except resend/revoke requires step-up (password + a TOTP
 // code when 2FA is on). The UI collects those and passes them through here.
 
-export interface InviteAdminPayload {
+interface InviteAdminPayload {
   email: string;
   full_name: string;
   role: AdminMemberRole;
@@ -125,16 +123,4 @@ export const ROLE_DESCRIPTION: Record<AdminMemberRole, string> = {
   reviewer: "Reviews and approves jobs, companies, and scraper runs.",
   moderator: "Moderates users, company members, reports, and community posts.",
   billing: "Manages subscriptions and billing.",
-};
-
-export const MEMBER_STATUS_LABEL: Record<AdminMemberStatus, string> = {
-  active: "Active",
-  suspended: "Suspended",
-};
-
-export const INVITE_STATUS_LABEL: Record<AdminInviteStatus, string> = {
-  pending: "Pending",
-  accepted: "Accepted",
-  revoked: "Revoked",
-  expired: "Expired",
 };

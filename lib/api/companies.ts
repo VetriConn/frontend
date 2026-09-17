@@ -315,7 +315,7 @@ export async function adminGetCompany(
   return response.data;
 }
 
-export interface AdminCompanyCounts {
+interface AdminCompanyCounts {
   pending: number;
   approved: number;
   rejected: number;
@@ -391,7 +391,7 @@ export async function adminRejectCompany(
  * decision from taking the company's standing away.
  */
 /** Step-up credentials required by suspend/reinstate (ADM-5). */
-export interface StepUpAuth {
+interface StepUpAuth {
   password: string;
   totp_code?: string;
 }

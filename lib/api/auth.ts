@@ -25,10 +25,6 @@ export interface RegisterResponse {
   emailVerificationSent: boolean;
 }
 
-export interface GenericSuccessResponse {
-  success: boolean;
-  message: string;
-}
 
 /**
  * Register a new user

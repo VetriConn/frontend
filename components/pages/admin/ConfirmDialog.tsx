@@ -24,7 +24,7 @@ interface ConfirmDialogProps {
   onConfirm: (reason?: string) => void;
 }
 
-export const ConfirmDialog = ({
+const ConfirmDialog = ({
   open,
   title,
   subject,

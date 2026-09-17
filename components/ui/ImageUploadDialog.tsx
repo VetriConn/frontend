@@ -46,9 +46,9 @@ import {
  * backdrop and the scroll lock already live there and are already right.
  */
 
-export type ImageMaskShape = "circle" | "rect";
+type ImageMaskShape = "circle" | "rect";
 
-export interface ImageUploadDialogProps {
+interface ImageUploadDialogProps {
   isOpen: boolean;
   onClose: () => void;
   /** Names the thing being changed: "Profile photo", "Company logo". */

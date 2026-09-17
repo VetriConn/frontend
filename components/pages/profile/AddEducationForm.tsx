@@ -4,7 +4,7 @@ import React, { useState } from "react";
 import { FormField } from "@/components/ui/FormField";
 import { Education } from "@/types/api";
 
-export interface AddEducationFormProps {
+interface AddEducationFormProps {
   initialData?: Education;
   onDataChange: (data: Education) => void;
 }

@@ -7,6 +7,7 @@ import {
   HiOutlineDocumentCheck,
   HiOutlineInformationCircle,
   HiOutlineUserPlus,
+  HiOutlineSparkles,
 } from "react-icons/hi2";
 import { NotificationType } from "@/types/api";
 
@@ -92,6 +93,15 @@ export const NOTIFICATION_CONFIG: Record<NotificationType, NotificationConfig> =
     bgColor: "bg-blue-50",
     iconColor: "text-blue-500",
     borderColor: "border-l-blue-500",
+  },
+  // The first notification most accounts ever see, so it wears the brand
+  // colour rather than the generic grey of `system`.
+  welcome: {
+    icon: <HiOutlineSparkles className="w-5 h-5 text-primary" />,
+    dotColor: "bg-primary",
+    bgColor: "bg-red-50",
+    iconColor: "text-primary",
+    borderColor: "border-l-primary",
   },
   system: {
     icon: <HiOutlineInformationCircle className="w-5 h-5 text-gray-600" />,

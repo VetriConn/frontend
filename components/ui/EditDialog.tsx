@@ -4,7 +4,7 @@ import React, { useEffect, useRef, useCallback } from "react";
 import { HiOutlineXMark } from "react-icons/hi2";
 import clsx from "clsx";
 
-export interface EditDialogProps {
+interface EditDialogProps {
   isOpen: boolean;
   title: string;
   onClose: () => void;

@@ -1,4 +1,3 @@
-"use client";
 
 import { ReactNode } from "react";
 import clsx from "clsx";
@@ -6,7 +5,6 @@ import {
   HiOutlineChevronLeft,
   HiOutlineChevronRight,
 } from "react-icons/hi2";
-import Link from "next/link";
 import {
   HiOutlineEye,
   HiOutlineNoSymbol,
@@ -209,64 +207,9 @@ export const RowActions = ({ children }: RowActionsProps) => (
   <div className="flex items-center justify-end gap-2">{children}</div>
 );
 
-interface ViewActionProps {
-  href?: string;
-  onClick?: () => void;
-  label?: string;
-}
 
-export const ViewAction = ({
-  href,
-  onClick,
-  label = "View",
-}: ViewActionProps) => {
-  const className =
-    "inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-gray-200 bg-white text-xs font-semibold text-gray-700 hover:bg-gray-50 hover:border-gray-300 transition-colors";
-  const content = (
-    <>
-      <HiOutlineEye className="w-3.5 h-3.5 text-gray-500" />
-      {label}
-    </>
-  );
-  if (href) {
-    return (
-      <Link href={href} className={className}>
-        {content}
-      </Link>
-    );
-  }
-  return (
-    <button onClick={onClick} className={className}>
-      {content}
-    </button>
-  );
-};
 
-interface DangerActionProps {
-  label: string;
-  onClick?: () => void;
-  icon?: "suspend" | "remove";
-  disabled?: boolean;
-}
 
-export const DangerAction = ({
-  label,
-  onClick,
-  icon = "suspend",
-  disabled,
-}: DangerActionProps) => {
-  const Icon = icon === "remove" ? HiOutlineTrash : HiOutlineNoSymbol;
-  return (
-    <button
-      onClick={onClick}
-      disabled={disabled}
-      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-rose-200 bg-white text-xs font-semibold text-rose-600 hover:bg-rose-50 hover:border-rose-300 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-    >
-      <Icon className="w-3.5 h-3.5" />
-      {label}
-    </button>
-  );
-};
 
 // ─── Generic empty state for tables ──────────────────────────────────────────
 
@@ -308,7 +251,7 @@ export const AdminRowSkeleton = ({ columns }: AdminRowSkeletonProps) => (
 
 // ─── Summary stat card ───────────────────────────────────────────────────────
 
-export type StatTone = "amber" | "emerald" | "rose" | "indigo" | "gray";
+type StatTone = "amber" | "emerald" | "rose" | "indigo" | "gray";
 
 const STAT_TONES: Record<StatTone, string> = {
   amber: "bg-amber-50 text-amber-600 ring-amber-100",
@@ -390,7 +333,7 @@ export const AdminStatRow = ({ children }: { children: React.ReactNode }) => (
 );
 
 /** Pagination shape the backend's paginated() envelope returns. */
-export interface AdminPaginationMeta {
+interface AdminPaginationMeta {
   currentPage: number;
   totalPages: number;
   totalItems: number;

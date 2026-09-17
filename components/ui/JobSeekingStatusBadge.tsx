@@ -31,7 +31,7 @@ interface StatusPresentation {
   className: string;
 }
 
-export const JOB_SEEKING_STATUS: Record<JobSeekingStatus, StatusPresentation> =
+const JOB_SEEKING_STATUS: Record<JobSeekingStatus, StatusPresentation> =
   {
     none: {
       label: "",
@@ -63,7 +63,7 @@ export const JOB_SEEKING_STATUS: Record<JobSeekingStatus, StatusPresentation> =
   };
 
 /** The coloured dot. Decorative — the label beside it carries the meaning. */
-export const StatusDot = ({ className }: { className?: string }) => (
+const StatusDot = ({ className }: { className?: string }) => (
   <span
     aria-hidden="true"
     className={clsx(

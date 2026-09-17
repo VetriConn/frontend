@@ -40,9 +40,9 @@ import {
  * chose the transport could not serve both.
  */
 
-export type EditorStage = "empty" | "editing" | "rendering" | "submitting";
+type EditorStage = "empty" | "editing" | "rendering" | "submitting";
 
-export interface UseImageEditorOptions {
+interface UseImageEditorOptions {
   output: ImageOutputSize;
   /**
    * Largest file this caller's endpoint accepts. Required, with no default,
@@ -56,7 +56,7 @@ export interface UseImageEditorOptions {
   onSubmit: (file: File) => Promise<void>;
 }
 
-export interface UseImageEditorResult {
+interface UseImageEditorResult {
   stage: EditorStage;
   transform: ImageTransform;
   adjustments: ImageAdjustments;

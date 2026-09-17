@@ -7,12 +7,12 @@
  * the autocomplete should prefer the API response over this list.
  */
 
-export interface SkillCategory {
+interface SkillCategory {
   category: string;
   skills: string[];
 }
 
-export const SKILLS_BY_CATEGORY: SkillCategory[] = [
+const SKILLS_BY_CATEGORY: SkillCategory[] = [
   {
     category: "Leadership & Management",
     skills: [

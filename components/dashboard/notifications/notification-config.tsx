@@ -10,7 +10,7 @@ import {
 } from "react-icons/hi2";
 import { NotificationType } from "@/types/api";
 
-export interface NotificationConfig {
+interface NotificationConfig {
   icon: React.ReactNode;
   dotColor?: string;
   bgColor?: string;

@@ -8,7 +8,7 @@
 import { getCountries } from "react-phone-number-input";
 import en from "react-phone-number-input/locale/en.json";
 
-export interface CountryOption {
+interface CountryOption {
   /** ISO 3166-1 alpha-2, for the flag lookup. */
   code: string;
   /** English name; also the stored value. */

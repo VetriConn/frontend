@@ -11,7 +11,7 @@ export function isSuperAdmin(
   return Boolean(profile.is_super_admin);
 }
 
-export type AdminRole = "super_admin" | "reviewer" | "moderator" | "billing";
+type AdminRole = "super_admin" | "reviewer" | "moderator" | "billing";
 
 /**
  * Which console surfaces each tier can act on, mirroring the backend's
@@ -29,7 +29,7 @@ const SURFACE_TIERS: Record<string, AdminRole[]> = {
   "/admin/team": ["super_admin"],
 };
 
-export function adminRoleOf(
+function adminRoleOf(
   profile: UserProfile | null | undefined,
 ): AdminRole | undefined {
   if (!profile || profile.role !== "admin") return undefined;

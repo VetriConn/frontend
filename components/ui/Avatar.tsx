@@ -89,15 +89,3 @@ export function Avatar({ src, name, size = 40, className = "", alt }: AvatarProp
     </div>
   );
 }
-
-/**
- * Hook to get the appropriate avatar URL based on user role
- * 
- * @param userProfile - The user profile object
- * @returns The avatar URL (picture for job seekers, logo for employers)
- */
-export function useAvatarUrl(
-  userProfile: { picture?: string } | null | undefined,
-): string | null {
-  return userProfile?.picture || null;
-}

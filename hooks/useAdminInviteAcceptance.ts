@@ -8,7 +8,7 @@ import { API_BASE_URL, apiFetch } from "@/lib/api/client";
 // so the only thing collected here is a password. The account still can't reach
 // the console until it completes MFA setup on first sign-in.
 
-export interface AcceptAdminInvitePayload {
+interface AcceptAdminInvitePayload {
   token: string;
   password: string;
 }

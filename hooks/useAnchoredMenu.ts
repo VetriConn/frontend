@@ -24,13 +24,13 @@ import { useCallback, useEffect, useLayoutEffect, useState } from "react";
  * it too, not only a scroll of the page.
  */
 
-export interface AnchorCoords {
+interface AnchorCoords {
   top: number;
   left: number;
   width: number;
 }
 
-export interface AnchoredMenu {
+interface AnchoredMenu {
   coords: AnchorCoords;
   /** Recompute now — after the menu's own size changes, say. */
   reposition: () => void;

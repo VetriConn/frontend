@@ -30,7 +30,7 @@ function toAdminUser(m: AdminMember): AdminUser {
   };
 }
 
-export const ADMIN_USERS_PAGE_SIZE = 20;
+const ADMIN_USERS_PAGE_SIZE = 20;
 
 export function useAdminUsers(page = 1) {
   // Server pagination: the backend already skips/limits, and the old

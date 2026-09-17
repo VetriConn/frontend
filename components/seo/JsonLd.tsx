@@ -79,7 +79,7 @@ export interface JobPosting {
   };
 }
 
-export type JsonLdData = Organization | WebSite | JobPosting;
+type JsonLdData = Organization | WebSite | JobPosting;
 
 interface JsonLdProps {
   data: JsonLdData;

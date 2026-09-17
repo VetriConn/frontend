@@ -146,38 +146,6 @@ export async function apiFetch<T>(
   }
 }
 
-export async function apiFetchBlob(
-  url: string,
-  init: RequestInit = {},
-): Promise<Blob> {
-  try {
-    const headers = new Headers(init.headers);
-    if (!headers.has("X-Requested-With")) {
-      headers.set("X-Requested-With", "XMLHttpRequest");
-    }
-    const response = await fetch(url, {
-      credentials: "include",
-      ...init,
-      headers,
-    });
-
-    if (!response.ok) {
-      const maybeJson = await response.json().catch(() => null);
-      const message = getErrorMessageFromPayload(maybeJson) || "Request failed";
-      throw new Error(message);
-    }
-
-    return await response.blob();
-  } catch (error) {
-    if (error instanceof TypeError && error.message.includes("fetch")) {
-      throw new Error(
-        `Network error: Unable to connect to the backend server. Please ensure the server is running.`,
-      );
-    }
-
-    throw error;
-  }
-}
 
 // ============================================================================
 // Attachment Normalization

@@ -43,8 +43,6 @@ export const CARD_TITLE =
  */
 export const CARD_META_ROW = "flex items-center gap-2 text-sm min-w-0";
 
-/** A metadata item that shares a line with others, as on the browse card. */
-export const CARD_META_INLINE = "inline-flex items-center gap-1.5 text-sm";
 
 /** Icons sitting in a metadata row. */
 export const CARD_META_ICON = "w-4 h-4 text-gray-400 shrink-0";

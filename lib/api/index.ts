@@ -41,9 +41,12 @@ export { sendContactMessage } from "./contact";
 export {
   changePassword,
   requestDataExport,
+  getDataExportStatus,
+  dataExportDownloadUrl,
   deactivateAccount,
   updateUserSettings,
 } from "./settings";
+export type { DataExportRecord } from "./settings";
 
 // Notifications
 export {

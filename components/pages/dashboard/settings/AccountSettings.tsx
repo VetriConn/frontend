@@ -24,10 +24,10 @@ import { useUserProfile } from "@/hooks/useUserProfile";
 import { AuthGuard } from "@/components/auth/AuthGuard";
 import {
   changePassword as changePasswordApi,
-  requestDataExport,
   deactivateAccount as deactivateAccountApi,
   updateUserSettings,
 } from "@/lib/api";
+import DataExportPanel from "./DataExportPanel";
 import TwoFactorSetupDialog from "@/components/security/TwoFactorSetupDialog";
 import DisableTwoFactorDialog from "@/components/security/DisableTwoFactorDialog";
 import { CustomDropdown } from "@/components/ui/CustomDropdown";
@@ -254,8 +254,6 @@ export default function AccountSettings() {
   const mustChangePassword = Boolean(userProfile?.must_change_password);
 
   // ─── Data Download & Account Deactivation ─────────────────────────────────
-  const [isDownloading, setIsDownloading] = useState(false);
-  const [downloadSuccess, setDownloadSuccess] = useState(false);
   const [showDeactivateModal, setShowDeactivateModal] = useState(false);
   const [deactivatePassword, setDeactivatePassword] = useState("");
   const [showDeactivatePassword, setShowDeactivatePassword] = useState(false);
@@ -319,33 +317,6 @@ export default function AccountSettings() {
           ? error.message
           : "Failed to change password. Please try again.",
       );
-    }
-  };
-
-  // ─── Data Download Handler ────────────────────────────────────────────────
-  const handleDataDownload = async () => {
-    setIsDownloading(true);
-    setDownloadSuccess(false);
-    try {
-      const response = await requestDataExport();
-      showToast({
-        type: "success",
-        title: "Export requested",
-        description: response.message || "Your data export is on its way to your email address.",
-      });
-      setDownloadSuccess(true);
-      setTimeout(() => setDownloadSuccess(false), 5000);
-    } catch (err) {
-      showToast({
-        type: "error",
-        title: "Export failed",
-        description:
-          err instanceof Error
-            ? err.message
-            : "Failed to export your data. Please try again.",
-      });
-    } finally {
-      setIsDownloading(false);
     }
   };
 
@@ -874,40 +845,7 @@ export default function AccountSettings() {
               ]}
             />
 
-            {/* Download Data */}
-            <div className="flex items-start gap-3.5">
-              <div className="w-10 h-10 rounded-full bg-red-50 flex items-center justify-center shrink-0 mt-0.5">
-                <HiOutlineArrowDownTray className="w-5 h-5 text-primary" />
-              </div>
-              <div>
-                <h4 className="text-sm font-semibold text-gray-900 mb-1">
-                  Download Your Data
-                </h4>
-                <p className="text-sm text-gray-600 leading-relaxed mb-3">
-                  Get a copy of all the information you&apos;ve shared with us.
-                  This may take a few minutes to prepare.
-                </p>
-                <button
-                  onClick={handleDataDownload}
-                  disabled={isDownloading}
-                  className="inline-flex items-center gap-2 px-4 py-2.5 bg-white border border-gray-200 text-gray-700 font-semibold text-sm rounded-lg hover:bg-gray-50 transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  {isDownloading ? (
-                    <>
-                      <span className="w-4 h-4 border-2 border-gray-300 border-t-gray-600 rounded-full animate-spin" />
-                      Preparing...
-                    </>
-                  ) : downloadSuccess ? (
-                    <>
-                      <HiOutlineCheckCircle className="w-4 h-4 text-emerald-500" />
-                      Download Started
-                    </>
-                  ) : (
-                    "Request Data Download"
-                  )}
-                </button>
-              </div>
-            </div>
+            <DataExportPanel />
 
             {/* Deactivate Account */}
             <div className="rounded-xl border border-red-100 bg-red-50/40 p-5">

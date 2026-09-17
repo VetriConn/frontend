@@ -62,5 +62,3 @@ export const CountrySelect: React.FC<CountrySelectProps> = ({
     />
   );
 };
-
-export default CountrySelect;

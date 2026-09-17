@@ -28,7 +28,7 @@ export interface SignupFormData {
 /**
  * Configuration for each step in the signup wizard
  */
-export interface SignupStepConfig {
+interface SignupStepConfig {
   id: number;
   name: string;
   isOptional: boolean;
@@ -109,10 +109,6 @@ export const STEP_CONFIGS: SignupStepConfig[] = [
   },
 ];
 
-/**
- * Total number of steps in the signup wizard
- */
-export const TOTAL_STEPS = STEP_CONFIGS.length;
 
 export const INITIAL_FORM_DATA: SignupFormData = {
   full_name: "",

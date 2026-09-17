@@ -21,12 +21,12 @@ export interface ContactInfoFormData {
  * through. Declared rather than cast through `any`: the shape is what the
  * caller relies on, so it should be the thing that breaks when it changes.
  */
-export interface ContactInfoFormHandle extends HTMLElement {
+interface ContactInfoFormHandle extends HTMLElement {
   validate?: () => boolean;
   getData?: () => ContactInfoFormData;
 }
 
-export interface ContactInfoEditFormProps {
+interface ContactInfoEditFormProps {
   initialData: ContactInfoFormData;
   onDataChange?: (data: ContactInfoFormData) => void;
 }
@@ -207,5 +207,3 @@ export const ContactInfoEditForm: React.FC<ContactInfoEditFormProps> = ({
     </div>
   );
 };
-
-export default ContactInfoEditForm;

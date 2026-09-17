@@ -40,8 +40,6 @@ import {
 } from "./ApplicationReview";
 import { RequiredMark } from "@/components/ui/RequiredMark";
 
-// Canonical profile shape subset used for pre-filling application form
-import type { UserProfile } from "@/types/api";
 import { fieldLabel, JOB_TYPE_LABELS } from "@/lib/job-fields";
 import { formatDate } from "@/lib/date-utils";
 import { addSkill } from "@/lib/application-skills";

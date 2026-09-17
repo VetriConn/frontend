@@ -11,7 +11,7 @@ import clsx from "clsx";
  * h2 beneath it, and announcing it separately would just repeat the section
  * name to screen-reader users.
  */
-export const Eyebrow = ({
+const Eyebrow = ({
   children,
   className,
 }: {

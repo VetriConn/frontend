@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import { useState } from "react";
 import { useModalFocus } from "@/hooks/useModalFocus";
 import { ListLoadError } from "@/components/ui/ListLoadError";
 import { HiOutlineCheck, HiOutlineTrash } from "react-icons/hi2";

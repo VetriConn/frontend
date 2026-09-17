@@ -45,7 +45,7 @@ export interface AdminMember {
   application_count?: number;
 }
 
-export interface AdminMemberPage {
+interface AdminMemberPage {
   members: AdminMember[];
   total: number;
   page: number;
@@ -113,7 +113,7 @@ export interface AdminAuditLog {
   timestamp: string;
 }
 
-export interface AdminAuditLogPage {
+interface AdminAuditLogPage {
   logs: AdminAuditLog[];
   total: number;
   page: number;
@@ -145,7 +145,7 @@ export async function adminListAuditLogs(params?: {
 
 // ─── Dashboard overview (GET /api/v1/admin/overview) ─────────────────────────
 
-export interface AdminOverviewStats {
+interface AdminOverviewStats {
   jobsPending: number;
   activeJobs: number;
   companies: number;
@@ -158,7 +158,7 @@ export interface AdminOverviewStats {
   usersThisWeek: number;
 }
 
-export interface AdminOverviewActivity {
+interface AdminOverviewActivity {
   id: string;
   title: string;
   company: string;
@@ -166,7 +166,7 @@ export interface AdminOverviewActivity {
   date: string;
 }
 
-export interface AdminOverviewResponse {
+interface AdminOverviewResponse {
   stats: AdminOverviewStats;
   recentActivity: AdminOverviewActivity[];
 }
@@ -363,7 +363,7 @@ export async function adminResolveReport(
 
 export type ContentModerationStatus = "visible" | "flagged" | "removed";
 
-export interface AdminContentPost {
+interface AdminContentPost {
   id: string;
   title: string;
   body: string;
@@ -412,7 +412,7 @@ export type AdminNotificationType =
   | "user_report"
   | "post_flagged";
 
-export interface AdminNotificationItem {
+interface AdminNotificationItem {
   id: string;
   type: AdminNotificationType;
   message: string;
@@ -440,7 +440,7 @@ export async function adminMarkAllNotificationsRead(): Promise<void> {
 
 // ─── Admin settings (GET/PATCH /api/v1/admin/settings) ───────────────────────
 
-export interface AdminSettingsResponse {
+interface AdminSettingsResponse {
   first_name: string;
   last_name: string;
   email: string;
@@ -485,7 +485,7 @@ export async function adminUpdateSettingsPassword(body: {
 
 // ─── Summary counts for the list pages' stat cards ───────────────────────────
 
-export interface AdminMemberCounts {
+interface AdminMemberCounts {
   total: number;
   active: number;
   suspended: number;
@@ -499,7 +499,7 @@ export async function adminMemberCounts(): Promise<AdminMemberCounts> {
   return res.data ?? { total: 0, active: 0, suspended: 0 };
 }
 
-export interface AdminContentCounts {
+interface AdminContentCounts {
   visible: number;
   flagged: number;
   removed: number;

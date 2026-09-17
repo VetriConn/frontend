@@ -52,7 +52,7 @@ const ROLE_LABEL: Record<CompanyRole, string> = {
 const memberKey = (member: CompanyMember, index: number) =>
   member.user_id || member.invited_email || `member-${index}`;
 
-export const CompanyTeam = ({
+const CompanyTeam = ({
   company,
   myRole,
   myUserId,

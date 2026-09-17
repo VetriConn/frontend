@@ -4,7 +4,6 @@
  * could open it but never reach an item — Tab order put the portal after the
  * whole page.
  */
-import React from "react";
 import { render, screen, fireEvent, act } from "@testing-library/react";
 import KebabMenu, { KebabAction } from "@/components/pages/admin/KebabMenu";
 

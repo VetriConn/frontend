@@ -5,7 +5,7 @@ import {
   adminUpdateSettingsPassword,
 } from "@/lib/api/admin";
 
-export interface AdminAccountSettings {
+interface AdminAccountSettings {
   first_name: string;
   last_name: string;
   email: string;
@@ -35,22 +35,17 @@ export function useAdminSettings() {
   };
 }
 
-export interface AdminProfilePayload {
+interface AdminProfilePayload {
   first_name: string;
   last_name: string;
   email: string;
 }
 
-export interface AdminPasswordPayload {
+interface AdminPasswordPayload {
   current_password: string;
   new_password: string;
 }
 
-export interface AdminNotificationsPayload {
-  email_alerts: boolean;
-  new_job_submissions: boolean;
-  user_reports: boolean;
-}
 
 export async function updateAdminProfile(
   payload: AdminProfilePayload,
@@ -63,4 +58,3 @@ export async function updateAdminPassword(
 ): Promise<void> {
   await adminUpdateSettingsPassword(payload);
 }
-

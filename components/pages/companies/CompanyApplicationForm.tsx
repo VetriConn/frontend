@@ -50,7 +50,7 @@ const EMPTY: FormState = {
   registration_authority: "",
 };
 
-export const CompanyApplicationForm = () => {
+const CompanyApplicationForm = () => {
   const router = useRouter();
   const { showToast } = useToaster();
   const { mutate } = useMyCompanies();

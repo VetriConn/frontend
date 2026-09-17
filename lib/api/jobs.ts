@@ -104,7 +104,7 @@ export interface AdminJobRaw {
 }
 
 /** List jobs for the review queue, filtered by moderation state. */
-export interface AdminJobCounts {
+interface AdminJobCounts {
   pending: number;
   approved: number;
   rejected: number;
@@ -440,7 +440,7 @@ export async function getRecommendedJobs(): Promise<JobsResponse[]> {
 
 // ─── Public landing-page stats (GET /api/v1/jobs/stats) ──────────────────────
 
-export interface PublicStats {
+interface PublicStats {
   openJobs: number;
   employers: number;
   provinces: number;

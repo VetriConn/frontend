@@ -10,7 +10,7 @@ import { useToaster } from "@/components/ui/Toaster";
  * Useful for pulling fresh listings on demand and for verifying scraper
  * changes without waiting for the cron.
  */
-export const ScrapeJobsButton = ({ pages }: { pages?: number }) => {
+const ScrapeJobsButton = ({ pages }: { pages?: number }) => {
   const { showToast } = useToaster();
   const [isRunning, setIsRunning] = useState(false);
   const [lastRun, setLastRun] = useState<ScraperSourceSummary[] | null>(null);

@@ -19,7 +19,7 @@ import {
 // what `none` should read as, and both drew the indicator with emoji.
 export type { JobSeekingStatus };
 
-export interface ProfileHeaderProps {
+interface ProfileHeaderProps {
   name: string;
   avatar?: string;
   location?: string;

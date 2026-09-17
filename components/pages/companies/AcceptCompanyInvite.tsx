@@ -30,7 +30,7 @@ const PANEL =
   "bg-white rounded-xl border border-gray-200 p-8 md:p-10 text-center max-w-md w-full";
 const PAGE = "min-h-screen bg-gray-50 flex items-center justify-center p-6";
 
-export const AcceptCompanyInvite = () => {
+const AcceptCompanyInvite = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { showToast } = useToaster();

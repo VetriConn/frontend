@@ -22,13 +22,6 @@ import type { JobSeekingStatus } from "@/components/pages/profile/ProfileHeader"
  * Types for API request/response data structures
  */
 
-// Base API response structure
-export interface ApiResponse<T = unknown> {
-  success: boolean;
-  message: string;
-  data?: T;
-  error?: string;
-}
 
 // Login response
 export interface LoginResponse {
@@ -64,22 +57,6 @@ export interface LoginResponse {
   error?: string;
 }
 
-// Signup response
-export interface SignupResponse {
-  success: boolean;
-  message: string;
-  data?: {
-    user: {
-      id: string;
-      email: string;
-      first_name: string;
-      last_name: string;
-      role: string;
-    };
-    token: string;
-  };
-  error?: string;
-}
 
 // User socials structure
 export interface UserSocials {
@@ -488,23 +465,7 @@ export interface Attachment {
   preview?: string; // Optional preview URL
 }
 
-export interface AttachmentUploadResponse {
-  success: boolean;
-  message: string;
-  data?: {
-    attachments: Attachment[];
-  };
-  error?: string;
-}
 
-export interface AttachmentsListResponse {
-  success: boolean;
-  message: string;
-  data?: {
-    attachments: Attachment[];
-  };
-  error?: string;
-}
 
 // Backend attachment type (internal)
 export interface BackendAttachment {

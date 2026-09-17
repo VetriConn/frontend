@@ -214,5 +214,3 @@ export const JobResultsList = ({
     </section>
   );
 };
-
-export default JobResultsList;

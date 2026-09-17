@@ -28,7 +28,7 @@ export const Skeleton: React.FC<SkeletonProps> = ({
 /**
  * Responsive skeleton for buttons - matches button padding at different breakpoints
  */
-export const ButtonSkeleton: React.FC<{ fullWidth?: boolean; className?: string }> = ({ 
+const ButtonSkeleton: React.FC<{ fullWidth?: boolean; className?: string }> = ({ 
   fullWidth = false, 
   className = "" 
 }) => (
@@ -42,21 +42,9 @@ export const ButtonSkeleton: React.FC<{ fullWidth?: boolean; className?: string 
 );
 
 /**
- * Responsive skeleton for cards - matches card padding at different breakpoints
- */
-export const CardSkeleton: React.FC<{ className?: string }> = ({ className = "" }) => (
-  <div className={clsx("bg-white border border-gray-200 rounded-lg md:rounded-xl p-4 md:p-6", className)}>
-    <div className="h-5 md:h-6 w-3/4 bg-gray-200 rounded animate-shimmer mb-3 md:mb-4" />
-    <div className="h-4 md:h-5 w-full bg-gray-200 rounded animate-shimmer mb-2" />
-    <div className="h-4 md:h-5 w-5/6 bg-gray-200 rounded animate-shimmer mb-4 md:mb-6" />
-    <ButtonSkeleton fullWidth />
-  </div>
-);
-
-/**
  * Responsive skeleton for images - reserves space with aspect ratio
  */
-export const ImageSkeleton: React.FC<{ 
+const ImageSkeleton: React.FC<{ 
   aspectRatio?: string;
   className?: string;
   rounded?: boolean;
@@ -78,7 +66,7 @@ export const ImageSkeleton: React.FC<{
 /**
  * Responsive skeleton for form inputs - matches input sizing at different breakpoints
  */
-export const InputSkeleton: React.FC<{ label?: boolean; className?: string }> = ({ 
+const InputSkeleton: React.FC<{ label?: boolean; className?: string }> = ({ 
   label = true, 
   className = "" 
 }) => (
@@ -93,7 +81,7 @@ export const InputSkeleton: React.FC<{ label?: boolean; className?: string }> = 
 /**
  * Responsive skeleton for text - matches typography scaling
  */
-export const TextSkeleton: React.FC<{ 
+const TextSkeleton: React.FC<{ 
   variant?: "h1" | "h2" | "h3" | "body" | "small";
   width?: string;
   className?: string;
@@ -121,44 +109,6 @@ export const TextSkeleton: React.FC<{
     />
   );
 };
-
-export const ProfileHeaderSkeleton: React.FC = () => (
-  <div className="flex flex-col md:flex-row items-center justify-between gap-4 md:gap-6 p-4 md:p-8 bg-white">
-    <div className="flex items-center gap-4 md:gap-6 flex-1 w-full md:w-auto">
-      <div className="relative shrink-0">
-        {/* Avatar with aspect ratio preserved */}
-        <ImageSkeleton 
-          aspectRatio="1" 
-          className="w-20 h-20 md:w-28 md:h-28 lg:w-32 lg:h-32 rounded-full" 
-        />
-      </div>
-      <div className="flex-1 flex flex-col gap-1.5 md:gap-2">
-        <TextSkeleton variant="h2" width="160px" className="md:w-52" />
-        <TextSkeleton variant="body" width="128px" className="md:w-40" />
-        <TextSkeleton variant="small" width="144px" className="md:w-44" />
-        <div className="flex gap-2 mt-2">
-          <div className="w-5 h-5 md:w-6 md:h-6 bg-gray-200 rounded animate-shimmer" />
-          <div className="w-5 h-5 md:w-6 md:h-6 bg-gray-200 rounded animate-shimmer" />
-          <div className="w-5 h-5 md:w-6 md:h-6 bg-gray-200 rounded animate-shimmer" />
-        </div>
-      </div>
-    </div>
-    <div className="shrink-0 w-full md:w-auto">
-      <ButtonSkeleton fullWidth className="md:w-32" />
-    </div>
-  </div>
-);
-
-export const ProfileStatsSkeleton: React.FC = () => (
-  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 bg-white border border-gray-200 rounded-lg mx-4 md:mx-6 my-4 md:my-6 overflow-hidden">
-    {[1, 2, 3, 4].map((i) => (
-      <div key={i} className="p-4 md:p-6 border-r border-gray-200 flex flex-col gap-1.5 last:border-r-0 md:border-b md:border-gray-200 md:[&:nth-child(2n)]:border-r-0 md:[&:nth-child(3)]:border-b-0 md:[&:nth-child(4)]:border-b-0">
-        <TextSkeleton variant="small" width="64px" className="md:w-20" />
-        <TextSkeleton variant="body" width={i === 4 ? "64px" : "80px"} className={i === 4 ? "md:w-20" : "md:w-24"} />
-      </div>
-    ))}
-  </div>
-);
 
 export const DashboardSkeleton: React.FC = () => (
   <div className="min-h-screen bg-gray-50">
@@ -312,44 +262,5 @@ export const JobDetailSkeleton: React.FC = () => (
       </div>
     </div>
   </div>
-);
-
-/**
- * Responsive skeleton for job cards in listings
- */
-export const JobCardSkeleton: React.FC = () => (
-  <div className="bg-white border border-gray-200 rounded-lg md:rounded-xl p-4 md:p-6">
-    <div className="flex items-start gap-3 md:gap-4 mb-3 md:mb-4">
-      <ImageSkeleton aspectRatio="1" className="w-12 h-12 md:w-16 md:h-16 rounded-lg flex-shrink-0" />
-      <div className="flex-1 min-w-0">
-        <TextSkeleton variant="h3" width="80%" className="mb-2" />
-        <TextSkeleton variant="body" width="60%" />
-      </div>
-    </div>
-    <div className="flex flex-wrap gap-2 mb-3 md:mb-4">
-      {[...Array(3)].map((_, i) => (
-        <div key={i} className="h-6 w-20 md:w-24 bg-gray-200 rounded animate-shimmer" />
-      ))}
-    </div>
-    <TextSkeleton variant="body" width="100%" className="mb-2" />
-    <TextSkeleton variant="body" width="90%" className="mb-4 md:mb-6" />
-    <div className="flex flex-col sm:flex-row gap-3">
-      <ButtonSkeleton fullWidth className="sm:flex-1" />
-      <div className="h-[44px] md:h-[48px] w-full sm:w-[44px] md:w-[48px] bg-gray-200 rounded-lg animate-shimmer" />
-    </div>
-  </div>
-);
-
-/**
- * Responsive skeleton for table rows
- */
-export const TableRowSkeleton: React.FC<{ columns?: number }> = ({ columns = 4 }) => (
-  <tr className="border-b border-gray-200">
-    {[...Array(columns)].map((_, i) => (
-      <td key={i} className="px-4 py-3 md:px-6 md:py-4">
-        <TextSkeleton variant="body" width={i === 0 ? "80%" : "60%"} />
-      </td>
-    ))}
-  </tr>
 );
 

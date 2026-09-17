@@ -7,32 +7,15 @@
  * since "province or state" does not mean the same thing everywhere.
  */
 
-export interface Region {
+interface Region {
   /** The stored value: an ISO 3166-2 subdivision code. */
   code: string;
   name: string;
 }
 
-export const CANADA = "Canada";
-export const UNITED_STATES = "United States";
+const CANADA = "Canada";
+const UNITED_STATES = "United States";
 
-/** Ordered for a Canadian audience: home first, then the nearest neighbour. */
-export const COUNTRIES: string[] = [
-  CANADA,
-  UNITED_STATES,
-  "United Kingdom",
-  "Australia",
-  "New Zealand",
-  "Ireland",
-  "India",
-  "Philippines",
-  "Nigeria",
-  "South Africa",
-  "Germany",
-  "France",
-  "Netherlands",
-  "Other",
-];
 
 const CANADIAN_REGIONS: Region[] = [
   { code: "AB", name: "Alberta" },

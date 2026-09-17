@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { checkEmailAvailable } from "@/lib/api/auth";
 
-export type EmailAvailability = "idle" | "checking" | "available" | "taken";
+type EmailAvailability = "idle" | "checking" | "available" | "taken";
 
 // A plausible-address gate, matching the server's — no lookup for input that
 // isn't an email yet, so we don't probe on every keystroke of "a@b".

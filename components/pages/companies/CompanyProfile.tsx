@@ -78,7 +78,7 @@ const Detail = ({
   );
 };
 
-export const CompanyProfile = ({
+const CompanyProfile = ({
   companyId,
   initialCompany,
   initialJobs,

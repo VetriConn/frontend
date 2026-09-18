@@ -21,6 +21,7 @@ import {
 } from "@/hooks/useAdminSupport";
 import { useToaster } from "@/components/ui/Toaster";
 import { formatDate } from "@/lib/date-utils";
+import { PANEL_SURFACE } from "@/components/ui/panelStyles";
 
 // ─── Pill styles (match the rest of the admin shell) ────────────────────────
 
@@ -199,7 +200,7 @@ const TicketDetailDialog = ({
           {/* Description */}
           <section>
             <h3 className="text-sm font-semibold text-gray-900">Description</h3>
-            <div className="mt-1.5 rounded-xl border border-gray-200 bg-white px-3.5 py-3 text-sm text-gray-700 leading-relaxed whitespace-pre-line">
+            <div className={`${PANEL_SURFACE} mt-1.5 px-3.5 py-3 text-sm text-gray-700 leading-relaxed whitespace-pre-line`}>
               {ticket.description}
             </div>
           </section>

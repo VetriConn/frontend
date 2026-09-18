@@ -49,6 +49,8 @@ import {
   storedResumes,
   type PrefillProfile,
 } from "@/lib/application-prefill";
+import { PANEL_SURFACE } from "@/components/ui/panelStyles";
+
 /** Contact details, plus the two facts the experience opener is built from. */
 type CanonicalUserProfile = PrefillProfile;
 
@@ -586,7 +588,7 @@ export default function JobApplicationForm({
       <div className="min-h-screen bg-gray-50 flex items-center justify-center p-6 mobile:p-4">
         <div className="w-full max-w-lg">
           {/* Success Card */}
-          <div className="bg-white rounded-xl border border-gray-200 p-10 mobile:p-6 text-center mb-4">
+          <div className={`${PANEL_SURFACE} p-10 mobile:p-6 text-center mb-4`}>
             <div className="w-14 h-14 mobile:w-12 mobile:h-12 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-5">
               <HiOutlineCheckCircle className="w-8 h-8 md:w-12 md:h-12 text-emerald-500" />
             </div>
@@ -625,7 +627,7 @@ export default function JobApplicationForm({
           </div>
 
           {/* Tip Card */}
-          <div className="bg-white rounded-xl border border-gray-200 px-6 py-4 mobile:px-4 mobile:py-3 text-center">
+          <div className={`${PANEL_SURFACE} px-6 py-4 mobile:px-4 mobile:py-3 text-center`}>
             <p className="text-sm mobile:text-xs text-gray-500">
               <strong className="text-gray-700">Tip:</strong> Check your email
               inbox for a confirmation. Don&apos;t forget to check your spam
@@ -1265,7 +1267,7 @@ export default function JobApplicationForm({
 
           <aside className="mt-6 lg:mt-0 lg:w-80 lg:shrink-0 lg:sticky lg:top-24 space-y-6">
             {/* Job summary card */}
-            <div className="bg-white rounded-xl border border-gray-200 p-5 mb-6">
+            <div className={`${PANEL_SURFACE} p-5 mb-6`}>
               <div className="flex items-start gap-3 md:gap-4 mb-3">
                 <div className="w-10 h-10 rounded-lg bg-red-50 flex items-center justify-center shrink-0">
                   <HiOutlineBriefcase className="w-5 h-5 md:w-6 md:h-6 text-red-500" />
@@ -1300,7 +1302,7 @@ export default function JobApplicationForm({
             </div>
 
             {/* Progress bar */}
-            <div className="bg-white rounded-xl border border-gray-200 p-4 mb-6">
+            <div className={`${PANEL_SURFACE} p-4 mb-6`}>
               <div className="flex items-center justify-between mb-2.5">
                 <span className="text-sm font-semibold text-gray-900">
                   Application Progress
@@ -1348,7 +1350,7 @@ function SectionCard({
       id={anchorId}
       // scroll-mt so an Edit jump does not tuck the heading under the
       // sticky header it lands beneath.
-      className="bg-white rounded-xl border border-gray-200 p-6 mb-6 scroll-mt-24"
+      className={`${PANEL_SURFACE} p-6 mb-6 scroll-mt-24`}
     >
       <div className="flex items-start gap-3 mb-5">
         {/* A soft tinted square, matching the job card, rather than a solid

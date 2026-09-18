@@ -12,6 +12,7 @@ import { acceptInvite, type Company } from "@/lib/api";
 import { useUserProfile } from "@/hooks/useUserProfile";
 import { useToaster } from "@/components/ui/Toaster";
 import { withReturnUrl } from "@/lib/auth-redirect";
+import { PANEL_SURFACE } from "@/components/ui/panelStyles";
 
 /**
  * Redeems a company hiring-team invite.
@@ -26,8 +27,7 @@ import { withReturnUrl } from "@/lib/auth-redirect";
  * a hiring team should not be claimed by a crawler.
  */
 
-const PANEL =
-  "bg-white rounded-xl border border-gray-200 p-8 md:p-10 text-center max-w-md w-full";
+const PANEL = `${PANEL_SURFACE} p-8 md:p-10 text-center max-w-md w-full`;
 const PAGE = "min-h-screen bg-gray-50 flex items-center justify-center p-6";
 
 const AcceptCompanyInvite = () => {

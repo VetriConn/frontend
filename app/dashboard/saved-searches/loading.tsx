@@ -1,3 +1,5 @@
+import { PANEL_SURFACE } from "@/components/ui/panelStyles";
+
 export default function SavedSearchesLoading() {
   return (
     <div className="min-h-screen bg-gray-50">
@@ -17,10 +19,7 @@ export default function SavedSearchesLoading() {
         {/* Search Cards */}
         <div className="space-y-4 animate-pulse">
           {[1, 2, 3].map((i) => (
-            <div
-              key={i}
-              className="bg-white rounded-xl border border-gray-200 p-6"
-            >
+            <div key={i} className={`${PANEL_SURFACE} p-6`}>
               <div className="flex items-start justify-between gap-4 mobile:flex-col">
                 <div className="flex-1 min-w-0 space-y-3">
                   <div className="h-5 w-48 bg-gray-200 rounded" />

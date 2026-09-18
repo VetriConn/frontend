@@ -9,6 +9,7 @@ import { useParams, useRouter } from "next/navigation";
 import DashboardNavbar from "@/components/ui/DashboardNavbar";
 import { getExternalApplyUrl } from "@/lib/job-display";
 import { withReturnUrl } from "@/lib/auth-redirect";
+import { PANEL_SURFACE } from "@/components/ui/panelStyles";
 
 // Lazy load the heavy job application form
 const JobApplicationForm = dynamic(
@@ -20,7 +21,7 @@ const JobApplicationForm = dynamic(
           <div className="h-4 w-32 bg-gray-200 rounded animate-shimmer mb-6" />
           <div className="h-8 w-72 bg-gray-200 rounded animate-shimmer mb-2" />
           <div className="h-4 w-96 bg-gray-200 rounded animate-shimmer mb-8" />
-          <div className="bg-white rounded-xl border border-gray-200 p-6">
+          <div className={`${PANEL_SURFACE} p-6`}>
             <div className="h-10 w-full bg-gray-100 rounded-lg animate-shimmer" />
           </div>
         </div>
@@ -75,7 +76,7 @@ export default function ApplyPage() {
       <>
         <DashboardNavbar />
         <div className="min-h-screen bg-gray-50 flex items-center justify-center p-6">
-          <div className="bg-white rounded-xl border border-gray-200 p-10 text-center max-w-md w-full">
+          <div className={`${PANEL_SURFACE} p-10 text-center max-w-md w-full`}>
             <h2 className="text-xl font-bold text-gray-900 mb-2">
               Apply on the employer&apos;s website
             </h2>
@@ -117,7 +118,7 @@ export default function ApplyPage() {
             <div className="h-4 w-96 bg-gray-200 rounded animate-shimmer mb-8" />
 
             {/* Progress bar skeleton */}
-            <div className="bg-white rounded-xl border border-gray-200 p-4 mb-6">
+            <div className={`${PANEL_SURFACE} p-4 mb-6`}>
               <div className="flex items-center justify-between mb-2.5">
                 <div className="h-4 w-36 bg-gray-200 rounded animate-shimmer" />
                 <div className="h-3 w-40 bg-gray-200 rounded animate-shimmer" />
@@ -126,7 +127,7 @@ export default function ApplyPage() {
             </div>
 
             {/* Job card skeleton */}
-            <div className="bg-white rounded-xl border border-gray-200 p-5 mb-6">
+            <div className={`${PANEL_SURFACE} p-5 mb-6`}>
               <div className="flex items-start gap-3.5">
                 <div className="w-10 h-10 bg-gray-200 rounded-lg animate-shimmer" />
                 <div>
@@ -139,10 +140,7 @@ export default function ApplyPage() {
 
             {/* Section skeletons */}
             {[...Array(3)].map((_, i) => (
-              <div
-                key={i}
-                className="bg-white rounded-xl border border-gray-200 p-6 mb-6"
-              >
+              <div key={i} className={`${PANEL_SURFACE} p-6 mb-6`}>
                 <div className="flex items-start gap-3 mb-5">
                   <div className="w-8 h-8 bg-gray-200 rounded-full animate-shimmer" />
                   <div>
@@ -170,7 +168,7 @@ export default function ApplyPage() {
       <>
         <DashboardNavbar />
         <div className="min-h-screen bg-gray-50 flex items-center justify-center p-6">
-          <div className="bg-white rounded-xl border border-gray-200 p-10 text-center max-w-md w-full">
+          <div className={`${PANEL_SURFACE} p-10 text-center max-w-md w-full`}>
             <h2 className="text-xl font-bold text-gray-900 mb-2">
               This job is no longer available
             </h2>

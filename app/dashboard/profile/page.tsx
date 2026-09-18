@@ -41,6 +41,7 @@ import { useToaster } from "@/components/ui/Toaster";
 import { AuthGuard } from "@/components/auth/AuthGuard";
 import { WorkExperience, Education, UserDocument } from "@/types/api";
 import { HiOutlineBriefcase, HiOutlinePencilSquare } from "react-icons/hi2";
+import { CardSkeleton } from "@/components/ui/Skeleton";
 
 type EditSection =
   | "contact"
@@ -575,7 +576,7 @@ export default function ProfilePage() {
           {/* Main content */}
           <div className="space-y-4 md:space-y-6 lg:col-span-2">
             {/* Profile Header */}
-            <div className="bg-white rounded-xl border border-gray-200 p-6 animate-pulse">
+            <CardSkeleton className="p-6">
               <div className="flex items-center gap-6 tablet:flex-col">
                 <div className="w-[120px] h-[120px] rounded-full bg-gray-200 shrink-0" />
                 <div className="flex-1 space-y-3">
@@ -590,10 +591,10 @@ export default function ProfilePage() {
                 </div>
                 <div className="h-9 w-32 bg-gray-200 rounded-lg shrink-0 tablet:w-full" />
               </div>
-            </div>
+            </CardSkeleton>
 
             {/* Professional Info */}
-            <div className="bg-white rounded-xl border border-gray-200 p-6 animate-pulse">
+            <CardSkeleton className="p-6">
               <div className="flex items-center gap-2 mb-4">
                 <div className="w-5 h-5 bg-gray-200 rounded" />
                 <div className="h-5 w-48 bg-gray-200 rounded" />
@@ -606,10 +607,10 @@ export default function ProfilePage() {
                   </div>
                 ))}
               </div>
-            </div>
+            </CardSkeleton>
 
             {/* Contact Info */}
-            <div className="bg-white rounded-xl border border-gray-200 p-6 animate-pulse">
+            <CardSkeleton className="p-6">
               <div className="flex items-center gap-2 mb-4">
                 <div className="w-5 h-5 bg-gray-200 rounded" />
                 <div className="h-5 w-40 bg-gray-200 rounded" />
@@ -622,10 +623,10 @@ export default function ProfilePage() {
                   </div>
                 ))}
               </div>
-            </div>
+            </CardSkeleton>
 
             {/* Skills */}
-            <div className="bg-white rounded-xl border border-gray-200 p-6 animate-pulse">
+            <CardSkeleton className="p-6">
               <div className="flex items-center gap-2 mb-4">
                 <div className="w-5 h-5 bg-gray-200 rounded" />
                 <div className="h-5 w-20 bg-gray-200 rounded" />
@@ -639,10 +640,10 @@ export default function ProfilePage() {
                   />
                 ))}
               </div>
-            </div>
+            </CardSkeleton>
 
             {/* Work Experience */}
-            <div className="bg-white rounded-xl border border-gray-200 p-6 animate-pulse">
+            <CardSkeleton className="p-6">
               <div className="flex items-center gap-2 mb-4">
                 <div className="w-5 h-5 bg-gray-200 rounded" />
                 <div className="h-5 w-40 bg-gray-200 rounded" />
@@ -656,10 +657,10 @@ export default function ProfilePage() {
                   </div>
                 ))}
               </div>
-            </div>
+            </CardSkeleton>
 
             {/* Education */}
-            <div className="bg-white rounded-xl border border-gray-200 p-6 animate-pulse">
+            <CardSkeleton className="p-6">
               <div className="flex items-center gap-2 mb-4">
                 <div className="w-5 h-5 bg-gray-200 rounded" />
                 <div className="h-5 w-28 bg-gray-200 rounded" />
@@ -669,22 +670,22 @@ export default function ProfilePage() {
                 <div className="h-3 w-32 bg-gray-200 rounded mb-1" />
                 <div className="h-3 w-20 bg-gray-200 rounded" />
               </div>
-            </div>
+            </CardSkeleton>
 
             {/* Documents */}
-            <div className="bg-white rounded-xl border border-gray-200 p-6 animate-pulse">
+            <CardSkeleton className="p-6">
               <div className="flex items-center gap-2 mb-4">
                 <div className="w-5 h-5 bg-gray-200 rounded" />
                 <div className="h-5 w-28 bg-gray-200 rounded" />
               </div>
               <div className="h-4 w-52 bg-gray-200 rounded" />
-            </div>
+            </CardSkeleton>
           </div>
 
           {/* Sidebar */}
           <div className="space-y-4 md:space-y-6 lg:col-span-1 hidden lg:block">
             {/* Profile Completion */}
-            <div className="bg-white rounded-xl border border-gray-200 p-6 animate-pulse">
+            <CardSkeleton className="p-6">
               <div className="h-5 w-40 bg-gray-200 rounded mb-4" />
               <div className="h-2 w-full bg-gray-200 rounded-full mb-3" />
               <div className="h-4 w-16 bg-gray-200 rounded mb-4" />
@@ -696,17 +697,17 @@ export default function ProfilePage() {
                   </div>
                 ))}
               </div>
-            </div>
+            </CardSkeleton>
 
             {/* Quick Actions */}
-            <div className="bg-white rounded-xl border border-gray-200 p-6 animate-pulse">
+            <CardSkeleton className="p-6">
               <div className="h-5 w-32 bg-gray-200 rounded mb-4" />
               <div className="space-y-3">
                 {[1, 2, 3].map((i) => (
                   <div key={i} className="h-10 bg-gray-200 rounded-lg" />
                 ))}
               </div>
-            </div>
+            </CardSkeleton>
           </div>
         </div>
       </div>

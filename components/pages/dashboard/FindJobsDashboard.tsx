@@ -12,6 +12,7 @@ import {
 import { pickGreeting } from "@/lib/greeting";
 import { CustomDropdown } from "@/components/ui/CustomDropdown";
 import { HiMagnifyingGlass } from "react-icons/hi2";
+import { CardSkeleton } from "@/components/ui/Skeleton";
 
 // Dynamically import profile cards for better optimization
 const CompleteProfileCard = dynamic(
@@ -22,7 +23,7 @@ const CompleteProfileCard = dynamic(
   {
     ssr: false,
     loading: () => (
-      <div className="bg-white rounded-xl border border-gray-200 p-5 mb-6 animate-pulse h-[100px]" />
+      <CardSkeleton className="p-5 mb-6 h-[100px]" />
     ),
   },
 );
@@ -35,7 +36,7 @@ const ReadyToApplyCard = dynamic(
   {
     ssr: false,
     loading: () => (
-      <div className="bg-white rounded-xl border border-gray-200 p-6 mb-6 animate-pulse h-[150px]" />
+      <CardSkeleton className="p-6 mb-6 h-[150px]" />
     ),
   },
 );

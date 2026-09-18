@@ -1,3 +1,5 @@
+import { PANEL_SURFACE } from "@/components/ui/panelStyles";
+
 export default function AppliedJobsLoading() {
   return (
     <div className="min-h-screen bg-gray-50">
@@ -21,7 +23,7 @@ export default function AppliedJobsLoading() {
           {[1, 2, 3, 4].map((i) => (
             <div
               key={i}
-              className="bg-white rounded-xl border border-gray-200 py-5 px-6 text-center flex-1 min-w-[120px]"
+              className={`${PANEL_SURFACE} py-5 px-6 text-center flex-1 min-w-[120px]`}
             >
               <div className="h-7 w-8 bg-gray-200 rounded mx-auto mb-2" />
               <div className="h-4 w-16 bg-gray-200 rounded mx-auto" />
@@ -43,10 +45,7 @@ export default function AppliedJobsLoading() {
         {/* Application Cards */}
         <div className="space-y-4 animate-pulse">
           {[1, 2, 3].map((i) => (
-            <div
-              key={i}
-              className="bg-white rounded-xl border border-gray-200 p-6"
-            >
+            <div key={i} className={`${PANEL_SURFACE} p-6`}>
               <div className="flex items-start justify-between gap-4 mobile:flex-col">
                 <div className="flex-1 min-w-0 space-y-3">
                   <div className="h-5 w-48 bg-gray-200 rounded" />

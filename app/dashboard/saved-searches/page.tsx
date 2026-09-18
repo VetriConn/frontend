@@ -22,12 +22,13 @@ import {
   type SavedSearch,
 } from "@/hooks/useSavedSearches";
 import { AuthGuard } from "@/components/auth/AuthGuard";
+import { PANEL_SURFACE } from "@/components/ui/panelStyles";
 
 // ─── Empty State ────────────────────────────────────────────────────────────────
 
 function EmptyState() {
   return (
-    <div className="bg-white rounded-xl border border-gray-200 p-16 flex flex-col items-center justify-center text-center">
+    <div className={`${PANEL_SURFACE} p-16 flex flex-col items-center justify-center text-center`}>
       <div className="w-20 h-20 rounded-full bg-gray-100 flex items-center justify-center mb-6">
         <HiOutlineBookmarkSquare className="w-9 h-9 text-gray-400" />
       </div>
@@ -89,7 +90,7 @@ function SavedSearchCard({
   });
 
   return (
-    <div className="bg-white rounded-xl border border-gray-200 p-6 transition-shadow hover:shadow-sm">
+    <div className={`${PANEL_SURFACE} p-6 transition-shadow hover:shadow-sm`}>
       <div className="flex items-start justify-between gap-4 mobile:flex-col">
         {/* Search Info */}
         <div className="flex-1 min-w-0">

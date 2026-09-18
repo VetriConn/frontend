@@ -20,6 +20,7 @@ import { safeHttpUrl } from "@/lib/safe-url";
 import { fieldLabel, JOB_TYPE_LABELS } from "@/lib/job-fields";
 import { companyIndustryLabel } from "@/lib/company-fields";
 import { formatDate } from "@/lib/date-utils";
+import { PANEL_SURFACE } from "@/components/ui/panelStyles";
 
 /**
  * Public company profile — the organisation's page on Vetriconn, the way a
@@ -43,7 +44,7 @@ const SectionCard = ({
   children: React.ReactNode;
   action?: React.ReactNode;
 }) => (
-  <section className="bg-white rounded-xl border border-gray-200 p-5 md:p-6">
+  <section className={`${PANEL_SURFACE} p-5 md:p-6`}>
     <div className="flex items-center justify-between gap-3 mb-4">
       <div className="inline-flex items-center gap-2">
         <Icon className="w-5 h-5 text-primary" />
@@ -112,7 +113,7 @@ const CompanyProfile = ({
   if (isError || !company) {
     return (
       <div className="max-w-3xl mx-auto px-4 md:px-6 py-12">
-        <div className="bg-white rounded-xl border border-gray-200 p-10 text-center">
+        <div className={`${PANEL_SURFACE} p-10 text-center`}>
           <h1 className="text-xl font-bold text-gray-900 mb-2">
             Company not found
           </h1>
@@ -140,7 +141,7 @@ const CompanyProfile = ({
   return (
     <div className="max-w-5xl mx-auto px-4 md:px-6 py-6 md:py-8 space-y-6">
       {/* ── Identity header ─────────────────────────────────────────────── */}
-      <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+      <div className={`${PANEL_SURFACE} overflow-hidden`}>
         {/* Banner */}
         <div className="h-32 md:h-48 bg-gradient-to-r from-primary/10 via-red-50 to-gray-50 relative">
           {company.banner_url && (

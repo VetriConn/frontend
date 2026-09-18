@@ -26,6 +26,7 @@ import {
   JOB_TAG_CLASS,
 } from "@/lib/job-display";
 import { fieldLabel, EXPERIENCE_LEVEL_LABELS } from "@/lib/job-fields";
+import { PANEL_SURFACE } from "@/components/ui/panelStyles";
 
 const PAGE_SIZE = 20;
 
@@ -84,7 +85,7 @@ function JobCard({ job }: { job: Job }) {
       className="block no-underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:ring-offset-2 rounded-xl"
       aria-label={`${job.role} at ${job.company_name}`}
     >
-      <article className="group bg-white border border-gray-200 rounded-xl p-5 sm:p-6 transition-shadow hover:shadow-md h-full">
+      <article className={`${PANEL_SURFACE} group p-5 sm:p-6 transition-shadow hover:shadow-md h-full`}>
         {/* Title */}
         <h3 className="font-semibold text-lg text-gray-900 mb-2 group-hover:text-primary transition-colors">
           {job.role}
@@ -471,7 +472,7 @@ export default async function JobsPage({
         )}
 
         {/* CTA banner */}
-        <div className="mt-12 bg-white border border-gray-200 rounded-xl p-8 sm:p-10 text-center">
+        <div className={`${PANEL_SURFACE} mt-12 p-8 sm:p-10 text-center`}>
           <h3 className="heading-3 mb-3">Ready to take the next step?</h3>
           <p className="text-gray-600 max-w-lg mx-auto mb-6">
             Create your free Vetriconn account to access full job details, save

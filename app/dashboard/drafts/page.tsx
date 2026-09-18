@@ -10,6 +10,7 @@ import {
   HiOutlineArrowRight,
 } from "react-icons/hi2";
 import { formatDate } from "@/lib/date-utils";
+import { PANEL_SURFACE } from "@/components/ui/panelStyles";
 
 
 export default function ManageDraftsPage() {
@@ -36,11 +37,11 @@ export default function ManageDraftsPage() {
         </div>
 
         {isLoading ? (
-          <div className="bg-white rounded-xl border border-gray-200 p-10 text-center text-sm text-gray-600">
+          <div className={`${PANEL_SURFACE} p-10 text-center text-sm text-gray-600`}>
             Loading drafts...
           </div>
         ) : drafts.length === 0 ? (
-          <div className="bg-white rounded-xl border border-gray-200 p-12 text-center">
+          <div className={`${PANEL_SURFACE} p-12 text-center`}>
             <div className="w-14 h-14 bg-gray-100 text-gray-300 rounded-full flex items-center justify-center mx-auto mb-4">
               <HiOutlineClipboardDocument className="w-7 h-7" />
             </div>
@@ -51,7 +52,7 @@ export default function ManageDraftsPage() {
             {drafts.map((draft) => (
               <div
                 key={draft._id}
-                className="bg-white rounded-xl border border-gray-200 px-5 py-4 flex items-center justify-between gap-4 hover:border-gray-300 transition-colors"
+                className={`${PANEL_SURFACE} px-5 py-4 flex items-center justify-between gap-4 hover:border-gray-300 transition-colors`}
               >
                 <div>
                   <h3 className="text-sm font-semibold text-gray-900">

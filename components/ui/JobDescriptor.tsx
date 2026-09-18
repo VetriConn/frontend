@@ -59,6 +59,7 @@ import {
   isAggregatedJob,
   splitDescriptionParts,
 } from "@/lib/job-display";
+import { PANEL_SURFACE } from "./panelStyles";
 
 type JobDescriptorProps = Job;
 
@@ -562,7 +563,7 @@ const JobDescriptor: React.FC<JobDescriptorProps> = ({
             {/* Screening note — the questions themselves are answered at apply
                 time, so here we just set the expectation. */}
             {screeningCount > 0 && (
-              <div className="mb-8 flex items-start gap-2.5 rounded-xl border border-gray-200 bg-white p-4">
+              <div className={`${PANEL_SURFACE} mb-8 flex items-start gap-2.5 p-4`}>
                 <HiOutlineCheckCircle className="w-5 h-5 text-primary shrink-0 mt-0.5" />
                 <p className="text-sm text-gray-600 leading-relaxed">
                   This role has {screeningCount} quick screening{" "}
@@ -580,10 +581,7 @@ const JobDescriptor: React.FC<JobDescriptorProps> = ({
                 </h2>
                 <div className="space-y-3">
                   {faqItems.map((faq, i) => (
-                    <details
-                      key={i}
-                      className="group rounded-xl border border-gray-200 bg-white p-4"
-                    >
+                    <details key={i} className={`${PANEL_SURFACE} group p-4`}>
                       <summary className="flex cursor-pointer items-center justify-between gap-3 text-sm font-medium text-gray-900 list-none">
                         {faq.question}
                         <HiOutlineChevronRight className="w-4 h-4 text-gray-400 transition-transform group-open:rotate-90" />
@@ -650,7 +648,7 @@ const JobDescriptor: React.FC<JobDescriptorProps> = ({
               Summary stays in view while only the details column scrolls. */}
           <div className="w-80 shrink-0 tablet:w-full">
             <div className="sticky top-16">
-              <div className="bg-white border border-gray-200 rounded-xl p-6">
+              <div className={`${PANEL_SURFACE} p-6`}>
         <h3 className="text-lg md:text-2xl font-bold text-gray-900 mb-5">
           Job Summary
         </h3>

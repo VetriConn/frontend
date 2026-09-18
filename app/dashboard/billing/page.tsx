@@ -2,6 +2,7 @@
 
 import { HiOutlineCreditCard } from "react-icons/hi2";
 import { AuthGuard } from "@/components/auth/AuthGuard";
+import { PANEL_SURFACE } from "@/components/ui/panelStyles";
 
 export default function BillingPage() {
   return (
@@ -16,7 +17,7 @@ export default function BillingPage() {
           </p>
         </div>
 
-        <div className="bg-white rounded-xl border border-gray-200 p-12 text-center">
+        <div className={`${PANEL_SURFACE} p-12 text-center`}>
           <div className="w-16 h-16 bg-gray-100 text-gray-400 rounded-full flex items-center justify-center mx-auto mb-6">
             <HiOutlineCreditCard className="w-8 h-8" />
           </div>

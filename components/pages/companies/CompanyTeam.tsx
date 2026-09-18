@@ -21,6 +21,7 @@ import {
 import { useToaster } from "@/components/ui/Toaster";
 import { FormField } from "@/components/ui/FormField";
 import { CustomDropdown } from "@/components/ui/CustomDropdown";
+import { PANEL_SURFACE } from "@/components/ui/panelStyles";
 
 /**
  * Hiring-team management for a company.
@@ -213,7 +214,7 @@ const CompanyTeam = ({
   };
 
   return (
-    <section className="bg-white rounded-xl border border-gray-200 p-6">
+    <section className={`${PANEL_SURFACE} p-6`}>
       <div className="flex flex-wrap items-start justify-between gap-3 mb-1">
         <h2 className="text-lg font-semibold text-gray-900">Hiring team</h2>
         {canInvite && !inviteOpen && (

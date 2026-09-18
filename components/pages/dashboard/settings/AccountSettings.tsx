@@ -35,6 +35,7 @@ import DisableTwoFactorDialog from "@/components/security/DisableTwoFactorDialog
 import { CustomDropdown } from "@/components/ui/CustomDropdown";
 import { FIELD_LABEL } from "@/components/ui/fieldStyles";
 import { JOB_SEEKING_STATUS_OPTIONS } from "@/components/ui/JobSeekingStatusBadge";
+import { PANEL_SURFACE } from "@/components/ui/panelStyles";
 
 // ─── Types ──────────────────────────────────────────────────────────────────────
 
@@ -103,7 +104,7 @@ function SectionCard({
   children: React.ReactNode;
 }) {
   return (
-    <div className="bg-white rounded-xl border border-gray-200 p-6 mobile:p-5 mb-5">
+    <div className={`${PANEL_SURFACE} p-6 mobile:p-5 mb-5`}>
       <h2 className="font-lato text-lg font-bold text-gray-900 mb-1">
         {title}
       </h2>

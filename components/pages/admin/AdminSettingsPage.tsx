@@ -38,6 +38,7 @@ import { useUserProfile } from "@/hooks/useUserProfile";
 import TwoFactorSetupDialog from "@/components/security/TwoFactorSetupDialog";
 import DisableTwoFactorDialog from "@/components/security/DisableTwoFactorDialog";
 import { formatDate, formatRelativeTime } from "@/lib/date-utils";
+import { PANEL_SURFACE } from "@/components/ui/panelStyles";
 
 // "Never" is the meaningful absence (a job that has not run yet); the
 // shared helper's "Recently" fallback would claim the opposite.
@@ -115,7 +116,7 @@ const SectionCard = ({
   action?: React.ReactNode;
   children: React.ReactNode;
 }) => (
-  <section className="bg-white rounded-xl border border-gray-200 p-6 mobile:p-5">
+  <section className={`${PANEL_SURFACE} p-6 mobile:p-5`}>
     <header className="flex items-start justify-between gap-3 mb-5">
       <div className="min-w-0">
         <div className="inline-flex items-center gap-2">
@@ -398,7 +399,7 @@ const AdminSettingsPage = () => {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6 items-start">
         <div className="space-y-4 md:space-y-6 lg:col-span-2">
           {/* ── Identity header ── */}
-          <div className="bg-white rounded-xl border border-gray-200 p-6 mobile:p-5">
+          <div className={`${PANEL_SURFACE} p-6 mobile:p-5`}>
             <div className="flex flex-col sm:flex-row gap-5">
               <div className="shrink-0 flex justify-center sm:justify-start">
                 <div className="w-20 h-20 rounded-full bg-gradient-to-br from-primary to-red-700 text-white flex items-center justify-center text-xl font-bold overflow-hidden ring-4 ring-primary/10">
@@ -776,7 +777,7 @@ const AdminSettingsPage = () => {
 
         {/* ── Quick actions ── */}
         <aside className="space-y-4 md:space-y-6 lg:col-span-1 lg:sticky lg:top-24 lg:self-start">
-          <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+          <div className={`${PANEL_SURFACE} overflow-hidden`}>
             <h2 className="font-lato text-lg font-bold text-gray-900 px-4 pt-5 pb-3">
               Quick Actions
             </h2>
@@ -817,7 +818,7 @@ const AdminSettingsPage = () => {
           </div>
 
           {/* Security checklist — what the header badge is counting. */}
-          <div className="bg-white rounded-xl border border-gray-200 p-5">
+          <div className={`${PANEL_SURFACE} p-5`}>
             <h2 className="font-lato text-lg font-bold text-gray-900 mb-3">
               Security checklist
             </h2>

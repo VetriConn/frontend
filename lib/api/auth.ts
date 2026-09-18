@@ -22,6 +22,11 @@ export interface ApiResponse<T = unknown> {
 }
 
 export interface RegisterResponse {
+  /**
+   * Read-only handle the completion screen polls with to notice a
+   * verification that happened on another device. Never the email token.
+   */
+  statusToken?: string;
   emailVerificationSent: boolean;
 }
 

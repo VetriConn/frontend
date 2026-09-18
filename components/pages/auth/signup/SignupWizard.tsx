@@ -180,6 +180,7 @@ function clearStateFromStorage(): void {
 export function SignupWizard() {
   const [state, dispatch] = useReducer(signupReducer, initialState);
   const [isActionLocked, setIsActionLocked] = useState(false);
+  const [statusToken, setStatusToken] = useState<string | null>(null);
   const actionLockTimerRef = useRef<number | null>(null);
   const { showToast } = useToaster();
   const { currentStep, formData, errors } = state;
@@ -308,6 +309,17 @@ export function SignupWizard() {
 
       // Register user
       const response = await registerUser(formData);
+
+      /*
+       * The handle the completion screen polls with.
+       *
+       * Held in component state rather than anywhere durable: if the reader
+       * reloads that page they lose the poll and fall back to the "Already
+       * verified? Continue to Sign In" link, which is the correct trade. The
+       * alternative is persisting a registration handle in storage, and this
+       * is not worth a storage key.
+       */
+      setStatusToken(response.data?.statusToken ?? null);
 
       if (!response.success) {
         // Handle validation errors
@@ -484,6 +496,7 @@ export function SignupWizard() {
         return (
           <CompletionStep
             formData={formData}
+            statusToken={statusToken}
             onResendEmail={handleResendEmail}
           />
         );

@@ -3,13 +3,39 @@ import {
   HiOutlineCheckCircle,
   HiOutlineBriefcase,
   HiOutlineChatBubbleLeftRight,
-  HiOutlineUserCircle,
   HiOutlineDocumentCheck,
-  HiOutlineInformationCircle,
   HiOutlineUserPlus,
-  HiOutlineSparkles,
 } from "react-icons/hi2";
+import Image from "next/image";
 import { NotificationType } from "@/types/api";
+
+/**
+ * Vetriconn speaking, rather than a person.
+ *
+ * public/logo.svg is the maple-leaf mark on its own, 154x154, which is what
+ * the favicon uses. The wordmark in public/images/logo.png is the wrong asset
+ * here: at the 20px this renders at, "Vetriconn" is a grey smudge.
+ *
+ * alt is empty on purpose. The notification's title already says what this
+ * is, so announcing the logo as well would just repeat the brand name into
+ * every system message a screen reader reads.
+ *
+ * unoptimized because the image optimizer refuses SVG unless
+ * dangerouslyAllowSVG is set, and turning that on globally to render one
+ * first-party file we control is the wrong trade.
+ */
+const SystemMark = () => (
+  <Image src="/logo.svg" alt="" width={20} height={20} unoptimized className="w-5 h-5" />
+);
+
+/** The look shared by every notification that is Vetriconn talking to you. */
+const SYSTEM_VOICE = {
+  icon: <SystemMark />,
+  dotColor: "bg-primary",
+  bgColor: "bg-red-50",
+  iconColor: "text-primary",
+  borderColor: "border-l-primary",
+} as const;
 
 interface NotificationConfig {
   icon: React.ReactNode;
@@ -37,11 +63,7 @@ export const NOTIFICATION_CONFIG: Record<NotificationType, NotificationConfig> =
     dotColor: "bg-blue-500",
     bgColor: "bg-blue-50",
   },
-  profile_reminder: {
-    icon: <HiOutlineUserCircle className="w-5 h-5 text-gray-600" />,
-    dotColor: "bg-gray-400",
-    bgColor: "bg-gray-100",
-  },
+  profile_reminder: SYSTEM_VOICE,
   application_reviewed: {
     icon: <HiOutlineDocumentCheck className="w-5 h-5 text-emerald-600" />,
     dotColor: "bg-emerald-500",
@@ -73,41 +95,11 @@ export const NOTIFICATION_CONFIG: Record<NotificationType, NotificationConfig> =
     iconColor: "text-purple-500",
     borderColor: "border-l-purple-500",
   },
-  job_approved: {
-    icon: <HiOutlineCheckCircle className="w-5 h-5 text-emerald-600" />,
-    dotColor: "bg-emerald-500",
-    bgColor: "bg-emerald-50",
-    iconColor: "text-emerald-500",
-    borderColor: "border-l-emerald-500",
-  },
-  job_rejected: {
-    icon: <HiOutlineInformationCircle className="w-5 h-5 text-rose-600" />,
-    dotColor: "bg-rose-500",
-    bgColor: "bg-rose-50",
-    iconColor: "text-rose-500",
-    borderColor: "border-l-rose-500",
-  },
-  saved_search_matches: {
-    icon: <HiOutlineBriefcase className="w-5 h-5 text-blue-600" />,
-    dotColor: "bg-blue-500",
-    bgColor: "bg-blue-50",
-    iconColor: "text-blue-500",
-    borderColor: "border-l-blue-500",
-  },
+  job_approved: SYSTEM_VOICE,
+  job_rejected: SYSTEM_VOICE,
+  saved_search_matches: SYSTEM_VOICE,
   // The first notification most accounts ever see, so it wears the brand
   // colour rather than the generic grey of `system`.
-  welcome: {
-    icon: <HiOutlineSparkles className="w-5 h-5 text-primary" />,
-    dotColor: "bg-primary",
-    bgColor: "bg-red-50",
-    iconColor: "text-primary",
-    borderColor: "border-l-primary",
-  },
-  system: {
-    icon: <HiOutlineInformationCircle className="w-5 h-5 text-gray-600" />,
-    dotColor: "bg-gray-500",
-    bgColor: "bg-gray-100",
-    iconColor: "text-gray-500",
-    borderColor: "border-l-gray-400",
-  },
+  welcome: SYSTEM_VOICE,
+  system: SYSTEM_VOICE,
 };

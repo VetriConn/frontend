@@ -1,57 +1,25 @@
 "use client";
 
-import {
-  FieldLabel,
-  FieldError,
-  HelperText,
-  SelectField,
-  inputClasses,
-  errorInputClasses,
-} from "@/components/ui/formKit";
-import {
-  JOB_CATEGORIES,
-  JOB_TYPES,
-  WORK_ARRANGEMENTS,
-  type JobFormData,
-  type FormErrors,
-} from "../jobForm";
+import { SelectField } from "@/components/ui/formKit";
+import { StepHeading, JobTitleField, type StepProps } from "./stepKit";
+import { JOB_CATEGORIES, JOB_TYPES, WORK_ARRANGEMENTS } from "../jobForm";
 
 // ─── Step Components ─────────────────────────────────────────────────────────
-export function StepJobDetails({
-  formData,
-  errors,
-  onChange,
-}: {
-  formData: JobFormData;
-  errors: FormErrors;
-  onChange: (field: keyof JobFormData, value: string) => void;
-}) {
+export function StepJobDetails({ formData, errors, onChange }: StepProps) {
   return (
     <div>
-      <h2 className="text-xl font-semibold text-gray-900 mb-1">Job Details</h2>
-      <p className="text-sm md:text-base text-gray-600 mb-6">
+      <StepHeading title="Job Details">
         Define the basic identity of the job you&apos;re posting.
-      </p>
+      </StepHeading>
 
       <div className="space-y-5">
         {/* Job Title */}
-        <div>
-          <FieldLabel htmlFor="job_title" required>
-            Job Title
-          </FieldLabel>
-          <input
-            id="job_title"
-            type="text"
-            value={formData.job_title}
-            onChange={(e) => onChange("job_title", e.target.value)}
-            placeholder="e.g., Customer Service Representative"
-            className={errors.job_title ? errorInputClasses : inputClasses}
-          />
-          <HelperText>
-            Use clear titles so older applicants can understand the role easily.
-          </HelperText>
-          <FieldError message={errors.job_title} />
-        </div>
+        <JobTitleField
+          value={formData.job_title}
+          error={errors.job_title}
+          onChange={onChange}
+          helperText="Use clear titles so older applicants can understand the role easily."
+        />
 
         {/* Job Category */}
         <SelectField

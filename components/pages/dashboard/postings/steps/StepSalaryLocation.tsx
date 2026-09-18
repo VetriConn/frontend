@@ -9,13 +9,13 @@ import {
   LocationFields,
   inputClasses,
 } from "@/components/ui/formKit";
+import { StepHeading, SalaryAmountField, type StepProps } from "./stepKit";
 import {
   PAYMENT_TYPES,
   CURRENCIES,
   WORK_SCHEDULES,
   BENEFITS,
   type JobFormData,
-  type FormErrors,
 } from "../jobForm";
 
 /**
@@ -69,57 +69,32 @@ export function StepSalaryLocation({
   errors,
   onChange,
   onToggle,
-}: {
-  formData: JobFormData;
-  errors: FormErrors;
-  onChange: (field: keyof JobFormData, value: string) => void;
+}: StepProps & {
   onToggle: (field: "languages" | "benefits", value: string) => void;
 }) {
   return (
     <div>
-      <h2 className="text-xl font-semibold text-gray-900 mb-1">
-        Salary &amp; Location
-      </h2>
-      <p className="text-sm md:text-base text-gray-600 mb-6">
+      <StepHeading title="Salary & Location">
         Be transparent about compensation and location to reduce uncertainty for
         applicants.
-      </p>
+      </StepHeading>
 
       <div className="space-y-4 md:space-y-6">
         {/* Minimum / Maximum */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
-          <div>
-            <FieldLabel htmlFor="salary_min">Minimum</FieldLabel>
-            <div className="relative">
-              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-sm">
-                $
-              </span>
-              <input
-                id="salary_min"
-                type="number"
-                value={formData.salary_min}
-                onChange={(e) => onChange("salary_min", e.target.value)}
-                min="0"
-                className={`${errors.salary_min ? "border-red-500" : "border-gray-200"} w-full pl-7 pr-4 py-2.5 border rounded-lg text-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary bg-white`}
-              />
-            </div>
-          </div>
-          <div>
-            <FieldLabel htmlFor="salary_max">Maximum</FieldLabel>
-            <div className="relative">
-              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-sm">
-                $
-              </span>
-              <input
-                id="salary_max"
-                type="number"
-                value={formData.salary_max}
-                onChange={(e) => onChange("salary_max", e.target.value)}
-                min="0"
-                className="w-full pl-7 pr-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary bg-white"
-              />
-            </div>
-          </div>
+          <SalaryAmountField
+            id="salary_min"
+            label="Minimum"
+            value={formData.salary_min}
+            onChange={onChange}
+            hasError={Boolean(errors.salary_min)}
+          />
+          <SalaryAmountField
+            id="salary_max"
+            label="Maximum"
+            value={formData.salary_max}
+            onChange={onChange}
+          />
         </div>
         {errors.salary_min && <FieldError message={errors.salary_min} />}
 

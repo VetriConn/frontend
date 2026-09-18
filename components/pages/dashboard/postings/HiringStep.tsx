@@ -16,6 +16,7 @@ import {
 } from "@/lib/job-fields";
 import { CustomDropdown } from "@/components/ui/CustomDropdown";
 import { inputClasses } from "@/components/ui/formKit";
+import { StepHeading } from "./steps/stepKit";
 
 /**
  * Phase-2 builder step: the screening questionnaire, a public FAQ, and the
@@ -397,14 +398,11 @@ export function StepHiring({
 
   return (
     <div>
-      <h2 className="text-xl font-semibold text-gray-900 mb-1">
-        Screening &amp; Hiring
-      </h2>
-      <p className="text-sm md:text-base text-gray-600 mb-6">
+      <StepHeading title="Screening & Hiring">
         Optional. Ask a few screening questions to rank applicants, answer common
         questions up front, and show candidates what to expect. Screening never
         rejects anyone automatically - it only helps you sort.
-      </p>
+      </StepHeading>
 
       {/* Screening questions */}
       <section className="mb-8">

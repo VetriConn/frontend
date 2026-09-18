@@ -1,7 +1,7 @@
 "use client";
 
 import { RichTextEditor } from "@/components/ui/RichTextEditor";
-import { FieldLabel, FieldError, HelperText } from "../formKit";
+import { FieldLabel, FieldError, HelperText } from "@/components/ui/formKit";
 import type { JobFormData, FormErrors } from "../jobForm";
 
 export function StepDescription({

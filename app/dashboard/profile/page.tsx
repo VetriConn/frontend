@@ -2,6 +2,7 @@
 
 import React, { useState, useCallback, useEffect } from "react";
 import { CustomDropdown } from "@/components/ui/CustomDropdown";
+import { FIELD_LABEL } from "@/components/ui/fieldStyles";
 import { INDUSTRY_OPTIONS, EXPERIENCE_LEVELS } from "@/lib/profile-options";
 import { useUserProfile } from "@/hooks/useUserProfile";
 import { usePatchProfile } from "@/hooks/usePatchProfile";
@@ -892,7 +893,7 @@ export default function ProfilePage() {
         >
           <div className="space-y-4 md:space-y-6">
             <div>
-              <label className="block text-sm font-semibold text-gray-900 mb-1.5 md:mb-2">
+              <label className={FIELD_LABEL}>
                 Full Name
               </label>
               <input
@@ -909,7 +910,7 @@ export default function ProfilePage() {
               />
             </div>
             <div>
-              <label className="block text-sm font-semibold text-gray-900 mb-1.5 md:mb-2">
+              <label className={FIELD_LABEL}>
                 Professional Bio
               </label>
               <textarea
@@ -938,7 +939,7 @@ export default function ProfilePage() {
         >
           <div className="space-y-4 md:space-y-6">
             <div>
-              <label className="block text-sm font-semibold text-gray-900 mb-1.5 md:mb-2">
+              <label className={FIELD_LABEL}>
                 Job Title
               </label>
               <input

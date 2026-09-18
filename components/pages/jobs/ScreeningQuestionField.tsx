@@ -1,6 +1,7 @@
 "use client";
 
 import type { ScreeningQuestion } from "@/lib/job-fields";
+import { FIELD_LABEL } from "@/components/ui/fieldStyles";
 
 /**
  * One employer screening question, and the control that answers it.
@@ -54,7 +55,7 @@ export function ScreeningQuestionField({
         <label
           id={labelId}
           htmlFor={fieldId}
-          className="block text-sm font-semibold text-gray-900 mb-2"
+          className={FIELD_LABEL}
         >
           {label}
         </label>
@@ -82,7 +83,7 @@ export function ScreeningQuestionField({
     <fieldset className="min-w-0">
       <legend
         id={labelId}
-        className="block text-sm font-semibold text-gray-900 mb-2"
+        className={FIELD_LABEL}
       >
         {label}
       </legend>

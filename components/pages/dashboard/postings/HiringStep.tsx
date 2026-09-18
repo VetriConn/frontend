@@ -15,7 +15,7 @@ import {
   type JobFaq,
 } from "@/lib/job-fields";
 import { CustomDropdown } from "@/components/ui/CustomDropdown";
-import { inputClasses } from "./formKit";
+import { inputClasses } from "@/components/ui/formKit";
 
 /**
  * Phase-2 builder step: the screening questionnaire, a public FAQ, and the

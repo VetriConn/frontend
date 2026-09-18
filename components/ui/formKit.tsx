@@ -5,20 +5,34 @@ import { CustomDropdown } from "@/components/ui/CustomDropdown";
 import { RequiredMark } from "@/components/ui/RequiredMark";
 import { CountrySelect } from "@/components/ui/CountrySelect";
 import { regionsFor, hasRegions, regionLabelFor } from "@/lib/regions";
-import type { JobFormData } from "./jobForm";
+import { FIELD_BASE, fieldBorder, FIELD_LABEL, FIELD_ERROR } from "./fieldStyles";
 
 /**
- * The job builder's field kit — labels, selects, chips, toggles, location
- * fields, and the shared input classes. Extracted from CreateJobPosting.tsx
- * (#47), where it was private and every other surface (HiringStep included)
- * rebuilt or copied the pieces it needed.
+ * The richest field kit in the product: labels, selects, chips, toggles,
+ * location fields, and the shared input classes. Extracted from
+ * CreateJobPosting.tsx (#47), where it was private and every other surface
+ * (HiringStep included) rebuilt or copied the pieces it needed.
+ *
+ * It then sat in components/pages/dashboard/postings/ for long enough that
+ * nothing outside that folder ever found it, and the rest of the app went on
+ * hand-writing labels it already had a component for. Living in components/ui
+ * next to fieldStyles is the point: this is where a new form looks first.
  */
 
-export const inputClasses =
-  "w-full px-3 py-2 md:px-4 md:py-3 border border-gray-200 rounded-lg text-sm md:text-base focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent bg-white";
+/**
+ * The box, taken from fieldStyles rather than spelled out again.
+ *
+ * These two strings were a verbatim copy of FIELD_BASE made before
+ * fieldStyles existed, and they had since drifted on three properties:
+ * border-gray-200 against the shared gray-300, no transition, and
+ * `focus:ring-primary`, the red focus ring fieldStyles removed on purpose
+ * because it made every focused field look rejected. The builder kept it
+ * only because nobody noticed the copy. Deriving from the token means the
+ * next such decision reaches the job builder too.
+ */
+export const inputClasses = `${FIELD_BASE} ${fieldBorder(false)}`;
 
-export const errorInputClasses =
-  "w-full px-3 py-2 md:px-4 md:py-3 border border-red-500 rounded-lg text-sm md:text-base focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent bg-white";
+export const errorInputClasses = `${FIELD_BASE} ${fieldBorder(true)}`;
 
 export function FieldLabel({
   children,
@@ -30,10 +44,7 @@ export function FieldLabel({
   htmlFor?: string;
 }) {
   return (
-    <label
-      htmlFor={htmlFor}
-      className="block text-sm font-medium text-gray-700 mb-1.5 md:mb-2"
-    >
+    <label htmlFor={htmlFor} className={FIELD_LABEL}>
       {children}
       {required && <RequiredMark className="ml-0.5" />}
     </label>
@@ -88,7 +99,7 @@ export function SelectField({
 
 export function FieldError({ message }: { message?: string }) {
   if (!message) return null;
-  return <p className="text-sm text-red-700 mt-1">{message}</p>;
+  return <p className={FIELD_ERROR}>{message}</p>;
 }
 
 /**
@@ -174,6 +185,16 @@ export function ToggleRow({
 }
 
 /**
+ * The three fields LocationFields writes, which used to be `keyof
+ * JobFormData`. That was fine while the kit lived under postings/, but from
+ * components/ui it would have made every form in the app depend on the job
+ * builder's form shape to render a country picker. The builder's own handlers
+ * still satisfy it, since a handler that accepts any JobFormData key accepts
+ * these three.
+ */
+export type LocationField = "country" | "state_province" | "city";
+
+/**
  * Country → Province/State → City, in that order. The country drives the
  * middle field: a themed dropdown of that country's regions where we enumerate
  * them (Canada, US), or free text elsewhere — labelled correctly per country.
@@ -191,7 +212,7 @@ export function LocationFields({
   country: string;
   stateProvince: string;
   city: string;
-  onChange: (field: keyof JobFormData, value: string) => void;
+  onChange: (field: LocationField, value: string) => void;
   cityRequired?: boolean;
   cityError?: string;
 }) {

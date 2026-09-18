@@ -26,6 +26,7 @@ import {
   type ApplicationSource,
 } from "@/hooks/useApplications";
 import { EditDialog } from "@/components/ui/EditDialog";
+import { FIELD_LABEL } from "@/components/ui/fieldStyles";
 import { useAnchoredMenu } from "@/hooks/useAnchoredMenu";
 import { createPortal } from "react-dom";
 import { useToaster } from "@/components/ui/Toaster";
@@ -1022,7 +1023,7 @@ export default function AppliedJobsPage() {
               Track a job you applied to outside of Vetriconn.
             </p>
             <div>
-              <label className="block text-sm font-semibold text-gray-900 mb-2">
+              <label className={FIELD_LABEL}>
                 Company *
               </label>
               <input
@@ -1037,7 +1038,7 @@ export default function AppliedJobsPage() {
               />
             </div>
             <div>
-              <label className="block text-sm font-semibold text-gray-900 mb-2">
+              <label className={FIELD_LABEL}>
                 Position *
               </label>
               <input
@@ -1052,7 +1053,7 @@ export default function AppliedJobsPage() {
               />
             </div>
             <div>
-              <label className="block text-sm font-semibold text-gray-900 mb-2">
+              <label className={FIELD_LABEL}>
                 Location
               </label>
               <input
@@ -1066,7 +1067,7 @@ export default function AppliedJobsPage() {
               />
             </div>
             <div>
-              <label className="block text-sm font-semibold text-gray-900 mb-2">
+              <label className={FIELD_LABEL}>
                 Application Date
               </label>
               <input
@@ -1079,7 +1080,7 @@ export default function AppliedJobsPage() {
               />
             </div>
             <div>
-              <label className="block text-sm font-semibold text-gray-900 mb-2">
+              <label className={FIELD_LABEL}>
                 Job Posting URL
               </label>
               <input
@@ -1093,7 +1094,7 @@ export default function AppliedJobsPage() {
               />
             </div>
             <div>
-              <label className="block text-sm font-semibold text-gray-900 mb-2">
+              <label className={FIELD_LABEL}>
                 Notes
               </label>
               <textarea

@@ -39,6 +39,7 @@ import {
   type ReviewGroup,
 } from "./ApplicationReview";
 import { RequiredMark } from "@/components/ui/RequiredMark";
+import { FIELD_LABEL } from "@/components/ui/fieldStyles";
 
 import { fieldLabel, JOB_TYPE_LABELS } from "@/lib/job-fields";
 import { formatDate } from "@/lib/date-utils";
@@ -787,7 +788,7 @@ export default function JobApplicationForm({
               <div>
                 <label
                   htmlFor="app-experience"
-                  className="block text-sm font-semibold text-gray-900 mb-1.5 md:mb-2"
+                  className={FIELD_LABEL}
                 >
                   Describe Your Relevant Experience
                   <RequiredMark />
@@ -852,7 +853,7 @@ export default function JobApplicationForm({
               </div>
 
               <div>
-                <label className="block text-sm font-semibold text-gray-900 mb-1.5 md:mb-2">
+                <label className={FIELD_LABEL}>
                   Select your skills
                 </label>
                 <p className="text-xs text-gray-500 mb-3">
@@ -979,7 +980,7 @@ export default function JobApplicationForm({
                 abandon here. Uploading stays exactly where it was. */}
             {profileResumes.length > 0 && !formData.resume && (
               <fieldset className="mb-4 min-w-0">
-                <legend className="block text-sm font-semibold text-gray-900 mb-2">
+                <legend className={FIELD_LABEL}>
                   Use a résumé from your profile
                 </legend>
                 <div className="space-y-2">
@@ -1160,7 +1161,7 @@ export default function JobApplicationForm({
             optional
           >
             <div>
-              <label className="block text-sm font-semibold text-gray-900 mb-1.5 md:mb-2">
+              <label className={FIELD_LABEL}>
                 Is there anything else you&apos;d like to share with us?
               </label>
               <textarea
@@ -1467,7 +1468,7 @@ function DatePickerField({
 
   return (
     <div ref={ref} className="relative">
-      <label className="block text-sm font-semibold text-gray-900 mb-1.5 md:mb-2">
+      <label className={FIELD_LABEL}>
         {label}
       </label>
       <button

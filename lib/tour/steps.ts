@@ -60,3 +60,40 @@ export const BASE_TOUR: TourStep[] = [
     body: "Your profile is what helps employers find you, so it is worth filling in. Settings is also where you change the text size, and where you can start this tour again.",
   },
 ];
+
+/**
+ * The company tour, shown on a first visit to the Companies page.
+ *
+ * Kept separate from the base tour rather than appended to it. Six steps is
+ * already the limit of what people finish, and these three are only relevant
+ * to an account that has a company, which most will not have on day one.
+ */
+export const COMPANY_TOUR: TourStep[] = [
+  {
+    id: "co-companies",
+    anchor: "nav-companies",
+    title: "Your companies",
+    body: "Everything about the company lives here: its public page, its details, and the people on the team.",
+  },
+  {
+    id: "co-postings",
+    anchor: "nav-postings",
+    title: "Posting as the company",
+    body: "Jobs you post are shown under the company name once it is approved. Drafts stay private until you publish them.",
+  },
+  {
+    id: "co-applicants",
+    anchor: "nav-postings",
+    title: "Who has applied",
+    body: "Applicants for every company posting are in this menu. Anyone on the team with the right role can review them.",
+  },
+];
+
+/** Which tours exist. The key is what the API is told on completion. */
+export const TOURS = {
+  dashboard: BASE_TOUR,
+  company: COMPANY_TOUR,
+} as const;
+
+export type TourId = keyof typeof TOURS;
+

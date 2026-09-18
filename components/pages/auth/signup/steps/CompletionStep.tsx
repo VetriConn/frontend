@@ -9,11 +9,20 @@ import { RETURN_URL_PARAM, withReturnUrl } from "@/lib/auth-redirect";
 
 interface CompletionStepProps {
   formData: SignupFormData;
+  /**
+   * Read-only handle for polling whether this registration has been verified.
+   *
+   * Null when the reader reloaded this page, since it is held in wizard state
+   * and nowhere durable. Polling simply stops, and the "Already verified?
+   * Continue to Sign In" link below carries them through by hand.
+   */
+  statusToken?: string | null;
   onResendEmail?: () => Promise<void>;
 }
 
 export function CompletionStep({
   formData,
+  statusToken,
   onResendEmail,
 }: CompletionStepProps) {
   const { showToast } = useToaster();
@@ -48,12 +57,22 @@ export function CompletionStep({
    * Industry standard: Poll backend to check verification status
    */
   const checkVerificationStatus = useCallback(async () => {
-    if (!formData.email) return false;
+    /*
+     * This used to poll /auth/check-verification?email=..., an endpoint that
+     * does not exist. Every check 404'd into the silent catch below, so the
+     * page never noticed a verification and sat there until the reader gave
+     * up and used the link at the bottom.
+     *
+     * It is now keyed on an unguessable handle rather than the email address,
+     * because an email-keyed endpoint answers "has this person signed up
+     * here" to anyone who asks.
+     */
+    if (!statusToken) return false;
 
     try {
       setIsCheckingVerification(true);
       const response = await fetch(
-        getApiUrl(`/api/v1/auth/check-verification?email=${encodeURIComponent(formData.email)}`),
+        getApiUrl(`/api/v1/auth/registration-status/${encodeURIComponent(statusToken)}`),
         {
           method: "GET",
           credentials: "include",
@@ -62,7 +81,7 @@ export function CompletionStep({
 
       const data = await response.json();
 
-      if (response.ok && data.success && data.data?.isVerified) {
+      if (response.ok && data.success && data.data?.verified) {
         // User has verified! Auto-redirect to signin
         showToast({
           type: "success",
@@ -92,7 +111,7 @@ export function CompletionStep({
     } finally {
       setIsCheckingVerification(false);
     }
-  }, [formData.email, router, showToast]);
+  }, [statusToken, router, showToast]);
 
   /**
    * Start polling for verification status
@@ -220,7 +239,16 @@ export function CompletionStep({
           Verify your email to finish signing up
         </h2>
         <p className="text-gray-600">
-          We&apos;ve sent a verification link to your email address
+          {/* Naming the address is worth the line: it is the last chance to
+              notice a typo before waiting on mail that will never arrive. */}
+          We&apos;ve sent a verification link to{" "}
+          {formData.email ? (
+            <span className="font-semibold text-gray-900">
+              {formData.email}
+            </span>
+          ) : (
+            "your email address"
+          )}
         </p>
       </div>
 

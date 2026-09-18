@@ -64,9 +64,16 @@ export default function TourSpotlight({
       if (cancelled || !el) return;
       targetRef.current = el;
       el.scrollIntoView({ block: "center", inline: "nearest" });
-      requestAnimationFrame(() => {
-        if (!cancelled) measure();
-      });
+      // rAF or a timer, whichever lands first: a hidden tab never paints, and
+      // waiting only on the frame would leave the popover unpositioned.
+      let measured = false;
+      const run = () => {
+        if (measured || cancelled) return;
+        measured = true;
+        measure();
+      };
+      requestAnimationFrame(run);
+      setTimeout(run, 50);
     })();
     return () => {
       cancelled = true;

@@ -37,10 +37,22 @@ export default function TourAutoStart() {
     // Wait for the navbar to have painted before resolving anchors. Measuring
     // against a layout that is still settling gives a rect the element is
     // passing through rather than the one it lands on.
-    const id = requestAnimationFrame(() =>
-      requestAnimationFrame(() => start("auto")),
-    );
-    return () => cancelAnimationFrame(id);
+    //
+    // The timer is not belt and braces: requestAnimationFrame does not fire
+    // in a hidden tab, and a dashboard opened in a background tab is normal.
+    // Without it the tour simply never starts for those people.
+    let done = false;
+    const go = () => {
+      if (done) return;
+      done = true;
+      start("auto");
+    };
+    const frame = requestAnimationFrame(() => requestAnimationFrame(go));
+    const timer = setTimeout(go, 200);
+    return () => {
+      cancelAnimationFrame(frame);
+      clearTimeout(timer);
+    };
   }, [userProfile, isLoading, isRunning, start]);
 
   return null;

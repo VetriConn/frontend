@@ -71,3 +71,25 @@ export function formatMonthYear(value?: string | Date): string {
   if (Number.isNaN(date.getTime())) return "";
   return date.toLocaleDateString("en-CA", { month: "short", year: "numeric" });
 }
+
+/**
+ * A start and an end, as one readable span.
+ *
+ * Education and work history each had their own copy of this, identical down
+ * to the four branches, differing only in that work history formats its
+ * values through formatMonthYear first. Two copies of four branches is two
+ * places to get "Present" wrong, and during a copy sweep both had to be
+ * edited by hand to say "to" instead of an en dash.
+ *
+ * Takes already-formatted strings so the caller decides whether a value is a
+ * bare year or a month and year.
+ *
+ * "to" rather than a dash on purpose: a dash between two values is read aloud
+ * as nothing, so a screen reader announces "2019 2023".
+ */
+export function formatRange(start?: string, end?: string): string {
+  if (!start && !end) return "";
+  if (!start) return end ?? "";
+  if (!end) return `${start} to Present`;
+  return `${start} to ${end}`;
+}

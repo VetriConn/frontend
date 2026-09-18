@@ -7,7 +7,7 @@ import {
   HiOutlineBriefcase,
 } from "react-icons/hi2";
 import { WorkExperience } from "@/types/api";
-import { formatMonthYear } from "@/lib/date-utils";
+import { formatMonthYear, formatRange } from "@/lib/date-utils";
 
 interface WorkExperienceCardProps {
   experiences: WorkExperience[];
@@ -22,16 +22,13 @@ export const WorkExperienceCard: React.FC<WorkExperienceCardProps> = ({
   onEdit,
   onDelete,
 }) => {
-  const formatDateRange = (startDate?: string, endDate?: string) => {
-    const start = formatMonthYear(startDate);
-    const end = formatMonthYear(endDate);
-
-    if (!startDate && !endDate) return "";
-    if (!startDate) return end;
-    if (!endDate) return `${start} to Present`;
-
-    return `${start} to ${end}`;
-  };
+  // Month and year here, bare years in EducationCard, which is why
+  // formatRange takes already-formatted strings.
+  const formatDateRange = (startDate?: string, endDate?: string) =>
+    formatRange(
+      startDate ? formatMonthYear(startDate) : undefined,
+      endDate ? formatMonthYear(endDate) : undefined,
+    );
 
   // Sort by most recent first (end_date descending, no end_date = current/most recent)
   // Preserve original indices so edit/delete callbacks reference the correct item

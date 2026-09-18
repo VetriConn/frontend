@@ -1,5 +1,6 @@
 "use client";
 import React from "react";
+import { formatRange } from "@/lib/date-utils";
 import {
   HiOutlinePlus,
   HiOutlineAcademicCap,
@@ -21,14 +22,6 @@ export const EducationCard: React.FC<EducationCardProps> = ({
   onEdit,
   onDelete,
 }) => {
-  const formatYearRange = (startYear?: string, endYear?: string) => {
-    if (!startYear && !endYear) return "";
-    if (!startYear) return endYear;
-    if (!endYear) return `${startYear} to Present`;
-
-    return `${startYear} to ${endYear}`;
-  };
-
   // Sort by most recent first (end_year descending, no end_year = current/most recent)
   // Preserve original indices so edit/delete callbacks reference the correct item
   const sortedEducation = education
@@ -110,7 +103,7 @@ export const EducationCard: React.FC<EducationCardProps> = ({
 
                 {(edu.start_year || edu.end_year) && (
                   <p className="text-sm text-gray-400 mt-0.5">
-                    {formatYearRange(edu.start_year, edu.end_year)}
+                    {formatRange(edu.start_year, edu.end_year)}
                   </p>
                 )}
               </div>

@@ -187,10 +187,20 @@ export function SalaryAmountField({
   );
 }
 
-/** See rule 1 above: pre-fieldStyles, moved rather than corrected. */
-const BULLET_TEXTAREA =
-  "mt-1.5 w-full px-4 py-3 border rounded-lg text-sm " +
-  "focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary resize-none";
+/**
+ * The bullet textarea, now on the shared field shape.
+ *
+ * Last holder of the pre-fieldStyles string, and the same red
+ * focus:ring-primary halo the salary boxes had: primary is the same red as
+ * border-red-500, so focusing a field looked like being told it was wrong.
+ *
+ * Two things FIELD_BASE does not carry, both real rather than drift.
+ * resize-none, because these sit in a fixed wizard column and a dragged
+ * corner pushes the step nav off screen. And mt-1.5, because unlike every
+ * other field here this one is not preceded by a FieldLabel supplying its
+ * own bottom margin.
+ */
+const BULLET_TEXTAREA = `${FIELD_BASE} mt-1.5 resize-none`;
 
 /**
  * The one-item-per-line textarea the builder uses for responsibilities and
@@ -220,7 +230,7 @@ export function BulletTextarea({
       onChange={(e) => onChange(e.target.value)}
       rows={rows}
       placeholder={placeholder}
-      className={`${BULLET_TEXTAREA} ${hasError ? "border-red-500" : "border-gray-200"}`}
+      className={`${BULLET_TEXTAREA} ${fieldBorder(!!hasError)}`}
     />
   );
 }

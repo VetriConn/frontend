@@ -764,6 +764,15 @@ const DashboardNavbar = () => {
 
           <hr className="my-2 border-gray-100" />
 
+          {/*
+            data-tour on the group, not each link: the tour's final step points
+            at "your profile and settings", which in the drawer is this block
+            rather than the avatar button the desktop bar uses. Without an
+            anchor here the step was silently dropped at every drawer width,
+            which is every phone, and that step is the one naming where the
+            text size control and the replay button live.
+          */}
+          <div data-tour="nav-account">
           {ACCOUNT_LINKS.map((link) => (
             <Link
               key={link.href}
@@ -775,6 +784,7 @@ const DashboardNavbar = () => {
               {link.name}
             </Link>
           ))}
+          </div>
 
           <hr className="my-2 border-gray-100" />
           <button

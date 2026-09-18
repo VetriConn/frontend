@@ -102,6 +102,31 @@ describe("resolveAnchor", () => {
     void hidden;
   });
 
+  it("does not hang when the tab is hidden and rAF never fires", async () => {
+    // Found in a real browser, not by reading the code: the preview tab was
+    // backgrounded, document.visibilityState was "hidden", and
+    // requestAnimationFrame never fired. The await on it never settled, so
+    // the tour hung mid-start with the nav drawer stuck open and nothing on
+    // screen. Opening the dashboard in a background tab is ordinary, so this
+    // is a real path, and it fails as a timeout rather than an error, which
+    // is the kind of bug that survives a code review.
+    const hidden = el("nav-inbox", false);
+    const toggle = el(MENU_TOGGLE_ID, true);
+    toggle.setAttribute("aria-expanded", "false");
+
+    const realRaf = window.requestAnimationFrame;
+    // A rAF that registers the callback and never calls it, which is exactly
+    // what a hidden tab does.
+    window.requestAnimationFrame = ((): number =>
+      0) as typeof window.requestAnimationFrame;
+    try {
+      await expect(resolveAnchor("nav-inbox")).resolves.toBeNull();
+    } finally {
+      window.requestAnimationFrame = realRaf;
+    }
+    void hidden;
+  });
+
   it("gives up rather than throwing when there is no drawer to open", async () => {
     el("nav-inbox", false);
     await expect(resolveAnchor("nav-inbox")).resolves.toBeNull();

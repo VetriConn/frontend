@@ -21,8 +21,30 @@
 /** The id used to reach the drawer's open/close button. */
 export const MENU_TOGGLE_ID = "nav-menu-toggle";
 
-const rafOnce = (): Promise<void> =>
-  new Promise((resolve) => requestAnimationFrame(() => resolve()));
+/**
+ * Wait one paint, or 50ms, whichever comes first.
+ *
+ * `requestAnimationFrame` does not fire while the tab is hidden, and a bare
+ * `await` on it therefore never resolves. That is not theoretical: opening
+ * the dashboard in a background tab is ordinary behaviour, and it left the
+ * tour hung halfway through resolving its steps with the nav drawer stuck
+ * open and no tour on screen.
+ *
+ * The frame is still what we want when the page is visible, because the
+ * point is to measure after layout has settled. The timer is only there so
+ * a hidden tab degrades instead of deadlocking.
+ */
+const nextFrame = (): Promise<void> =>
+  new Promise((resolve) => {
+    let settled = false;
+    const finish = () => {
+      if (settled) return;
+      settled = true;
+      resolve();
+    };
+    requestAnimationFrame(finish);
+    setTimeout(finish, 50);
+  });
 
 /**
  * Is this element actually being painted?
@@ -68,8 +90,8 @@ export async function resolveAnchor(id: string): Promise<HTMLElement | null> {
   // scroll lock and the aria-expanded bookkeeping all correct for free.
   if (toggle.getAttribute("aria-expanded") !== "true") {
     toggle.click();
-    await rafOnce();
-    await rafOnce();
+    await nextFrame();
+    await nextFrame();
   }
 
   return findVisible(id);

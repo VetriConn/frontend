@@ -19,6 +19,8 @@ const eslintConfig = [
       ".next-check/**",
       "out/**",
       "coverage/**",
+      // Storybook build output, written by `npm run build-storybook`.
+      "storybook-static/**",
       "next-env.d.ts",
       "public/**",
     ],

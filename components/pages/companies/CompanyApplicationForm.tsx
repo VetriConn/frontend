@@ -11,6 +11,7 @@ import { useToaster } from "@/components/ui/Toaster";
 import { FormField } from "@/components/ui/FormField";
 import { CustomDropdown } from "@/components/ui/CustomDropdown";
 import { CountrySelect } from "@/components/ui/CountrySelect";
+import { PANEL_SURFACE } from "@/components/ui/panelStyles";
 
 /**
  * Apply for a Company Page.
@@ -161,7 +162,7 @@ const CompanyApplicationForm = () => {
 
       <form
         onSubmit={handleSubmit}
-        className="bg-white rounded-xl border border-gray-200 p-6 md:p-8"
+        className={`${PANEL_SURFACE} p-6 md:p-8`}
         noValidate
       >
         <FormField

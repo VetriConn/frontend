@@ -22,6 +22,7 @@ import {
   WORK_ARRANGEMENT_LABELS,
   toOptions,
 } from "@/lib/job-fields";
+import { PANEL_SURFACE } from "./panelStyles";
 
 interface FilterState {
   location: string;
@@ -499,7 +500,7 @@ export const FilterPanel = ({
       )}
 
       {/* Desktop Filter Panel - hidden on mobile */}
-      <div className="hidden md:block bg-white border border-gray-200 rounded-xl p-6">
+      <div className={`${PANEL_SURFACE} hidden md:block p-6`}>
         {/* Heading */}
         <h2 className="text-xl md:text-3xl font-bold text-gray-900 mb-6">Filter Jobs</h2>
 

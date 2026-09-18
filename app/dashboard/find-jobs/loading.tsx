@@ -1,3 +1,5 @@
+import { PANEL_SURFACE } from "@/components/ui/panelStyles";
+
 export default function JobsLoading() {
   return (
     <div className="min-h-screen bg-gray-50">
@@ -18,7 +20,7 @@ export default function JobsLoading() {
           <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 md:gap-6">
             {/* Filter Panel */}
             <aside className="lg:col-span-1 animate-pulse">
-              <div className="bg-white rounded-xl border border-gray-200 p-5 space-y-5">
+              <div className={`${PANEL_SURFACE} p-5 space-y-5`}>
                 <div className="h-5 w-20 bg-gray-200 rounded" />
                 {[1, 2, 3].map((i) => (
                   <div key={i}>
@@ -41,10 +43,7 @@ export default function JobsLoading() {
               {/* Job cards */}
               <div className="space-y-4">
                 {[1, 2, 3, 4, 5, 6].map((i) => (
-                  <div
-                    key={i}
-                    className="bg-white rounded-xl border border-gray-200 p-5"
-                  >
+                  <div key={i} className={`${PANEL_SURFACE} p-5`}>
                     <div className="flex items-start justify-between gap-4">
                       <div className="flex-1 space-y-3">
                         <div className="flex gap-2">

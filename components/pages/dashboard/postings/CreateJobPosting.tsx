@@ -58,6 +58,7 @@ import {
   VerticalStepper,
 } from "./steps";
 import { SelectField } from "@/components/ui/formKit";
+import { PANEL_SURFACE } from "@/components/ui/panelStyles";
 
 /**
  * The job builder's orchestrator: mode selection (full vs lite), step state,
@@ -792,7 +793,7 @@ const CreateJobPosting = ({
             moment later is worse than a short wait, so the wizard waits for
             the answer. Editing skips the wait: the posting exists already. */}
         {!modeResolved ? (
-          <div className="rounded-xl border border-gray-200 bg-white p-6 text-sm text-gray-600">
+          <div className={`${PANEL_SURFACE} p-6 text-sm text-gray-600`}>
             Checking your company profile…
           </div>
         ) : (
@@ -883,7 +884,7 @@ const CreateJobPosting = ({
           )}
 
           {/* Step Content */}
-          <div className="bg-white rounded-xl border border-gray-200 p-6 md:p-8 mb-6">
+          <div className={`${PANEL_SURFACE} p-6 md:p-8 mb-6`}>
             {/* Who the posting belongs to.
                 Hidden while editing, because ownership is fixed once a posting
                 exists: updateJobSchema doesn't accept company_id, so the control

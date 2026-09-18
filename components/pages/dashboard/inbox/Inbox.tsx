@@ -16,6 +16,7 @@ import { ChatHeader } from "@/components/dashboard/inbox/ChatHeader";
 import { MessageList } from "@/components/dashboard/inbox/MessageList";
 import { ChatInput } from "@/components/dashboard/inbox/ChatInput";
 import type { Conversation, Message } from "@/types/inbox";
+import { PANEL_SURFACE } from "@/components/ui/panelStyles";
 
 /**
  * One inbox holding both sides of the account's conversations: threads where
@@ -242,7 +243,7 @@ export default function Inbox() {
           </div>
         )}
 
-        <div className="flex-1 bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden flex min-h-0">
+        <div className={`${PANEL_SURFACE} flex-1 shadow-sm overflow-hidden flex min-h-0`}>
           <ConversationList
             conversations={filteredConversations}
             isLoading={threadsLoading}

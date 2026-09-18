@@ -1,6 +1,7 @@
 "use client";
 
 import { HiOutlinePencil } from "react-icons/hi2";
+import { PANEL_SURFACE } from "@/components/ui/panelStyles";
 
 /**
  * A last look before an irreversible send.
@@ -60,7 +61,7 @@ export function ApplicationReview({
       {groups.map((group) => (
         <section
           key={group.title}
-          className="bg-white rounded-xl border border-gray-200 overflow-hidden"
+          className={`${PANEL_SURFACE} overflow-hidden`}
         >
           <div className="flex items-center justify-between gap-3 bg-gray-50/70 border-b border-gray-100 px-5 py-3">
             <h2 className="text-sm font-semibold text-gray-900">

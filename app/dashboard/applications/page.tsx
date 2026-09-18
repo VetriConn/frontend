@@ -27,6 +27,7 @@ import { Pagination } from "@/components/ui/Pagination";
 import KebabMenu, {
   type KebabAction,
 } from "@/components/pages/admin/KebabMenu";
+import { PANEL_SURFACE } from "@/components/ui/panelStyles";
 
 /** Applicants per page. The endpoint caps at MAX_PAGE_SIZE (100). */
 const APPLICATIONS_PER_PAGE = 25;
@@ -318,7 +319,7 @@ export default function ApplicationsPage() {
           <div className="space-y-6">
             {/* Search + grouped filters — one label slot and one control
                 height per field so the row lines up by construction. */}
-            <div className="bg-white p-4 rounded-xl border border-gray-200 shadow-sm flex flex-col lg:flex-row lg:items-start gap-3">
+            <div className={`${PANEL_SURFACE} p-4 shadow-sm flex flex-col lg:flex-row lg:items-start gap-3`}>
               <div className="flex-1 min-w-0">
                 <label
                   htmlFor="applicants-search"
@@ -368,7 +369,7 @@ export default function ApplicationsPage() {
 
             {/* Applications Table Card */}
             {filteredApplications.length > 0 ? (
-              <div className="bg-white rounded-xl border border-gray-200 overflow-hidden shadow-sm">
+              <div className={`${PANEL_SURFACE} overflow-hidden shadow-sm`}>
                 <div className="overflow-x-auto">
                   <table className="w-full text-left border-collapse">
                     <thead>
@@ -525,7 +526,7 @@ export default function ApplicationsPage() {
                 </div>
               </div>
             ) : (
-              <div className="bg-white rounded-xl border border-gray-200 p-12 text-center shadow-sm">
+              <div className={`${PANEL_SURFACE} p-12 text-center shadow-sm`}>
                 <div className="w-16 h-16 rounded-full bg-gray-50 flex items-center justify-center mx-auto mb-4">
                   <HiOutlineMagnifyingGlass className="w-8 h-8 text-gray-300" />
                 </div>
@@ -540,7 +541,7 @@ export default function ApplicationsPage() {
             )}
           </div>
         ) : (
-          <div className="bg-white rounded-xl border border-gray-200 p-12 text-center shadow-sm">
+          <div className={`${PANEL_SURFACE} p-12 text-center shadow-sm`}>
             <div className="w-16 h-16 rounded-full bg-gray-50 flex items-center justify-center mx-auto mb-4">
               <HiOutlineUserGroup className="w-8 h-8 text-gray-300" />
             </div>

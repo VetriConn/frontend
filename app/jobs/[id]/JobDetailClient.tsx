@@ -8,6 +8,7 @@ import Footer from "@/components/ui/Footer";
 import { useJob } from "@/hooks/useJob";
 import { Job } from "@/types/job";
 import { JobDetailSkeleton } from "@/components/ui/Skeleton";
+import { PANEL_SURFACE } from "@/components/ui/panelStyles";
 
 interface JobDetailClientProps {
   jobId: string;
@@ -32,7 +33,7 @@ export default function JobDetailClient({
   } else if (isError && !displayJob) {
     content = (
       <div className="min-h-[60vh] bg-gray-50 flex items-center justify-center px-6">
-        <div className="bg-white rounded-xl p-12 text-center border border-gray-200 max-w-md">
+        <div className={`${PANEL_SURFACE} p-12 text-center max-w-md`}>
           <h1 className="text-2xl font-bold text-gray-900 mb-2">
             Job not found
           </h1>

@@ -9,6 +9,7 @@ import { useUserProfile } from "@/hooks/useUserProfile";
 import { Skeleton } from "./Skeleton";
 import { HiOutlineMagnifyingGlass } from "react-icons/hi2";
 import { HiOutlineExclamationTriangle, HiOutlineArrowPath } from "react-icons/hi2";
+import { PANEL_SURFACE } from "./panelStyles";
 
 interface JobResultsListProps {
   jobs: Job[];
@@ -30,7 +31,7 @@ interface JobResultsListProps {
 // Skeleton component for job result cards
 const JobResultCardSkeleton = () => (
   <div
-    className="bg-white border border-gray-200 rounded-xl p-6 flex flex-col md:flex-row md:items-start md:justify-between gap-4"
+    className={`${PANEL_SURFACE} p-6 flex flex-col md:flex-row md:items-start md:justify-between gap-4`}
     aria-hidden="true"
   >
     <div className="flex-1 min-w-0">

@@ -2,6 +2,7 @@
 
 import dynamic from "next/dynamic";
 import { AuthGuard } from "@/components/auth/AuthGuard";
+import { CardSkeleton } from "@/components/ui/Skeleton";
 
 const CreateJobPosting = dynamic(
   () => import("@/components/pages/dashboard/postings/CreateJobPosting"),
@@ -19,7 +20,7 @@ const CreateJobPosting = dynamic(
               />
             ))}
           </div>
-          <div className="bg-white rounded-xl border border-gray-200 p-6 animate-pulse h-[400px]" />
+          <CardSkeleton className="p-6 h-[400px]" />
         </div>
       </div>
     ),

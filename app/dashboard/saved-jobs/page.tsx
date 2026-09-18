@@ -18,6 +18,7 @@ import { useSavedJobs } from "@/hooks/useSavedJobs";
 import { formatJobSalary } from "@/lib/job-display";
 import { AuthGuard } from "@/components/auth/AuthGuard";
 import { fieldLabel, JOB_TYPE_LABELS } from "@/lib/job-fields";
+import { PANEL_SURFACE } from "@/components/ui/panelStyles";
 
 // ─── Types ──────────────────────────────────────────────────────────────────────
 
@@ -35,7 +36,7 @@ interface SavedJob {
 
 function EmptyState() {
   return (
-    <div className="bg-white rounded-xl border border-gray-200 p-16 flex flex-col items-center justify-center text-center">
+    <div className={`${PANEL_SURFACE} p-16 flex flex-col items-center justify-center text-center`}>
       <div className="w-20 h-20 rounded-full bg-gray-100 flex items-center justify-center mb-6">
         <HiOutlineBookmark className="w-9 h-9 text-gray-400" />
       </div>
@@ -236,7 +237,7 @@ export default function SavedJobsPage() {
                 the last columns fall outside the card. Clipping made them
                 unreachable; scrolling keeps them. rounded-xl still clips the
                 corners. */}
-            <div className="hidden md:block bg-white rounded-xl border border-gray-200 overflow-x-auto">
+            <div className={`${PANEL_SURFACE} hidden md:block overflow-x-auto`}>
               <table className="w-full">
                 <thead>
                   <tr className="bg-gray-50 border-b border-gray-200">

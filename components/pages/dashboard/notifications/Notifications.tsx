@@ -8,6 +8,7 @@ import { useNotifications } from "@/hooks/useNotifications";
 import { AuthGuard } from "@/components/auth/AuthGuard";
 import { NotificationItem } from "@/components/dashboard/notifications/NotificationItem";
 import { NotificationsEmptyState } from "@/components/dashboard/notifications/NotificationsEmptyState";
+import { PANEL_SURFACE } from "@/components/ui/panelStyles";
 
 export default function Notifications() {
   const {
@@ -99,7 +100,7 @@ export default function Notifications() {
         </div>
 
         {/* Notifications List */}
-        <div className="bg-white rounded-xl border border-gray-200 overflow-hidden shadow-sm">
+        <div className={`${PANEL_SURFACE} overflow-hidden shadow-sm`}>
           {isError && notifications.length === 0 ? (
             <div className="p-6">
               <ListLoadError what="notifications" onRetry={() => mutate()} />

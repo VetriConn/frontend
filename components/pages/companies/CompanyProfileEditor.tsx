@@ -22,6 +22,7 @@ import {
 } from "@/lib/api";
 import { useToaster } from "@/components/ui/Toaster";
 import { FormField } from "@/components/ui/FormField";
+import { PANEL_SURFACE } from "@/components/ui/panelStyles";
 
 /**
  * Company profile editor. Owners and admins only — read-only for recruiters,
@@ -153,7 +154,7 @@ const CompanyProfileEditor = ({
   };
 
   return (
-    <section className="bg-white rounded-xl border border-gray-200 p-6">
+    <section className={`${PANEL_SURFACE} p-6`}>
       <h2 className="text-lg font-semibold text-gray-900 mb-1">
         Company profile
       </h2>

@@ -1,8 +1,9 @@
 import { HiOutlineBell } from "react-icons/hi2";
+import { PANEL_SURFACE } from "@/components/ui/panelStyles";
 
 export function NotificationsEmptyState() {
   return (
-    <div className="bg-white rounded-xl border border-gray-200">
+    <div className={PANEL_SURFACE}>
       {/* Empty card header */}
       <div className="px-6 py-4 border-b border-gray-100">
         <p className="text-sm text-gray-500">No unread notifications</p>

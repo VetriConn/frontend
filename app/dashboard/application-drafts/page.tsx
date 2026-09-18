@@ -17,6 +17,7 @@ import {
 import { useToaster } from "@/components/ui/Toaster";
 import { AuthGuard } from "@/components/auth/AuthGuard";
 import { formatFullDateTime } from "@/lib/date-utils";
+import { PANEL_SURFACE } from "@/components/ui/panelStyles";
 
 export default function ApplicationDraftsPage() {
   const { showToast } = useToaster();
@@ -101,7 +102,7 @@ export default function ApplicationDraftsPage() {
             {drafts.map((draft) => (
               <div
                 key={draft.jobId}
-                className="bg-white rounded-xl border border-gray-200 p-5 shadow-sm hover:shadow-md transition-shadow group"
+                className={`${PANEL_SURFACE} p-5 shadow-sm hover:shadow-md transition-shadow group`}
               >
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                   <div className="flex-1 min-w-0">

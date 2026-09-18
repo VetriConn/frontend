@@ -26,6 +26,7 @@ import {
   skillMatch,
   screeningAnswerState,
 } from "@/lib/candidate-match";
+import { PANEL_SURFACE } from "@/components/ui/panelStyles";
 
 const STATUS_LABEL: Record<string, string> = {
   pending: "Pending review",
@@ -106,7 +107,7 @@ export function CandidateDetail({ applicationId }: { applicationId: string }) {
         </div>
 
         {/* Header card */}
-        <div className="mb-6 rounded-2xl border border-gray-200 bg-white p-6">
+        <div className={`${PANEL_SURFACE} mb-6 p-6`}>
           <div className="flex flex-wrap items-start justify-between gap-4">
             <div className="flex items-center gap-4">
               <div className="h-16 w-16 shrink-0 rounded-full bg-gray-200" />
@@ -134,7 +135,7 @@ export function CandidateDetail({ applicationId }: { applicationId: string }) {
         {/* Two-column body */}
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
           <div className="space-y-6">
-            <div className="rounded-2xl border border-gray-200 bg-white p-6">
+            <div className={`${PANEL_SURFACE} p-6`}>
               <div className="h-5 w-36 bg-gray-200 rounded mb-4" />
               <div className="space-y-2">
                 <div className="h-3 w-full bg-gray-100 rounded" />
@@ -142,14 +143,14 @@ export function CandidateDetail({ applicationId }: { applicationId: string }) {
                 <div className="h-3 w-4/5 bg-gray-100 rounded" />
               </div>
             </div>
-            <div className="rounded-2xl border border-gray-200 bg-white p-6">
+            <div className={`${PANEL_SURFACE} p-6`}>
               <div className="h-5 w-44 bg-gray-200 rounded mb-4" />
               <div className="space-y-3">
                 <div className="h-12 w-full bg-gray-50 rounded-lg" />
                 <div className="h-12 w-full bg-gray-50 rounded-lg" />
               </div>
             </div>
-            <div className="rounded-2xl border border-gray-200 bg-white p-6">
+            <div className={`${PANEL_SURFACE} p-6`}>
               <div className="h-5 w-48 bg-gray-200 rounded mb-4" />
               <div className="space-y-2">
                 <div className="h-3 w-full bg-gray-100 rounded" />
@@ -159,10 +160,7 @@ export function CandidateDetail({ applicationId }: { applicationId: string }) {
           </div>
           <div className="space-y-6">
             {[1, 2, 3].map((i) => (
-              <div
-                key={i}
-                className="rounded-2xl border border-gray-200 bg-white p-6"
-              >
+              <div key={i} className={`${PANEL_SURFACE} p-6`}>
                 <div className="h-5 w-40 bg-gray-200 rounded mb-4" />
                 <div className="space-y-3">
                   <div className="h-3 w-full bg-gray-100 rounded" />
@@ -233,7 +231,7 @@ export function CandidateDetail({ applicationId }: { applicationId: string }) {
   return (
     <div className="w-full">
       {/* Header card */}
-      <div className="mb-6 rounded-2xl border border-gray-200 bg-white p-6">
+      <div className={`${PANEL_SURFACE} mb-6 p-6`}>
         <div className="flex items-start gap-4">
           <div className="flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-full bg-primary/10 text-lg font-bold text-primary">
             {picture ? (
@@ -315,7 +313,7 @@ export function CandidateDetail({ applicationId }: { applicationId: string }) {
         {/* ── Left column ── */}
         <div className="space-y-6">
           {/* About */}
-          <section className="rounded-2xl border border-gray-200 bg-white p-6">
+          <section className={`${PANEL_SURFACE} p-6`}>
             <h2 className="mb-3 text-lg font-bold text-gray-900">About</h2>
             {candidate?.bio ? (
               <p className="text-sm leading-relaxed text-gray-600 whitespace-pre-line">
@@ -330,7 +328,7 @@ export function CandidateDetail({ applicationId }: { applicationId: string }) {
           </section>
 
           {/* Work Experience */}
-          <section className="rounded-2xl border border-gray-200 bg-white p-6">
+          <section className={`${PANEL_SURFACE} p-6`}>
             <h2 className="mb-4 text-lg font-bold text-gray-900">
               Work Experience
             </h2>
@@ -372,7 +370,7 @@ export function CandidateDetail({ applicationId }: { applicationId: string }) {
           </section>
 
           {/* The free-text parts of the application itself */}
-          <section className="rounded-2xl border border-gray-200 bg-white p-6 space-y-4">
+          <section className={`${PANEL_SURFACE} p-6 space-y-4`}>
             <h2 className="text-lg font-bold text-gray-900">
               From their application
             </h2>
@@ -425,7 +423,7 @@ export function CandidateDetail({ applicationId }: { applicationId: string }) {
         {/* ── Right column ── */}
         <div className="space-y-6">
           {/* Professional Skills */}
-          <section className="rounded-2xl border border-gray-200 bg-white p-6">
+          <section className={`${PANEL_SURFACE} p-6`}>
             <h2 className="mb-3 text-lg font-bold text-gray-900">
               Professional Skills
             </h2>
@@ -448,7 +446,7 @@ export function CandidateDetail({ applicationId }: { applicationId: string }) {
           </section>
 
           {/* Skill and Experience Matching */}
-          <section className="rounded-2xl border border-gray-200 bg-white p-6">
+          <section className={`${PANEL_SURFACE} p-6`}>
             <h2 className="mb-3 text-lg font-bold text-gray-900">
               Skill &amp; Experience Matching
             </h2>
@@ -503,7 +501,7 @@ export function CandidateDetail({ applicationId }: { applicationId: string }) {
           </section>
 
           {/* Screening answers */}
-          <section className="rounded-2xl border border-gray-200 bg-white p-6">
+          <section className={`${PANEL_SURFACE} p-6`}>
             <h2 className="mb-3 text-lg font-bold text-gray-900">
               Screening Answers
             </h2>
@@ -567,7 +565,7 @@ export function CandidateDetail({ applicationId }: { applicationId: string }) {
           </section>
 
           {/* Candidate Score */}
-          <section className="rounded-2xl border border-gray-200 bg-white p-6">
+          <section className={`${PANEL_SURFACE} p-6`}>
             <h2 className="mb-4 text-lg font-bold text-gray-900">
               Candidate Score
             </h2>

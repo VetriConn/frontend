@@ -1,3 +1,5 @@
+import { CardSkeleton } from "@/components/ui/Skeleton";
+
 export default function Loading() {
   return (
     <div className="w-full">
@@ -8,7 +10,7 @@ export default function Loading() {
         </div>
         <div className="h-10 w-36 bg-gray-200 rounded-lg animate-pulse" />
       </div>
-      <div className="bg-white rounded-xl border border-gray-200 p-6 animate-pulse h-[300px]" />
+      <CardSkeleton className="p-6 h-[300px]" />
     </div>
   );
 }

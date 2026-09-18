@@ -22,6 +22,7 @@ import {
   CARD_META_ROW,
   CARD_META_ICON,
 } from "./cardStyles";
+import { PANEL_SURFACE } from "./panelStyles";
 
 interface RecommendedJobCardProps {
   id: string;
@@ -193,7 +194,7 @@ export const RecommendedJobs: React.FC = () => {
           empty grid under it - indistinguishable from "no jobs". Say what
           happened and offer the retry. */}
       {error && (
-        <div className="bg-white rounded-xl border border-gray-200 p-8 text-center">
+        <div className={`${PANEL_SURFACE} p-8 text-center`}>
           <p className="text-sm text-gray-600 mb-4">
             We couldn&apos;t load jobs right now.
           </p>
@@ -208,7 +209,7 @@ export const RecommendedJobs: React.FC = () => {
       )}
 
       {!error && jobs.length === 0 && (
-        <div className="bg-white rounded-xl border border-gray-200 p-8 text-center">
+        <div className={`${PANEL_SURFACE} p-8 text-center`}>
           <p className="text-sm text-gray-500">
             No open listings at the moment. New jobs are added throughout the
             day - check back soon.

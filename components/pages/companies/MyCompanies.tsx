@@ -15,6 +15,7 @@ import { useMyCompanies } from "@/hooks/useCompanies";
 import { useUserProfile } from "@/hooks/useUserProfile";
 import { getMyRole, type Company, type CompanyStatus } from "@/lib/api";
 import { DashboardSkeleton } from "@/components/ui/Skeleton";
+import { PANEL_SURFACE } from "@/components/ui/panelStyles";
 
 const STATUS_META: Record<
   CompanyStatus,
@@ -65,7 +66,7 @@ const CompanyCard = ({
   const role = getMyRole(company, userId);
 
   return (
-    <div className="bg-white rounded-xl border border-gray-200 p-5">
+    <div className={`${PANEL_SURFACE} p-5`}>
       <div className="flex items-start gap-4">
         <div className="w-12 h-12 rounded-lg bg-gray-100 flex items-center justify-center shrink-0 overflow-hidden">
           {company.logo_url ? (
@@ -204,7 +205,7 @@ const MyCompanies = () => {
       )}
 
       {!isError && companies.length === 0 && (
-        <div className="bg-white rounded-xl border border-gray-200 p-10 text-center">
+        <div className={`${PANEL_SURFACE} p-10 text-center`}>
           <HiOutlineBuildingOffice2 className="w-10 h-10 text-gray-300 mx-auto mb-4" />
           <h2 className="text-base font-semibold text-gray-900 mb-2">
             You&apos;re not part of a company yet

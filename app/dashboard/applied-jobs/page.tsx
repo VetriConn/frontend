@@ -32,6 +32,7 @@ import { createPortal } from "react-dom";
 import { useToaster } from "@/components/ui/Toaster";
 import { Avatar } from "@/components/ui/Avatar";
 import { AuthGuard } from "@/components/auth/AuthGuard";
+import { PANEL_SURFACE } from "@/components/ui/panelStyles";
 
 // --- Status controls ---
 
@@ -64,7 +65,7 @@ function StatsCard({
   color?: string;
 }) {
   return (
-    <div className="bg-white rounded-xl border border-gray-200 py-5 px-6 text-center flex-1 min-w-[120px]">
+    <div className={`${PANEL_SURFACE} py-5 px-6 text-center flex-1 min-w-[120px]`}>
       <div className={`text-2xl font-bold ${color} mb-1`}>{value}</div>
       <div className="text-sm text-gray-600">{label}</div>
     </div>
@@ -212,7 +213,7 @@ function StatusDropdown({
 
 function EmptyState({ onAdd }: { onAdd: () => void }) {
   return (
-    <div className="bg-white rounded-xl border border-gray-200 p-16 flex flex-col items-center justify-center text-center">
+    <div className={`${PANEL_SURFACE} p-16 flex flex-col items-center justify-center text-center`}>
       <div className="w-20 h-20 rounded-full bg-gray-100 flex items-center justify-center mb-6">
         <HiOutlineBriefcase className="w-9 h-9 text-gray-400" />
       </div>
@@ -378,7 +379,7 @@ function ApplicationCard({
   );
 
   return (
-    <div className="bg-white rounded-xl border border-gray-200 p-6 transition-shadow hover:shadow-sm">
+    <div className={`${PANEL_SURFACE} p-6 transition-shadow hover:shadow-sm`}>
       <div className="flex items-start justify-between gap-4 mobile:flex-col">
         {/* Company Avatar + Info */}
         <div className="flex items-start gap-4 flex-1 min-w-0">
@@ -816,7 +817,7 @@ export default function AppliedJobsPage() {
 
             {/* Applications list */}
             {filteredApplications.length === 0 ? (
-              <div className="bg-white rounded-xl border border-gray-200 p-12 text-center">
+              <div className={`${PANEL_SURFACE} p-12 text-center`}>
                 <p className="text-gray-500 text-sm">
                   No applications match this filter.
                 </p>
@@ -824,7 +825,7 @@ export default function AppliedJobsPage() {
             ) : (
               <>
                 {/* Desktop Table View */}
-                <div className="hidden md:block bg-white rounded-xl border border-gray-200 overflow-x-auto">
+                <div className={`${PANEL_SURFACE} hidden md:block overflow-x-auto`}>
                   <table className="w-full min-w-[720px] table-fixed">
                     <thead>
                       <tr className="bg-gray-50 border-b border-gray-200">

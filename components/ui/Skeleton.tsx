@@ -1,6 +1,15 @@
-"use client";
+/*
+ * No "use client" here.
+ *
+ * This module has no state, no effects and no handlers: every export is a div
+ * with classes on it. The directive was costing real bytes, because adopting
+ * CardSkeleton across the route-level loading.tsx files pulled ten routes that
+ * previously shipped no client component for their skeleton into the client
+ * graph.
+ */
 import React from "react";
 import clsx from "clsx";
+import { PANEL_SURFACE } from "./panelStyles";
 
 interface SkeletonProps {
   width?: string;
@@ -39,6 +48,34 @@ const ButtonSkeleton: React.FC<{ fullWidth?: boolean; className?: string }> = ({
       className
     )} 
   />
+);
+
+/**
+ * A panel that has not loaded yet.
+ *
+ * This used to exist and was deleted in 481ac6c for having no callers. The
+ * count was right and the conclusion was not: twenty-seven sites, nearly all
+ * of them `loading.tsx` route files, were hand-writing its container instead
+ * of importing it. The version that was deleted is the reason why. It owned
+ * fixed bars inside a fixed box, and no two of those sites want the same
+ * bars, so every one of them wrote the box out again to get different
+ * contents into it.
+ *
+ * So it comes back as the container only. What those sites share is the
+ * surface plus `animate-pulse`, and that is all this is.
+ *
+ * Padding stays with the caller, as it does for PANEL_SURFACE, and here for a
+ * second reason: Tailwind resolves `p-6 p-5` by where the rules sit in the
+ * stylesheet, not by which one clsx appended last, so a default padding in
+ * here could not be reliably overridden from outside.
+ */
+export const CardSkeleton: React.FC<{
+  className?: string;
+  children?: React.ReactNode;
+}> = ({ className = "", children }) => (
+  <div className={clsx(PANEL_SURFACE, "animate-pulse", className)}>
+    {children}
+  </div>
 );
 
 /**

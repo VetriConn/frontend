@@ -8,6 +8,7 @@ import { getMyRole } from "@/lib/api";
 import { DashboardSkeleton } from "@/components/ui/Skeleton";
 import CompanyProfileEditor from "./CompanyProfileEditor";
 import CompanyTeam from "./CompanyTeam";
+import { PANEL_SURFACE } from "@/components/ui/panelStyles";
 
 /**
  * Everything for one company in a single page: profile, hiring team, and the
@@ -23,7 +24,7 @@ const CompanyWorkspace = ({ companyId }: { companyId: string }) => {
   if (isError || !company) {
     return (
       <div className="max-w-3xl mx-auto px-4 md:px-6 py-8">
-        <div className="bg-white rounded-xl border border-gray-200 p-10 text-center">
+        <div className={`${PANEL_SURFACE} p-10 text-center`}>
           <h1 className="text-xl font-bold text-gray-900 mb-2">
             We couldn&apos;t open this company
           </h1>
@@ -108,7 +109,7 @@ const CompanyWorkspace = ({ companyId }: { companyId: string }) => {
           onChanged={mutate}
         />
 
-        <section className="bg-white rounded-xl border border-gray-200 p-6">
+        <section className={`${PANEL_SURFACE} p-6`}>
           <h2 className="text-lg font-semibold text-gray-900 mb-1">
             Jobs posted as {company.name}
           </h2>

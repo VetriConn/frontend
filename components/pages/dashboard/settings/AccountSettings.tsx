@@ -36,6 +36,7 @@ import { CustomDropdown } from "@/components/ui/CustomDropdown";
 import { FIELD_LABEL } from "@/components/ui/fieldStyles";
 import { JOB_SEEKING_STATUS_OPTIONS } from "@/components/ui/JobSeekingStatusBadge";
 import { PANEL_SURFACE } from "@/components/ui/panelStyles";
+import { SettingRow, SETTING_ROW_ICON } from "@/components/ui/SettingRow";
 
 // ─── Types ──────────────────────────────────────────────────────────────────────
 
@@ -548,22 +549,11 @@ export default function AccountSettings() {
         >
           <div className="space-y-5">
             {/* Email Notifications */}
-            <div className="flex items-start justify-between gap-4">
-              <div className="flex items-start gap-3.5">
-                <div className="w-10 h-10 rounded-full bg-red-50 flex items-center justify-center shrink-0 mt-0.5">
-                  <HiOutlineEnvelope className="w-5 h-5 text-primary" />
-                </div>
-                <div>
-                  <h4 className="text-sm font-semibold text-gray-900 mb-0.5">
-                    Email Notifications
-                  </h4>
-                  <p className="text-sm text-gray-600">
-                    Receive important updates about your account and
-                    applications.
-                  </p>
-                </div>
-              </div>
-              <div className="shrink-0 pt-1">
+            <SettingRow
+              icon={<HiOutlineEnvelope className={SETTING_ROW_ICON} />}
+              title="Email Notifications"
+              description="Receive important updates about your account and applications."
+              control={
                 <Toggle
                   ariaLabel="Email notifications"
                   enabled={settings.emailNotifications}
@@ -571,50 +561,29 @@ export default function AccountSettings() {
                     update("emailNotifications", !settings.emailNotifications)
                   }
                 />
-              </div>
-            </div>
+              }
+            />
 
             {/* Job Alerts */}
-            <div className="flex items-start justify-between gap-4">
-              <div className="flex items-start gap-3.5">
-                <div className="w-10 h-10 rounded-full bg-red-50 flex items-center justify-center shrink-0 mt-0.5">
-                  <HiOutlineBriefcase className="w-5 h-5 text-primary" />
-                </div>
-                <div>
-                  <h4 className="text-sm font-semibold text-gray-900 mb-0.5">
-                    Job Alerts
-                  </h4>
-                  <p className="text-sm text-gray-600">
-                    Get notified when new jobs match your preferences.
-                  </p>
-                </div>
-              </div>
-              <div className="shrink-0 pt-1">
+            <SettingRow
+              icon={<HiOutlineBriefcase className={SETTING_ROW_ICON} />}
+              title="Job Alerts"
+              description="Get notified when new jobs match your preferences."
+              control={
                 <Toggle
                   ariaLabel="Job alerts"
                   enabled={settings.jobAlerts}
                   onToggle={() => update("jobAlerts", !settings.jobAlerts)}
                 />
-              </div>
-            </div>
+              }
+            />
 
             {/* Application Approved/Rejected */}
-            <div className="flex items-start justify-between gap-4">
-              <div className="flex items-start gap-3.5">
-                <div className="w-10 h-10 rounded-full bg-red-50 flex items-center justify-center shrink-0 mt-0.5">
-                  <HiOutlineClipboardDocumentCheck className="w-5 h-5 text-primary" />
-                </div>
-                <div>
-                  <h4 className="text-sm font-semibold text-gray-900 mb-0.5">
-                    Application Approved/Rejected
-                  </h4>
-                  <p className="text-sm text-gray-600">
-                    Get notified when your applications are reviewed and their
-                    status changes.
-                  </p>
-                </div>
-              </div>
-              <div className="shrink-0 pt-1">
+            <SettingRow
+              icon={<HiOutlineClipboardDocumentCheck className={SETTING_ROW_ICON} />}
+              title="Application Approved/Rejected"
+              description="Get notified when your applications are reviewed and their status changes."
+              control={
                 <Toggle
                   ariaLabel="Application decisions"
                   enabled={settings.applicationUpdates}
@@ -622,25 +591,15 @@ export default function AccountSettings() {
                     update("applicationUpdates", !settings.applicationUpdates)
                   }
                 />
-              </div>
-            </div>
+              }
+            />
 
             {/* Your job posts */}
-            <div className="flex items-start justify-between gap-4">
-              <div className="flex items-start gap-3.5">
-                <div className="w-10 h-10 rounded-full bg-red-50 flex items-center justify-center shrink-0 mt-0.5">
-                  <HiOutlineBriefcase className="w-5 h-5 text-primary" />
-                </div>
-                <div>
-                  <h4 className="text-sm font-semibold text-gray-900 mb-0.5">
-                    Your job posts
-                  </h4>
-                  <p className="text-sm text-gray-600">
-                    Get notified when a job you posted is approved or rejected.
-                  </p>
-                </div>
-              </div>
-              <div className="shrink-0 pt-1">
+            <SettingRow
+              icon={<HiOutlineBriefcase className={SETTING_ROW_ICON} />}
+              title="Your job posts"
+              description="Get notified when a job you posted is approved or rejected."
+              control={
                 <Toggle
                   ariaLabel="Your job posts"
                   enabled={settings.postingUpdates}
@@ -648,25 +607,15 @@ export default function AccountSettings() {
                     update("postingUpdates", !settings.postingUpdates)
                   }
                 />
-              </div>
-            </div>
+              }
+            />
 
             {/* New applicants */}
-            <div className="flex items-start justify-between gap-4">
-              <div className="flex items-start gap-3.5">
-                <div className="w-10 h-10 rounded-full bg-red-50 flex items-center justify-center shrink-0 mt-0.5">
-                  <HiOutlineUserGroup className="w-5 h-5 text-primary" />
-                </div>
-                <div>
-                  <h4 className="text-sm font-semibold text-gray-900 mb-0.5">
-                    New applicants
-                  </h4>
-                  <p className="text-sm text-gray-600">
-                    Get notified when someone applies to a job you posted.
-                  </p>
-                </div>
-              </div>
-              <div className="shrink-0 pt-1">
+            <SettingRow
+              icon={<HiOutlineUserGroup className={SETTING_ROW_ICON} />}
+              title="New applicants"
+              description="Get notified when someone applies to a job you posted."
+              control={
                 <Toggle
                   ariaLabel="New applicants"
                   enabled={settings.newApplications}
@@ -674,50 +623,29 @@ export default function AccountSettings() {
                     update("newApplications", !settings.newApplications)
                   }
                 />
-              </div>
-            </div>
+              }
+            />
 
             {/* Messages */}
-            <div className="flex items-start justify-between gap-4">
-              <div className="flex items-start gap-3.5">
-                <div className="w-10 h-10 rounded-full bg-red-50 flex items-center justify-center shrink-0 mt-0.5">
-                  <HiOutlineChatBubbleLeftRight className="w-5 h-5 text-primary" />
-                </div>
-                <div>
-                  <h4 className="text-sm font-semibold text-gray-900 mb-0.5">
-                    Messages
-                  </h4>
-                  <p className="text-sm text-gray-600">
-                    Get notified when you receive a new message from an
-                    employer.
-                  </p>
-                </div>
-              </div>
-              <div className="shrink-0 pt-1">
+            <SettingRow
+              icon={<HiOutlineChatBubbleLeftRight className={SETTING_ROW_ICON} />}
+              title="Messages"
+              description="Get notified when you receive a new message from an employer."
+              control={
                 <Toggle
                   ariaLabel="Messages"
                   enabled={settings.messages}
                   onToggle={() => update("messages", !settings.messages)}
                 />
-              </div>
-            </div>
+              }
+            />
 
             {/* Community Updates */}
-            <div className="flex items-start justify-between gap-4">
-              <div className="flex items-start gap-3.5">
-                <div className="w-10 h-10 rounded-full bg-red-50 flex items-center justify-center shrink-0 mt-0.5">
-                  <HiOutlineUserGroup className="w-5 h-5 text-primary" />
-                </div>
-                <div>
-                  <h4 className="text-sm font-semibold text-gray-900 mb-0.5">
-                    Community Updates
-                  </h4>
-                  <p className="text-sm text-gray-600">
-                    Stay informed about community events and discussions.
-                  </p>
-                </div>
-              </div>
-              <div className="shrink-0 pt-1">
+            <SettingRow
+              icon={<HiOutlineUserGroup className={SETTING_ROW_ICON} />}
+              title="Community Updates"
+              description="Stay informed about community events and discussions."
+              control={
                 <Toggle
                   ariaLabel="Community updates"
                   enabled={settings.communityUpdates}
@@ -725,8 +653,8 @@ export default function AccountSettings() {
                     update("communityUpdates", !settings.communityUpdates)
                   }
                 />
-              </div>
-            </div>
+              }
+            />
 
             {/*
               Set apart from the toggles above it, because it is not the same
@@ -735,24 +663,12 @@ export default function AccountSettings() {
               law treats separately — it has to be given by an affirmative act
               and withdrawable at any time, which is what this control is.
             */}
-            <div className="pt-6 border-t border-gray-200 flex items-start justify-between gap-4">
-              <div className="flex items-start gap-3.5">
-                <div className="w-10 h-10 rounded-full bg-red-50 flex items-center justify-center shrink-0 mt-0.5">
-                  <HiOutlineEnvelope className="w-5 h-5 text-primary" />
-                </div>
-                <div>
-                  <h4 className="text-sm font-semibold text-gray-900 mb-0.5">
-                    Marketing Email
-                  </h4>
-                  <p className="text-sm text-gray-600">
-                    Occasional news about Vetriconn and hiring in Canada. Off
-                    unless you turn it on, and turning it off stops it
-                    immediately. It doesn&apos;t affect messages about your
-                    applications, postings or account.
-                  </p>
-                </div>
-              </div>
-              <div className="shrink-0 pt-1">
+            <SettingRow
+              className="pt-6 border-t border-gray-200"
+              icon={<HiOutlineEnvelope className={SETTING_ROW_ICON} />}
+              title="Marketing Email"
+              description="Occasional news about Vetriconn and hiring in Canada. Off unless you turn it on, and turning it off stops it immediately. It doesn't affect messages about your applications, postings or account."
+              control={
                 <Toggle
                   ariaLabel="Marketing email"
                   enabled={settings.promotionalEmails}
@@ -760,8 +676,8 @@ export default function AccountSettings() {
                     update("promotionalEmails", !settings.promotionalEmails)
                   }
                 />
-              </div>
-            </div>
+              }
+            />
           </div>
         </SectionCard>
 
@@ -833,51 +749,29 @@ export default function AccountSettings() {
             </div>
 
             {/* High Contrast */}
-            <div className="flex items-start justify-between gap-4">
-              <div className="flex items-start gap-3.5">
-                <div className="w-10 h-10 rounded-full bg-red-50 flex items-center justify-center shrink-0 mt-0.5">
-                  <HiOutlineEyeSlash className="w-5 h-5 text-primary" />
-                </div>
-                <div>
-                  <h4 className="text-sm font-semibold text-gray-900 mb-0.5">
-                    High Contrast Mode
-                  </h4>
-                  <p className="text-sm text-gray-600">
-                    Makes text easier to read by increasing the contrast between
-                    text and backgrounds.
-                  </p>
-                </div>
-              </div>
-              <div className="shrink-0 pt-1">
+            <SettingRow
+              icon={<HiOutlineEyeSlash className={SETTING_ROW_ICON} />}
+              title="High Contrast Mode"
+              description="Makes text easier to read by increasing the contrast between text and backgrounds."
+              control={
                 <Toggle
                   ariaLabel="High contrast mode"
                   enabled={highContrast}
                   onToggle={() => setHighContrast(!highContrast)}
                 />
-              </div>
-            </div>
+              }
+            />
 
             {/* Replay the dashboard tour.
                 Sits with the accessibility controls rather than under Help,
                 because "show me that again" is the same kind of need as
                 "make the text bigger", and this is where people already come
                 to make the product easier to use. */}
-            <div className="flex items-start justify-between gap-4">
-              <div className="flex items-start gap-3.5">
-                <div className="w-10 h-10 rounded-full bg-red-50 flex items-center justify-center shrink-0 mt-0.5">
-                  <HiOutlineMap className="w-5 h-5 text-primary" />
-                </div>
-                <div>
-                  <h4 className="text-sm font-semibold text-gray-900 mb-0.5">
-                    Dashboard tour
-                  </h4>
-                  <p className="text-sm text-gray-600">
-                    A short walkthrough of where everything is. You can watch it
-                    as many times as you like.
-                  </p>
-                </div>
-              </div>
-              <div className="shrink-0 pt-1">
+            <SettingRow
+              icon={<HiOutlineMap className={SETTING_ROW_ICON} />}
+              title="Dashboard tour"
+              description="A short walkthrough of where everything is. You can watch it as many times as you like."
+              control={
                 <button
                   type="button"
                   onClick={() => startTour("settings")}
@@ -885,8 +779,8 @@ export default function AccountSettings() {
                 >
                   Show me around
                 </button>
-              </div>
-            </div>
+              }
+            />
           </div>
         </SectionCard>
 

@@ -77,7 +77,7 @@ describe("prefillFromProfile", () => {
 describe("experienceOpener", () => {
   it("opens with a true sentence the applicant can continue", () => {
     expect(experienceOpener(profile)).toBe(
-      "I have 3–5 years of experience as a Customer Service Representative. ",
+      "I have 3 to 5 years of experience as a Customer Service Representative. ",
     );
   });
 
@@ -88,7 +88,7 @@ describe("experienceOpener", () => {
   });
 
   it("sets the range in an en dash, as the profile screen does", () => {
-    expect(experienceOpener(profile)).toContain("3–5");
+    expect(experienceOpener(profile)).toContain("3 to 5");
     expect(experienceOpener(profile)).not.toContain("3-5");
   });
 

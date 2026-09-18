@@ -24,9 +24,9 @@ export const EducationCard: React.FC<EducationCardProps> = ({
   const formatYearRange = (startYear?: string, endYear?: string) => {
     if (!startYear && !endYear) return "";
     if (!startYear) return endYear;
-    if (!endYear) return `${startYear} – Present`;
+    if (!endYear) return `${startYear} to Present`;
 
-    return `${startYear} – ${endYear}`;
+    return `${startYear} to ${endYear}`;
   };
 
   // Sort by most recent first (end_year descending, no end_year = current/most recent)

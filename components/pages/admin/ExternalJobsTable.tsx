@@ -136,13 +136,13 @@ const ExternalJobsTable = () => {
                     <AdminTableTd className="font-semibold text-gray-900">
                       {job.role}
                     </AdminTableTd>
-                    <AdminTableTd>{job.company_name || "—"}</AdminTableTd>
-                    <AdminTableTd>{job.location || "—"}</AdminTableTd>
+                    <AdminTableTd>{job.company_name || "Not set"}</AdminTableTd>
+                    <AdminTableTd>{job.location || "Not set"}</AdminTableTd>
                     <AdminTableTd>
                       {formatJobSalary(
                         { compensation: job.compensation },
                         "full",
-                      ) ?? "—"}
+                      ) ?? "Not set"}
                     </AdminTableTd>
                     <AdminTableTd>
                       {job.last_scraped_at ? (

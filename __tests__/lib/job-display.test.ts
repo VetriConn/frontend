@@ -206,13 +206,13 @@ describe("formatJobSalary", () => {
     it("should render a range", () => {
       expect(
         formatJobSalary(pay({ min: 45000, max: 60000 })),
-      ).toBe("$45K – $60K/year");
+      ).toBe("$45K to $60K/year");
     });
 
     it("should prefer a complete range over a single salary", () => {
       expect(
         formatJobSalary(pay({ min: 50000, max: 70000 })),
-      ).toBe("$50K – $70K/year");
+      ).toBe("$50K to $70K/year");
     });
   });
 
@@ -229,7 +229,7 @@ describe("formatJobSalary", () => {
           pay({ min: 45000, max: 60000 }),
           "full",
         ),
-      ).toBe("$45,000 CAD – $60,000 CAD");
+      ).toBe("$45,000 CAD to $60,000 CAD");
     });
 
     it("should not render a bare zero as free work", () => {
@@ -242,7 +242,7 @@ describe("formatJobSalary", () => {
     it("should word an hourly range hourly, not as $0K/year", () => {
       expect(
         formatJobSalary(pay({ basis: "hourly", min: 25, max: 30 })),
-      ).toBe("$25 – $30/hour");
+      ).toBe("$25 to $30/hour");
     });
 
     it("should word an hourly single figure hourly in full variant", () => {
@@ -271,7 +271,7 @@ describe("formatJobSalary", () => {
           pay({ basis: "hourly", min: 18.5, max: 24.75 }),
           "compact",
         ),
-      ).toBe("$18.50 – $24.75/hour");
+      ).toBe("$18.50 to $24.75/hour");
       // A whole rate stays clean rather than "$25.00/hour".
       expect(
         formatJobSalary(pay({ basis: "hourly", min: 25, max: 25 }), "compact"),

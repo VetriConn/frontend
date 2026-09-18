@@ -518,10 +518,10 @@ export default function AccountSettings() {
               value={settings.experienceLevel}
               onChange={(val) => update("experienceLevel", val)}
               options={[
-                { value: "entry", label: "Entry Level (0–2 years)" },
+                { value: "entry", label: "Entry Level (0 to 2 years)" },
                 {
                   value: "mid",
-                  label: "Mid Level (3–7 years)",
+                  label: "Mid Level (3 to 7 years)",
                 },
                 {
                   value: "senior",
@@ -742,7 +742,7 @@ export default function AccountSettings() {
                   <p className="text-sm text-gray-600">
                     Occasional news about Vetriconn and hiring in Canada. Off
                     unless you turn it on, and turning it off stops it
-                    immediately — it doesn&apos;t affect messages about your
+                    immediately. It doesn&apos;t affect messages about your
                     applications, postings or account.
                   </p>
                 </div>

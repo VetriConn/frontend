@@ -8,7 +8,7 @@ import {
   ChipGroup,
   ToggleRow,
   inputClasses,
-} from "../formKit";
+} from "@/components/ui/formKit";
 import {
   MIN_QUALIFICATIONS,
   SECURITY_CLEARANCES,

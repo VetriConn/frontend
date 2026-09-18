@@ -8,7 +8,7 @@ import {
   ChipGroup,
   LocationFields,
   inputClasses,
-} from "../formKit";
+} from "@/components/ui/formKit";
 import {
   PAYMENT_TYPES,
   CURRENCIES,

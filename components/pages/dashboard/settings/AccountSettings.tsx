@@ -33,6 +33,7 @@ import DataExportPanel from "./DataExportPanel";
 import TwoFactorSetupDialog from "@/components/security/TwoFactorSetupDialog";
 import DisableTwoFactorDialog from "@/components/security/DisableTwoFactorDialog";
 import { CustomDropdown } from "@/components/ui/CustomDropdown";
+import { FIELD_LABEL } from "@/components/ui/fieldStyles";
 import { JOB_SEEKING_STATUS_OPTIONS } from "@/components/ui/JobSeekingStatusBadge";
 
 // ─── Types ──────────────────────────────────────────────────────────────────────
@@ -383,7 +384,7 @@ export default function AccountSettings() {
               <div>
                 <label
                   htmlFor="settings-email"
-                  className="block text-sm font-semibold text-gray-900 mb-1.5 md:mb-2"
+                  className={FIELD_LABEL}
                 >
                   Email Address
                 </label>
@@ -1054,7 +1055,7 @@ export default function AccountSettings() {
                     <div>
                       <label
                         htmlFor="settings-current-password"
-                        className="block text-sm font-semibold text-gray-900 mb-1.5 md:mb-2"
+                        className={FIELD_LABEL}
                       >
                         Current Password
                       </label>
@@ -1088,7 +1089,7 @@ export default function AccountSettings() {
                     <div>
                       <label
                         htmlFor="settings-new-password"
-                        className="block text-sm font-semibold text-gray-900 mb-1.5 md:mb-2"
+                        className={FIELD_LABEL}
                       >
                         New Password
                       </label>
@@ -1161,7 +1162,7 @@ export default function AccountSettings() {
                     <div>
                       <label
                         htmlFor="settings-confirm-password"
-                        className="block text-sm font-semibold text-gray-900 mb-1.5 md:mb-2"
+                        className={FIELD_LABEL}
                       >
                         Confirm New Password
                       </label>
@@ -1308,7 +1309,7 @@ export default function AccountSettings() {
                 <div>
                   <label
                     htmlFor="settings-deactivate-password"
-                    className="block text-sm font-semibold text-gray-900 mb-1.5 md:mb-2"
+                    className={FIELD_LABEL}
                   >
                     Confirm your password
                   </label>
@@ -1342,7 +1343,7 @@ export default function AccountSettings() {
                 <div>
                   <label
                     htmlFor="settings-deactivate-confirm"
-                    className="block text-sm font-semibold text-gray-900 mb-1.5 md:mb-2"
+                    className={FIELD_LABEL}
                   >
                     Type{" "}
                     <span className="text-red-600 font-bold">DEACTIVATE</span>{" "}

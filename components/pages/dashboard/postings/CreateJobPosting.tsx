@@ -57,13 +57,14 @@ import {
   StepReview,
   VerticalStepper,
 } from "./steps";
-import { SelectField } from "./formKit";
+import { SelectField } from "@/components/ui/formKit";
 
 /**
  * The job builder's orchestrator: mode selection (full vs lite), step state,
  * validation, draft/publish submission, and the wizard shell. The data layer
- * lives in ./jobForm, the field kit in ./formKit, and each step in ./steps —
- * this file used to carry all of it at once (2,100+ lines, #47).
+ * lives in ./jobForm, each step in ./steps, and the field kit in
+ * components/ui/formKit, which the rest of the app now shares.
+ * This file used to carry all of it at once (2,100+ lines, #47).
  */
 
 /** ISO datetime (or plain date) → the YYYY-MM-DD an <input type="date"> shows. */

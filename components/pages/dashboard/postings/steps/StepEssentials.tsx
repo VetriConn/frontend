@@ -9,7 +9,7 @@ import {
   LocationFields,
   inputClasses,
   errorInputClasses,
-} from "../formKit";
+} from "@/components/ui/formKit";
 import {
   JOB_CATEGORIES,
   JOB_TYPES,

@@ -39,9 +39,21 @@ export const fieldBorder = (hasError: boolean): string =>
 /** Applied to the box when the control is disabled. */
 export const FIELD_DISABLED = "bg-gray-100 cursor-not-allowed opacity-60";
 
-/** The label above the box. */
+/**
+ * The label above the box.
+ *
+ * This was `text-text-muted font-medium`, and it lost an argument it did not
+ * know it was in. Four label treatments were live at once: this one on 7
+ * fields, `font-medium text-gray-700` inside the job builder's own kit, and
+ * two hand-written variants on 24 more fields. The two hand-written ones
+ * already agreed on `font-semibold text-gray-900` and differed only in
+ * bottom margin, so the majority was never close, 24 to 7. It is also the
+ * legible choice: near black at semibold, on a board whose audience skews
+ * 45+, against a muted grey that was the lightest text on the page carrying
+ * the name of the field.
+ */
 export const FIELD_LABEL =
-  "block text-sm text-text-muted mb-1.5 md:mb-2 font-medium";
+  "block text-sm font-semibold text-gray-900 mb-1.5 md:mb-2";
 
 /** Helper text below the box. */
 export const FIELD_HELPER = "text-xs text-gray-500 mt-1";

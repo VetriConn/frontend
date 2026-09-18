@@ -9,6 +9,7 @@ import {
 import { HiOutlineRectangleGroup } from "react-icons/hi2";
 import { searchSkills, ALL_SKILLS } from "@/lib/skills-data";
 import { useAnchoredMenu } from "@/hooks/useAnchoredMenu";
+import { FIELD_LABEL } from "./fieldStyles";
 
 // ─── Types ──────────────────────────────────────────────────────────────────────
 
@@ -217,7 +218,7 @@ export const SkillsEditForm: React.FC<SkillsEditProps> = ({
       {/* Current skills */}
       {skills.length > 0 && (
         <div>
-          <label className="block text-sm font-semibold text-gray-900 mb-2">
+          <label className={FIELD_LABEL}>
             Your Skills ({skills.length}/{MAX_SKILLS})
           </label>
           <div className="flex flex-wrap gap-2">
@@ -234,7 +235,7 @@ export const SkillsEditForm: React.FC<SkillsEditProps> = ({
 
       {/* Input with autocomplete */}
       <div ref={containerRef} className="relative">
-        <label className="block text-sm font-semibold text-gray-900 mb-1.5 md:mb-2">
+        <label className={FIELD_LABEL}>
           {skills.length > 0 ? "Add More Skills" : "Add Skills"}
         </label>
         <div className="relative">

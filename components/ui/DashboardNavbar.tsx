@@ -51,6 +51,15 @@ interface NavItem {
   href: string;
   icon: React.ReactNode;
   /**
+   * Stable anchor id for the dashboard tour, emitted as `data-tour`.
+   *
+   * Declared once here and rendered at every site this item appears, so the
+   * desktop bar and the drawer carry the SAME id. The tour resolves an id to
+   * whichever copy is currently visible, which is what lets it stay ignorant
+   * of the breakpoint that decides between them.
+   */
+  tourId?: string;
+  /**
    * Each item owns its own menu. They used to share one open flag and one
    * body, so opening either showed the same combined list under whichever was
    * clicked — two triggers, one panel.
@@ -67,6 +76,7 @@ const navItemsForEveryone: NavItem[] = [
   {
     name: "Find Jobs",
     href: "/dashboard",
+    tourId: "nav-find-jobs",
     icon: <HiOutlineBriefcase className="w-5 h-5" />,
     dropdown: [
       { name: "Browse Jobs", href: "/dashboard/find-jobs" },
@@ -80,6 +90,7 @@ const navItemsForEveryone: NavItem[] = [
     name: "My Postings",
     href: "/dashboard/postings",
     icon: <HiOutlineBuildingOffice2 className="w-5 h-5" />,
+    tourId: "nav-postings",
     dropdown: [
       {
         name: "Post a Job",
@@ -112,6 +123,7 @@ const navItemsForEveryone: NavItem[] = [
     name: "Inbox",
     href: "/dashboard/inbox",
     icon: <HiOutlineInbox className="w-5 h-5" />,
+    tourId: "nav-inbox",
   },
 ];
 
@@ -185,6 +197,7 @@ const ACCOUNT_LINKS: NavLink[] = [
  */
 const companiesNavItem: NavItem = {
   name: "Companies",
+  tourId: "nav-companies",
   href: "/dashboard/companies",
   icon: <HiOutlineBuildingOffice2 className="w-5 h-5" />,
 };
@@ -442,7 +455,7 @@ const DashboardNavbar = () => {
         >
           {/* Center Navigation */}
           {navItems.map((item) => (
-            <div key={item.name} className="relative">
+            <div key={item.name} className="relative" data-tour={item.tourId}>
               {item.dropdown ? (
                 <button
                   onClick={() =>
@@ -526,6 +539,7 @@ const DashboardNavbar = () => {
           {/* Profile Dropdown */}
           <div className="relative" ref={profileDropdownRef}>
             <button
+              data-tour="nav-account"
               onClick={() => setIsProfileDropdownOpen(!isProfileDropdownOpen)}
               className="flex items-center gap-2 pl-3 pr-2 py-1.5 rounded-lg hover:bg-gray-50 transition-colors"
             >
@@ -638,6 +652,7 @@ const DashboardNavbar = () => {
         {/* Mobile Menu Button */}
         <div className={drawerOnly}>
           <button
+            data-tour="nav-menu-toggle"
             ref={mobileMenuButtonRef}
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
             className="p-2 rounded-lg text-gray-600 hover:bg-gray-100 transition-colors min-h-[44px] min-w-[44px] flex items-center justify-center"
@@ -704,6 +719,7 @@ const DashboardNavbar = () => {
             .map((item, index) => (
             <Link
               key={item.name}
+              data-tour={item.tourId}
               ref={index === 0 ? firstMobileMenuItemRef : undefined}
               href={item.href}
               className={clsx(
@@ -728,7 +744,7 @@ const DashboardNavbar = () => {
           {navItems
             .filter((item) => item.dropdown)
             .map((item) => (
-              <div key={`mobile-${item.name}`}>
+              <div key={`mobile-${item.name}`} data-tour={item.tourId}>
                 <p className="px-4 pt-3 pb-1 text-xs font-semibold text-primary uppercase tracking-wider">
                   {item.name}
                 </p>

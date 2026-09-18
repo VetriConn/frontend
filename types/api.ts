@@ -197,6 +197,14 @@ export interface UserProfile {
     preferred_location: "within-10" | "within-25" | "within-50" | "anywhere";
     experience_level: "entry" | "mid" | "senior" | "executive";
   };
+  /**
+   * When the dashboard tour was finished or skipped, null if neither.
+   *
+   * Server-stamped via POST /auth/tour-completed, never sent by the client.
+   * Arrives on the profile the dashboard already fetches, so the tour's
+   * automatic trigger costs no extra request.
+   */
+  tour_completed_at?: string | null;
 }
 
 // User profile response from API (matches backend UserProfileResponse)

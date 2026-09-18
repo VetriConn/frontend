@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import { useTour } from "@/components/tour/TourProvider";
 import {
   HiOutlineKey,
   HiOutlineShieldCheck,
@@ -8,6 +9,7 @@ import {
   HiOutlineBriefcase,
   HiOutlineUserGroup,
   HiOutlineEyeSlash,
+  HiOutlineMap,
   HiOutlineEye,
   HiOutlineArrowDownTray,
   HiOutlineExclamationTriangle,
@@ -232,6 +234,7 @@ export default function AccountSettings() {
   };
 
   // ─── Accessibility ────────────────────────────────────────────────────────
+  const { start: startTour } = useTour();
   const { textSize, highContrast, setTextSize, setHighContrast } =
     useAccessibility();
 
@@ -849,6 +852,37 @@ export default function AccountSettings() {
                   enabled={highContrast}
                   onToggle={() => setHighContrast(!highContrast)}
                 />
+              </div>
+            </div>
+
+            {/* Replay the dashboard tour.
+                Sits with the accessibility controls rather than under Help,
+                because "show me that again" is the same kind of need as
+                "make the text bigger", and this is where people already come
+                to make the product easier to use. */}
+            <div className="flex items-start justify-between gap-4">
+              <div className="flex items-start gap-3.5">
+                <div className="w-10 h-10 rounded-full bg-red-50 flex items-center justify-center shrink-0 mt-0.5">
+                  <HiOutlineMap className="w-5 h-5 text-primary" />
+                </div>
+                <div>
+                  <h4 className="text-sm font-semibold text-gray-900 mb-0.5">
+                    Dashboard tour
+                  </h4>
+                  <p className="text-sm text-gray-600">
+                    A short walkthrough of where everything is. You can watch it
+                    as many times as you like.
+                  </p>
+                </div>
+              </div>
+              <div className="shrink-0 pt-1">
+                <button
+                  type="button"
+                  onClick={() => startTour("settings")}
+                  className="min-h-[2.75rem] rounded-lg border border-gray-300 px-4 text-sm font-medium text-gray-700 hover:bg-gray-50"
+                >
+                  Show me around
+                </button>
               </div>
             </div>
           </div>

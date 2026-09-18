@@ -3,7 +3,7 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { TourStep } from "@/lib/tour/steps";
-import { resolveAnchor } from "@/lib/tour/anchors";
+import { findVisible, resolveAnchor } from "@/lib/tour/anchors";
 
 interface Props {
   step: TourStep;
@@ -37,17 +37,34 @@ export default function TourSpotlight({
   const targetRef = useRef<HTMLElement | null>(null);
 
   const measure = useCallback(() => {
-    const el = targetRef.current;
-    if (!el) return;
-    // A target that vanished mid-tour, for example because the drawer closed.
-    // Advance rather than point at a stale rectangle.
-    if (el.getClientRects().length === 0) {
-      onNext();
-      return;
+    let el = targetRef.current;
+    /*
+     * Re-resolve, never advance.
+     *
+     * This used to call onNext() when the tracked element went invisible,
+     * which read as graceful and was not: measure runs on every resize, so
+     * dragging the window across the navbar's breakpoint stepped the tour
+     * forward, and on a phone, where every anchor is inside the drawer, it
+     * ran away with itself.
+     *
+     * An invisible anchor almost always means the OTHER copy of it is the
+     * visible one, so look the id up again and retarget.
+     */
+    if (!el || el.getClientRects().length === 0) {
+      const fresh = step.anchor ? findVisible(step.anchor) : null;
+      if (!fresh) {
+        // Genuinely unreachable for now. Hide the cutout rather than draw it
+        // somewhere wrong, and wait: a resize or the drawer opening will
+        // bring us back through here.
+        setRect(null);
+        return;
+      }
+      targetRef.current = fresh;
+      el = fresh;
     }
     const r = el.getBoundingClientRect();
     setRect({ top: r.top, left: r.left, width: r.width, height: r.height });
-  }, [onNext]);
+  }, [step.anchor]);
 
   // Resolve, scroll, then measure. The frame between matters: a rect read
   // during a smooth scroll is the position the element is passing through,
@@ -86,18 +103,32 @@ export default function TourSpotlight({
   useEffect(() => {
     if (!step.anchor) return;
     let frame = 0;
+    let timer: ReturnType<typeof setTimeout>;
+    /*
+     * rAF for smoothness, a timer because rAF does not fire in a hidden tab.
+     * Without the timer a resize that happens while the tab is backgrounded
+     * is never measured, so returning to the tab shows the spotlight still
+     * drawn around where the element used to be.
+     */
     const schedule = () => {
       cancelAnimationFrame(frame);
+      clearTimeout(timer);
       frame = requestAnimationFrame(measure);
+      timer = setTimeout(measure, 60);
     };
     window.addEventListener("resize", schedule);
     window.addEventListener("scroll", schedule, true);
+    // Coming back to a backgrounded tab is itself a reason to re-measure:
+    // the layout may have changed the whole time we were not painting.
+    document.addEventListener("visibilitychange", schedule);
     const ro = targetRef.current ? new ResizeObserver(schedule) : null;
     if (ro && targetRef.current) ro.observe(targetRef.current);
     return () => {
       cancelAnimationFrame(frame);
+      clearTimeout(timer);
       window.removeEventListener("resize", schedule);
       window.removeEventListener("scroll", schedule, true);
+      document.removeEventListener("visibilitychange", schedule);
       ro?.disconnect();
     };
   }, [step.anchor, measure]);
@@ -107,6 +138,25 @@ export default function TourSpotlight({
   useEffect(() => {
     headingRef.current?.focus();
   }, [step.id]);
+
+  /*
+   * A step that waits on the reader rather than on a Next click.
+   *
+   * Only the open-the-menu step uses this. Polling rather than listening
+   * because the thing being watched is the drawer's own aria-expanded, and
+   * subscribing to that would mean reaching into the navbar's state, which
+   * is the coupling this whole redesign removed.
+   */
+  useEffect(() => {
+    if (!step.waitFor) return;
+    const id = setInterval(() => {
+      if (step.waitFor?.()) {
+        clearInterval(id);
+        onNext();
+      }
+    }, 120);
+    return () => clearInterval(id);
+  }, [step, onNext]);
 
   // The tour only ever mounts from a client interaction, never during SSR, so
   // a mounted flag would be state tracking something that is always true by
@@ -150,12 +200,12 @@ export default function TourSpotlight({
       */}
       {cut ? (
         <>
-          <div className="fixed inset-x-0 top-0 bg-black/50" style={{ height: Math.max(0, cut.top) }} />
-          <div className="fixed inset-x-0 bg-black/50" style={{ top: cut.top + cut.height, bottom: 0 }} />
-          <div className="fixed bg-black/50" style={{ top: cut.top, height: cut.height, left: 0, width: Math.max(0, cut.left) }} />
-          <div className="fixed bg-black/50" style={{ top: cut.top, height: cut.height, left: cut.left + cut.width, right: 0 }} />
+          <div className="tour-move fixed inset-x-0 top-0 bg-black/50" style={{ height: Math.max(0, cut.top) }} />
+          <div className="tour-move fixed inset-x-0 bg-black/50" style={{ top: cut.top + cut.height, bottom: 0 }} />
+          <div className="tour-move fixed bg-black/50" style={{ top: cut.top, height: cut.height, left: 0, width: Math.max(0, cut.left) }} />
+          <div className="tour-move fixed bg-black/50" style={{ top: cut.top, height: cut.height, left: cut.left + cut.width, right: 0 }} />
           <div
-            className="fixed rounded-lg ring-2 ring-primary pointer-events-none"
+            className="tour-move fixed rounded-lg ring-2 ring-primary pointer-events-none"
             style={{ top: cut.top, left: cut.left, width: cut.width, height: cut.height }}
           />
         </>
@@ -174,7 +224,7 @@ export default function TourSpotlight({
          * points at grows, and the two drift apart at 125% exactly the way the
          * avatar did before it was moved to rem.
          */
-        className="w-[20rem] max-w-[calc(100vw-1.5rem)] rounded-xl bg-white p-[1.25rem] shadow-xl"
+        className={`${cut ? "tour-move tour-pop" : "tour-pop-center"} w-[20rem] max-w-[calc(100vw-1.5rem)] rounded-xl bg-white p-[1.25rem] shadow-xl`}
       >
         <p className="text-[0.75rem] font-medium text-gray-500">
           Step {index + 1} of {total}
@@ -208,12 +258,19 @@ export default function TourSpotlight({
                 Back
               </button>
             )}
-            <button
-              onClick={onNext}
-              className="min-h-[2.75rem] rounded-lg bg-primary px-4 text-[0.875rem] font-medium text-white hover:bg-primary-hover"
-            >
-              {isLast ? "Done" : "Next"}
-            </button>
+            {step.waitFor ? (
+              // No Next: this step ends when the reader opens the menu.
+              <span className="text-[0.875rem] font-medium text-gray-400">
+                Waiting for you
+              </span>
+            ) : (
+              <button
+                onClick={onNext}
+                className="min-h-[2.75rem] rounded-lg bg-primary px-4 text-[0.875rem] font-medium text-white hover:bg-primary-hover"
+              >
+                {isLast ? "Done" : "Next"}
+              </button>
+            )}
           </div>
         </div>
       </div>

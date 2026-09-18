@@ -10,7 +10,7 @@ import React, {
   useState,
 } from "react";
 import { TOURS, TourId, TourStep } from "@/lib/tour/steps";
-import { resolveAnchor, closeDrawerIfOpen } from "@/lib/tour/anchors";
+import { anchorExists, closeDrawerIfOpen, isDrawerLayout } from "@/lib/tour/anchors";
 import { markTourCompleted } from "@/lib/api/tour";
 import TourSpotlight from "./TourSpotlight";
 
@@ -56,24 +56,31 @@ export function TourProvider({ children }: { children: React.ReactNode }) {
   const start = useCallback((source: TourSource, tour: TourId = "dashboard") => {
     sourceRef.current = source;
     tourRef.current = tour;
-    void (async () => {
-      const resolved: TourStep[] = [];
-      for (const step of TOURS[tour]) {
-        if (!step.anchor) {
-          resolved.push(step);
-          continue;
-        }
-        if (await resolveAnchor(step.anchor)) resolved.push(step);
-      }
-      closeDrawerIfOpen();
-      setIndex(0);
-      setSteps(resolved.length > 0 ? resolved : null);
-    })();
+    const drawer = isDrawerLayout();
+    const resolved = TOURS[tour].filter((step) => {
+      // The open-the-menu step is meaningless on a desktop bar.
+      if (step.drawerOnly && !drawer) return false;
+      if (!step.anchor) return true;
+      /*
+       * Existence, not visibility.
+       *
+       * On a drawer layout every nav anchor is hidden at start time, because
+       * the drawer is shut. Resolving on visibility here dropped all of them
+       * and left a one-step tour. What matters is whether this account has
+       * the element at all: an account with no company genuinely has no
+       * `nav-companies`, and that is the only case worth dropping.
+       */
+      return anchorExists(step.anchor);
+    });
+    setIndex(0);
+    setSteps(resolved.length > 0 ? resolved : null);
   }, []);
 
   const stop = useCallback((reason: "finished" | "skipped") => {
     setSteps(null);
     setIndex(0);
+    // Only here, never between steps: closing it mid-tour is what hid every
+    // anchor the resolver had just found.
     closeDrawerIfOpen();
     // Skipping counts exactly as finishing. Someone who dismissed it has seen
     // it as far as they intend to, and showing it again tomorrow is the

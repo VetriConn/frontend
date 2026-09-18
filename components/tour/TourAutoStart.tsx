@@ -2,6 +2,7 @@
 
 import { useEffect, useRef } from "react";
 import { useUserProfile } from "@/hooks/useUserProfile";
+import { useMyCompanies } from "@/hooks/useCompanies";
 import { useTour } from "./TourProvider";
 
 /**
@@ -19,6 +20,19 @@ import { useTour } from "./TourProvider";
  */
 export default function TourAutoStart() {
   const { userProfile, isLoading } = useUserProfile();
+  /**
+   * Wait for companies too, not just the profile.
+   *
+   * The nav only renders its Companies entry once this resolves, and the tour
+   * resolves its step list ONCE at start and drops anchors it cannot find. So
+   * starting while this is in flight silently costs the Companies step.
+   *
+   * This is not a narrow race. The companies request is keyed on the profile
+   * (hooks/useCompanies), so it does not even begin until the profile lands,
+   * and the tour used to start two frames after that. The step was being
+   * dropped for essentially every account that had a company.
+   */
+  const { isLoading: isCompaniesLoading } = useMyCompanies();
   const { start, isRunning } = useTour();
   // One attempt per mount. Without this, any profile revalidation that
   // returned before the completion write landed would start the tour again
@@ -26,7 +40,7 @@ export default function TourAutoStart() {
   const attempted = useRef(false);
 
   useEffect(() => {
-    if (attempted.current || isLoading || isRunning) return;
+    if (attempted.current || isLoading || isCompaniesLoading || isRunning) return;
     if (!userProfile) return;
     if (userProfile.tour_completed_at) {
       attempted.current = true;
@@ -53,7 +67,7 @@ export default function TourAutoStart() {
       cancelAnimationFrame(frame);
       clearTimeout(timer);
     };
-  }, [userProfile, isLoading, isRunning, start]);
+  }, [userProfile, isLoading, isCompaniesLoading, isRunning, start]);
 
   return null;
 }

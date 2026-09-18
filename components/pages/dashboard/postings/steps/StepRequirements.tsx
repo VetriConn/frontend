@@ -17,30 +17,24 @@ import {
   EXPERIENCE_LEVELS,
   splitSkills,
   type JobFormData,
-  type FormErrors,
 } from "../jobForm";
 import { getSkillSuggestions } from "@/lib/api";
+import { StepHeading, type StepProps } from "./stepKit";
 
 export function StepRequirements({
   formData,
   onChange,
   onSet,
   onToggle,
-}: {
-  formData: JobFormData;
-  errors: FormErrors;
-  onChange: (field: keyof JobFormData, value: string) => void;
+}: StepProps & {
   onSet: <K extends keyof JobFormData>(field: K, value: JobFormData[K]) => void;
   onToggle: (field: "languages" | "benefits", value: string) => void;
 }) {
   return (
     <div>
-      <h2 className="text-xl font-semibold text-gray-900 mb-1">
-        Requirements &amp; Experience
-      </h2>
-      <p className="text-sm md:text-base text-gray-600 mb-6">
+      <StepHeading title="Requirements & Experience">
         Set realistic expectations for veterans and retirees.
-      </p>
+      </StepHeading>
 
       <div className="space-y-5">
         {/* Experience Level */}

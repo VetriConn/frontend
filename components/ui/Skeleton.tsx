@@ -1,4 +1,12 @@
-"use client";
+/*
+ * No "use client" here.
+ *
+ * This module has no state, no effects and no handlers: every export is a div
+ * with classes on it. The directive was costing real bytes, because adopting
+ * CardSkeleton across the route-level loading.tsx files pulled ten routes that
+ * previously shipped no client component for their skeleton into the client
+ * graph.
+ */
 import React from "react";
 import clsx from "clsx";
 import { PANEL_SURFACE } from "./panelStyles";

@@ -211,7 +211,7 @@ export function formatJobSalary(
     return `${amount(sym, startNum, cur)}${tail}`;
   }
   if (startNum && endNum) {
-    return `${amount(sym, startNum, cur)} – ${amount(sym, endNum, cur)}${tail}`;
+    return `${amount(sym, startNum, cur)} to ${amount(sym, endNum, cur)}${tail}`;
   }
   // One end alone is a bound, and is stated as one. The wizard offers a
   // minimum and a maximum box, so a lone minimum genuinely means "from" —

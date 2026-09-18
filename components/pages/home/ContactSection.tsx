@@ -147,7 +147,7 @@ export const ContactSection = ({ id }: ContactSectionProps) => {
                   </a>
                 </dd>
                 <p className="font-open-sans text-sm text-text-muted mt-2">
-                  Monday to Friday, 9 AM – 6 PM ET
+                  Monday to Friday, 9 AM to 6 PM ET
                 </p>
               </div>
 

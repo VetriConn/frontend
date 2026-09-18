@@ -463,7 +463,7 @@ const SearchResultsPage = () => {
                   page={currentPage}
                   totalPages={totalPages}
                   onPageChange={handlePageChange}
-                  summary={`Showing ${(currentPage - 1) * PAGE_SIZE + 1}–${Math.min(
+                  summary={`Showing ${(currentPage - 1) * PAGE_SIZE + 1} to ${Math.min(
                     currentPage * PAGE_SIZE,
                     totalJobs,
                   )} of ${totalJobs}`}

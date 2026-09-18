@@ -603,7 +603,7 @@ export default function JobApplicationForm({
             </p>
             <p className="text-sm mobile:text-xs text-gray-500 leading-relaxed mb-7 max-w-sm mx-auto">
               We&apos;ve sent it to the employer. They will review it and
-              contact you if you&apos;re a good match. This usually takes 3–5
+              contact you if you&apos;re a good match. This usually takes 3 to 5
               business days.
             </p>
             <div className="flex flex-col md:flex-row items-center justify-center gap-3 md:gap-4">

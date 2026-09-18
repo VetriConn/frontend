@@ -11,6 +11,7 @@ import {
   HiOutlineSparkles,
   HiOutlineCheck,
   HiOutlineXMark,
+  HiOutlineMinus,
   HiOutlineArrowLeft,
   HiOutlineDocumentArrowDown,
   HiStar,
@@ -356,7 +357,7 @@ export function CandidateDetail({ applicationId }: { applicationId: string }) {
                       <p className="text-sm text-gray-500">
                         {[exp.start_date, exp.end_date || "Present"]
                           .filter(Boolean)
-                          .join(" – ")}
+                          .join(" to ")}
                       </p>
                       {exp.description && (
                         <p className="mt-1 text-sm text-gray-600">
@@ -530,9 +531,7 @@ export function CandidateDetail({ applicationId }: { applicationId: string }) {
                     <li key={q.id} className="flex items-start gap-2.5">
                       <span className="mt-0.5 shrink-0">
                         {state === "info" ? (
-                          <span className="block w-5 text-center text-gray-300">
-                            –
-                          </span>
+                          <HiOutlineMinus className="h-5 w-5 text-gray-300" />
                         ) : state === "none" ? (
                           <HiOutlineXMark className="h-5 w-5 text-gray-400" />
                         ) : (

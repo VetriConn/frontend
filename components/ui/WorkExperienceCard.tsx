@@ -28,9 +28,9 @@ export const WorkExperienceCard: React.FC<WorkExperienceCardProps> = ({
 
     if (!startDate && !endDate) return "";
     if (!startDate) return end;
-    if (!endDate) return `${start} – Present`;
+    if (!endDate) return `${start} to Present`;
 
-    return `${start} – ${end}`;
+    return `${start} to ${end}`;
   };
 
   // Sort by most recent first (end_date descending, no end_date = current/most recent)

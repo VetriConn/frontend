@@ -166,8 +166,8 @@ export default function DataExportPanel() {
           Download Your Data
         </h4>
         <p className="text-sm text-gray-600 leading-relaxed mb-3">
-          A complete archive of your account — profile, applications, postings,
-          messages, uploaded files and account activity — with an offline page
+          A complete archive of your account. It covers your profile, applications, postings,
+          messages, uploaded files and account activity, with an offline page
           for reading it. It contains other people&apos;s messages and
           applications as well as your own, so keep it somewhere private.
         </p>
@@ -184,7 +184,7 @@ export default function DataExportPanel() {
                 </p>
                 <p className="mt-1 text-xs text-gray-500">
                   This usually takes a few minutes. We&apos;ll email you when
-                  it&apos;s ready — you don&apos;t need to stay on this page.
+                  it&apos;s ready. You don&apos;t need to stay on this page.
                 </p>
               </div>
             )}
@@ -224,7 +224,7 @@ export default function DataExportPanel() {
                   We couldn&apos;t build your archive
                 </p>
                 <p className="mt-1 text-xs text-red-800">
-                  Your data is untouched — this was a problem on our side.
+                  Your data is untouched. This was a problem on our side.
                   Try again, and contact support if it fails twice.
                 </p>
               </div>

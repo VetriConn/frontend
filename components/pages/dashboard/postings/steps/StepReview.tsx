@@ -24,7 +24,7 @@ export function StepReview({ formData }: { formData: JobFormData }) {
   const formatSalary = () => {
     if (!formData.salary_min && !formData.salary_max) return "Not specified";
     if (formData.salary_min && formData.salary_max) {
-      return `$${Number(formData.salary_min).toLocaleString()} – $${Number(formData.salary_max).toLocaleString()}`;
+      return `$${Number(formData.salary_min).toLocaleString()} to $${Number(formData.salary_max).toLocaleString()}`;
     }
     if (formData.salary_min)
       return `From $${Number(formData.salary_min).toLocaleString()}`;

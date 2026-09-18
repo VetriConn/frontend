@@ -21,12 +21,12 @@ import { CountrySelect } from "@/components/ui/CountrySelect";
  */
 
 const COMPANY_SIZE_OPTIONS = [
-  { value: "1-10", label: "1–10 employees" },
-  { value: "11-50", label: "11–50 employees" },
-  { value: "50-200", label: "50–200 employees" },
-  { value: "201-500", label: "201–500 employees" },
-  { value: "501-1000", label: "501–1,000 employees" },
-  { value: "1001-5000", label: "1,001–5,000 employees" },
+  { value: "1-10", label: "1 to 10 employees" },
+  { value: "11-50", label: "11 to 50 employees" },
+  { value: "50-200", label: "50 to 200 employees" },
+  { value: "201-500", label: "201 to 500 employees" },
+  { value: "501-1000", label: "501 to 1,000 employees" },
+  { value: "1001-5000", label: "1,001 to 5,000 employees" },
   { value: "5001+", label: "5,001+ employees" },
 ];
 

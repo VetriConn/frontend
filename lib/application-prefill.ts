@@ -65,7 +65,7 @@ export function experienceOpener(profile: PrefillProfile): string {
   if (!years || !role) return "";
   // The stored values are hyphenated ranges ("3-5 years"); an en dash is what
   // a range is set in, and it is what the profile screen displays.
-  return `I have ${years.replace(/-/g, "–")} of experience as a ${role}. `;
+  return `I have ${years.replace(/-/g, " to ")} of experience as a ${role}. `;
 }
 
 /**

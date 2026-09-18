@@ -23,7 +23,13 @@ jest.mock("@/components/tour/TourProvider", () => ({
 }));
 
 const profileState = { userProfile: null as unknown, isLoading: true };
-const companiesState = { isLoading: true };
+// Mirrors the real hook, which always returns an array (`data || []`). The
+// mock used to omit it, which was fine while the trigger only read isLoading
+// and broke the moment it also needed the count.
+const companiesState: { isLoading: boolean; companies: unknown[] } = {
+  isLoading: true,
+  companies: [],
+};
 
 jest.mock("@/hooks/useUserProfile", () => ({
   useUserProfile: () => profileState,
@@ -37,6 +43,7 @@ beforeEach(() => {
   profileState.userProfile = null;
   profileState.isLoading = true;
   companiesState.isLoading = true;
+  companiesState.companies = [];
 });
 
 describe("TourAutoStart", () => {
@@ -61,7 +68,11 @@ describe("TourAutoStart", () => {
     profileState.isLoading = false;
     companiesState.isLoading = false;
     render(<TourAutoStart />);
-    await waitFor(() => expect(start).toHaveBeenCalledWith("auto"));
+    // The trigger now names which tour it is starting, so the provider knows
+    // which completion field to stamp.
+    await waitFor(() =>
+      expect(start).toHaveBeenCalledWith("auto", "dashboard"),
+    );
     expect(start).toHaveBeenCalledTimes(1);
   });
 

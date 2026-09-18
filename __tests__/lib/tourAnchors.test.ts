@@ -17,7 +17,9 @@
  * is the branching around it, not jsdom's layout engine.
  */
 import {
+  anchorExists,
   findVisible,
+  isDrawerOpen,
   resolveAnchor,
   MENU_TOGGLE_ID,
 } from "@/lib/tour/anchors";
@@ -72,22 +74,28 @@ describe("resolveAnchor", () => {
     await expect(resolveAnchor("nav-companies")).resolves.toBeNull();
   });
 
-  it("opens the drawer when the only copy is hidden inside it", async () => {
-    const hidden = el("nav-inbox", false);
+  it("does NOT open the drawer itself", async () => {
+    // It used to. That click was the piece fighting the drawer's own state:
+    // the provider then closed the drawer after resolving, hiding every
+    // anchor it had just found, and on a phone the tour came apart. The tour
+    // now asks the reader to open the menu as its own step, and the resolver
+    // only reports what it can see.
+    el("nav-inbox", false);
     const toggle = el(MENU_TOGGLE_ID, true);
     toggle.setAttribute("aria-expanded", "false");
+    const onClick = jest.fn();
+    toggle.addEventListener("click", onClick);
 
-    // Opening the drawer is what makes the copy paintable.
-    toggle.addEventListener("click", () => {
-      toggle.setAttribute("aria-expanded", "true");
-      Object.defineProperty(hidden, "getClientRects", {
-        configurable: true,
-        value: () => [{ width: 10, height: 10 }],
-      });
-    });
+    await expect(resolveAnchor("nav-inbox")).resolves.toBeNull();
+    expect(onClick).not.toHaveBeenCalled();
+    expect(toggle.getAttribute("aria-expanded")).toBe("false");
+  });
 
-    await expect(resolveAnchor("nav-inbox")).resolves.toBe(hidden);
-    expect(toggle.getAttribute("aria-expanded")).toBe("true");
+  it("resolves once the drawer is open", async () => {
+    const shown = el("nav-inbox", true);
+    const toggle = el(MENU_TOGGLE_ID, true);
+    toggle.setAttribute("aria-expanded", "true");
+    await expect(resolveAnchor("nav-inbox")).resolves.toBe(shown);
   });
 
   it("does not re-click a drawer that is already open", async () => {
@@ -130,5 +138,28 @@ describe("resolveAnchor", () => {
   it("gives up rather than throwing when there is no drawer to open", async () => {
     el("nav-inbox", false);
     await expect(resolveAnchor("nav-inbox")).resolves.toBeNull();
+  });
+});
+
+describe("anchorExists and isDrawerOpen", () => {
+  it("anchorExists sees a hidden anchor, unlike findVisible", () => {
+    // Step resolution relies on this. On a drawer layout every nav anchor is
+    // hidden when the tour starts, so resolving by visibility dropped all of
+    // them and left a one-step tour.
+    el("nav-inbox", false);
+    expect(findVisible("nav-inbox")).toBeNull();
+    expect(anchorExists("nav-inbox")).toBe(true);
+  });
+
+  it("anchorExists is false for an account that lacks the feature", () => {
+    expect(anchorExists("nav-companies")).toBe(false);
+  });
+
+  it("isDrawerOpen reads the toggle rather than the navbar's state", () => {
+    const toggle = el(MENU_TOGGLE_ID, true);
+    toggle.setAttribute("aria-expanded", "false");
+    expect(isDrawerOpen()).toBe(false);
+    toggle.setAttribute("aria-expanded", "true");
+    expect(isDrawerOpen()).toBe(true);
   });
 });

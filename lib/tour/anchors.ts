@@ -65,39 +65,59 @@ export function findVisible(id: string): HTMLElement | null {
   return null;
 }
 
+/** Is the nav currently in its drawer layout? */
+export function isDrawerLayout(): boolean {
+  return !!findVisible(MENU_TOGGLE_ID);
+}
+
+/** Is the drawer open right now? */
+export function isDrawerOpen(): boolean {
+  return (
+    findVisible(MENU_TOGGLE_ID)?.getAttribute("aria-expanded") === "true"
+  );
+}
+
 /**
- * Resolve an anchor, opening the drawer if that is where it is hiding.
+ * Resolve an anchor to the copy currently on screen.
  *
- * Returns null rather than throwing when the anchor cannot be reached, so the
- * caller drops the step instead of pointing at nothing. An account without a
- * company genuinely has no `nav-companies` element, and that is not an error.
+ * Passive on purpose. An earlier version clicked the drawer open itself, and
+ * that click was the piece fighting the drawer's own state: the provider then
+ * closed the drawer after resolving, which hid every anchor it had just
+ * found. The tour now asks the user to open the menu, as its own step, and
+ * this function simply reports what it can see.
+ *
+ * Returns null rather than throwing when nothing is reachable, so the caller
+ * drops the step. An account without a company genuinely has no
+ * `nav-companies` element, and that is not an error.
  */
 export async function resolveAnchor(id: string): Promise<HTMLElement | null> {
   const direct = findVisible(id);
   if (direct) return direct;
 
-  // Not painted anywhere. Either it does not exist for this account, or it is
-  // inside the closed drawer. Distinguish by asking whether it exists at all.
-  const existsHidden = document.querySelector(`[data-tour="${id}"]`);
-  if (!existsHidden) return null;
-
-  const toggle = findVisible(MENU_TOGGLE_ID);
-  if (!toggle) return null;
-
-  // Clicking the real control rather than reaching into the navbar's state.
-  // The drawer's open flag is local to a 780-line component, and the click is
-  // the same action a person takes, so it keeps focus handling, the body
-  // scroll lock and the aria-expanded bookkeeping all correct for free.
-  if (toggle.getAttribute("aria-expanded") !== "true") {
-    toggle.click();
-    await nextFrame();
-    await nextFrame();
-  }
-
+  // Hidden but present means it is inside the closed drawer. Give the layout
+  // a frame in case it is mid-transition, then look once more.
+  if (!document.querySelector(`[data-tour="${id}"]`)) return null;
+  await nextFrame();
   return findVisible(id);
 }
 
-/** Close the drawer if this module opened it. */
+/**
+ * Does this id exist at all, visible or not?
+ *
+ * Step resolution uses this rather than visibility, because on a drawer
+ * layout every nav anchor is hidden at start time and dropping them all
+ * would leave a one-step tour.
+ */
+export function anchorExists(id: string): boolean {
+  return !!document.querySelector(`[data-tour="${id}"]`);
+}
+
+/**
+ * Close the drawer, used only when the tour ends.
+ *
+ * Not called between steps. Closing it mid-tour is what hid every anchor the
+ * resolver had just found.
+ */
 export function closeDrawerIfOpen(): void {
   const toggle = findVisible(MENU_TOGGLE_ID);
   if (toggle?.getAttribute("aria-expanded") === "true") toggle.click();

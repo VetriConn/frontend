@@ -558,3 +558,73 @@ html.high-contrast .bg-primary {
   cursor: not-allowed;
   opacity: 0.5;
 }
+
+/*
+ * Dashboard tour motion.
+ *
+ * The spotlight and its panels are positioned from measured pixel rects, so
+ * they cannot be animated with a keyframe: the browser has to interpolate
+ * between two sets of inline values. Transitioning the geometry properties
+ * directly is what turns the step change from a jump into a glide.
+ *
+ * ease-out rather than ease-in-out: the highlight should arrive settled
+ * rather than coast to a halt, which reads as faster at the same duration.
+ */
+@media (prefers-reduced-motion: no-preference) {
+  .tour-move {
+    transition:
+      top 320ms cubic-bezier(0.22, 1, 0.36, 1),
+      left 320ms cubic-bezier(0.22, 1, 0.36, 1),
+      right 320ms cubic-bezier(0.22, 1, 0.36, 1),
+      bottom 320ms cubic-bezier(0.22, 1, 0.36, 1),
+      width 320ms cubic-bezier(0.22, 1, 0.36, 1),
+      height 320ms cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  /* The card itself also fades and lifts in, so a step feels like an arrival
+     rather than a repaint. */
+  .tour-pop {
+    animation: tour-pop-in 260ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+
+  @keyframes tour-pop-in {
+    from {
+      opacity: 0;
+      transform: translateY(0.5rem) scale(0.98);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+
+  /*
+   * The centred step, which has no anchor, holds itself in place with
+   * transform: translate(-50%, -50%). Animating transform there would fight
+   * its own positioning and drop the card a quarter-screen off centre when
+   * the animation settled, so this variant moves opacity alone.
+   */
+  .tour-pop-center {
+    animation: tour-fade-in 260ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+
+  @keyframes tour-fade-in {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+}
+
+/* Reduced motion gets the same tour, instantly. Nothing is hidden, nothing
+   is skipped, the movement simply does not happen. */
+@media (prefers-reduced-motion: reduce) {
+  .tour-move,
+  .tour-pop,
+  .tour-pop-center {
+    transition: none;
+    animation: none;
+  }
+}

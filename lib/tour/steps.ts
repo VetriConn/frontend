@@ -1,3 +1,5 @@
+import { isDrawerOpen } from "./anchors";
+
 /**
  * The tour's step definitions.
  *
@@ -21,6 +23,21 @@ export interface TourStep {
   anchor?: string;
   title: string;
   body: string;
+  /**
+   * Only include this step when the nav is in its drawer layout.
+   *
+   * Used by the one step that asks the reader to open the menu, which would
+   * be nonsense on a desktop bar where the items are already on screen.
+   */
+  drawerOnly?: boolean;
+  /**
+   * Hold this step until the reader does something, rather than showing Next.
+   *
+   * The tour advances by itself once the predicate passes. Only the open-the-
+   * menu step uses it, and it is what replaced the tour clicking the drawer
+   * open behind the reader's back.
+   */
+  waitFor?: () => boolean;
 }
 
 export const BASE_TOUR: TourStep[] = [
@@ -28,6 +45,14 @@ export const BASE_TOUR: TourStep[] = [
     id: "welcome",
     title: "Welcome to your dashboard",
     body: "One account does everything here. You can apply for jobs and post them, so there is nothing else to set up.",
+  },
+  {
+    id: "open-menu",
+    anchor: "nav-menu-toggle",
+    drawerOnly: true,
+    waitFor: () => isDrawerOpen(),
+    title: "Open the menu",
+    body: "On a small screen everything lives behind this button. Tap it to carry on, and it will stay open for the rest of this tour.",
   },
   {
     id: "find-jobs",

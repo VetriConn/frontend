@@ -1,10 +1,9 @@
 "use client";
 
-import Link from "next/link";
 import { useEffect, useState } from "react";
 import { CustomDropdown } from "@/components/ui/CustomDropdown";
 import clsx from "clsx";
-import { HiOutlineArrowLeft, HiOutlineDocumentText } from "react-icons/hi2";
+import { HiOutlineDocumentText } from "react-icons/hi2";
 import {
   useAdminAuditLog,
   actionLabel,
@@ -13,6 +12,7 @@ import {
 } from "@/hooks/useAdminAuditLog";
 import {
   AdminPageHeader,
+  AdminBackLink,
   AdminTablePanel,
   AdminTable,
   AdminTableHead,
@@ -79,13 +79,7 @@ const AuditLog = () => {
 
   return (
     <div className="max-w-7xl mx-auto space-y-6">
-      <Link
-        href="/admin/team"
-        className="inline-flex items-center gap-1.5 text-sm font-semibold text-gray-600 hover:text-primary"
-      >
-        <HiOutlineArrowLeft className="w-4 h-4" />
-        Back to team
-      </Link>
+      <AdminBackLink href="/admin/team">Back to team</AdminBackLink>
 
       <AdminPageHeader
         title="Audit Log"

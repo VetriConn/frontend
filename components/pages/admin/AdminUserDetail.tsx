@@ -1,9 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import Link from "next/link";
 import {
-  HiOutlineArrowLeft,
   HiOutlineEnvelope,
   HiOutlineCalendar,
   HiOutlineDocumentText,
@@ -14,7 +12,13 @@ import {
   suspendAdminUser,
   reinstateAdminUser,
 } from "@/hooks/useAdminUsers";
-import { AdminPageHeader, StatusPill } from "./AdminTablePanel";
+import {
+  AdminPageHeader,
+  AdminBackLink,
+  AdminNotFound,
+  AdminDetailField,
+  StatusPill,
+} from "./AdminTablePanel";
 import ConfirmDialog from "./ConfirmDialog";
 import { useToaster } from "@/components/ui/Toaster";
 import { formatDate } from "@/lib/date-utils";
@@ -71,35 +75,18 @@ const AdminUserDetail = ({ userId }: Props) => {
 
   if (!user) {
     return (
-      <div className="max-w-2xl mx-auto py-10">
-        <div className="bg-white rounded-2xl border border-gray-200/80 shadow-[0_1px_2px_rgba(15,23,42,0.04)] p-10 text-center">
-          <h1 className="text-base font-semibold text-gray-900">
-            User not found
-          </h1>
-          <p className="mt-1 text-sm text-gray-500">
-            The account you&apos;re looking for may have been removed.
-          </p>
-          <Link
-            href="/admin/users"
-            className="inline-flex items-center gap-1.5 mt-5 text-sm font-semibold text-primary hover:text-primary-hover"
-          >
-            <HiOutlineArrowLeft className="w-4 h-4" />
-            Back to users
-          </Link>
-        </div>
-      </div>
+      <AdminNotFound
+        title="User not found"
+        description="The account you're looking for may have been removed."
+        backHref="/admin/users"
+        backLabel="Back to users"
+      />
     );
   }
 
   return (
     <div className="max-w-4xl mx-auto space-y-6">
-      <Link
-        href="/admin/users"
-        className="inline-flex items-center gap-1.5 text-sm font-semibold text-gray-600 hover:text-primary"
-      >
-        <HiOutlineArrowLeft className="w-4 h-4" />
-        Back to users
-      </Link>
+      <AdminBackLink href="/admin/users">Back to users</AdminBackLink>
 
       <AdminPageHeader
         title={user.full_name}
@@ -127,18 +114,26 @@ const AdminUserDetail = ({ userId }: Props) => {
           </StatusPill>
         </div>
         <dl className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4 text-sm">
-          <Field icon={HiOutlineEnvelope} label="Email" value={user.email} />
-          <Field
+          <AdminDetailField
+            icon={HiOutlineEnvelope}
+            label="Email"
+            value={user.email}
+          />
+          <AdminDetailField
             icon={HiOutlineCalendar}
             label="Registered"
             value={formatDate(user.registeredAt)}
           />
-          <Field
+          <AdminDetailField
             icon={HiOutlineDocumentText}
             label="Applications"
             value={String(user.applications)}
           />
-          <Field icon={HiOutlineHashtag} label="ID" value={user.id} />
+          <AdminDetailField
+            icon={HiOutlineHashtag}
+            label="ID"
+            value={user.id}
+          />
         </dl>
       </section>
 
@@ -164,25 +159,5 @@ const AdminUserDetail = ({ userId }: Props) => {
     </div>
   );
 };
-
-const Field = ({
-  icon: Icon,
-  label,
-  value,
-}: {
-  icon: React.ComponentType<{ className?: string }>;
-  label: string;
-  value: string;
-}) => (
-  <div className="flex items-start gap-3">
-    <Icon className="w-4 h-4 text-gray-400 mt-0.5 shrink-0" />
-    <div className="min-w-0">
-      <p className="text-[0.6875rem] font-semibold text-gray-500 uppercase tracking-wide">
-        {label}
-      </p>
-      <p className="text-sm text-gray-900 truncate">{value}</p>
-    </div>
-  </div>
-);
 
 export default AdminUserDetail;

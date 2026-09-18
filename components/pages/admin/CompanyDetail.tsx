@@ -16,13 +16,12 @@ import {
   adminGetCompany,
   adminApproveCompany,
   adminRejectCompany,
-  adminSuspendCompany,
-  adminReinstateCompany,
   type AdminCompanyDetail,
   type CompanyStatus,
 } from "@/lib/api/companies";
 import { StatusPill } from "./AdminTablePanel";
 import StepUpDialog, { type StepUpCreds } from "./StepUpDialog";
+import { applyCompanyStanding } from "./companyStanding";
 import ConfirmDialog from "./ConfirmDialog";
 import { useToaster } from "@/components/ui/Toaster";
 import { safeHttpUrl } from "@/lib/safe-url";
@@ -148,18 +147,7 @@ const CompanyDetail = ({
     if (!stepUp) return;
     setStepUpBusy(true);
     try {
-      if (stepUp === "suspend") {
-        await adminSuspendCompany(company._id, {
-          reason: creds.reason,
-          password: creds.password,
-          totp_code: creds.totp_code,
-        });
-      } else {
-        await adminReinstateCompany(company._id, {
-          password: creds.password,
-          totp_code: creds.totp_code,
-        });
-      }
+      await applyCompanyStanding(company._id, stepUp, creds);
       showToast({
         type: "success",
         title: stepUp === "suspend" ? "Company suspended" : "Company reinstated",

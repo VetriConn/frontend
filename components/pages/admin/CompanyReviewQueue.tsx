@@ -3,7 +3,6 @@
 import { useEffect, useState } from "react";
 import { companyIndustryLabel } from "@/lib/company-fields";
 import { useSearchParams } from "next/navigation";
-import clsx from "clsx";
 import {
   HiOutlineBuildingOffice2,
   HiOutlineClock,
@@ -13,14 +12,10 @@ import {
   HiOutlineEye,
   HiOutlineCheck,
   HiOutlineXMark,
-  HiOutlineChevronLeft,
-  HiOutlineChevronRight,
 } from "react-icons/hi2";
 import {
   adminApproveCompany,
   adminRejectCompany,
-  adminSuspendCompany,
-  adminReinstateCompany,
   type Company,
   type CompanyStatus,
 } from "@/lib/api/companies";
@@ -40,12 +35,16 @@ import {
   AdminEmptyState,
   StatusPill,
   AdminStatCard,
+  AdminStatRow,
+  AdminFilterTabs,
+  AdminPagination,
   AdminLoadError,
 } from "./AdminTablePanel";
 import KebabMenu, { type KebabAction } from "./KebabMenu";
 import DetailDrawer from "./DetailDrawer";
 import CompanyDetail from "./CompanyDetail";
 import StepUpDialog, { type StepUpCreds } from "./StepUpDialog";
+import { applyCompanyStanding } from "./companyStanding";
 import ConfirmDialog from "./ConfirmDialog";
 import { formatDate } from "@/lib/date-utils";
 
@@ -64,12 +63,6 @@ const STATUS_TONE: Record<CompanyStatus, "amber" | "emerald" | "rose" | "gray"> 
     rejected: "rose",
     suspended: "gray",
   };
-
-
-// ─── Stat card ────────────────────────────────────────────────────────────────
-
-
-// ─── Page ─────────────────────────────────────────────────────────────────────
 
 const CompanyReviewQueue = () => {
   const searchParams = useSearchParams();
@@ -146,18 +139,7 @@ const CompanyReviewQueue = () => {
     const { company, action } = stepUp;
     setStepUpBusy(true);
     try {
-      if (action === "suspend") {
-        await adminSuspendCompany(company._id, {
-          reason: creds.reason,
-          password: creds.password,
-          totp_code: creds.totp_code,
-        });
-      } else {
-        await adminReinstateCompany(company._id, {
-          password: creds.password,
-          totp_code: creds.totp_code,
-        });
-      }
+      await applyCompanyStanding(company._id, action, creds);
       showToast({
         type: "success",
         title: action === "suspend" ? "Company suspended" : "Company reinstated",
@@ -221,7 +203,7 @@ const CompanyReviewQueue = () => {
       />
 
       {/* Summary cards */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-5">
+      <AdminStatRow>
         <AdminStatCard
           icon={HiOutlineClock}
           label="Pending"
@@ -246,49 +228,21 @@ const CompanyReviewQueue = () => {
           value={counts?.total ?? "-"}
           tone="indigo"
         />
-      </div>
+      </AdminStatRow>
 
       {/* Status filter */}
-      <div
-        className="inline-flex flex-wrap rounded-xl border border-gray-200 bg-white p-1"
-        role="tablist"
-        aria-label="Company status"
-      >
-        {FILTERS.map((f) => {
-          const active = status === f.value;
-          const count =
-            f.value === "all" ? counts?.total : counts?.[f.value];
-          return (
-            <button
-              key={f.value}
-              role="tab"
-              aria-selected={active}
-              onClick={() => {
-                setStatus(f.value);
-                setPage(1);
-              }}
-              className={clsx(
-                "px-3.5 py-1.5 rounded-lg text-sm font-semibold transition-colors",
-                active
-                  ? "bg-primary text-white"
-                  : "text-gray-600 hover:bg-gray-50",
-              )}
-            >
-              {f.label}
-              {typeof count === "number" && count > 0 && (
-                <span
-                  className={clsx(
-                    "ml-1.5 inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 rounded-full text-[0.6875rem] font-bold",
-                    active ? "bg-white/20 text-white" : "bg-gray-100 text-gray-600",
-                  )}
-                >
-                  {count}
-                </span>
-              )}
-            </button>
-          );
-        })}
-      </div>
+      <AdminFilterTabs
+        label="Company status"
+        value={status}
+        onChange={(next) => {
+          setStatus(next);
+          setPage(1);
+        }}
+        tabs={FILTERS.map((f) => ({
+          ...f,
+          count: f.value === "all" ? counts?.total : counts?.[f.value],
+        }))}
+      />
 
       <AdminTablePanel>
         <AdminTable>
@@ -368,33 +322,7 @@ const CompanyReviewQueue = () => {
           />
         )}
 
-        {/* Pagination */}
-        {pagination && pagination.totalPages > 1 && (
-          <div className="flex items-center justify-between gap-4 px-5 md:px-6 py-3 border-t border-gray-100">
-            <p className="text-xs text-gray-500 tabular-nums">
-              Page {pagination.currentPage} of {pagination.totalPages} ·{" "}
-              {pagination.totalItems} total
-            </p>
-            <div className="flex items-center gap-2">
-              <button
-                onClick={() => setPage((p) => Math.max(1, p - 1))}
-                disabled={!pagination.hasPrev}
-                className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg border border-gray-200 bg-white text-xs font-semibold text-gray-700 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed"
-              >
-                <HiOutlineChevronLeft className="w-4 h-4" />
-                Prev
-              </button>
-              <button
-                onClick={() => setPage((p) => p + 1)}
-                disabled={!pagination.hasNext}
-                className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg border border-gray-200 bg-white text-xs font-semibold text-gray-700 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed"
-              >
-                Next
-                <HiOutlineChevronRight className="w-4 h-4" />
-              </button>
-            </div>
-          </div>
-        )}
+        <AdminPagination pagination={pagination} onPage={setPage} />
       </AdminTablePanel>
 
       {/* Detail drawer */}

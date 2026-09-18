@@ -1,14 +1,26 @@
+/**
+ * Furniture for the admin console's pages, not only for their tables.
+ *
+ * That distinction is where this file kept losing ground. It grew as the
+ * table shell, so anything sitting outside the panel border had nowhere to
+ * go and got hand-written again in every page that wanted it: the status tab
+ * bar above the table, the back link and the "record is gone" card on a
+ * detail route. Companies and Jobs ended up with twenty-seven identical
+ * lines of tab bar each, and the two detail routes with a byte-identical
+ * local `Field`, all of it while importing a dozen pieces from here. The
+ * abstraction was not missing, its edge was drawn at the wrong place.
+ *
+ * So: the name says table, the scope is the admin page. Anything two admin
+ * pages draw the same way belongs here, table or not.
+ */
 
 import { ReactNode } from "react";
 import clsx from "clsx";
+import Link from "next/link";
 import {
+  HiOutlineArrowLeft,
   HiOutlineChevronLeft,
   HiOutlineChevronRight,
-} from "react-icons/hi2";
-import {
-  HiOutlineEye,
-  HiOutlineNoSymbol,
-  HiOutlineTrash,
 } from "react-icons/hi2";
 
 // ─── Page header ─────────────────────────────────────────────────────────────
@@ -35,6 +47,76 @@ export const AdminPageHeader = ({
     </div>
     {actions && <div className="flex flex-wrap gap-2">{actions}</div>}
   </header>
+);
+
+// ─── Filter tabs ─────────────────────────────────────────────────────────────
+
+interface AdminFilterTab<V extends string> {
+  value: V;
+  label: string;
+  /** Badge beside the label. Undefined or zero renders no badge. */
+  count?: number;
+}
+
+/**
+ * The status bar between the stat cards and the table.
+ *
+ * Companies and Jobs each wrote this out by hand and agreed on every class,
+ * because the shell stopped at the panel and this sits above it. The cost
+ * was not the lines, it was that the control most likely to gain a tab was
+ * the one control nobody could change in a single place.
+ *
+ * Reports keeps its own pair of bars deliberately, so do not fold them in:
+ * its status tabs tint the badge rose to carry an alarm count and drop
+ * `flex-wrap` because a second bar sits beside them, and its type tabs are a
+ * lighter weight on a dark active pill. Those would need props that exist
+ * only to keep a divergence alive.
+ */
+export const AdminFilterTabs = <V extends string>({
+  label,
+  tabs,
+  value,
+  onChange,
+}: {
+  /** Names the tablist for screen readers, e.g. "Company status". */
+  label: string;
+  tabs: readonly AdminFilterTab<V>[];
+  value: V;
+  onChange: (next: V) => void;
+}) => (
+  <div
+    className="inline-flex flex-wrap rounded-xl border border-gray-200 bg-white p-1"
+    role="tablist"
+    aria-label={label}
+  >
+    {tabs.map((tab) => {
+      const active = value === tab.value;
+      return (
+        <button
+          key={tab.value}
+          role="tab"
+          aria-selected={active}
+          onClick={() => onChange(tab.value)}
+          className={clsx(
+            "px-3.5 py-1.5 rounded-lg text-sm font-semibold transition-colors",
+            active ? "bg-primary text-white" : "text-gray-600 hover:bg-gray-50",
+          )}
+        >
+          {tab.label}
+          {typeof tab.count === "number" && tab.count > 0 && (
+            <span
+              className={clsx(
+                "ml-1.5 inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 rounded-full text-[0.6875rem] font-bold",
+                active ? "bg-white/20 text-white" : "bg-gray-100 text-gray-600",
+              )}
+            >
+              {tab.count}
+            </span>
+          )}
+        </button>
+      );
+    })}
+  </div>
 );
 
 // ─── Table panel ─────────────────────────────────────────────────────────────
@@ -206,9 +288,6 @@ interface RowActionsProps {
 export const RowActions = ({ children }: RowActionsProps) => (
   <div className="flex items-center justify-end gap-2">{children}</div>
 );
-
-
-
 
 
 // ─── Generic empty state for tables ──────────────────────────────────────────
@@ -413,5 +492,89 @@ export const AdminLoadError = ({
         Try again
       </button>
     )}
+  </div>
+);
+
+// ─── Detail routes ───────────────────────────────────────────────────────────
+
+/**
+ * The way back out of a detail route. Three pages spelled this link out,
+ * identically, down to the icon size, because a detail page is the one admin
+ * screen with no table on it and so reached for nothing in this file.
+ */
+export const AdminBackLink = ({
+  href,
+  children,
+}: {
+  href: string;
+  children: ReactNode;
+}) => (
+  <Link
+    href={href}
+    className="inline-flex items-center gap-1.5 text-sm font-semibold text-gray-600 hover:text-primary"
+  >
+    <HiOutlineArrowLeft className="w-4 h-4" />
+    {children}
+  </Link>
+);
+
+/**
+ * A detail route whose record is gone. Not the same failure as
+ * AdminLoadError: the fetch worked, so there is nothing to retry and the
+ * only useful offer is the way back. Users and community posts drew the
+ * identical card and differed in three strings.
+ */
+export const AdminNotFound = ({
+  title,
+  description,
+  backHref,
+  backLabel,
+}: {
+  title: string;
+  description: string;
+  backHref: string;
+  backLabel: string;
+}) => (
+  <div className="max-w-2xl mx-auto py-10">
+    <div className="bg-white rounded-2xl border border-gray-200/80 shadow-[0_1px_2px_rgba(15,23,42,0.04)] p-10 text-center">
+      <h1 className="text-base font-semibold text-gray-900">{title}</h1>
+      <p className="mt-1 text-sm text-gray-500">{description}</p>
+      <Link
+        href={backHref}
+        className="inline-flex items-center gap-1.5 mt-5 text-sm font-semibold text-primary hover:text-primary-hover"
+      >
+        <HiOutlineArrowLeft className="w-4 h-4" />
+        {backLabel}
+      </Link>
+    </div>
+  </div>
+);
+
+/**
+ * One labelled fact in a detail page's dl.
+ *
+ * The name is long on purpose. Both detail routes carried this as a local
+ * `Field`, byte for byte, but CompanyDetail has its own `Field` under the
+ * same name with a different shape: a dt/dd pair, an optional link, a "Not
+ * provided" fallback and no icon. Two components called `Field` in one
+ * folder is how that pair stayed invisible, so this one says which it is.
+ */
+export const AdminDetailField = ({
+  icon: Icon,
+  label,
+  value,
+}: {
+  icon: React.ComponentType<{ className?: string }>;
+  label: string;
+  value: string;
+}) => (
+  <div className="flex items-start gap-3">
+    <Icon className="w-4 h-4 text-gray-400 mt-0.5 shrink-0" />
+    <div className="min-w-0">
+      <p className="text-[0.6875rem] font-semibold text-gray-500 uppercase tracking-wide">
+        {label}
+      </p>
+      <p className="text-sm text-gray-900 truncate">{value}</p>
+    </div>
   </div>
 );

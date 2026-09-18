@@ -43,9 +43,6 @@ import { useUserProfile } from "@/hooks/useUserProfile";
 import { useToaster } from "@/components/ui/Toaster";
 import { formatDate } from "@/lib/date-utils";
 
-// ─── Stat card (matches dashboard tone but value-tinted) ─────────────────────
-
-
 // ─── Pill styles ─────────────────────────────────────────────────────────────
 
 const STATUS_TONE: Record<TicketStatus, string> = {

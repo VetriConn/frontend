@@ -9,6 +9,7 @@ import {
   inputClasses,
   errorInputClasses,
 } from "@/components/ui/formKit";
+import { FIELD_BASE, fieldBorder } from "@/components/ui/fieldStyles";
 import type { JobFormData, FormErrors } from "../jobForm";
 
 /**
@@ -122,10 +123,22 @@ export function JobTitleField({
   );
 }
 
-/** See rule 1 above: pre-fieldStyles, moved rather than corrected. */
-const MONEY_INPUT =
-  "w-full pl-7 pr-4 py-2.5 border rounded-lg text-sm " +
-  "focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary bg-white";
+/**
+ * The salary box, now on the shared field shape.
+ *
+ * It used to carry the string that predates fieldStyles: border-gray-200 and
+ * a red `focus:ring-primary` halo. fieldStyles removed that ring on purpose,
+ * because primary is the same red as border-red-500, so tabbing through a
+ * form lit each field up as though it had just been rejected. These four
+ * boxes were the last place in the builder still doing it.
+ *
+ * The left padding is the one thing FIELD_BASE cannot supply: the currency
+ * sign is absolutely positioned at left-3 inside the box, so the text has to
+ * start clear of it. pl-7 is repeated at md because FIELD_BASE widens to
+ * md:px-4 there, and a responsive utility beats a base one inside its own
+ * media query no matter which property is more specific.
+ */
+const MONEY_INPUT = `${FIELD_BASE} pl-7 md:pl-7 pr-4`;
 
 /**
  * A salary bound, with the currency sign sitting inside the box.
@@ -167,7 +180,7 @@ export function SalaryAmountField({
           min="0"
           value={value}
           onChange={(e) => onChange(id, e.target.value)}
-          className={`${hasError ? "border-red-500" : "border-gray-200"} ${MONEY_INPUT}`}
+          className={`${MONEY_INPUT} ${fieldBorder(!!hasError)}`}
         />
       </div>
     </div>

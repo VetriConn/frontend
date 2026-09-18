@@ -205,6 +205,8 @@ export interface UserProfile {
    * automatic trigger costs no extra request.
    */
   tour_completed_at?: string | null;
+  /** Same, for the company tour shown on a first visit to the Companies page. */
+  company_tour_completed_at?: string | null;
 }
 
 // User profile response from API (matches backend UserProfileResponse)

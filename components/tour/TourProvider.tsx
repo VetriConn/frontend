@@ -9,7 +9,7 @@ import React, {
   useRef,
   useState,
 } from "react";
-import { BASE_TOUR, TourStep } from "@/lib/tour/steps";
+import { TOURS, TourId, TourStep } from "@/lib/tour/steps";
 import { resolveAnchor, closeDrawerIfOpen } from "@/lib/tour/anchors";
 import { markTourCompleted } from "@/lib/api/tour";
 import TourSpotlight from "./TourSpotlight";
@@ -25,7 +25,8 @@ export type TourSource = "auto" | "settings";
 
 interface TourContextValue {
   isRunning: boolean;
-  start: (source: TourSource) => void;
+  /** `tour` defaults to the dashboard tour, which is the common caller. */
+  start: (source: TourSource, tour?: TourId) => void;
   stop: (reason: "finished" | "skipped") => void;
 }
 
@@ -41,6 +42,8 @@ export function TourProvider({ children }: { children: React.ReactNode }) {
   const [steps, setSteps] = useState<TourStep[] | null>(null);
   const [index, setIndex] = useState(0);
   const sourceRef = useRef<TourSource>("auto");
+  // Which tour is running, so stop() stamps the right field.
+  const tourRef = useRef<TourId>("dashboard");
 
   const isRunning = steps !== null && steps.length > 0;
 
@@ -50,11 +53,12 @@ export function TourProvider({ children }: { children: React.ReactNode }) {
    * progress indicator honest: "3 of 5" has to be true for this account, and
    * it cannot be if steps disappear as we walk.
    */
-  const start = useCallback((source: TourSource) => {
+  const start = useCallback((source: TourSource, tour: TourId = "dashboard") => {
     sourceRef.current = source;
+    tourRef.current = tour;
     void (async () => {
       const resolved: TourStep[] = [];
-      for (const step of BASE_TOUR) {
+      for (const step of TOURS[tour]) {
         if (!step.anchor) {
           resolved.push(step);
           continue;
@@ -75,7 +79,7 @@ export function TourProvider({ children }: { children: React.ReactNode }) {
     // it as far as they intend to, and showing it again tomorrow is the
     // behaviour that teaches people to distrust the dismiss button.
     if (sourceRef.current === "auto") {
-      void markTourCompleted().catch(() => {
+      void markTourCompleted(tourRef.current).catch(() => {
         // A failed write means the tour may run once more on the next visit.
         // That is a far better failure than blocking the dashboard on it.
       });

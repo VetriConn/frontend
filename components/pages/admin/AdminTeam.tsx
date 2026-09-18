@@ -44,6 +44,7 @@ import {
   RowActions,
   StatusPill,
   AdminStatCard,
+  AdminStatRow,
   AdminLoadError,
 } from "./AdminTablePanel";
 import KebabMenu, { type KebabAction } from "./KebabMenu";
@@ -221,7 +222,7 @@ const AdminTeam = () => {
       />
 
       {/* Stats */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-5">
+      <AdminStatRow>
         <AdminStatCard
           icon={HiOutlineUsers}
           label="Total Admins"
@@ -246,7 +247,7 @@ const AdminTeam = () => {
           value={stats.twoFactorOff}
           tone="rose"
         />
-      </div>
+      </AdminStatRow>
 
       {/* Quick link to audit log */}
       {isSuper && (

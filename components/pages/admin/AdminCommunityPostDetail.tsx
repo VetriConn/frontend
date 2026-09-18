@@ -1,9 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import Link from "next/link";
 import {
-  HiOutlineArrowLeft,
   HiOutlineUser,
   HiOutlineCalendar,
   HiOutlineHashtag,
@@ -14,7 +12,12 @@ import {
   removeAdminCommunityPost,
   type AdminCommunityPost,
 } from "@/hooks/useAdminCommunity";
-import { AdminPageHeader } from "./AdminTablePanel";
+import {
+  AdminPageHeader,
+  AdminBackLink,
+  AdminNotFound,
+  AdminDetailField,
+} from "./AdminTablePanel";
 import ConfirmDialog from "./ConfirmDialog";
 import { useToaster } from "@/components/ui/Toaster";
 import { formatDate } from "@/lib/date-utils";
@@ -64,35 +67,18 @@ const AdminCommunityPostDetail = ({ postId }: Props) => {
 
   if (!post) {
     return (
-      <div className="max-w-2xl mx-auto py-10">
-        <div className="bg-white rounded-2xl border border-gray-200/80 shadow-[0_1px_2px_rgba(15,23,42,0.04)] p-10 text-center">
-          <h1 className="text-base font-semibold text-gray-900">
-            Post not found
-          </h1>
-          <p className="mt-1 text-sm text-gray-500">
-            The community post may have been removed.
-          </p>
-          <Link
-            href="/admin/community"
-            className="inline-flex items-center gap-1.5 mt-5 text-sm font-semibold text-primary hover:text-primary-hover"
-          >
-            <HiOutlineArrowLeft className="w-4 h-4" />
-            Back to community
-          </Link>
-        </div>
-      </div>
+      <AdminNotFound
+        title="Post not found"
+        description="The community post may have been removed."
+        backHref="/admin/community"
+        backLabel="Back to community"
+      />
     );
   }
 
   return (
     <div className="max-w-3xl mx-auto space-y-6">
-      <Link
-        href="/admin/community"
-        className="inline-flex items-center gap-1.5 text-sm font-semibold text-gray-600 hover:text-primary"
-      >
-        <HiOutlineArrowLeft className="w-4 h-4" />
-        Back to community
-      </Link>
+      <AdminBackLink href="/admin/community">Back to community</AdminBackLink>
 
       <AdminPageHeader
         title={post.title}
@@ -115,13 +101,21 @@ const AdminCommunityPostDetail = ({ postId }: Props) => {
           flag history will appear here.
         </p>
         <dl className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4 text-sm">
-          <Field icon={HiOutlineUser} label="Author" value={post.author} />
-          <Field
+          <AdminDetailField
+            icon={HiOutlineUser}
+            label="Author"
+            value={post.author}
+          />
+          <AdminDetailField
             icon={HiOutlineCalendar}
             label="Posted"
             value={formatDate(post.postedAt)}
           />
-          <Field icon={HiOutlineHashtag} label="ID" value={post.id} />
+          <AdminDetailField
+            icon={HiOutlineHashtag}
+            label="ID"
+            value={post.id}
+          />
         </dl>
       </section>
 
@@ -140,25 +134,5 @@ const AdminCommunityPostDetail = ({ postId }: Props) => {
     </div>
   );
 };
-
-const Field = ({
-  icon: Icon,
-  label,
-  value,
-}: {
-  icon: React.ComponentType<{ className?: string }>;
-  label: string;
-  value: string;
-}) => (
-  <div className="flex items-start gap-3">
-    <Icon className="w-4 h-4 text-gray-400 mt-0.5 shrink-0" />
-    <div className="min-w-0">
-      <p className="text-[0.6875rem] font-semibold text-gray-500 uppercase tracking-wide">
-        {label}
-      </p>
-      <p className="text-sm text-gray-900 truncate">{value}</p>
-    </div>
-  </div>
-);
 
 export default AdminCommunityPostDetail;

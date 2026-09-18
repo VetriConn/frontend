@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
-import clsx from "clsx";
 import {
   HiOutlineBriefcase,
   HiOutlineClock,
@@ -36,6 +35,8 @@ import {
   AdminEmptyState,
   StatusPill,
   AdminStatCard,
+  AdminStatRow,
+  AdminFilterTabs,
   AdminPagination,
   AdminLoadError,
 } from "./AdminTablePanel";
@@ -216,7 +217,7 @@ const JobsTable = () => {
       />
 
       {!isExternal && (
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-5">
+      <AdminStatRow>
         <AdminStatCard
           icon={HiOutlineClock}
           label="Pending"
@@ -241,59 +242,30 @@ const JobsTable = () => {
           value={counts?.total ?? "-"}
           tone="indigo"
         />
-      </div>
+      </AdminStatRow>
       )}
 
       {/* Status filter */}
-      <div
-        className="inline-flex flex-wrap rounded-xl border border-gray-200 bg-white p-1"
-        role="tablist"
-        aria-label="Job views"
-      >
-        {FILTERS.map((f) => {
-          const active = view === f.value;
+      <AdminFilterTabs
+        label="Job views"
+        value={view}
+        onChange={(next) => {
+          setView(next);
+          setPage(1);
+        }}
+        tabs={FILTERS.map((f) => ({
+          ...f,
           // No badge on External: these counts come from the moderation
           // endpoint, whose scope deliberately excludes scraped listings, so
           // any number here would be describing a different set of rows.
-          const count =
+          count:
             f.value === "external"
               ? undefined
               : f.value === "all"
                 ? counts?.total
-                : counts?.[f.value];
-          return (
-            <button
-              key={f.value}
-              role="tab"
-              aria-selected={active}
-              onClick={() => {
-                setView(f.value);
-                setPage(1);
-              }}
-              className={clsx(
-                "px-3.5 py-1.5 rounded-lg text-sm font-semibold transition-colors",
-                active
-                  ? "bg-primary text-white"
-                  : "text-gray-600 hover:bg-gray-50",
-              )}
-            >
-              {f.label}
-              {typeof count === "number" && count > 0 && (
-                <span
-                  className={clsx(
-                    "ml-1.5 inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 rounded-full text-[0.6875rem] font-bold",
-                    active
-                      ? "bg-white/20 text-white"
-                      : "bg-gray-100 text-gray-600",
-                  )}
-                >
-                  {count}
-                </span>
-              )}
-            </button>
-          );
-        })}
-      </div>
+                : counts?.[f.value],
+        }))}
+      />
 
       {isExternal ? (
         <ExternalJobsTable />

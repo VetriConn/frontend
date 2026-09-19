@@ -273,6 +273,11 @@ export default function Inbox() {
                 <ChatHeader
                   name={selectedConvo.name}
                   subtitle={selectedConvo.subtitle}
+                  // The header was the only place in the thread not showing
+                  // this. MessageList below reads it off the same object, so
+                  // the person's picture appeared against every message while
+                  // their own header showed initials.
+                  avatar={selectedConvo.avatar}
                   onBack={() => setSelectedId("")}
                   // Contact details only exist on the hiring side, where they
                   // came from the application the person submitted.

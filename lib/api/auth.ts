@@ -86,9 +86,12 @@ export async function registerUser(
  *
  * Returns either:
  *   - A full session (with `data.user` + `data.token`).
- *   - A 2FA challenge (`requires2FA: true` + `partialSessionToken`). The
- *     caller must run the user through the 2FA challenge dialog and then
- *     POST /api/v1/auth/2fa/challenge with that token.
+ *   - A 2FA challenge (`requires2FA: true`). The caller runs the user
+ *     through the challenge dialog, which POSTs the code alone to
+ *     /api/v1/auth/2fa/challenge. There is no token to carry: the pending
+ *     handoff rides the express-session cookie the login response set. This
+ *     used to promise a `partialSessionToken` that the server never sent, and
+ *     three layers of plumbing carried the resulting undefined to a `void`.
  *
  * Until the backend wires up partial sessions, the frontend can simulate
  * the challenge path locally by signing in with an email containing

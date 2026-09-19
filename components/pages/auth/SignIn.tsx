@@ -38,7 +38,6 @@ export const SignIn = () => {
 
   // 2FA challenge state
   const [twoFactorOpen, setTwoFactorOpen] = useState(false);
-  const [partialToken, setPartialToken] = useState<string | undefined>();
 
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -93,7 +92,6 @@ export const SignIn = () => {
 
       // 2FA detour — open challenge dialog instead of going to dashboard.
       if (response.success && response.requires2FA) {
-        setPartialToken(response.partialSessionToken);
         setTwoFactorOpen(true);
         return;
       }
@@ -335,14 +333,11 @@ export const SignIn = () => {
       <TwoFactorChallengeDialog
         open={twoFactorOpen}
         emailHint={email}
-        partialSessionToken={partialToken}
         onClose={() => {
           setTwoFactorOpen(false);
-          setPartialToken(undefined);
         }}
         onVerified={() => {
           setTwoFactorOpen(false);
-          setPartialToken(undefined);
           void finishSignIn();
         }}
       />

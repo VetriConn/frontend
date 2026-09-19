@@ -14,7 +14,6 @@ interface TwoFactorChallengeDialogProps {
   /** Identifier the user is signing in with — shown in the header for context. */
   emailHint?: string;
   /** Sent back with the code (no-op in the mock — backend will validate). */
-  partialSessionToken?: string;
   onClose: () => void;
   onVerified: () => void;
 }
@@ -22,7 +21,6 @@ interface TwoFactorChallengeDialogProps {
 const TwoFactorChallengeDialog = ({
   open,
   emailHint,
-  partialSessionToken,
   onClose,
   onVerified,
 }: TwoFactorChallengeDialogProps) => {
@@ -83,7 +81,13 @@ const TwoFactorChallengeDialog = ({
 
     setBusy(true);
     try {
-      void partialSessionToken;
+      /*
+       * No token is passed here, and none is needed. The pending-2FA handoff
+       * rides the express-session cookie the login response set, which is why
+       * these two calls take only the code. A `partialSessionToken` prop used
+       * to be threaded in from SignIn and discarded on this line: the server
+       * never sent one, so it was always undefined.
+       */
       if (isRecovery) {
         await challengeTwoFactorRecovery(cleanCode);
       } else {

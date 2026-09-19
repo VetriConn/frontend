@@ -296,7 +296,7 @@ const CompanyApplicationForm = () => {
             value={form.about_company}
             onChange={(event) => setField("about_company", event.target.value)}
             placeholder="What does your company do, and who do you usually hire?"
-            className="block w-full px-3 py-2 md:px-4 md:py-3 border border-gray-300 rounded-lg text-sm md:text-base outline-none transition-colors focus:ring-2 focus:ring-primary focus:border-transparent bg-white"
+            className="block w-full px-3 py-2 md:px-4 md:py-3 border border-gray-300 rounded-lg text-sm md:text-base outline-none transition-colors focus:border-gray-500 focus:ring-2 focus:ring-gray-300/60 bg-white"
             aria-describedby="about_company-count"
           />
           <p id="about_company-count" className="text-xs text-gray-500 mt-1">

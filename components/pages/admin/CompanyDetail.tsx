@@ -23,6 +23,7 @@ import { StatusPill } from "./AdminTablePanel";
 import StepUpDialog, { type StepUpCreds } from "./StepUpDialog";
 import { applyCompanyStanding } from "./companyStanding";
 import ConfirmDialog from "./ConfirmDialog";
+import { REJECT_COMPANY_CONFIRM } from "./confirmCopy";
 import { useToaster } from "@/components/ui/Toaster";
 import { safeHttpUrl } from "@/lib/safe-url";
 import { formatDate } from "@/lib/date-utils";
@@ -324,14 +325,9 @@ const CompanyDetail = ({
 
       {/* Dialogs */}
       <ConfirmDialog
+        {...REJECT_COMPANY_CONFIRM}
         open={rejecting}
-        title="Reject this company?"
         subject={company.name}
-        description="A reason is required and is shown to the applicant."
-        reasonLabel="Reason for rejection"
-        reasonPlaceholder="What was missing or wrong?"
-        confirmLabel="Reject Company"
-        tone="danger"
         busy={rejectBusy}
         onClose={() => (rejectBusy ? null : setRejecting(false))}
         onConfirm={handleReject}

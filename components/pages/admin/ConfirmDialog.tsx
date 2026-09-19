@@ -7,7 +7,7 @@ import { useModalFocus } from "@/hooks/useModalFocus";
 
 type Tone = "danger" | "neutral";
 
-interface ConfirmDialogProps {
+export interface ConfirmDialogProps {
   open: boolean;
   title: string;
   subject?: string;

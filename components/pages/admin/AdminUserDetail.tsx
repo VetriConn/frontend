@@ -20,6 +20,7 @@ import {
   StatusPill,
 } from "./AdminTablePanel";
 import ConfirmDialog from "./ConfirmDialog";
+import { userStandingConfirm } from "./confirmCopy";
 import { useToaster } from "@/components/ui/Toaster";
 import { formatDate } from "@/lib/date-utils";
 
@@ -138,20 +139,9 @@ const AdminUserDetail = ({ userId }: Props) => {
       </section>
 
       <ConfirmDialog
+        {...userStandingConfirm(isSuspending)}
         open={confirmOpen}
-        title={isSuspending ? "Suspend this user?" : "Reinstate this user?"}
         subject={user.full_name}
-        description={
-          isSuspending
-            ? "Suspended users cannot sign in or apply to jobs until reinstated."
-            : "The user will regain access immediately."
-        }
-        reasonLabel={isSuspending ? "Reason" : undefined}
-        reasonPlaceholder={
-          isSuspending ? "Note why this user is being suspended" : undefined
-        }
-        confirmLabel={isSuspending ? "Suspend User" : "Reinstate User"}
-        tone={isSuspending ? "danger" : "neutral"}
         busy={busy}
         onClose={() => (busy ? null : setConfirmOpen(false))}
         onConfirm={handleConfirm}

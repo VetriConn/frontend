@@ -63,7 +63,25 @@ export default function TourSpotlight({
       el = fresh;
     }
     const r = el.getBoundingClientRect();
-    setRect({ top: r.top, left: r.left, width: r.width, height: r.height });
+    /*
+     * Only set state when the rect actually moved.
+     *
+     * This used to allocate a fresh object every measure, and measure runs on
+     * scroll, on resize and from a ResizeObserver. A quiet page still churned
+     * re-renders, and that broke the open-the-menu step outright: its poll
+     * lives in an effect keyed on the step, so every re-render tore the
+     * interval down and started a new one, and the 120ms never elapsed. The
+     * reader tapped the menu, the drawer opened, and the tour sat there.
+     */
+    setRect((prev) =>
+      prev &&
+      prev.top === r.top &&
+      prev.left === r.left &&
+      prev.width === r.width &&
+      prev.height === r.height
+        ? prev
+        : { top: r.top, left: r.left, width: r.width, height: r.height },
+    );
   }, [step.anchor]);
 
   // Resolve, scroll, then measure. The frame between matters: a rect read
@@ -147,16 +165,25 @@ export default function TourSpotlight({
    * subscribing to that would mean reaching into the navbar's state, which
    * is the coupling this whole redesign removed.
    */
+  const onNextRef = useRef(onNext);
   useEffect(() => {
-    if (!step.waitFor) return;
+    onNextRef.current = onNext;
+  }, [onNext]);
+
+  useEffect(() => {
+    const waitFor = step.waitFor;
+    if (!waitFor) return;
     const id = setInterval(() => {
-      if (step.waitFor?.()) {
+      if (waitFor()) {
         clearInterval(id);
-        onNext();
+        onNextRef.current();
       }
     }, 120);
     return () => clearInterval(id);
-  }, [step, onNext]);
+    // Keyed on the step alone. Depending on onNext put a function identity in
+    // the dependency list, so anything that re-rendered the component reset
+    // the timer, which is how a poll can run forever without ever firing.
+  }, [step.id, step.waitFor]);
 
   // The tour only ever mounts from a client interaction, never during SSR, so
   // a mounted flag would be state tracking something that is always true by
@@ -191,7 +218,20 @@ export default function TourSpotlight({
       };
 
   return createPortal(
-    <div className="fixed inset-0 z-[100]" aria-hidden={false}>
+    /*
+     * pointer-events-none on the wrapper, auto on each child.
+     *
+     * The four panels leave a real hole over the target, but this wrapper is
+     * fixed inset-0 and sat above it, so every tap in that hole landed on the
+     * wrapper instead of the thing being pointed at. On a phone that made the
+     * open-the-menu step impossible to complete: the tour asked the reader to
+     * tap the button and then ate the tap.
+     *
+     * The comment below already warned that a box-shadow cutout would swallow
+     * pointer events over the target. The panels avoided that and the wrapper
+     * reintroduced it one level up.
+     */
+    <div className="fixed inset-0 z-[100] pointer-events-none" aria-hidden={false}>
       {/*
         Four panels rather than one overlay with a hole. A box-shadow cutout
         would also swallow pointer events over the target, and the page
@@ -200,17 +240,17 @@ export default function TourSpotlight({
       */}
       {cut ? (
         <>
-          <div className="tour-move fixed inset-x-0 top-0 bg-black/50" style={{ height: Math.max(0, cut.top) }} />
-          <div className="tour-move fixed inset-x-0 bg-black/50" style={{ top: cut.top + cut.height, bottom: 0 }} />
-          <div className="tour-move fixed bg-black/50" style={{ top: cut.top, height: cut.height, left: 0, width: Math.max(0, cut.left) }} />
-          <div className="tour-move fixed bg-black/50" style={{ top: cut.top, height: cut.height, left: cut.left + cut.width, right: 0 }} />
+          <div className="tour-move pointer-events-auto fixed inset-x-0 top-0 bg-black/50" style={{ height: Math.max(0, cut.top) }} />
+          <div className="tour-move pointer-events-auto fixed inset-x-0 bg-black/50" style={{ top: cut.top + cut.height, bottom: 0 }} />
+          <div className="tour-move pointer-events-auto fixed bg-black/50" style={{ top: cut.top, height: cut.height, left: 0, width: Math.max(0, cut.left) }} />
+          <div className="tour-move pointer-events-auto fixed bg-black/50" style={{ top: cut.top, height: cut.height, left: cut.left + cut.width, right: 0 }} />
           <div
             className="tour-move fixed rounded-lg ring-2 ring-primary pointer-events-none"
             style={{ top: cut.top, left: cut.left, width: cut.width, height: cut.height }}
           />
         </>
       ) : (
-        <div className="fixed inset-0 bg-black/50" />
+        <div className="pointer-events-auto fixed inset-0 bg-black/50" />
       )}
 
       <div
@@ -224,7 +264,7 @@ export default function TourSpotlight({
          * points at grows, and the two drift apart at 125% exactly the way the
          * avatar did before it was moved to rem.
          */
-        className={`${cut ? "tour-move tour-pop" : "tour-pop-center"} w-[20rem] max-w-[calc(100vw-1.5rem)] rounded-xl bg-white p-[1.25rem] shadow-xl`}
+        className={`${cut ? "tour-move tour-pop" : "tour-pop-center"} pointer-events-auto w-[20rem] max-w-[calc(100vw-1.5rem)] rounded-xl bg-white p-[1.25rem] shadow-xl`}
       >
         <p className="text-[0.75rem] font-medium text-gray-500">
           Step {index + 1} of {total}

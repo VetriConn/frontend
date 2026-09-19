@@ -1,6 +1,10 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import {
+  REJECT_JOB_CONFIRM,
+  UNPUBLISH_JOB_CONFIRM,
+} from "./confirmCopy";
 import { useSearchParams } from "next/navigation";
 import {
   HiOutlineBriefcase,
@@ -357,28 +361,18 @@ const JobsTable = () => {
       </DetailDrawer>
 
       <ConfirmDialog
+        {...REJECT_JOB_CONFIRM}
         open={!!rejecting}
-        title="Reject this job?"
         subject={rejecting?.role}
-        description="A reason is required and is shown to the poster."
-        reasonLabel="Reason for rejection"
-        reasonPlaceholder="What needs to change?"
-        confirmLabel="Reject Job"
-        tone="danger"
         busy={dialogBusy}
         onClose={() => (dialogBusy ? null : setRejecting(null))}
         onConfirm={handleReject}
       />
 
       <ConfirmDialog
+        {...UNPUBLISH_JOB_CONFIRM}
         open={!!unpublishing}
-        title="Unpublish this job?"
         subject={unpublishing?.role}
-        description="The listing comes off the public board and returns to the moderated states."
-        reasonLabel="Reason"
-        reasonPlaceholder="Why is this coming down?"
-        confirmLabel="Unpublish"
-        tone="danger"
         busy={dialogBusy}
         onClose={() => (dialogBusy ? null : setUnpublishing(null))}
         onConfirm={handleUnpublish}

@@ -79,3 +79,35 @@ export const REJECT_COMPANY_CONFIRM: ConfirmCopy = {
   confirmLabel: "Reject Company",
   tone: "danger",
 };
+
+/*
+ * The two job dialogs, settled.
+ *
+ * These were the one pair that genuinely disagreed rather than being copied.
+ * The drawer said "Confirm rejection" where the table said "Reject Job", and
+ * the two descriptions and placeholders were written separately and said
+ * different things about the same action. Same for unpublish.
+ *
+ * The owner ruled that rejecting a job should say "Reject Job", which is also
+ * the shape REJECT_COMPANY_CONFIRM above already uses, so the table's wording
+ * wins throughout rather than a new blend being invented. "Confirm rejection"
+ * and "Confirm Unpublish" are retired.
+ */
+export const REJECT_JOB_CONFIRM: ConfirmCopy = {
+  title: "Reject this job?",
+  description: "A reason is required and is shown to the poster.",
+  reasonLabel: "Reason for rejection",
+  reasonPlaceholder: "What needs to change?",
+  confirmLabel: "Reject Job",
+  tone: "danger",
+};
+
+export const UNPUBLISH_JOB_CONFIRM: ConfirmCopy = {
+  title: "Unpublish this job?",
+  description:
+    "The listing comes off the public board and returns to the moderated states.",
+  reasonLabel: "Reason",
+  reasonPlaceholder: "Why is this coming down?",
+  confirmLabel: "Unpublish",
+  tone: "danger",
+};

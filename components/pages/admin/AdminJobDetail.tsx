@@ -1,6 +1,10 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import {
+  REJECT_JOB_CONFIRM,
+  UNPUBLISH_JOB_CONFIRM,
+} from "./confirmCopy";
 import clsx from "clsx";
 import {
   HiOutlineBriefcase,
@@ -588,25 +592,17 @@ const AdminJobDetail = ({ jobId, onChanged }: AdminJobDetailProps) => {
       </div>
 
       <ConfirmDialog
+        {...REJECT_JOB_CONFIRM}
         open={rejectOpen}
-        title="Reject this job?"
         subject={job.role}
-        description="The employer will be notified."
-        reasonLabel="Reason for rejection"
-        reasonPlaceholder="Share what the employer needs to fix before resubmitting…"
-        confirmLabel="Confirm rejection"
         busy={busy === "reject"}
         onClose={() => setRejectOpen(false)}
         onConfirm={handleReject}
       />
       <ConfirmDialog
+        {...UNPUBLISH_JOB_CONFIRM}
         open={unpublishOpen}
-        title="Unpublish this job?"
         subject={job.role}
-        description="The listing will be removed from public view immediately. The employer will be notified."
-        reasonLabel="Reason"
-        reasonPlaceholder="Why is this listing being unpublished?"
-        confirmLabel="Confirm Unpublish"
         busy={busy === "unpublish"}
         onClose={() => setUnpublishOpen(false)}
         onConfirm={handleUnpublish}

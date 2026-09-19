@@ -157,6 +157,39 @@ describe("step resolution", () => {
     expect(inDialog("Open the menu")).toBeTruthy();
   });
 
+  it("advances by itself once the reader opens the drawer", async () => {
+    // The whole point of that step. It stalled in a real browser: the poll
+    // lives in an effect, and anything that re-rendered the component reset
+    // its timer before 120ms elapsed, so the tour asked the reader to tap the
+    // menu, they did, and nothing happened.
+    const hidden = anchor("nav-inbox", false);
+    const toggle = anchor(MENU_TOGGLE_ID, true);
+    toggle.setAttribute("aria-expanded", "false");
+
+    renderTour();
+    await act(async () => {
+      screen.getByTestId("go").click();
+    });
+    await act(async () => {
+      screen.getByRole("button", { name: /next/i }).click();
+    });
+    expect(inDialog("Open the menu")).toBeTruthy();
+
+    // The reader opens it. Nothing calls into the tour; it notices.
+    await act(async () => {
+      toggle.setAttribute("aria-expanded", "true");
+      Object.defineProperty(hidden, "getClientRects", {
+        configurable: true,
+        value: () => [{ width: 10, height: 10 }],
+      });
+      await new Promise((r) => setTimeout(r, 400));
+    });
+
+    expect(
+      within(screen.getByRole("dialog")).queryByText("Open the menu"),
+    ).toBeNull();
+  });
+
   it("waits on the reader rather than showing Next on that step", async () => {
     anchor("nav-inbox", false);
     anchor(MENU_TOGGLE_ID, true);

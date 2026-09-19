@@ -61,6 +61,27 @@ export function formatDate(value?: string | Date): string {
 }
 
 /**
+ * Date with the time of day ("Sep 19, 2026, 02:14 PM"), locale pinned so the
+ * server and the client render the same string.
+ *
+ * Security history is the reason this exists separately from formatDate. Two
+ * failed sign-ins "on the 4th" is a different fact from two failed sign-ins a
+ * minute apart, and the day alone throws that away.
+ */
+export function formatDateTime(value?: string | Date): string {
+  if (!value) return "-";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "-";
+  return date.toLocaleString("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+}
+
+/**
  * Month-and-year form for duration-style dates ("Sept 2026") — work
  * experience ranges and the like. Returns "" when absent or invalid, so
  * range-building call sites can compose without stray dashes.

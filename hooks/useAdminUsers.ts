@@ -67,6 +67,21 @@ export function useAdminUsers(page = 1) {
  * the id - which only ever held the first page, so any member beyond it
  * rendered as "not found".
  */
+/**
+ * The full member record, for the detail view.
+ *
+ * Separate from useAdminMember, which flattens to the six fields the list
+ * needs. Flattening is right for a table and wrong for a page whose job is to
+ * answer questions the table cannot.
+ */
+export function useAdminMemberDetail(userId: string | undefined) {
+  const { data, error, isLoading, mutate } = useSWR(
+    userId ? ["admin-member-detail", userId] : null,
+    async () => (userId ? await adminGetMember(userId) : null),
+  );
+  return { member: data ?? null, isLoading, error, mutate };
+}
+
 export function useAdminMember(userId: string | undefined) {
   const { data, error, isLoading, mutate } = useSWR(
     userId ? ["admin-member", userId] : null,

@@ -31,6 +31,72 @@ export type AdminRole = "super_admin" | "reviewer" | "moderator" | "billing";
 
 // ─── Member moderation (GET/POST /api/v1/admin/members) ──────────────────────
 
+/** One row of the member's own security history. */
+export interface AdminMemberSignIn {
+  _id: string;
+  eventType: string;
+  ipAddress?: string;
+  userAgent?: string;
+  timestamp: string;
+  metadata?: { reason?: string };
+}
+
+/** One moderation action taken against this member, by an admin. */
+export interface AdminMemberModeration {
+  _id: string;
+  eventType: string;
+  /** The admin who acted. */
+  email?: string;
+  timestamp: string;
+  metadata?: { reason?: string };
+}
+
+/**
+ * How much of each thing the member has.
+ *
+ * Counts, not contents, and deliberately so for messages and community posts:
+ * an agent does not need to read somebody's correspondence to answer a support
+ * question, and a screen that puts it one click away is how it gets read.
+ */
+export interface AdminMemberCountsDetail {
+  applications: number;
+  applications_received: number;
+  drafts: number;
+  tracker_entries: number;
+  saved_jobs: number;
+  saved_searches: number;
+  postings: number;
+  companies: number;
+  messages: number;
+  community_posts: number;
+  reports_filed: number;
+  support_tickets: number;
+}
+
+export interface AdminMemberProfile {
+  phone_number?: string;
+  city?: string;
+  state_province?: string;
+  country?: string;
+  job_title?: string;
+  industry?: string;
+  years_of_experience?: string;
+  skills?: string[];
+  documents?: { name?: string; document_type?: string }[];
+  attachments?: { name?: string }[];
+  notification_preferences?: {
+    email_notifications?: boolean;
+    job_alerts?: boolean;
+    application_updates?: boolean;
+    posting_updates?: boolean;
+    new_applications?: boolean;
+    messages?: boolean;
+    community_updates?: boolean;
+  };
+  privacy_preferences?: { profile_visibility?: string };
+  job_seeking_settings?: { status?: string };
+}
+
 export interface AdminMember {
   _id: string;
   full_name: string;
@@ -43,6 +109,24 @@ export interface AdminMember {
   createdAt?: string;
   /** Total applications this member has submitted (joined server-side). */
   application_count?: number;
+
+  // Detail view only. The list endpoint does not join any of this.
+  emailVerified?: boolean;
+  two_factor_enabled?: boolean;
+  must_change_password?: boolean;
+  deactivated_at?: string;
+  promotional_emails?: boolean;
+  marketing_consent_at?: string;
+  profile?: AdminMemberProfile | null;
+  counts?: AdminMemberCountsDetail;
+  sign_ins?: AdminMemberSignIn[];
+  moderation?: AdminMemberModeration[];
+  last_export?: {
+    status: string;
+    requested_at?: string;
+    completed_at?: string;
+    expires_at?: string;
+  } | null;
 }
 
 interface AdminMemberPage {

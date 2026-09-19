@@ -170,16 +170,54 @@ export default function TourSpotlight({
     onNextRef.current = onNext;
   }, [onNext]);
 
+  /**
+   * A step that waits on the reader, such as "open the menu".
+   *
+   * Watches the DOM rather than polling it. A poll alone is not safe here:
+   * browsers clamp `setInterval` in a tab that is not being painted, to one
+   * second at first and to once a minute once the tab has been hidden a
+   * while, so the tour can sit on this step long after the menu is open. That
+   * is the same failure `nextFrame` already guards against for
+   * `requestAnimationFrame`, and it cost an afternoon of chasing a stall in a
+   * headless browser that turned out to be only the throttle.
+   *
+   * A `MutationObserver` callback is a microtask, which nothing clamps, so
+   * the answer arrives on the same tick as the change. The observer is wide
+   * on purpose: `waitFor` is an arbitrary predicate and this component has no
+   * business guessing which node it reads. The predicate is one
+   * `querySelectorAll`, and it is only live for a single step.
+   *
+   * The interval stays as a backstop for a predicate that no DOM change
+   * announces, and `visibilitychange` covers coming back to a tab where the
+   * clamp swallowed the notification.
+   */
   useEffect(() => {
     const waitFor = step.waitFor;
     if (!waitFor) return;
-    const id = setInterval(() => {
-      if (waitFor()) {
-        clearInterval(id);
-        onNextRef.current();
-      }
-    }, 120);
-    return () => clearInterval(id);
+
+    let done = false;
+    const check = () => {
+      if (done || !waitFor()) return;
+      done = true;
+      cleanup();
+      onNextRef.current();
+    };
+
+    const observer = new MutationObserver(check);
+    observer.observe(document.documentElement, {
+      subtree: true,
+      childList: true,
+      attributes: true,
+    });
+    const id = setInterval(check, 250);
+    document.addEventListener("visibilitychange", check);
+
+    function cleanup() {
+      observer.disconnect();
+      clearInterval(id);
+      document.removeEventListener("visibilitychange", check);
+    }
+    return cleanup;
     // Keyed on the step alone. Depending on onNext put a function identity in
     // the dependency list, so anything that re-rendered the component reset
     // the timer, which is how a poll can run forever without ever firing.

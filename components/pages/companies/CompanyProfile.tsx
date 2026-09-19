@@ -8,7 +8,6 @@ import {
   HiOutlineMapPin,
   HiOutlineGlobeAlt,
   HiOutlineUserGroup,
-  HiOutlineCheckBadge,
   HiOutlineBriefcase,
   HiOutlineEnvelope,
   HiOutlineArrowRight,
@@ -179,15 +178,13 @@ const CompanyProfile = ({
                 <h1 className="text-2xl md:text-3xl font-bold text-gray-900">
                   {company.name}
                 </h1>
-                {/* "Verified" is the deliberate business-verification
-                    decision (admin verify action), not the approval that
-                    every listed company has by definition. */}
-                {company.authorized_rep_verified && (
-                  <span className="inline-flex items-center gap-1 text-xs font-semibold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200/70">
-                    <HiOutlineCheckBadge className="w-3.5 h-3.5" />
-                    Verified
-                  </span>
-                )}
+                {/* No "Verified" badge here on purpose.
+                    `authorized_rep_verified` is the applicant ticking a
+                    required box on their own form, so it is true for every
+                    company that has ever applied. A green check that every
+                    company carries tells a reader nothing, and it reads as a
+                    check the platform performed. The attestation is kept as a
+                    record on the admin company detail instead. */}
               </div>
 
               {company.tagline && (

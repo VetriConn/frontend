@@ -7,7 +7,6 @@ import useSWR from "swr";
 import {
   HiOutlineBuildingOffice2,
   HiOutlineUser,
-  HiOutlineCheckBadge,
   HiOutlineCheck,
   HiOutlineXMark,
   HiOutlineArrowTopRightOnSquare,
@@ -190,11 +189,6 @@ const CompanyDetail = ({
               <StatusPill tone={STATUS_TONE[company.status]}>
                 {company.status}
               </StatusPill>
-              {company.authorized_rep_verified && (
-                <span className="inline-flex items-center gap-1 text-xs font-semibold text-emerald-600">
-                  <HiOutlineCheckBadge className="w-4 h-4" /> Rep verified
-                </span>
-              )}
             </div>
             <p className="text-sm text-gray-500 mt-1">
               {company.tagline || companyIndustryLabel(company.industry) || "-"}
@@ -310,6 +304,18 @@ const CompanyDetail = ({
           />
           <Field label="Business number" value={company.business_number} />
           <Field label="Submitted" value={formatDate(company.createdAt)} />
+          {/* A record of what the applicant declared, not a check we ran.
+              The submission form makes this tick box required, so an approved
+              company always reads "Attested". It is here so a reviewer can see
+              the declaration was made, and it is deliberately not a badge. */}
+          <Field
+            label="Authorized rep"
+            value={
+              company.authorized_rep_verified
+                ? "Attested by the applicant at submission"
+                : undefined
+            }
+          />
         </dl>
         {company.about_company && (
           <div className="mt-6">

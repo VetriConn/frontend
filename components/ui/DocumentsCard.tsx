@@ -15,7 +15,15 @@ interface DocumentsCardProps {
   onUpload: () => void;
   onDownload?: (doc: UserDocument) => void;
   onDelete?: (doc: UserDocument) => void;
-  onView?: (doc: UserDocument) => void;
+  /**
+   * Required, and it did not used to be. The name sat behind `onView ? … : …`
+   * with a plain-text arm for callers that had no viewer, and the one caller
+   * this card has always passed a viewer, so that arm never rendered. Two
+   * versions of the same line, only one of them reachable, and only one of
+   * them kept up to date: the dead one still truncated the filename on a
+   * single line, which is the bug the live one was widened to fix.
+   */
+  onView: (doc: UserDocument) => void;
   isUploading?: boolean;
   deletingDocId?: string;
 }
@@ -84,46 +92,29 @@ export const DocumentsCard: React.FC<DocumentsCardProps> = ({
                 </div>
 
                 {/* File info */}
-                {onView ? (
-                  <button
-                    onClick={() => onView(doc)}
-                    className="flex-1 min-w-0 text-left group focus:outline-none cursor-pointer"
-                    title={`View ${doc.name}`}
-                  >
-                    {/* Two lines rather than one truncated one. The action
-                        pair beside this holds a fixed width that does not
-                        scale, so at 125% the name column shrinks while the
-                        name grows, and "Resume_2024_Final.pdf" lost the part
-                        that says what it is. */}
-                    <h3 className="text-sm md:text-base font-medium text-gray-700 group-hover:text-red-600 transition-colors line-clamp-2 break-words">
-                      {doc.name}
-                    </h3>
-                    <p className="text-xs text-gray-400 group-hover:text-red-500/80 transition-colors">
-                      {formatFileSize(doc.file_size)}
-                      {doc.upload_date && (
-                        <>
-                          {doc.file_size ? " • " : ""}
-                          Uploaded {formatDate(doc.upload_date)}
-                        </>
-                      )}
-                    </p>
-                  </button>
-                ) : (
-                  <div className="flex-1 min-w-0">
-                    <h3 className="text-sm md:text-base font-medium text-gray-700 truncate">
-                      {doc.name}
-                    </h3>
-                    <p className="text-xs text-gray-400">
-                      {formatFileSize(doc.file_size)}
-                      {doc.upload_date && (
-                        <>
-                          {doc.file_size ? " • " : ""}
-                          Uploaded {formatDate(doc.upload_date)}
-                        </>
-                      )}
-                    </p>
-                  </div>
-                )}
+                <button
+                  onClick={() => onView(doc)}
+                  className="flex-1 min-w-0 text-left group focus:outline-none cursor-pointer"
+                  title={`View ${doc.name}`}
+                >
+                  {/* Two lines rather than one truncated one. The action
+                      pair beside this holds a fixed width that does not
+                      scale, so at 125% the name column shrinks while the
+                      name grows, and "Resume_2024_Final.pdf" lost the part
+                      that says what it is. */}
+                  <h3 className="text-sm md:text-base font-medium text-gray-700 group-hover:text-red-600 transition-colors line-clamp-2 break-words">
+                    {doc.name}
+                  </h3>
+                  <p className="text-xs text-gray-400 group-hover:text-red-500/80 transition-colors">
+                    {formatFileSize(doc.file_size)}
+                    {doc.upload_date && (
+                      <>
+                        {doc.file_size ? " • " : ""}
+                        Uploaded {formatDate(doc.upload_date)}
+                      </>
+                    )}
+                  </p>
+                </button>
 
                 {/* Actions */}
                 <div className="flex items-center gap-2 shrink-0">

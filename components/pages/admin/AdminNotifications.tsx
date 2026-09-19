@@ -107,7 +107,8 @@ const NotificationRow = ({
   return (
     <li
       className={clsx(
-        "group relative flex items-center gap-4 px-5 md:px-6 py-4 transition-colors",
+        // No `group`: nothing in this row reads a group-* variant.
+        "relative flex items-center gap-4 px-5 md:px-6 py-4 transition-colors",
         n.read
           ? "bg-white hover:bg-gray-50/70"
           : "bg-rose-50/30 hover:bg-rose-50/50",

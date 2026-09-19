@@ -169,7 +169,8 @@ const AdminSidebar = ({ isMobileOpen, onCloseMobile }: AdminSidebarProps) => {
                   href={item.href}
                   onClick={onCloseMobile}
                   className={clsx(
-                    "group relative flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors",
+                    // No `group`: nothing below this link reads a group-* variant.
+                    "relative flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors",
                     active
                       ? "bg-primary text-white shadow-[0_8px_20px_-8px_rgba(229,62,62,0.6)]"
                       : "text-gray-400 hover:text-white hover:bg-white/5",

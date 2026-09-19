@@ -6,7 +6,6 @@ import {
   HiOutlineMapPin,
   HiOutlineClock,
   HiOutlineBuildingOffice2,
-  HiOutlineCalendarDays,
   HiOutlineCurrencyDollar,
   HiOutlineArrowTopRightOnSquare,
   HiOutlineBookmarkSlash,
@@ -29,7 +28,6 @@ interface SavedJob {
   location: string;
   jobType: string;
   salary: string;
-  savedDate: string;
 }
 
 // ─── Empty State ────────────────────────────────────────────────────────────────
@@ -114,15 +112,15 @@ function SavedJobCard({
           </div>
         </div>
 
-        {/* Saved Date */}
+        {/* Saved Date. The value below it is gone: `savedDate` was built as
+            the empty string for every job, so the date line it guarded had
+            never rendered and the calendar icon was imported for nothing.
+            The heading stays, because removing it is a change to what the
+            page shows rather than a removal of something that could not
+            show. It has nothing under it until the data model stores a
+            saved-at timestamp, and that is a product decision, not this. */}
         <div>
           <div className="text-sm font-medium text-gray-600 mb-1">Saved</div>
-          {job.savedDate && (
-            <div className="flex items-center gap-1.5 text-sm text-gray-600">
-              <HiOutlineCalendarDays className="w-3.5 h-3.5" />
-              {job.savedDate}
-            </div>
-          )}
         </div>
       </div>
 
@@ -170,7 +168,9 @@ function SavedJobCard({
 export default function SavedJobsPage() {
   const { savedJobs: data, isLoading, removeSavedJob } = useSavedJobs();
 
-  const savedJobs: SavedJob[] = (data || []).map((job) => {
+  // No `|| []` on `data`: useSavedJobs defaults the SWR result to an array
+  // before it hands it over, so the fallback here never produced one.
+  const savedJobs: SavedJob[] = data.map((job) => {
     // Shared rules from lib/job-display: salary_text first, so a scraped
     // listing shows its real "$18.50 hourly" instead of "Competitive".
     const salary = formatJobSalary(job) ?? "Competitive";
@@ -184,10 +184,6 @@ export default function SavedJobsPage() {
       // one. Every saved job used to claim "Flexible" here regardless.
       jobType: fieldLabel(JOB_TYPE_LABELS, job.job_type) ?? "",
       salary,
-      // No saved-at timestamp exists in the data model; claiming
-      // "Recently" for every job was a fabrication. Show nothing until
-      // the date is actually stored.
-      savedDate: "",
     };
   });
 

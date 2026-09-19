@@ -27,8 +27,6 @@ interface PageSeoInput {
   title: string;
   description: string;
   path: string;
-  ogImage?: string;
-  noIndex?: boolean;
   keywords?: string[];
 }
 
@@ -186,10 +184,9 @@ export const METADATA_TEMPLATES = {
  * Includes Open Graph, Twitter Card, and canonical URL generation
  */
 export function generateMetadata(input: PageSeoInput): Metadata {
-  const { title, description, path, ogImage, noIndex, keywords } = input;
+  const { title, description, path, keywords } = input;
 
   const canonicalUrl = `${SITE_CONFIG.url}${path}`;
-  const imageUrl = ogImage || SITE_CONFIG.ogImage;
   const allKeywords = keywords
     ? [...SITE_CONFIG.keywords, ...keywords]
     : SITE_CONFIG.keywords;
@@ -201,9 +198,12 @@ export function generateMetadata(input: PageSeoInput): Metadata {
     authors: [{ name: SITE_CONFIG.name }],
     creator: SITE_CONFIG.name,
     publisher: SITE_CONFIG.name,
-    robots: noIndex
-      ? { index: false, follow: false }
-      : { index: true, follow: true },
+    // Every page built through here wants indexing. `noIndex` was an input
+    // to this function and no page ever set it, so the noindex arm had never
+    // been taken; `ogImage` went the same way, with all six callers falling
+    // through to the site image below. The routes that must stay out of the
+    // index are the dashboard, and app/robots.ts disallows those wholesale.
+    robots: { index: true, follow: true },
     alternates: {
       canonical: canonicalUrl,
     },
@@ -216,7 +216,7 @@ export function generateMetadata(input: PageSeoInput): Metadata {
       siteName: SITE_CONFIG.name,
       images: [
         {
-          url: imageUrl,
+          url: SITE_CONFIG.ogImage,
           width: 1200,
           height: 630,
           alt: title,
@@ -229,7 +229,7 @@ export function generateMetadata(input: PageSeoInput): Metadata {
       description,
       site: SITE_CONFIG.twitterHandle,
       creator: SITE_CONFIG.twitterHandle,
-      images: [imageUrl],
+      images: [SITE_CONFIG.ogImage],
     },
   };
 }

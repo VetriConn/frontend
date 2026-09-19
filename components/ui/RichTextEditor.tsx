@@ -28,12 +28,23 @@ interface RichTextEditorProps {
   placeholder?: string;
   id?: string;
   hasError?: boolean;
-  ariaLabel?: string;
+  /**
+   * Required, because the fallback was a lie. It read `ariaLabel ?? "Job
+   * brief"` and the one caller passes exactly "Job brief", so the two arms
+   * were the same string and a generic editor was carrying the job board's
+   * wording as a default. The next caller gets to name its own field.
+   */
+  ariaLabel: string;
 }
 
+/**
+ * `arg` used to live here too, forwarded into `run(cmd, arg)` on every
+ * button, and not one of the five entries below ever set it. execCommand's
+ * value argument only matters for commands like createLink, which the link
+ * button calls directly with a URL it prompts for.
+ */
 interface ToolButton {
   cmd: string;
-  arg?: string;
   label: string;
   Icon: React.ComponentType<{ className?: string }>;
 }
@@ -94,14 +105,14 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
         aria-label="Text formatting"
         className="flex flex-wrap items-center gap-1 rounded-t-lg border border-b-0 border-gray-300 bg-gray-50 px-2 py-1.5"
       >
-        {BUTTONS.map(({ cmd, arg, label, Icon }) => (
+        {BUTTONS.map(({ cmd, label, Icon }) => (
           <button
             key={cmd}
             type="button"
             aria-label={label}
             title={label}
             onMouseDown={(e) => e.preventDefault()}
-            onClick={() => run(cmd, arg)}
+            onClick={() => run(cmd)}
             className="inline-flex h-9 w-9 items-center justify-center rounded-md text-gray-600 transition-colors hover:bg-gray-200 hover:text-gray-900"
           >
             <Icon className="h-5 w-5" />
@@ -125,7 +136,7 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
           ref={ref}
           role="textbox"
           aria-multiline="true"
-          aria-label={ariaLabel ?? "Job brief"}
+          aria-label={ariaLabel}
           contentEditable
           suppressContentEditableWarning
           onInput={emit}

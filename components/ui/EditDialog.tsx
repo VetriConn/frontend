@@ -14,14 +14,6 @@ interface EditDialogProps {
   submitLabel?: string;
   cancelLabel?: string;
   /**
-   * Blocks the primary action while the form has nothing to submit.
-   *
-   * Added for ImageUploadDialog, whose Save means nothing until an image has
-   * actually been picked. Every other caller has fields that are valid empty,
-   * so it defaults to false and they are unaffected.
-   */
-  submitDisabled?: boolean;
-  /**
    * "lg" widens the panel from 512px to 896px.
    *
    * Added for ImageUploadDialog. 896px is what the photo editor it replaces
@@ -38,6 +30,12 @@ interface EditDialogProps {
    * and only the edit step has anything to save. A fixed pair could not
    * express that, and reimplementing the dialog to get a footer would have
    * meant a second copy of the focus trap.
+   *
+   * This prop also retired `submitDisabled`, which had been added a step
+   * earlier for the same caller and then never passed by it or by anyone
+   * else. A dialog that brings its own footer never renders the Save button
+   * that `submitDisabled` was there to disable, so the two could not both be
+   * in use at once and `footer` is the one that shipped.
    */
   footer?: React.ReactNode;
 }
@@ -64,7 +62,6 @@ export const EditDialog: React.FC<EditDialogProps> = ({
   children,
   submitLabel = "Save Changes",
   cancelLabel = "Cancel",
-  submitDisabled = false,
   size = "md",
   footer,
 }) => {
@@ -264,7 +261,7 @@ export const EditDialog: React.FC<EditDialogProps> = ({
                 "disabled:opacity-50 disabled:cursor-not-allowed",
                 "flex items-center gap-2 min-h-[44px]"
               )}
-              disabled={isSubmitting || submitDisabled}
+              disabled={isSubmitting}
               aria-label={submitLabel}
               aria-busy={isSubmitting}
             >

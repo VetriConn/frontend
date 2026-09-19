@@ -44,16 +44,19 @@ interface AnchoredMenu {
 export function useAnchoredMenu<T extends HTMLElement>(
   open: boolean,
   triggerRef: React.RefObject<T | null>,
+  /*
+   * `align: "left" | "right"` and `menuWidth` were options here and none of
+   * the four callers set either, so the right-aligned arm of the `left`
+   * calculation below had never run and both names sat in a dependency array
+   * they could not change. Every menu in the product hangs off the left edge
+   * of its trigger, and three of the four are the full width of it.
+   */
   options: {
     /** Gap between the trigger and the menu, in pixels. */
     offset?: number;
-    /** Right-align the menu to the trigger instead of left. */
-    align?: "left" | "right";
-    /** Needed to right-align before the menu has been measured. */
-    menuWidth?: number;
   } = {},
 ): AnchoredMenu {
-  const { offset = 4, align = "left", menuWidth } = options;
+  const { offset = 4 } = options;
   const [coords, setCoords] = useState<AnchorCoords>({
     top: 0,
     left: 0,
@@ -69,13 +72,10 @@ export function useAnchoredMenu<T extends HTMLElement>(
       // is the classic mistake — it lands the menu a page-length away the
       // moment anything is scrolled.
       top: rect.bottom + offset,
-      left:
-        align === "right"
-          ? rect.right - (menuWidth ?? rect.width)
-          : rect.left,
+      left: rect.left,
       width: rect.width,
     });
-  }, [triggerRef, offset, align, menuWidth]);
+  }, [triggerRef, offset]);
 
   // Before paint, so the menu never appears at 0,0 first.
   useLayoutEffect(() => {

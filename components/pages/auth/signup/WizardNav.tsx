@@ -12,30 +12,33 @@
  * older, so a phone should give them a big target, not a tiny desktop pill.
  */
 
+/*
+ * There is no busy state here, and there never was one in practice. `busy`
+ * was a prop that swapped Continue for "Please wait…" and disabled all three
+ * buttons, and not one of the three steps passed it. The wizard did compute
+ * the flag, as `isBusy` on the props it spreads into each step, and no step
+ * destructured that either, so the whole in-flight path existed end to end
+ * with nothing connected at either join. Submission happens on the last
+ * step, which is CompletionStep and does not use this component.
+ *
+ * `nextLabel` and `skipLabel` went the same way: three callers, three
+ * defaults taken, so the labels are written where they are read now.
+ */
 interface WizardNavProps {
   /** Omitted on the first step, which has nothing to go back to. */
   onBack?: () => void;
   onNext: () => void;
-  /** Disables Continue — e.g. an invalid required step. */
+  /** Disables Continue, for an invalid required step. */
   nextDisabled?: boolean;
-  /** Continue label; defaults to "Continue". */
-  nextLabel?: string;
   /** When set, renders a Skip affordance on the left. */
   onSkip?: () => void;
-  /** Skip label; defaults to "Skip for now". */
-  skipLabel?: string;
-  /** In-flight: shows "Please wait…" on Continue and disables the row. */
-  busy?: boolean;
 }
 
 export const WizardNav = ({
   onBack,
   onNext,
   nextDisabled = false,
-  nextLabel = "Continue",
   onSkip,
-  skipLabel = "Skip for now",
-  busy = false,
 }: WizardNavProps) => {
   return (
     <div className="mt-4 pt-4">
@@ -44,10 +47,9 @@ export const WizardNav = ({
           <button
             type="button"
             onClick={onSkip}
-            disabled={busy}
             className="self-center text-sm text-gray-500 underline underline-offset-2 transition-colors hover:text-gray-700 disabled:opacity-60 disabled:cursor-not-allowed sm:self-auto"
           >
-            {skipLabel}
+            Skip for now
           </button>
         ) : (
           <span className="hidden sm:block" aria-hidden="true" />
@@ -58,7 +60,6 @@ export const WizardNav = ({
             <button
               type="button"
               onClick={onBack}
-              disabled={busy}
               className="w-full rounded-lg bg-gray-100 px-6 py-3 font-medium text-gray-700 transition-colors hover:bg-gray-200 disabled:opacity-60 disabled:cursor-not-allowed sm:w-auto"
             >
               Back
@@ -67,10 +68,10 @@ export const WizardNav = ({
           <button
             type="button"
             onClick={onNext}
-            disabled={nextDisabled || busy}
+            disabled={nextDisabled}
             className="w-full rounded-lg bg-primary px-8 py-3 font-medium text-white transition-colors hover:bg-primary/90 disabled:cursor-not-allowed disabled:bg-gray-300 sm:w-auto"
           >
-            {busy ? "Please wait…" : nextLabel}
+            Continue
           </button>
         </div>
       </div>

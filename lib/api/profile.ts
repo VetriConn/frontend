@@ -14,37 +14,35 @@ import type {
 
 // Get user profile
 export async function getUserProfile(): Promise<UserProfileResponse> {
-  try {
-    const data = await apiFetch<UserProfileResponse>(
-      `${API_BASE_URL}${API_CONFIG.ENDPOINTS.USER.PROFILE}`,
-      {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-        },
+  // No try/catch: the one that was here caught the error and rethrew it
+  // unchanged, which is what happens anyway.
+  const data = await apiFetch<UserProfileResponse>(
+    `${API_BASE_URL}${API_CONFIG.ENDPOINTS.USER.PROFILE}`,
+    {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
       },
+    },
+  );
+
+  // Normalize attachments if they exist in the profile
+  if (data.data && data.data.user && data.data.user.attachments) {
+    const attachmentsForNormalization: BackendAttachment[] =
+      data.data.user.attachments.map((attachment) => ({
+        ...attachment,
+        upload_date:
+          typeof attachment.upload_date === "string"
+            ? attachment.upload_date
+            : attachment.upload_date?.toISOString(),
+      }));
+
+    data.data.user.attachments = normalizeAttachments(
+      attachmentsForNormalization,
     );
-
-    // Normalize attachments if they exist in the profile
-    if (data.data && data.data.user && data.data.user.attachments) {
-      const attachmentsForNormalization: BackendAttachment[] =
-        data.data.user.attachments.map((attachment) => ({
-          ...attachment,
-          upload_date:
-            typeof attachment.upload_date === "string"
-              ? attachment.upload_date
-              : attachment.upload_date?.toISOString(),
-        }));
-
-      data.data.user.attachments = normalizeAttachments(
-        attachmentsForNormalization,
-      );
-    }
-
-    return data;
-  } catch (error) {
-    throw error;
   }
+
+  return data;
 }
 
 /**
@@ -98,29 +96,25 @@ export async function patchUserProfile(
   );
 }
 
-// Upload profile picture
+/**
+ * Hand the server the URL of a picture that is already uploaded.
+ *
+ * This took `File | string` and posted multipart for the File. The bytes do
+ * not come through here any more: the profile page signs an upload, sends
+ * the crop straight to Cloudinary, and calls this with the secure_url that
+ * comes back, so the multipart arm had stopped being reachable and was left
+ * behind rather than chosen.
+ */
 export async function uploadProfilePicture(
-  fileOrUrl: File | string,
+  url: string,
 ): Promise<{ picture_url: string }> {
-  let init: RequestInit;
-  if (typeof fileOrUrl === "string") {
-    init = {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ url: fileOrUrl }),
-    };
-  } else {
-    const formData = new FormData();
-    formData.append("picture", fileOrUrl);
-    init = {
-      method: "POST",
-      body: formData,
-    };
-  }
-
   const data = await apiFetch<{ data: { picture_url: string } }>(
     `${API_BASE_URL}${API_CONFIG.ENDPOINTS.USER.UPLOAD_PICTURE}`,
-    init,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ url }),
+    },
   );
 
   return data.data;

@@ -149,7 +149,10 @@ export const RecommendedJobs: React.FC = () => {
   }
 
   return (
-    <div className=" rounded-xl py-6">
+    /* No radius on this wrapper: it has no ground, no border and no clipping,
+       so there is nothing at its edges to round. The cards below bring their
+       own surface. */
+    <div className="py-6">
       {/* Header. The heading and the "See all" sit on one row, with the link
           pushed right and baseline-aligned to the heading rather than centred
           against the icon circle. */}

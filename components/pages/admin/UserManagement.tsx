@@ -35,6 +35,7 @@ import {
 } from "./AdminTablePanel";
 import KebabMenu, { type KebabAction } from "./KebabMenu";
 import ConfirmDialog from "./ConfirmDialog";
+import { userStandingConfirm } from "./confirmCopy";
 import { useToaster } from "@/components/ui/Toaster";
 import { formatDate } from "@/lib/date-utils";
 
@@ -208,20 +209,9 @@ const UserManagement = () => {
       </AdminTablePanel>
 
       <ConfirmDialog
+        {...userStandingConfirm(isSuspending)}
         open={!!target}
-        title={isSuspending ? "Suspend this user?" : "Reinstate this user?"}
         subject={target?.full_name}
-        description={
-          isSuspending
-            ? "Suspended users cannot sign in or apply to jobs until reinstated."
-            : "The user will regain access immediately."
-        }
-        reasonLabel={isSuspending ? "Reason" : undefined}
-        reasonPlaceholder={
-          isSuspending ? "Note why this user is being suspended" : undefined
-        }
-        confirmLabel={isSuspending ? "Suspend User" : "Reinstate User"}
-        tone={isSuspending ? "danger" : "neutral"}
         busy={busy}
         onClose={() => (busy ? null : setTarget(null))}
         onConfirm={handleConfirm}

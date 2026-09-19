@@ -19,6 +19,7 @@ import {
   AdminDetailField,
 } from "./AdminTablePanel";
 import ConfirmDialog from "./ConfirmDialog";
+import { REMOVE_POST_CONFIRM } from "./confirmCopy";
 import { useToaster } from "@/components/ui/Toaster";
 import { formatDate } from "@/lib/date-utils";
 
@@ -120,13 +121,9 @@ const AdminCommunityPostDetail = ({ postId }: Props) => {
       </section>
 
       <ConfirmDialog
+        {...REMOVE_POST_CONFIRM}
         open={confirmOpen}
-        title="Remove this post?"
         subject={post.title}
-        description="The post will be hidden from the community immediately. The author will be notified."
-        reasonLabel="Reason for removal"
-        reasonPlaceholder="What guideline did this post violate?"
-        confirmLabel="Confirm Removal"
         busy={busy}
         onClose={() => (busy ? null : setConfirmOpen(false))}
         onConfirm={handleRemove}

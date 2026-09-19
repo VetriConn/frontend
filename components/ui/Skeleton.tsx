@@ -79,38 +79,43 @@ export const CardSkeleton: React.FC<{
 );
 
 /**
- * Responsive skeleton for images - reserves space with aspect ratio
+ * Responsive skeleton for images - reserves space with aspect ratio.
+ *
+ * There was a `rounded` prop here and it had never once been true. All three
+ * call sites below leave it at its default and bring their own radius in
+ * `className` instead: the two avatars want `rounded-full`, the company logo
+ * on the job detail page wants `rounded-lg`. A boolean that can only ever
+ * pick one fixed radius was never going to serve callers who each want a
+ * different one, so the branch behind it was unreachable from the day it was
+ * written. Radius belongs to the caller, as padding does on PANEL_SURFACE.
  */
 const ImageSkeleton: React.FC<{ 
   aspectRatio?: string;
   className?: string;
-  rounded?: boolean;
 }> = ({ 
   aspectRatio = "16/9", 
-  className = "",
-  rounded = false 
+  className = ""
 }) => (
   <div 
-    className={clsx(
-      "w-full bg-gray-200 animate-shimmer",
-      rounded ? "rounded-lg md:rounded-xl" : "",
-      className
-    )}
+    className={clsx("w-full bg-gray-200 animate-shimmer", className)}
     style={{ aspectRatio }}
   />
 );
 
 /**
- * Responsive skeleton for form inputs - matches input sizing at different breakpoints
+ * Responsive skeleton for form inputs - matches input sizing at different
+ * breakpoints.
+ *
+ * The `label` prop is gone. It defaulted to true and all four call sites take
+ * the default, so the label bar above the box has always rendered and the
+ * false arm never had a chance to. The four sites are the search form in
+ * DashboardSkeleton, and every field in that form is labelled.
  */
-const InputSkeleton: React.FC<{ label?: boolean; className?: string }> = ({ 
-  label = true, 
+const InputSkeleton: React.FC<{ className?: string }> = ({ 
   className = "" 
 }) => (
   <div className={className}>
-    {label && (
-      <div className="h-4 w-24 md:w-28 bg-gray-200 rounded animate-shimmer mb-1.5 md:mb-2" />
-    )}
+    <div className="h-4 w-24 md:w-28 bg-gray-200 rounded animate-shimmer mb-1.5 md:mb-2" />
     <div className="h-10 md:h-12 w-full bg-gray-100 rounded-lg animate-shimmer" />
   </div>
 );
@@ -203,8 +208,18 @@ export const DashboardSkeleton: React.FC = () => (
   </div>
 );
 
+/**
+ * The recommended-jobs grid while it loads.
+ *
+ * The wrapper used to carry `rounded-lg md:rounded-xl` and had no background,
+ * no border, no shadow and no `overflow-hidden`, so there were no corners for
+ * it to round. Nothing was ever drawn at its edges: the cards inside bring
+ * their own PANEL_SURFACE, which is what the reader actually sees rounded.
+ * It was also the last two-step radius left in this file, the variant
+ * panelStyles.ts records the owner deciding against.
+ */
 export const RecommendedJobsSkeleton: React.FC = () => (
-  <div className="rounded-lg md:rounded-xl py-4 md:py-6">
+  <div className="py-4 md:py-6">
     {/* Header */}
     <div className="flex items-center gap-2 md:gap-3 mb-1">
       <ImageSkeleton 

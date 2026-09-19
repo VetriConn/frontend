@@ -7,9 +7,6 @@ import { withReturnUrl } from "@/lib/auth-redirect";
 
 interface AuthGuardProps {
   children: React.ReactNode;
-  /** Restrict to admins. Everything else is open to any signed-in account. */
-  adminOnly?: boolean;
-  redirectTo?: string;
 }
 
 /**
@@ -23,12 +20,18 @@ interface AuthGuardProps {
  * Authorization proper lives on the server, which scopes every query by the
  * caller's id. This is presentation: it keeps people out of pages that would
  * be empty for them, and is not the security boundary.
+ *
+ * It used to take `adminOnly` and `redirectTo`, and all seventeen call sites
+ * are a bare `<AuthGuard>`, so neither had ever been set. `adminOnly`
+ * predates the admin area having a layout of its own, and
+ * app/(admin)/admin/layout.tsx does that gate inline now, which left the
+ * `isAdmin` arm of the old permitted ternary with no caller that could reach
+ * it. Two smaller things follow from that and are folded in below: with
+ * `adminOnly` fixed false, `permitted` is just `!isAdmin`, so the one place
+ * that bounced a non-permitted person was only ever bouncing an admin and
+ * had no need to choose a destination.
  */
-export function AuthGuard({
-  children,
-  adminOnly = false,
-  redirectTo,
-}: AuthGuardProps) {
+export function AuthGuard({ children }: AuthGuardProps) {
   const { userProfile, isLoading } = useUserProfile();
   const router = useRouter();
 
@@ -36,7 +39,7 @@ export function AuthGuard({
   // Admins are staff and don't participate as members, so the member dashboard
   // isn't theirs to use — the server refuses those endpoints outright
   // (middleware `denyAdmin`), and this keeps them out of the UI that calls them.
-  const permitted = adminOnly ? isAdmin : !isAdmin;
+  const permitted = !isAdmin;
 
   useEffect(() => {
     if (isLoading) return;
@@ -48,14 +51,14 @@ export function AuthGuard({
       // an effect, and it spares every guarded page a useSearchParams
       // Suspense boundary.
       const here = window.location.pathname + window.location.search;
-      router.replace(redirectTo ?? withReturnUrl("/signin", here));
+      router.replace(withReturnUrl("/signin", here));
       return;
     }
 
     if (!permitted) {
-      router.replace(redirectTo ?? (isAdmin ? "/admin" : "/dashboard"));
+      router.replace("/admin");
     }
-  }, [userProfile, isLoading, permitted, isAdmin, redirectTo, router]);
+  }, [userProfile, isLoading, permitted, router]);
 
   if (isLoading) {
     return (

@@ -102,7 +102,9 @@ export default function ApplicationDraftsPage() {
             {drafts.map((draft) => (
               <div
                 key={draft.jobId}
-                className={`${PANEL_SURFACE} p-5 shadow-sm hover:shadow-md transition-shadow group`}
+                // No `group`: nothing inside this card uses a group-* variant,
+                // so it named a hover scope that had no members.
+                className={`${PANEL_SURFACE} p-5 shadow-sm hover:shadow-md transition-shadow`}
               >
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                   <div className="flex-1 min-w-0">

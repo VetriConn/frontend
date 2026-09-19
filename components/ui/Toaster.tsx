@@ -4,7 +4,14 @@ import clsx from "clsx";
 
 interface Toast {
   id: number;
-  type?: "success" | "error" | "loading";
+  /**
+   * Two outcomes, because those are the two the product raises. A third,
+   * "loading", was in this union and no showToast call in the app ever asked
+   * for it, so its grey left border had nothing to paint. A toast that hangs
+   * about waiting also needs dismissing by hand, and every toast here is on
+   * a timer, so the type had no mechanism behind it either.
+   */
+  type?: "success" | "error";
   title?: string;
   description?: string;
   action?: { label: string; onClick: () => void };
@@ -59,7 +66,6 @@ export const ToasterProvider: React.FC<{ children: ReactNode }> = ({ children })
               "bg-white rounded-none shadow-lg py-3 pl-6 pr-2 text-base text-gray-900 flex items-start gap-2 border border-gray-200",
               toast.type === "success" && "border-l-4 border-l-green-500",
               toast.type === "error" && "border-l-4 border-l-primary",
-              toast.type === "loading" && "border-l-4 border-l-gray-500",
             )}
             style={{ minWidth: "320px", maxWidth: "400px" }}
           >

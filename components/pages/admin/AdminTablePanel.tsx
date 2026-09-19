@@ -122,20 +122,21 @@ export const AdminFilterTabs = <V extends string>({
 
 // ─── Table panel ─────────────────────────────────────────────────────────────
 
+/*
+ * No `className` escape hatch. There was one, merged in through clsx, and all
+ * ten call sites are a bare <AdminTablePanel>: every admin table wants the
+ * same box, which is the reason this component exists. The per-cell
+ * className props below are a different matter and are genuinely used.
+ */
 interface AdminTablePanelProps {
   children: ReactNode;
-  className?: string;
 }
 
-export const AdminTablePanel = ({
-  children,
-  className,
-}: AdminTablePanelProps) => (
+export const AdminTablePanel = ({ children }: AdminTablePanelProps) => (
   <section
     className={clsx(
       ADMIN_PANEL_SURFACE,
       "shadow-[0_1px_2px_rgba(15,23,42,0.04)] overflow-hidden",
-      className,
     )}
   >
     <div className="overflow-x-auto">{children}</div>

@@ -1138,7 +1138,6 @@ export default function JobApplicationForm({
               title="Screening Questions"
               subtitle="A few quick questions from the employer."
               complete={!requiredScreeningMissing}
-              optional={!screeningQuestions.some((q) => q.required)}
             >
               <div className="space-y-6">
                 {screeningQuestions.map((q) => (
@@ -1160,7 +1159,6 @@ export default function JobApplicationForm({
             title="Additional Information"
             subtitle="Optional: Share anything else you'd like us to know."
             complete={false}
-            optional
           >
             <div>
               <label className={FIELD_LABEL}>
@@ -1342,7 +1340,6 @@ function SectionCard({
   title: string;
   subtitle: string;
   complete: boolean;
-  optional?: boolean;
   children: React.ReactNode;
 }) {
   return (

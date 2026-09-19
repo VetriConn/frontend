@@ -480,7 +480,10 @@ export function SignupWizard() {
       // Step 1 is the entry point — no Back control there.
       onBack: currentStep > 1 ? handleBack : undefined,
       onSkip: handleSkip,
-      isBusy: state.isSubmitting || isActionLocked,
+      // No `isBusy` here. It was spread into all three steps and not one of
+      // them destructured it, so the wizard was computing a busy flag that
+      // nothing could render. The lock it was derived from is still read, at
+      // the guard in handleNext.
       currentStep,
       totalSteps,
     };

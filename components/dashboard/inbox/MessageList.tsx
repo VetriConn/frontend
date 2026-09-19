@@ -6,9 +6,15 @@ import { safeHttpUrl } from "@/lib/safe-url";
 
 import { Message } from "@/types/inbox";
 
+/**
+ * `isLoading` used to be here, guarding a "Loading messages..." line at the
+ * top of the list and negated again around the empty state. The one caller
+ * never passed it, because Inbox renders its own loading line above this
+ * component rather than inside it, so the first block never appeared and the
+ * negation in the second was always true.
+ */
 interface MessageListProps {
   messages: Message[];
-  isLoading?: boolean;
   messagesEndRef: React.RefObject<HTMLDivElement | null>;
   userAvatar?: string | null;
   userName?: string;
@@ -18,7 +24,6 @@ interface MessageListProps {
 
 export function MessageList({
   messages,
-  isLoading,
   messagesEndRef,
   userAvatar,
   userName = "You",
@@ -27,12 +32,6 @@ export function MessageList({
 }: MessageListProps) {
   return (
     <div className="flex-1 overflow-y-auto px-4 md:px-6 py-6 space-y-4 bg-gray-50 custom-scrollbar">
-      {isLoading && (
-        <div className="flex items-center justify-center py-8">
-          <p className="text-sm text-gray-400">Loading messages...</p>
-        </div>
-      )}
-
       {messages.map((msg) => (
         <div
           key={msg.id}
@@ -105,7 +104,7 @@ export function MessageList({
       ))}
       <div ref={messagesEndRef} />
 
-      {!isLoading && messages.length === 0 && (
+      {messages.length === 0 && (
         <div className="flex items-center justify-center py-12">
           <p className="text-sm text-gray-400">
             No messages yet. Start the conversation!

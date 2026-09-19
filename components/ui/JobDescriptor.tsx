@@ -886,8 +886,10 @@ const JobDescriptor: React.FC<JobDescriptorProps> = ({
                 </button>
                 )}
 
-                {/* Info notices */}
-                <div className="space-y-3 pt-5 border-t border-gray-100">
+                {/* Info notices. No `space-y-3`: it only puts margin between
+                    siblings and there is one notice here, so it emitted
+                    nothing. The rule below is real. */}
+                <div className="pt-5 border-t border-gray-100">
                   <div className="flex items-start gap-2.5">
                     <HiOutlineCheckCircle className="w-4 h-4 md:w-5 md:h-5 text-emerald-500 shrink-0 mt-0.5" />
                     <p className="text-xs text-gray-500 leading-relaxed">

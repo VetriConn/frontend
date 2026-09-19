@@ -52,7 +52,6 @@ export interface StepProps {
   /** Absent on the first step, which has nothing to go back to. */
   onBack?: () => void;
   onSkip?: () => void;
-  isBusy?: boolean;
   /** For the in-step header's progress indicator. */
   currentStep: number;
   totalSteps: number;

@@ -116,9 +116,14 @@ export default function ProfilePage() {
     years_of_experience: "",
   });
 
-  // ─── Photo upload state ───────────────────────────────────────────────────
-  const [, setPhotoFile] = useState<File | null>(null);
-  const [photoPreview, setPhotoPreview] = useState<string | null>(null);
+  /*
+   * There were two more pieces of photo state here and neither ever held
+   * anything. `photoFile` was declared with its value thrown away and set
+   * only to null; `photoPreview` started null and was set only to null, so
+   * the `if (photoPreview)` cleanup below it, and the revokeObjectURL inside
+   * that, could never run. Both are left over from when this page owned the
+   * photo picker. ImageUploadDialog owns the file and its object URL now.
+   */
   const [isUploadingDoc, setIsUploadingDoc] = useState(false);
   const [deletingDocId, setDeletingDocId] = useState<string | null>(null);
 
@@ -481,13 +486,7 @@ export default function ProfilePage() {
   const handleCloseDialog = useCallback(() => {
     setEditSection(null);
     setEditingIndex(null);
-    // Clean up photo preview
-    if (photoPreview) {
-      URL.revokeObjectURL(photoPreview);
-      setPhotoPreview(null);
-    }
-    setPhotoFile(null);
-  }, [photoPreview]);
+  }, []);
 
   // --- Photo handlers ---
   const handleChangePhoto = useCallback(() => {

@@ -247,7 +247,11 @@ export const SkillsEditForm: React.FC<SkillsEditProps> = ({
             onKeyDown={handleKeyDown}
             onFocus={handleFocus}
             disabled={isAtMax}
-            className="form-input pr-10 px-3 py-2 md:px-4 md:py-3 text-sm md:text-base focus:ring-2 focus:ring-primary focus:border-transparent"
+            /* No focus overrides here. The form-input utility in globals.css
+               already sets a non-red focus, for the reason its own comment
+               gives, and these three classes were quietly putting the red
+               ring back on top of it. */
+            className="form-input pr-10 px-3 py-2 md:px-4 md:py-3 text-sm md:text-base"
             placeholder={
               isAtMax
                 ? `Maximum ${MAX_SKILLS} skills reached`

@@ -111,7 +111,7 @@ const ExternalJobsTable = () => {
               setPage(1);
             }}
             placeholder="Search role, company or location"
-            className="block min-h-[44px] w-full rounded-lg border border-gray-300 bg-white py-2 pl-10 pr-3 text-sm outline-none transition-colors focus:border-transparent focus:ring-2 focus:ring-primary"
+            className="block min-h-[44px] w-full rounded-lg border border-gray-300 bg-white py-2 pl-10 pr-3 text-sm outline-none transition-colors focus:border-gray-500 focus:ring-2 focus:ring-gray-300/60"
           />
         </div>
       </div>

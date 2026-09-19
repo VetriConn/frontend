@@ -47,7 +47,7 @@ export function ConversationList({
             value={searchQuery}
             onChange={(e) => onSearchChange(e.target.value)}
             placeholder="Search conversations..."
-            className="w-full pl-10 pr-10 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
+            className="w-full pl-10 pr-10 py-2 border border-gray-200 rounded-lg text-sm outline-none transition-colors focus:border-gray-500 focus:ring-2 focus:ring-gray-300/60"
           />
           {searchQuery && (
             <button

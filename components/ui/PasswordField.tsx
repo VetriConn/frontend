@@ -1,6 +1,12 @@
 "use client";
 
 import { useState } from "react";
+import {
+  FIELD_BASE,
+  FIELD_DISABLED,
+  FIELD_LABEL,
+  fieldBorder,
+} from "@/components/ui/fieldStyles";
 import clsx from "clsx";
 
 interface PasswordFieldProps {
@@ -71,17 +77,26 @@ export const PasswordField = ({
 
   const toggleVisibility = () => setIsVisible(!isVisible);
 
+  /*
+   * This was FIELD_BASE written out by hand, character for character, except
+   * for the focus: a full-strength red ring, which is how fieldStyles marks
+   * an error. Focusing the password box on sign-in looked like being told the
+   * password was wrong.
+   *
+   * pr-12 stays because the show/hide button sits inside the box.
+   */
   const inputClasses = clsx(
-    "block w-full px-3 py-2 md:px-4 md:py-3 pr-12 border rounded-lg text-sm md:text-base outline-none transition-colors focus:ring-2 focus:ring-primary focus:border-transparent bg-white",
-    error ? "border-red-500" : "border-gray-300",
-    disabled && "bg-gray-100 cursor-not-allowed"
+    FIELD_BASE,
+    "pr-12",
+    fieldBorder(!!error),
+    disabled && FIELD_DISABLED
   );
 
   return (
     <div className="flex flex-col gap-1 mb-4">
       <label
         htmlFor={inputId}
-        className="block text-sm text-text-muted mb-1.5 md:mb-2 font-medium"
+        className={FIELD_LABEL}
       >
         {label}
       </label>

@@ -22,6 +22,7 @@ import ConfirmDialog from "./ConfirmDialog";
 import { REMOVE_POST_CONFIRM } from "./confirmCopy";
 import { useToaster } from "@/components/ui/Toaster";
 import { formatDate } from "@/lib/date-utils";
+import { ADMIN_PANEL_SURFACE } from "@/components/ui/panelStyles";
 
 interface Props {
   postId: string;
@@ -58,7 +59,7 @@ const AdminCommunityPostDetail = ({ postId }: Props) => {
       <div className="max-w-3xl mx-auto space-y-6">
         <div className="h-5 w-32 bg-gray-100 rounded animate-shimmer" />
         <div className="h-8 w-2/3 bg-gray-100 rounded animate-shimmer" />
-        <div className="bg-white rounded-2xl border border-gray-200/80 p-6 space-y-3">
+        <div className={`${ADMIN_PANEL_SURFACE} p-6 space-y-3`}>
           <div className="h-4 w-1/3 bg-gray-100 rounded animate-shimmer" />
           <div className="h-3 w-2/3 bg-gray-100 rounded animate-shimmer" />
         </div>
@@ -95,7 +96,7 @@ const AdminCommunityPostDetail = ({ postId }: Props) => {
         }
       />
 
-      <section className="bg-white rounded-2xl border border-gray-200/80 shadow-[0_1px_2px_rgba(15,23,42,0.04)] p-5 md:p-6">
+      <section className={`${ADMIN_PANEL_SURFACE} shadow-[0_1px_2px_rgba(15,23,42,0.04)] p-5 md:p-6`}>
         <h2 className="text-base font-semibold text-gray-900">Details</h2>
         <p className="text-xs text-gray-500 mt-0.5 mb-5">
           Once a fuller community model lands, the post body, comments, and

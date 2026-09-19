@@ -1,4 +1,5 @@
 import { Header } from "@/components/ui/Header";
+import { PANEL_SURFACE } from "@/components/ui/panelStyles";
 
 /**
  * Route-level loading state: the page is server-rendered, so this shows only
@@ -21,7 +22,7 @@ export default function JobsLoading() {
           {Array.from({ length: 6 }).map((_, i) => (
             <div
               key={i}
-              className="bg-white border border-gray-200 rounded-lg md:rounded-xl p-4 md:p-6 flex flex-col gap-3"
+              className={`${PANEL_SURFACE} p-4 md:p-6 flex flex-col gap-3`}
               aria-hidden="true"
             >
               <div className="h-5 md:h-6 w-[55%] bg-gray-200 rounded animate-shimmer" />

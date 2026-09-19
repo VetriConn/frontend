@@ -162,8 +162,10 @@ Use this checklist when reviewing pull requests that involve responsive design c
 - [ ] Transition effects for feedback
 
 ### Cards
+- [ ] Surface comes from `PANEL_SURFACE`, not spelled out in the markup
 - [ ] Responsive padding: `p-4 md:p-6`
-- [ ] Responsive border radius: `rounded-lg md:rounded-xl`
+- [ ] Border radius is not responsive: reject any new `rounded-lg md:rounded-xl`
+- [ ] Admin screens use `ADMIN_PANEL_SURFACE`, which is meant to differ
 - [ ] Content follows typography patterns
 - [ ] Proper spacing between card elements
 

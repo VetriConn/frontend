@@ -8,6 +8,7 @@ import {
   HiOutlineTrash,
 } from "react-icons/hi2";
 import { Education } from "@/types/api";
+import { PANEL_SURFACE } from "./panelStyles";
 
 interface EducationCardProps {
   education: Education[];
@@ -40,7 +41,7 @@ export const EducationCard: React.FC<EducationCardProps> = ({
   return (
     <div
       id="education-card"
-      className="bg-white rounded-lg md:rounded-xl border border-gray-200 p-4 md:p-6"
+      className={`${PANEL_SURFACE} p-4 md:p-6`}
     >
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-2">

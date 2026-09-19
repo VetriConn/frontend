@@ -22,6 +22,7 @@ import {
   HiOutlineChevronLeft,
   HiOutlineChevronRight,
 } from "react-icons/hi2";
+import { ADMIN_PANEL_SURFACE } from "@/components/ui/panelStyles";
 
 // ─── Page header ─────────────────────────────────────────────────────────────
 
@@ -132,7 +133,8 @@ export const AdminTablePanel = ({
 }: AdminTablePanelProps) => (
   <section
     className={clsx(
-      "bg-white rounded-2xl border border-gray-200/80 shadow-[0_1px_2px_rgba(15,23,42,0.04)] overflow-hidden",
+      ADMIN_PANEL_SURFACE,
+      "shadow-[0_1px_2px_rgba(15,23,42,0.04)] overflow-hidden",
       className,
     )}
   >
@@ -369,7 +371,7 @@ export const AdminStatCard = ({
   /** Small trend note under the value (dashboard cards). */
   delta?: { value: string; positive?: boolean };
 }) => (
-  <div className="bg-white rounded-2xl border border-gray-200/80 p-5 shadow-[0_1px_2px_rgba(15,23,42,0.04)] hover:shadow-[0_8px_24px_-12px_rgba(15,23,42,0.15)] transition-shadow">
+  <div className={`${ADMIN_PANEL_SURFACE} p-5 shadow-[0_1px_2px_rgba(15,23,42,0.04)] hover:shadow-[0_8px_24px_-12px_rgba(15,23,42,0.15)] transition-shadow`}>
     <div className="flex items-start justify-between gap-3">
       <div className="min-w-0">
         <p className="text-[0.8125rem] font-medium text-gray-500">{label}</p>
@@ -536,7 +538,7 @@ export const AdminNotFound = ({
   backLabel: string;
 }) => (
   <div className="max-w-2xl mx-auto py-10">
-    <div className="bg-white rounded-2xl border border-gray-200/80 shadow-[0_1px_2px_rgba(15,23,42,0.04)] p-10 text-center">
+    <div className={`${ADMIN_PANEL_SURFACE} shadow-[0_1px_2px_rgba(15,23,42,0.04)] p-10 text-center`}>
       <h1 className="text-base font-semibold text-gray-900">{title}</h1>
       <p className="mt-1 text-sm text-gray-500">{description}</p>
       <Link

@@ -157,7 +157,7 @@ export const DashboardSkeleton: React.FC = () => (
       </div>
 
       {/* Find Your Next Opportunity Card */}
-      <div className="bg-white rounded-lg md:rounded-xl border border-gray-200 p-4 md:p-6 mb-4 md:mb-6">
+      <div className={`${PANEL_SURFACE} p-4 md:p-6 mb-4 md:mb-6`}>
         <TextSkeleton variant="h3" width="192px" className="md:w-60 mb-2" />
         <TextSkeleton variant="small" width="224px" className="md:w-72 mb-4 md:mb-6" />
         <div className="flex flex-col md:flex-row md:flex-wrap gap-3 md:gap-4 md:items-end">
@@ -178,7 +178,7 @@ export const DashboardSkeleton: React.FC = () => (
       </div>
 
       {/* Complete Your Profile Card */}
-      <div className="bg-white rounded-lg md:rounded-xl border border-gray-200 p-4 md:p-6 mb-4 md:mb-6">
+      <div className={`${PANEL_SURFACE} p-4 md:p-6 mb-4 md:mb-6`}>
         <div className="flex items-start gap-3 md:gap-4">
           <ImageSkeleton 
             aspectRatio="1" 
@@ -220,7 +220,7 @@ export const RecommendedJobsSkeleton: React.FC = () => (
     {/* Job Cards Grid */}
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
       {[...Array(8)].map((_, i) => (
-        <div key={i} className="bg-white rounded-lg md:rounded-xl border border-gray-200 p-4 md:p-5 flex flex-col justify-between min-h-[200px] md:min-h-[220px]">
+        <div key={i} className={`${PANEL_SURFACE} p-4 md:p-5 flex flex-col justify-between min-h-[200px] md:min-h-[220px]`}>
           <div>
             <TextSkeleton variant="body" width="90%" className="mb-3" />
             <TextSkeleton variant="small" width="70%" className="mb-2" />
@@ -279,7 +279,7 @@ export const JobDetailSkeleton: React.FC = () => (
 
         {/* Sidebar skeleton */}
         <div className="w-full lg:w-80 shrink-0">
-          <div className="bg-white border border-gray-200 rounded-lg md:rounded-xl p-4 md:p-6">
+          <div className={`${PANEL_SURFACE} p-4 md:p-6`}>
             <TextSkeleton variant="h3" width="112px" className="mb-4 md:mb-5" />
             <div className="space-y-4 mb-6">
               {[...Array(4)].map((_, i) => (

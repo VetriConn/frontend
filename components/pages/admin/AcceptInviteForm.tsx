@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { HiOutlineShieldCheck } from "react-icons/hi2";
 import { acceptAdminInvite } from "@/hooks/useAdminInviteAcceptance";
 import { useToaster } from "@/components/ui/Toaster";
+import { ADMIN_PANEL_SURFACE } from "@/components/ui/panelStyles";
 
 interface AcceptInviteFormProps {
   token: string;
@@ -47,7 +48,7 @@ const AcceptInviteForm = ({ token }: AcceptInviteFormProps) => {
 
   return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
-      <div className="w-full max-w-md bg-white rounded-2xl border border-gray-200/80 shadow-[0_8px_24px_-12px_rgba(15,23,42,0.15)] overflow-hidden">
+      <div className={`w-full max-w-md ${ADMIN_PANEL_SURFACE} shadow-[0_8px_24px_-12px_rgba(15,23,42,0.15)] overflow-hidden`}>
         <div className="px-6 pt-6 pb-4 border-b border-gray-100 flex items-start gap-3">
           <div className="w-11 h-11 rounded-xl bg-primary/10 text-primary ring-1 ring-primary/15 flex items-center justify-center shrink-0">
             <HiOutlineShieldCheck className="w-6 h-6" />

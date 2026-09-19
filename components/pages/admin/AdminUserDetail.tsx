@@ -23,6 +23,7 @@ import ConfirmDialog from "./ConfirmDialog";
 import { userStandingConfirm } from "./confirmCopy";
 import { useToaster } from "@/components/ui/Toaster";
 import { formatDate } from "@/lib/date-utils";
+import { ADMIN_PANEL_SURFACE } from "@/components/ui/panelStyles";
 
 interface Props {
   userId: string;
@@ -65,7 +66,7 @@ const AdminUserDetail = ({ userId }: Props) => {
       <div className="max-w-4xl mx-auto space-y-6">
         <div className="h-5 w-32 bg-gray-100 rounded animate-shimmer" />
         <div className="h-8 w-2/3 bg-gray-100 rounded animate-shimmer" />
-        <div className="bg-white rounded-2xl border border-gray-200/80 p-6 space-y-3">
+        <div className={`${ADMIN_PANEL_SURFACE} p-6 space-y-3`}>
           <div className="h-4 w-1/3 bg-gray-100 rounded animate-shimmer" />
           <div className="h-3 w-2/3 bg-gray-100 rounded animate-shimmer" />
           <div className="h-3 w-1/2 bg-gray-100 rounded animate-shimmer" />
@@ -102,7 +103,7 @@ const AdminUserDetail = ({ userId }: Props) => {
         }
       />
 
-      <section className="bg-white rounded-2xl border border-gray-200/80 shadow-[0_1px_2px_rgba(15,23,42,0.04)] p-5 md:p-6">
+      <section className={`${ADMIN_PANEL_SURFACE} shadow-[0_1px_2px_rgba(15,23,42,0.04)] p-5 md:p-6`}>
         <div className="flex items-start justify-between gap-3 mb-5">
           <div>
             <h2 className="text-base font-semibold text-gray-900">Overview</h2>

@@ -14,6 +14,7 @@ import {
   HiOutlineBriefcase,
 } from "react-icons/hi2";
 import { useAdminOverview } from "@/hooks/useAdminOverview";
+import { ADMIN_PANEL_SURFACE } from "@/components/ui/panelStyles";
 
 
 type ActivityStatus = "pending" | "approved" | "rejected";
@@ -122,7 +123,7 @@ const AdminDashboard = () => {
       </div>
 
       {/* Recent activity */}
-      <section className="bg-white rounded-2xl border border-gray-200/80 shadow-[0_1px_2px_rgba(15,23,42,0.04)] overflow-hidden">
+      <section className={`${ADMIN_PANEL_SURFACE} shadow-[0_1px_2px_rgba(15,23,42,0.04)] overflow-hidden`}>
         <header className="px-5 md:px-6 py-4 flex items-center justify-between border-b border-gray-100">
           <div>
             <h2 className="text-base md:text-lg font-semibold text-gray-900">

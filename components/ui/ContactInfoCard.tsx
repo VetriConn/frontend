@@ -6,6 +6,7 @@ import {
   HiOutlineMapPin,
   HiOutlinePencilSquare,
 } from "react-icons/hi2";
+import { PANEL_SURFACE } from "./panelStyles";
 
 interface ContactInfoCardProps {
   phoneNumber?: string;
@@ -23,7 +24,7 @@ export const ContactInfoCard: React.FC<ContactInfoCardProps> = ({
   return (
     <div
       id="contact-info-card"
-      className="bg-white rounded-lg md:rounded-xl border border-gray-200 p-4 md:p-6"
+      className={`${PANEL_SURFACE} p-4 md:p-6`}
     >
       <div className="flex items-start justify-between mb-4">
         <div className="flex items-center gap-2">

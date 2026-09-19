@@ -19,6 +19,7 @@ import {
 import { AdminPageHeader } from "./AdminTablePanel";
 import { useToaster } from "@/components/ui/Toaster";
 import { formatRelativeTime } from "@/lib/date-utils";
+import { ADMIN_PANEL_SURFACE } from "@/components/ui/panelStyles";
 
 const ICONS: Record<
   AdminNotificationType,
@@ -187,7 +188,7 @@ const AdminNotifications = () => {
         }
       />
 
-      <section className="bg-white rounded-2xl border border-gray-200/80 shadow-[0_1px_2px_rgba(15,23,42,0.04)] overflow-hidden">
+      <section className={`${ADMIN_PANEL_SURFACE} shadow-[0_1px_2px_rgba(15,23,42,0.04)] overflow-hidden`}>
         {isLoading ? (
           <ul className="divide-y divide-gray-100">
             {Array.from({ length: 5 }).map((_, i) => (

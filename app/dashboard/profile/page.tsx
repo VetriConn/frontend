@@ -38,6 +38,7 @@ import {
   uploadDirectToCloudinary,
 } from "@/lib/api";
 import { useToaster } from "@/components/ui/Toaster";
+import { PANEL_SURFACE } from "@/components/ui/panelStyles";
 import { AuthGuard } from "@/components/auth/AuthGuard";
 import { WorkExperience, Education, UserDocument } from "@/types/api";
 import { HiOutlineBriefcase, HiOutlinePencilSquare } from "react-icons/hi2";
@@ -764,7 +765,7 @@ export default function ProfilePage() {
 
             {/* Professional Info Card */}
             <div id="professional-info-card">
-              <div className="bg-white rounded-lg md:rounded-xl border border-gray-200 p-4 md:p-6">
+              <div className={`${PANEL_SURFACE} p-4 md:p-6`}>
                 <div className="flex items-center justify-between mb-4">
                   <div className="flex items-center gap-2">
                     <HiOutlineBriefcase className="w-5 h-5 text-red-500" />

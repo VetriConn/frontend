@@ -26,6 +26,7 @@ import {
 import { useToaster } from "@/components/ui/Toaster";
 import ConfirmDialog from "./ConfirmDialog";
 import { formatFullDateTime } from "@/lib/date-utils";
+import { ADMIN_PANEL_SURFACE } from "@/components/ui/panelStyles";
 
 interface AdminJobDetailProps {
   jobId: string;
@@ -203,7 +204,7 @@ const AdminJobDetail = ({ jobId, onChanged }: AdminJobDetailProps) => {
             <div className="h-3 w-full bg-gray-100 rounded animate-shimmer" />
             <div className="h-3 w-5/6 bg-gray-100 rounded animate-shimmer" />
           </div>
-          <div className="bg-white rounded-2xl border border-gray-200/80 p-6 space-y-3">
+          <div className={`${ADMIN_PANEL_SURFACE} p-6 space-y-3`}>
             <div className="h-5 w-1/2 bg-gray-100 rounded animate-shimmer" />
             <div className="h-10 w-full bg-gray-100 rounded animate-shimmer" />
           </div>
@@ -449,7 +450,7 @@ const AdminJobDetail = ({ jobId, onChanged }: AdminJobDetailProps) => {
         </article>
 
         {/* Decision sidebar */}
-        <aside className="bg-white rounded-2xl border border-gray-200/80 shadow-[0_1px_2px_rgba(15,23,42,0.04)] p-5 md:p-6 lg:sticky lg:top-20">
+        <aside className={`${ADMIN_PANEL_SURFACE} shadow-[0_1px_2px_rgba(15,23,42,0.04)] p-5 md:p-6 lg:sticky lg:top-20`}>
           <h2 className="text-base font-semibold text-gray-900">
             Admin Decision
           </h2>

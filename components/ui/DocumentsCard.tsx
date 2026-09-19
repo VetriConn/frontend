@@ -8,6 +8,7 @@ import {
 } from "react-icons/hi2";
 import { UserDocument } from "@/types/api";
 import { formatDate } from "@/lib/date-utils";
+import { PANEL_SURFACE } from "./panelStyles";
 
 interface DocumentsCardProps {
   documents: UserDocument[];
@@ -47,7 +48,7 @@ export const DocumentsCard: React.FC<DocumentsCardProps> = ({
   return (
     <div
       id="documents-card"
-      className="bg-white rounded-lg md:rounded-xl border border-gray-200 p-4 md:p-6"
+      className={`${PANEL_SURFACE} p-4 md:p-6`}
     >
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-2">

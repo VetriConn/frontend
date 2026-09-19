@@ -8,6 +8,7 @@ import {
   HiOutlineChevronRight,
   HiOutlineClipboardDocument,
 } from "react-icons/hi2";
+import { PANEL_SURFACE } from "./panelStyles";
 
 interface QuickAction {
   label: string;
@@ -68,7 +69,7 @@ export const QuickActionsCard: React.FC<QuickActionsCardProps> = ({
     },
   ];
   return (
-    <div className="bg-white rounded-lg md:rounded-xl border border-gray-200 p-4 md:p-6 hidden lg:block">
+    <div className={`${PANEL_SURFACE} p-4 md:p-6 hidden lg:block`}>
       <div className="flex-1">
         <h3 className="text-lg md:text-xl font-bold text-gray-900 mb-4">
           Quick Actions

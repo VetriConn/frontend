@@ -10,6 +10,7 @@ import { HiOutlineRectangleGroup } from "react-icons/hi2";
 import { searchSkills, ALL_SKILLS } from "@/lib/skills-data";
 import { useAnchoredMenu } from "@/hooks/useAnchoredMenu";
 import { FIELD_LABEL } from "./fieldStyles";
+import { PANEL_SURFACE } from "./panelStyles";
 
 // ─── Types ──────────────────────────────────────────────────────────────────────
 
@@ -53,7 +54,7 @@ function SkillTag({
 
 export const SkillsCard: React.FC<SkillsCardProps> = ({ skills, onEdit }) => {
   return (
-    <div className="bg-white rounded-lg md:rounded-xl border border-gray-200 p-4 md:p-6">
+    <div className={`${PANEL_SURFACE} p-4 md:p-6`}>
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
           <HiOutlineRectangleGroup className="w-5 h-5 md:w-6 md:h-6 text-red-500" />

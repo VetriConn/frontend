@@ -2,6 +2,7 @@
 import React from "react";
 import Link from "next/link";
 import { HiArrowRight, HiXMark } from "react-icons/hi2";
+import { PANEL_SURFACE } from "./panelStyles";
 
 interface CompleteProfileCardProps {
   completed: number;
@@ -21,7 +22,7 @@ export const CompleteProfileCard: React.FC<CompleteProfileCardProps> = ({
     // A slim single-line nudge — title, inline progress, action, and a dismiss.
     // The full reminder lives permanently on the profile page, so the dashboard
     // only needs the lightest prompt. Wraps at narrow widths or scaled text.
-    <div className="bg-white rounded-lg md:rounded-xl border border-gray-200 px-4 py-3 mb-6">
+    <div className={`${PANEL_SURFACE} px-4 py-3 mb-6`}>
       <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
         <span className="text-sm md:text-base font-semibold text-gray-900 whitespace-nowrap">
           Complete your profile
@@ -64,7 +65,7 @@ export const CompleteProfileCard: React.FC<CompleteProfileCardProps> = ({
 
 export const ReadyToApplyCard: React.FC = () => {
   return (
-    <div className="bg-white rounded-lg md:rounded-xl border border-gray-200 p-4 md:p-6 mb-6">
+    <div className={`${PANEL_SURFACE} p-4 md:p-6 mb-6`}>
       <div className="flex items-start gap-3 md:gap-4">
         <div className="w-10 h-10 md:w-12 md:h-12 rounded-full bg-red-50 flex items-center justify-center flex-shrink-0">
           <svg

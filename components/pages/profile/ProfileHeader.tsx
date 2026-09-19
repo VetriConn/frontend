@@ -13,6 +13,7 @@ import {
   JobSeekingStatusBadge,
   type JobSeekingStatus,
 } from "@/components/ui/JobSeekingStatusBadge";
+import { PANEL_SURFACE } from "@/components/ui/panelStyles";
 
 // The badge and its statuses live in one place now — this file and
 // ProfilePreviewDialog each carried their own copy, already disagreeing about
@@ -71,7 +72,7 @@ export const ProfileHeader: React.FC<ProfileHeaderProps> = ({
       </div>
 
       {/* Profile Card */}
-      <div className="bg-white rounded-lg md:rounded-xl border border-gray-200 p-4 md:p-6">
+      <div className={`${PANEL_SURFACE} p-4 md:p-6`}>
         <div className="flex flex-col sm:flex-row gap-5">
           {/* Avatar with camera overlay */}
           <div className="shrink-0 flex justify-center sm:justify-start">

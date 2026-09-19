@@ -435,16 +435,15 @@ className="touch-target"
 
 ### Card Pattern
 
+Padding, type and shadow are responsive. The surface is not: `PANEL_SURFACE`
+from `components/ui/panelStyles.ts` carries one radius at every width. This
+page used to show `rounded-lg md:rounded-xl` here, which is why that variant
+kept reappearing in new cards; the majority pattern, plain `rounded-xl`, won.
+
 ```tsx
-<div className="
-  bg-white
-  border border-gray-200
-  rounded-lg md:rounded-xl
-  p-4 md:p-6
-  shadow-sm
-  hover:shadow-md
-  transition-shadow
-">
+import { PANEL_SURFACE } from "@/components/ui/panelStyles";
+
+<div className={`${PANEL_SURFACE} p-4 md:p-6 shadow-sm hover:shadow-md transition-shadow`}>
   <h3 className="text-lg md:text-xl font-semibold mb-2 md:mb-3">
     Card Title
   </h3>
@@ -453,6 +452,9 @@ className="touch-target"
   </p>
 </div>
 ```
+
+Admin screens use `ADMIN_PANEL_SURFACE` instead. That divergence is deliberate
+and documented in the token itself.
 
 ### Form Input Pattern
 

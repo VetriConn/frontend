@@ -117,16 +117,21 @@ For comprehensive responsive patterns, see [RESPONSIVE_PATTERNS.md](./RESPONSIVE
 
 ### Card Component
 
+The surface lives in `components/ui/panelStyles.ts`, not in the markup. Import
+`PANEL_SURFACE` and add the padding the card needs. The radius does not change
+across breakpoints: an earlier `rounded-lg md:rounded-xl` was retired in favour
+of the plain `rounded-xl` the other ninety-seven panels already used.
+
 ```tsx
-<div className="
-  bg-white
-  border border-gray-200
-  rounded-lg md:rounded-xl
-  p-4 md:p-6
-">
+import { PANEL_SURFACE } from "@/components/ui/panelStyles";
+
+<div className={`${PANEL_SURFACE} p-4 md:p-6`}>
   {/* Card content */}
 </div>
 ```
+
+The admin area has its own surface, `ADMIN_PANEL_SURFACE`, from the same file.
+It is intentionally different and is not a variant to normalise away.
 
 ### Form Input
 

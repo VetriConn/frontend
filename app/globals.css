@@ -398,12 +398,33 @@ html.high-contrast .bg-primary {
   }
 }
 
-/* Keyboard focus is visible everywhere by default. Components with their own
-   ring keep it; anything unstyled falls back to this outline instead of to
-   nothing. Mouse focus (:focus without :focus-visible) stays quiet. */
-:focus-visible {
-  outline: 2px solid var(--color-primary);
-  outline-offset: 2px;
+@layer base {
+  /* Keyboard focus is visible everywhere by default. Components with their
+     own ring keep it; anything unstyled falls back to this outline instead of
+     to nothing. Mouse focus (:focus without :focus-visible) stays quiet.
+
+     Not red, for the reason already written out at `@utility form-input`
+     above: red is how this product marks an error, so a red focus ring made
+     every field you touched look rejected. #6b7280 is the colour that block
+     and fieldStyles both focus to, so focus now looks like one decision.
+
+     In @layer base, and that half matters more than the colour. Tailwind
+     declares `@layer theme, base, components, utilities`, and an UNLAYERED
+     author rule outranks every layered one before specificity is consulted —
+     so while this sat at top level it beat `outline-none` everywhere, and the
+     67 outline-none/outline-hidden utilities across the codebase were inert.
+     Components that had opted out still got this outline and drew a second
+     indicator inside their own. That is why removing the red from the
+     utilities in #91 changed nothing: the utilities never had a say.
+
+     Two things in this file are evidence of that override rather than of a
+     design: the .search-bar-input block below, whose comment describes this
+     outline being clipped into "two red vertical lines", and form-input's own
+     `outline: 2px solid transparent`, which was a dead no-op. */
+  :focus-visible {
+    outline: 2px solid #6b7280;
+    outline-offset: 2px;
+  }
 }
 
 /* Composite search bar: the shell draws focus via focus-within. The inner

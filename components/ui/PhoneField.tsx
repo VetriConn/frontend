@@ -4,6 +4,8 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import clsx from "clsx";
 import PhoneInput, {
+  getCountries,
+  getCountryCallingCode,
   isValidPhoneNumber,
   parsePhoneNumber,
 } from "react-phone-number-input";
@@ -36,6 +38,56 @@ import { RequiredMark } from "./RequiredMark";
 
 /** Platform is Canada-first; the picker still offers every country. */
 export const DEFAULT_PHONE_COUNTRY = "CA" as const;
+
+/**
+ * The country a value belongs to, when the value is too incomplete to say.
+ *
+ * `react-phone-number-input` picks the flag by asking whether the value
+ * could belong to `defaultCountry`. A stored value of "+234" and nothing
+ * else could not belong to CA, so it selected no country and drew the
+ * generic globe: the field showed a Nigerian calling code under a "no
+ * country" icon while the signup wizard, whose value starts "+1", showed a
+ * flag correctly. Same component, two different-looking controls.
+ *
+ * Profiles hold values like that because the number was only part typed, so
+ * this is not an edge case to wave away. Reading the calling code off the
+ * front of the value answers the question the library gave up on.
+ *
+ * The tie-break is the part that does the work. E.164 calling codes are
+ * prefix-free, so the longest-match loop below never actually has to choose
+ * between two different-length codes; it is there so the function does not
+ * depend on that staying true. What DOES happen constantly is several
+ * countries sharing one code, which is the whole of the NANP on "+1", and
+ * there the app default is preferred so "+1" stays Canadian instead of
+ * becoming whichever country happens to sort first.
+ *
+ * Note this reads the COUNTRY CALLING code only, never an area code:
+ * Trinidad is "+1", not "+1868", so a Canadian default is the honest answer
+ * for any "+1" value until enough digits exist to parse properly.
+ */
+export function countryFromValue(
+  value: string | undefined,
+): typeof DEFAULT_PHONE_COUNTRY | ReturnType<typeof getCountries>[number] {
+  const trimmed = (value ?? "").trim();
+  if (!trimmed.startsWith("+")) return DEFAULT_PHONE_COUNTRY;
+
+  const digits = trimmed.slice(1).replace(/\D/g, "");
+  if (!digits) return DEFAULT_PHONE_COUNTRY;
+
+  let best: ReturnType<typeof getCountries>[number] | undefined;
+  let bestLength = 0;
+  for (const country of getCountries()) {
+    const code = getCountryCallingCode(country);
+    if (!digits.startsWith(code) || code.length < bestLength) continue;
+    if (code.length > bestLength) {
+      best = country;
+      bestLength = code.length;
+    } else if (country === DEFAULT_PHONE_COUNTRY) {
+      best = country;
+    }
+  }
+  return best ?? DEFAULT_PHONE_COUNTRY;
+}
 
 /** Box styling used when a caller doesn't supply its own. Mirrors FormField. */
 const DEFAULT_BOX_CLASSES =
@@ -371,6 +423,8 @@ const ChevronIcon = ({ className }: { className?: string }) => (
 );
 
 export interface PhoneInputControlProps {
+  /** Fires when focus leaves the number input, for validate-on-blur forms. */
+  onBlur?: () => void;
   id?: string;
   name?: string;
   value: string;
@@ -391,6 +445,7 @@ export const PhoneInputControl = ({
   name,
   value,
   onChange,
+  onBlur,
   disabled = false,
   placeholder,
   invalid = false,
@@ -417,9 +472,10 @@ export const PhoneInputControl = ({
       flagUrl="/flags/{XX}.svg"
       international
       countryCallingCodeEditable={false}
-      defaultCountry={DEFAULT_PHONE_COUNTRY}
+      defaultCountry={countryFromValue(value)}
       value={toE164(value)}
       onChange={(next) => onChange(next ?? "")}
+      onBlur={onBlur}
       disabled={disabled}
       placeholder={placeholder}
       className={wrapperClasses}
@@ -440,6 +496,8 @@ export interface PhoneFieldProps {
   name: string;
   value: string;
   onChange: (value: string) => void;
+  /** Fires when focus leaves the number input, for validate-on-blur forms. */
+  onBlur?: () => void;
   helperText?: string;
   error?: string;
   required?: boolean;
@@ -453,6 +511,7 @@ export const PhoneField = ({
   name,
   value,
   onChange,
+  onBlur,
   helperText,
   error,
   required = false,
@@ -482,6 +541,7 @@ export const PhoneField = ({
         name={name}
         value={value}
         onChange={onChange}
+        onBlur={onBlur}
         disabled={disabled}
         placeholder={placeholder}
         invalid={!!error}

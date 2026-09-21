@@ -51,7 +51,7 @@ export const ProfileCompletionCard: React.FC<ProfileCompletionCardProps> = ({
                   ? "bg-emerald-500"
                   : percentage >= 60
                     ? "bg-amber-500"
-                    : "bg-red-600"
+                    : "bg-primary"
               }`}
               style={{ width: `${percentage}%` }}
               role="progressbar"
@@ -75,7 +75,7 @@ export const ProfileCompletionCard: React.FC<ProfileCompletionCardProps> = ({
               className={`flex items-center gap-2 text-sm w-full text-left ${
                 item.isComplete
                   ? "text-gray-500 cursor-default"
-                  : "text-gray-700 hover:text-red-600 cursor-pointer"
+                  : "text-gray-700 hover:text-primary cursor-pointer"
               }`}
               disabled={item.isComplete}
               aria-label={`${item.label} - ${item.isComplete ? "completed" : "incomplete, click to navigate"}`}
@@ -108,7 +108,7 @@ export const ProfileCompletionCard: React.FC<ProfileCompletionCardProps> = ({
                 if (first) handleSectionClick(first.field, first.scrollTo);
               }
             }}
-            className="w-full px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors font-medium text-sm cursor-pointer"
+            className="w-full px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-hover transition-colors font-medium text-sm cursor-pointer"
             aria-label="Complete your profile"
           >
             Complete profile

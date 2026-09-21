@@ -166,7 +166,7 @@ const [isSubmitting, setIsSubmitting] = useState(false);
 ```tsx
 <button
   type="submit"
-  className="bg-primary text-white py-3 px-7 rounded-[10px] text-sm hover:bg-red-700 disabled:bg-gray-300 w-full"
+  className="bg-primary text-white py-3 px-7 rounded-[10px] text-sm hover:bg-primary-hover disabled:bg-gray-300 w-full"
   disabled={isSubmitting}
 >
   {isSubmitting ? "Signing In..." : "Sign In"}

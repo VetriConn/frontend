@@ -244,7 +244,7 @@ export default function DataExportPanel() {
                 // archive through this tab's memory for no reason.
                 <a
                   href={dataExportDownloadUrl(record.id)}
-                  className="inline-flex items-center gap-2 px-4 py-2.5 bg-primary text-white font-semibold text-sm rounded-lg hover:bg-red-700 transition-colors"
+                  className="inline-flex items-center gap-2 px-4 py-2.5 bg-primary text-white font-semibold text-sm rounded-lg hover:bg-primary-hover transition-colors"
                 >
                   <HiOutlineArrowDownTray className="w-4 h-4" />
                   Download archive

@@ -50,11 +50,41 @@ export const ContactInfoEditForm: React.FC<ContactInfoEditFormProps> = ({
   const [formData, setFormData] = useState<ContactInfoFormData>(initialData);
   const [errors, setErrors] = useState<Partial<Record<keyof ContactInfoFormData, string>>>({});
 
+  /**
+   * Has the reader finished with the phone field at least once?
+   *
+   * A phone number is invalid for almost all of the time it takes to type
+   * one, so checking it on every keystroke marked the field red from the
+   * first digit and only cleared at the last. Worse, prefill can seed the
+   * field with a bare calling code like "+234", which meant the form opened
+   * already showing an error against something the reader had not touched.
+   *
+   * The red itself was correct: this is genuinely not a usable number. It
+   * was the timing that was wrong. So the check waits for blur, and only
+   * then follows every keystroke, which is what lets the error clear the
+   * moment the number becomes valid instead of making the reader leave the
+   * field again to find out.
+   *
+   * Phone only. City and country are checked on change and stay that way:
+   * their rule is "not empty", which is satisfied by the first character, so
+   * it never accuses anybody of a mistake they are halfway through fixing.
+   */
+  const [phoneTouched, setPhoneTouched] = useState(false);
+
   // Phone number validation — delegates to libphonenumber metadata so that
   // a number is checked against its country's real numbering plan rather
   // than a digit-count heuristic.
   const validatePhoneNumber = (phone: string): string | undefined =>
     validatePhone(phone, { required: true });
+
+  /** Check the number now that the reader has moved on from it. */
+  const handlePhoneBlur = () => {
+    setPhoneTouched(true);
+    setErrors((prev) => ({
+      ...prev,
+      phone_number: validatePhoneNumber(formData.phone_number),
+    }));
+  };
 
   // Required field validation
   const validateRequired = (value: string, fieldName: string): string | undefined => {
@@ -79,7 +109,9 @@ export const ContactInfoEditForm: React.FC<ContactInfoEditFormProps> = ({
     // Validate the field
     let error: string | undefined;
     if (field === "phone_number") {
-      error = validatePhoneNumber(value);
+      // Silent until blur, then live, so a correction clears the error as
+      // soon as it is a correction.
+      error = phoneTouched ? validatePhoneNumber(value) : undefined;
     } else if (field === "city") {
       // City tracks the region: required only where the region is (CA/US), so
       // a country with an optional province/state doesn't demand a city.
@@ -108,6 +140,10 @@ export const ContactInfoEditForm: React.FC<ContactInfoEditFormProps> = ({
   const validateAll = (): boolean => {
     const newErrors: Partial<Record<keyof ContactInfoFormData, string>> = {};
 
+    // Submitting counts as finishing with the field, so the error shows even
+    // if the reader never focused it. Without this a prefilled bad number
+    // could block a save with nothing on screen explaining why.
+    setPhoneTouched(true);
     const phoneError = validatePhoneNumber(formData.phone_number);
     if (phoneError) newErrors.phone_number = phoneError;
 
@@ -151,6 +187,7 @@ export const ContactInfoEditForm: React.FC<ContactInfoEditFormProps> = ({
         name="phone_number"
         value={formData.phone_number}
         onChange={(value) => handleFieldChange("phone_number", value)}
+        onBlur={handlePhoneBlur}
         error={errors.phone_number}
         required
         helperText="Select your country, then enter your number"

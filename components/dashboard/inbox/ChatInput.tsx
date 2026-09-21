@@ -100,7 +100,7 @@ export function ChatInput({
           />
         </div>
         <button
-          className="w-10 h-10 bg-primary text-white rounded-xl flex items-center justify-center hover:bg-red-700 transition-all shadow-sm disabled:opacity-50 disabled:cursor-not-allowed shrink-0"
+          className="w-10 h-10 bg-primary text-white rounded-xl flex items-center justify-center hover:bg-primary-hover transition-all shadow-sm disabled:opacity-50 disabled:cursor-not-allowed shrink-0"
           aria-label="Send message"
           onClick={onSend}
           disabled={

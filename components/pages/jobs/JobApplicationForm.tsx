@@ -247,35 +247,102 @@ export default function JobApplicationForm({
   );
 
   /**
-   * One entry per section rendered, which was not true before.
+   * The sections this form has, derived once.
    *
-   * This returned four booleans while the form rendered six cards, and the
-   * bar read "{n} of 4 sections completed" — so it could sit at "4 of 4"
-   * with the screening questions unanswered and the last section untouched.
-   * A progress bar that reaches the end before the form does is worse than
-   * no progress bar.
+   * Everything about a section used to be written down by hand in three
+   * separate places that had to be kept in agreement: the numeral on the
+   * card, an entry in a fixed six-element `sectionComplete` array, and the
+   * review list. Only one of the three shrank when a section was absent, so
+   * they drifted, and the drift was visible on screen: an untouched form
+   * reported "3 of 6 sections completed" above a page showing a single tick,
+   * numbered 1, 2, 3, 4, 6.
+   *
+   * Three separate bugs summed to that 3. Screening scored a point for a
+   * card that is NOT RENDERED when the job asks nothing. Additional
+   * Information scored a point from a hardcoded `true`, while the card
+   * itself was rendered with `complete={false}` three hundred lines away, so
+   * the bar and the card disagreed about the same section. Only Personal
+   * Information was honestly complete, from profile prefill.
+   *
+   * The previous fix caused this one. It found the bar reading "4 of 4" over
+   * six cards and padded the array to six rather than deriving it, and the
+   * two invented values are what padding required.
+   *
+   * So: one list. `counts` and being rendered are separate properties, which
+   * is what lets Additional Information appear and be numbered without
+   * inflating a denominator it can never satisfy.
    */
-  const sectionComplete = useMemo(() => {
-    const s1 =
+  const sections = useMemo(() => {
+    const contactReady =
       formData.fullName.trim() !== "" &&
       formData.email.trim() !== "" &&
-      formData.phone.trim() !== "";
-    const s2 =
-      formData.relevantExperience.trim() !== "" &&
-      formData.selectedSkills.length > 0;
-    const s3 =
-      formData.earliestStartDate !== "" &&
-      formData.preferredSchedule !== "" &&
-      formData.workLocationPreference !== "";
-    const s4 = formData.resume !== null || formData.resumeDocumentId !== "";
-    // Screening only counts when the job asks something; an absent section
-    // must not hold the bar back.
-    const s5 = screeningQuestions.length === 0 || !requiredScreeningMissing;
-    // The last section is genuinely optional — complete by default, so it
-    // never reads as unfinished work.
-    const s6 = true;
-    return [s1, s2, s3, s4, s5, s6];
+      // Not merely non-empty. Prefill can leave a bare calling code like
+      // "+234" here, which passes a blank check and is not a phone number:
+      // the form then ticked Personal Information over an unusable field.
+      //
+      // Counted by digits rather than with validatePhone, and the reason is
+      // not the one you would guess. PhoneField.lazy does export a safe
+      // validatePhone, so importing it would NOT drag libphonenumber into
+      // the initial bundle.
+      //
+      // It is that the lazy validator is async-backed: until its chunk
+      // lands it runs only a required-empty check and reports any non-empty
+      // value as fine. Driving the progress bar off it would show "1 of 4"
+      // on load and then drop to "0 of 4" when the chunk arrived, which is
+      // precisely the kind of number-that-changes-by-itself this bar was
+      // just fixed for. A digit count is synchronous and stable.
+      //
+      // It is a completeness test, not a validity test: the longest country
+      // calling code is three digits, so anything at eight or more has a
+      // national number attached. Real validation stays in the field.
+      formData.phone.replace(/\D/g, "").length >= 8;
+    const entries = [
+      { id: "contact", counts: true, complete: contactReady },
+      {
+        id: "experience",
+        counts: true,
+        complete:
+          formData.relevantExperience.trim() !== "" &&
+          formData.selectedSkills.length > 0,
+      },
+      {
+        id: "availability",
+        counts: true,
+        complete:
+          formData.earliestStartDate !== "" &&
+          formData.preferredSchedule !== "" &&
+          formData.workLocationPreference !== "",
+      },
+      {
+        id: "resume",
+        counts: true,
+        complete:
+          formData.resume !== null || formData.resumeDocumentId !== "",
+      },
+      // Only exists when the employer asks something. Absent means absent:
+      // not rendered, not numbered, and not in the denominator.
+      ...(screeningQuestions.length > 0
+        ? [
+            {
+              id: "screening",
+              counts: true,
+              complete: !requiredScreeningMissing,
+            },
+          ]
+        : []),
+      // Rendered and numbered, never counted. It is optional, so there is no
+      // state in which it is outstanding work, and a term that is the same
+      // for every application carries no information.
+      { id: "extra", counts: false, complete: false },
+    ];
+    return entries.map((entry, index) => ({ ...entry, number: index + 1 }));
   }, [formData, screeningQuestions.length, requiredScreeningMissing]);
+
+  /** The one section with this id. Ids are literals above, so it is present. */
+  const section = (id: string) => sections.find((s) => s.id === id)!;
+
+  const countedSections = sections.filter((s) => s.counts);
+  const completedCount = countedSections.filter((s) => s.complete).length;
 
   /** Résumés already on the profile, offered instead of a fresh upload. */
   const profileResumes = useMemo(() => storedResumes(userProfile), [userProfile]);
@@ -285,8 +352,6 @@ export default function JobApplicationForm({
     const pool = jobSkillPool(job.skills);
     return pool.length > 0 ? pool : FALLBACK_SKILLS;
   }, [job.skills]);
-
-  const completedCount = sectionComplete.filter(Boolean).length;
 
   /**
    * The last look. Not a wizard step — the form stays one page filled in any
@@ -677,10 +742,10 @@ export default function JobApplicationForm({
           {/* ─── Section 1: Personal Information ─── */}
           <SectionCard
             anchorId="section-contact"
-            number={1}
+            number={section("contact").number}
             title="Personal Information"
             subtitle="Please verify your contact details are correct."
-            complete={sectionComplete[0]}
+            complete={section("contact").complete}
           >
             <div className="space-y-5">
               {/* Paired two-up on desktop: these are short single-line fields
@@ -781,10 +846,10 @@ export default function JobApplicationForm({
           {/* ─── Section 2: Work Experience & Skills ─── */}
           <SectionCard
             anchorId="section-experience"
-            number={2}
+            number={section("experience").number}
             title="Work Experience & Skills"
             subtitle="Tell us about your relevant experience and skills."
-            complete={sectionComplete[1]}
+            complete={section("experience").complete}
           >
             <div className="space-y-6">
               <div>
@@ -932,10 +997,10 @@ export default function JobApplicationForm({
           {/* ─── Section 3: Availability & Preferences ─── */}
           <SectionCard
             anchorId="section-availability"
-            number={3}
+            number={section("availability").number}
             title="Availability & Preferences"
             subtitle="Let us know when you can start and your schedule preferences."
-            complete={sectionComplete[2]}
+            complete={section("availability").complete}
           >
             <div className="space-y-5">
               <DatePickerField
@@ -970,10 +1035,10 @@ export default function JobApplicationForm({
           {/* ─── Section 4: Upload Your Resume ─── */}
           <SectionCard
             anchorId="section-resume"
-            number={4}
+            number={section("resume").number}
             title="Upload Your Resume"
             subtitle="Share your resume so we can learn more about your background."
-            complete={sectionComplete[3]}
+            complete={section("resume").complete}
           >
             {/* Something already on the profile, before asking for a file.
                 Most applicants have uploaded a résumé once and should not have
@@ -1134,10 +1199,10 @@ export default function JobApplicationForm({
           {screeningQuestions.length > 0 && (
             <SectionCard
               anchorId="section-screening"
-            number={5}
+              number={section("screening").number}
               title="Screening Questions"
               subtitle="A few quick questions from the employer."
-              complete={!requiredScreeningMissing}
+              complete={section("screening").complete}
             >
               <div className="space-y-6">
                 {screeningQuestions.map((q) => (
@@ -1155,7 +1220,7 @@ export default function JobApplicationForm({
           {/* ─── Section 6: Additional Information ─── */}
           <SectionCard
             anchorId="section-extra"
-            number={6}
+            number={section("extra").number}
             title="Additional Information"
             subtitle="Optional: Share anything else you'd like us to know."
             complete={false}
@@ -1306,14 +1371,14 @@ export default function JobApplicationForm({
                   Application Progress
                 </span>
                 <span className="text-xs text-gray-400">
-                  {completedCount} of {sectionComplete.length} sections completed
+                  {completedCount} of {countedSections.length} sections completed
                 </span>
               </div>
               <div className="w-full h-2 bg-gray-100 rounded-full overflow-hidden">
                 <div
                   className="h-full bg-primary rounded-full transition-all duration-500"
                   style={{
-                    width: `${(completedCount / sectionComplete.length) * 100}%`,
+                    width: `${(completedCount / countedSections.length) * 100}%`,
                   }}
                 />
               </div>

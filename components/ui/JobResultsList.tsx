@@ -96,7 +96,7 @@ const ErrorState = ({
     {onRetry && (
       <button
         onClick={onRetry}
-        className="inline-flex items-center gap-2 bg-primary text-white py-3 px-6 rounded-lg text-sm font-medium hover:bg-red-700 transition-colors"
+        className="inline-flex items-center gap-2 bg-primary text-white py-3 px-6 rounded-lg text-sm font-medium hover:bg-primary-hover transition-colors"
       >
         <HiOutlineArrowPath className="text-sm" aria-hidden="true" />
         Try Again

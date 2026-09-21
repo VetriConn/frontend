@@ -272,7 +272,7 @@ export default async function JobsPage({
                 alt="Professional working at desk"
                 fill
                 className="object-cover w-full h-auto"
-                sizes="(max-width: 850px) 50vw, 25vw"
+                sizes="(max-width: 56.25em) 50vw, 25vw"
                 priority
                 style={{ aspectRatio: "4/3" }}
               />
@@ -285,7 +285,7 @@ export default async function JobsPage({
                 alt="Experienced professional collaborating"
                 fill
                 className="object-cover w-full h-auto"
-                sizes="(max-width: 850px) 50vw, 25vw"
+                sizes="(max-width: 56.25em) 50vw, 25vw"
                 style={{ aspectRatio: "4/3" }}
               />
             </div>
@@ -297,7 +297,7 @@ export default async function JobsPage({
                 alt="Veteran in professional setting"
                 fill
                 className="object-cover w-full h-auto"
-                sizes="(max-width: 850px) 80vw, 30vw"
+                sizes="(max-width: 56.25em) 80vw, 30vw"
                 loading="lazy"
                 style={{ aspectRatio: "4/3" }}
               />

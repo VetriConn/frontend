@@ -47,7 +47,7 @@ export const AboutSection = ({ id }: AboutSectionProps) => (
             alt={aboutImage.alt}
             fill
             className="object-cover w-full h-full transition-transform duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-[1.03] motion-reduce:transition-none motion-reduce:group-hover:scale-100"
-            sizes="(max-width: 850px) 100vw, 50vw"
+            sizes="(max-width: 56.25em) 100vw, 50vw"
             loading="lazy"
           />
         </Reveal>

@@ -17,6 +17,7 @@ import {
 } from "@/hooks/useAdminUsers";
 import type {
   AdminMemberCountsDetail,
+  AdminMemberProfile,
   AdminMemberSignIn,
 } from "@/lib/api/admin";
 import {
@@ -35,6 +36,7 @@ import ConfirmDialog from "./ConfirmDialog";
 import { userStandingConfirm } from "./confirmCopy";
 import { useToaster } from "@/components/ui/Toaster";
 import { formatDate, formatDateTime } from "@/lib/date-utils";
+import { describeAgent } from "@/lib/user-agent";
 import { ADMIN_PANEL_SURFACE } from "@/components/ui/panelStyles";
 
 interface Props {
@@ -138,60 +140,89 @@ const yesNo = (value?: boolean) => (value ? "Yes" : "No");
 const COUNT_TILES: {
   key: keyof AdminMemberCountsDetail;
   label: string;
-  href?: (userId: string) => string;
+  /**
+   * The list this count belongs to. Not per-member: none of these pages
+   * filters by user, so the link opens the whole queue and the reader
+   * narrows it. It took a `userId` it discarded, which promised a filtered
+   * deep link that does not exist.
+   */
+  href?: string;
 }[] = [
   { key: "applications", label: "Applications sent" },
   { key: "applications_received", label: "Applications received" },
-  { key: "postings", label: "Jobs posted", href: () => "/admin/jobs" },
-  { key: "companies", label: "Companies", href: () => "/admin/companies" },
+  { key: "postings", label: "Jobs posted", href: "/admin/jobs" },
+  { key: "companies", label: "Companies", href: "/admin/companies" },
   { key: "drafts", label: "Application drafts" },
   { key: "tracker_entries", label: "Tracker entries" },
   { key: "saved_jobs", label: "Saved jobs" },
   { key: "saved_searches", label: "Saved searches" },
   { key: "messages", label: "Messages" },
   { key: "community_posts", label: "Community posts" },
-  { key: "reports_filed", label: "Reports filed", href: () => "/admin/reports" },
-  { key: "support_tickets", label: "Support tickets", href: () => "/admin/support" },
+  { key: "reports_filed", label: "Reports filed", href: "/admin/reports" },
+  { key: "support_tickets", label: "Support tickets", href: "/admin/support" },
 ];
 
-const SIGN_IN_LABELS: Record<string, string> = {
+/**
+ * The four values User.status actually takes, and what each one means for the
+ * one action this page offers.
+ *
+ * Read as a boolean this page said "Active" for a member who had closed their
+ * own account and offered to Reinstate them, which would have undone the
+ * closure. Suspension is the only standing this screen lifts: "deactivated"
+ * is the member's own decision, and "pending" is an unverified email, neither
+ * of which is a moderation outcome.
+ */
+const STANDING: Record<
+  string,
+  { label: string; tone: "emerald" | "rose" | "amber" | "gray"; action?: "suspend" | "reinstate" }
+> = {
+  active: { label: "Active", tone: "emerald", action: "suspend" },
+  suspended: { label: "Suspended", tone: "rose", action: "reinstate" },
+  pending: { label: "Pending verification", tone: "amber", action: "suspend" },
+  deactivated: { label: "Deactivated", tone: "gray" },
+};
+
+const standingOf = (status?: string) =>
+  STANDING[status ?? ""] ?? { label: status ?? "Unknown", tone: "gray" as const };
+
+type NotificationPrefs = NonNullable<
+  NonNullable<AdminMemberProfile["notification_preferences"]>
+>;
+
+/** Every switch in the member's one notification set, in the schema's order. */
+const NOTIFICATION_FIELDS: { key: keyof NotificationPrefs; label: string }[] = [
+  { key: "email_notifications", label: "Email notifications" },
+  { key: "job_alerts", label: "Job alerts" },
+  { key: "application_updates", label: "Application updates" },
+  { key: "posting_updates", label: "Posting updates" },
+  { key: "new_applications", label: "New applications" },
+  { key: "messages", label: "Message emails" },
+  { key: "community_updates", label: "Community updates" },
+];
+
+/**
+ * Labels for both tables on this page: the sign-in history and the moderation
+ * list below Standing. No rate-limit entry, because the limiter runs before
+ * anything has authenticated and its rows carry no user, so the server cannot
+ * return one however it is labelled here.
+ */
+const EVENT_LABELS: Record<string, string> = {
   LOGIN_SUCCESS: "Signed in",
   LOGIN_FAILURE: "Failed sign in",
   LOGOUT: "Signed out",
   PASSWORD_CHANGE: "Password changed",
   PASSWORD_RESET_COMPLETE: "Password reset",
   EMAIL_CHANGED: "Email changed",
-  RATE_LIMIT_EXCEEDED: "Rate limit hit",
   USER_SUSPENDED: "Suspended",
   USER_REINSTATED: "Reinstated",
 };
 
 const eventLabel = (eventType: string) =>
-  SIGN_IN_LABELS[eventType] ??
+  EVENT_LABELS[eventType] ??
   eventType
     .toLowerCase()
     .replace(/_/g, " ")
     .replace(/^./, (c) => c.toUpperCase());
-
-/** "Chrome 152 on macOS", or nothing rather than a wall of user agent. */
-const describeAgent = (agent?: string): string => {
-  if (!agent) return "";
-  const browser = /(Edg|OPR|Chrome|Firefox|Safari)\/(\d+)/.exec(agent);
-  const platform = /Windows/.test(agent)
-    ? "Windows"
-    : /Mac OS X|Macintosh/.test(agent)
-      ? "macOS"
-      : /Android/.test(agent)
-        ? "Android"
-        : /iPhone|iPad/.test(agent)
-          ? "iOS"
-          : /Linux/.test(agent)
-            ? "Linux"
-            : "";
-  if (!browser) return platform;
-  const name = ({ Edg: "Edge", OPR: "Opera" } as Record<string, string>)[browser[1]] ?? browser[1];
-  return `${name} ${browser[2]}${platform ? ` on ${platform}` : ""}`;
-};
 
 const SignInRow = ({ event }: { event: AdminMemberSignIn }) => {
   // Colour rather than a pill. The label already reads "Failed sign in", and
@@ -232,7 +263,8 @@ const AdminUserDetail = ({ userId }: Props) => {
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [busy, setBusy] = useState(false);
 
-  const isSuspending = member?.status === "active";
+  const standing = standingOf(member?.status);
+  const isSuspending = standing.action === "suspend";
 
   const handleConfirm = async (reason?: string) => {
     if (!member) return;
@@ -293,6 +325,12 @@ const AdminUserDetail = ({ userId }: Props) => {
   const lastSuspension = member.moderation?.find(
     (row) => row.eventType === "USER_SUSPENDED",
   );
+  // Both arrays hold real uploads and members have files in either, so the
+  // list is the union. Reading only `documents` reported "Not provided" for
+  // everyone, because the profile UI writes to `attachments`.
+  const files = [...(profile?.documents ?? []), ...(profile?.attachments ?? [])]
+    .map((file) => file.name)
+    .filter(Boolean);
 
   return (
     <div className="max-w-5xl mx-auto space-y-6">
@@ -306,16 +344,21 @@ const AdminUserDetail = ({ userId }: Props) => {
             : "Member account"
         }
         actions={
-          <button
-            onClick={() => setConfirmOpen(true)}
-            className={`inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold bg-white border ${
-              isSuspending
-                ? "border-rose-200 text-rose-600 hover:bg-rose-50"
-                : "border-gray-200 text-gray-700 hover:bg-gray-50"
-            }`}
-          >
-            {isSuspending ? "Suspend User" : "Reinstate User"}
-          </button>
+          // A deactivated account gets no button. Suspending somebody who has
+          // already left is meaningless, and reinstating them would reverse
+          // their own decision to go.
+          standing.action ? (
+            <button
+              onClick={() => setConfirmOpen(true)}
+              className={`inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold bg-white border ${
+                isSuspending
+                  ? "border-rose-200 text-rose-600 hover:bg-rose-50"
+                  : "border-gray-200 text-gray-700 hover:bg-gray-50"
+              }`}
+            >
+              {isSuspending ? "Suspend User" : "Reinstate User"}
+            </button>
+          ) : undefined
         }
       />
 
@@ -324,9 +367,7 @@ const AdminUserDetail = ({ userId }: Props) => {
         title="Identity"
         description="Who this is and how to reach them."
         aside={
-          <StatusPill tone={suspended ? "rose" : "emerald"}>
-            {suspended ? "Suspended" : "Active"}
-          </StatusPill>
+          <StatusPill tone={standing.tone}>{standing.label}</StatusPill>
         }
       >
         <FieldGrid>
@@ -360,7 +401,7 @@ const AdminUserDetail = ({ userId }: Props) => {
             "Not provided" for inapplicable things trains the reader to skim
             past the ones that do matter. */}
         <FieldGrid>
-          <Field label="Status" value={suspended ? "Suspended" : "Active"} />
+          <Field label="Status" value={standing.label} />
           {suspended && (
             <>
               <Field
@@ -446,17 +487,11 @@ const AdminUserDetail = ({ userId }: Props) => {
           />
           <Field label="Skills" value={profile?.skills?.length ?? 0} />
           {/* Names, not links. Whether somebody uploaded a resume answers the
-              support question; reading it is not this screen's business. */}
+              support question; reading it is not this screen's business, and
+              the server does not send a url for it to link to. */}
           <Field
             label="Documents"
-            value={
-              profile?.documents?.length
-                ? profile.documents
-                    .map((doc) => doc.name)
-                    .filter(Boolean)
-                    .join(", ")
-                : undefined
-            }
+            value={files.length ? files.join(", ") : undefined}
           />
         </FieldGrid>
       </Section>
@@ -483,7 +518,7 @@ const AdminUserDetail = ({ userId }: Props) => {
               return tile.href && value > 0 ? (
                 <Link
                   key={tile.key}
-                  href={tile.href(member._id)}
+                  href={tile.href}
                   className={`${base} hover:bg-white hover:border-gray-300 transition-colors`}
                 >
                   {body}
@@ -542,24 +577,18 @@ const AdminUserDetail = ({ userId }: Props) => {
               value={formatDate(member.marketing_consent_at)}
             />
           )}
-          <Field
-            label="Email notifications"
-            value={notifications ? yesNo(notifications.email_notifications) : undefined}
-          />
-          <Field
-            label="Job alerts"
-            value={notifications ? yesNo(notifications.job_alerts) : undefined}
-          />
-          <Field
-            label="Application updates"
-            value={
-              notifications ? yesNo(notifications.application_updates) : undefined
-            }
-          />
-          <Field
-            label="Message emails"
-            value={notifications ? yesNo(notifications.messages) : undefined}
-          />
+          {/* All seven, not the four that happen to apply to a job seeker.
+              This section answers "why am I getting these emails", and a
+              partial list answers it wrongly: one account both applies and
+              posts, so the poster-side switches are as likely to be the
+              cause as the seeker-side ones. */}
+          {NOTIFICATION_FIELDS.map(({ key, label }) => (
+            <Field
+              key={key}
+              label={label}
+              value={notifications ? yesNo(notifications[key]) : undefined}
+            />
+          ))}
           {/* Status and dates, never a download link. Whether their export
               worked is a support question; its contents are not. */}
           <Field

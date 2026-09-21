@@ -31,14 +31,19 @@ export type AdminRole = "super_admin" | "reviewer" | "moderator" | "billing";
 
 // ─── Member moderation (GET/POST /api/v1/admin/members) ──────────────────────
 
-/** One row of the member's own security history. */
+/**
+ * One row of the member's own security history.
+ *
+ * No metadata: the server does not send it. It is a Mixed field whose
+ * contents vary by event type, and one of them carries the member's previous
+ * email address.
+ */
 export interface AdminMemberSignIn {
   _id: string;
   eventType: string;
   ipAddress?: string;
   userAgent?: string;
   timestamp: string;
-  metadata?: { reason?: string };
 }
 
 /** One moderation action taken against this member, by an admin. */
@@ -82,7 +87,14 @@ export interface AdminMemberProfile {
   industry?: string;
   years_of_experience?: string;
   skills?: string[];
-  documents?: { name?: string; document_type?: string }[];
+  /**
+   * Names only, and no url: the server does not send one. Both arrays are
+   * real and hold different uploads — everything added through the profile
+   * UI lands in `attachments`, while `documents` comes from the resume route
+   * — so the page shows the union rather than picking one and reporting
+   * "none" for members whose files are in the other.
+   */
+  documents?: { name?: string }[];
   attachments?: { name?: string }[];
   notification_preferences?: {
     email_notifications?: boolean;
@@ -124,8 +136,6 @@ export interface AdminMember {
   last_export?: {
     status: string;
     requested_at?: string;
-    completed_at?: string;
-    expires_at?: string;
   } | null;
 }
 

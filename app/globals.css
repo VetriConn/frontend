@@ -56,8 +56,33 @@
 }
 
 /* Max-width breakpoints for mobile-first design */
-@custom-variant mobile (@media (max-width: 850px));
-@custom-variant tablet (@media (max-width: 768px));
+/*
+ * In em, not px, and that is the whole point.
+ *
+ * The navbar is what these thresholds have to clear, and its content is sized
+ * in rem: at the default 16px it needs 871px (logo 180 + links 359 + the 2rem
+ * gap before the auth group + auth 253 + 48 of padding). Raise the browser's
+ * default font to 20px and that content grows to roughly 1033px, but a px
+ * breakpoint does not move — so the bar broke at a 960px viewport, with
+ * "Home" flush against the maple leaf and "Contact Us" wrapped onto a second
+ * line. A px threshold guarding rem content only holds for readers who never
+ * touched their font size.
+ *
+ * em in a media query resolves against the browser's default font size, so
+ * these scale with exactly the setting that scales the content. 56.25em is
+ * 900px at the 16px default, and 1125px at 20px — still ahead of the 1033 the
+ * bar needs there.
+ *
+ * 900 rather than the old 850 because 850 did not clear 871 even at the
+ * default size: at 851, one pixel above the old collapse point, the gap
+ * between the logo and the first link measured 0.
+ *
+ * Shared with 22 other files, deliberately: a hamburger over a desktop-width
+ * content grid is the inconsistency this variant exists to prevent, so the
+ * nav and the page it sits on cross over together.
+ */
+@custom-variant mobile (@media (max-width: 56.25em));
+@custom-variant tablet (@media (max-width: 48em));
 
 @layer base {
   /* Tailwind v4's preflight leaves buttons on the default arrow cursor, so
@@ -373,12 +398,33 @@ html.high-contrast .bg-primary {
   }
 }
 
-/* Keyboard focus is visible everywhere by default. Components with their own
-   ring keep it; anything unstyled falls back to this outline instead of to
-   nothing. Mouse focus (:focus without :focus-visible) stays quiet. */
-:focus-visible {
-  outline: 2px solid var(--color-primary);
-  outline-offset: 2px;
+@layer base {
+  /* Keyboard focus is visible everywhere by default. Components with their
+     own ring keep it; anything unstyled falls back to this outline instead of
+     to nothing. Mouse focus (:focus without :focus-visible) stays quiet.
+
+     Not red, for the reason already written out at `@utility form-input`
+     above: red is how this product marks an error, so a red focus ring made
+     every field you touched look rejected. #6b7280 is the colour that block
+     and fieldStyles both focus to, so focus now looks like one decision.
+
+     In @layer base, and that half matters more than the colour. Tailwind
+     declares `@layer theme, base, components, utilities`, and an UNLAYERED
+     author rule outranks every layered one before specificity is consulted —
+     so while this sat at top level it beat `outline-none` everywhere, and the
+     67 outline-none/outline-hidden utilities across the codebase were inert.
+     Components that had opted out still got this outline and drew a second
+     indicator inside their own. That is why removing the red from the
+     utilities in #91 changed nothing: the utilities never had a say.
+
+     Two things in this file are evidence of that override rather than of a
+     design: the .search-bar-input block below, whose comment describes this
+     outline being clipped into "two red vertical lines", and form-input's own
+     `outline: 2px solid transparent`, which was a dead no-op. */
+  :focus-visible {
+    outline: 2px solid #6b7280;
+    outline-offset: 2px;
+  }
 }
 
 /* Composite search bar: the shell draws focus via focus-within. The inner
@@ -480,7 +526,11 @@ html.high-contrast .bg-primary {
    stroke stretched into a bar across the whole screen. Rows get a drawer-style
    mark instead: a short red bar on the leading edge plus the red label, with
    the active label indented to sit beside its bar. */
-@media (max-width: 850px) {
+/* Same threshold as the `mobile` variant above, and it has to stay that way:
+   this styles the links once they are drawer rows, so if it trails the
+   variant the rows appear first and keep the word-width stroke, which is the
+   full-width bar described above. */
+@media (max-width: 56.25em) {
   .nav-brush::after {
     display: none;
   }

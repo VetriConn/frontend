@@ -80,7 +80,7 @@ export const BenefitsSection = ({ id }: BenefitsSectionProps) => (
                   alt={benefit.imageAlt}
                   fill
                   className="object-cover w-full h-full transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-[1.03] motion-reduce:transition-none motion-reduce:transform-none"
-                  sizes="(max-width: 850px) 100vw, 50vw"
+                  sizes="(max-width: 56.25em) 100vw, 50vw"
                   loading={idx === 0 ? "eager" : "lazy"}
                   
                 />

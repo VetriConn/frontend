@@ -46,7 +46,7 @@ export const HeroCarousel = () => {
 
   return (
         <div
-          className="group relative w-full lg:w-[50%] max-w-3xl h-[clamp(260px,46vh,420px)] lg:h-[min(620px,66vh)]"
+          className="group relative w-full xl:w-[50%] max-w-3xl h-[clamp(260px,46vh,420px)] xl:h-[min(620px,66vh)]"
           onMouseEnter={() => setIsHoverPaused(true)}
           onMouseLeave={() => setIsHoverPaused(false)}
           role="region"
@@ -106,7 +106,7 @@ export const HeroCarousel = () => {
                   alt={image.alt}
                   fill
                   className="object-cover w-full h-full"
-                  sizes="(max-width: 850px) 92vw, 40vw"
+                  sizes="(max-width: 80em) 92vw, 40vw"
                   priority={index === 0}
                   loading={index === 0 ? "eager" : "lazy"}
                 />

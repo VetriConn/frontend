@@ -142,7 +142,7 @@ const CompanyCard = ({
                 Manage company →
               </Link>
               <Link
-                href={`/companies/${company._id}`}
+                href={`/dashboard/companies/${company._id}/profile`}
                 className="inline-flex min-h-[44px] items-center text-sm font-medium text-gray-600 no-underline hover:text-gray-900 hover:underline"
               >
                 View public profile

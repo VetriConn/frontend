@@ -8,7 +8,15 @@ import DottedBox from "@/public/images/dotted_box.svg";
 // column (HeroCarousel) hydrates.
 export const HeroSection = () => {
   return (
-    <header className="bg-white relative overflow-hidden flex items-center py-12 md:py-16 lg:min-h-[82vh]">
+    // The two-column treatment starts at xl, not lg.
+    //
+    // The copy column is 47% of the container, so at lg (1024) it is 411px
+    // holding a 52px headline - four lines for six words, beside a paragraph
+    // squeezed to three. Widening did not fix it either: the headline is
+    // clamped against vw, so type and column grew together and it stayed four
+    // lines at 1280. Stacked, the same headline gets the full ~912px and
+    // reads in two. The split now waits until the column can carry it.
+    <header className="bg-white relative overflow-hidden flex items-center py-12 md:py-16 xl:min-h-[82vh]">
       {/* Decorative dots */}
 
       {/* Top-left, in the band above the headline. It previously hung off the
@@ -20,8 +28,8 @@ export const HeroSection = () => {
         aria-hidden="true"
       />
 
-      <div className="flex flex-col lg:flex-row items-center justify-between gap-10 lg:gap-16 relative w-full max-w-[1600px] mx-auto px-[5%] md:px-10 lg:px-14 lg:text-left text-center">
-        <div className="w-full lg:w-[47%] max-w-2xl relative">
+      <div className="flex flex-col xl:flex-row items-center justify-between gap-10 xl:gap-16 relative w-full max-w-[1600px] mx-auto px-[5%] md:px-10 lg:px-14 xl:text-left text-center">
+        <div className="w-full xl:w-[47%] max-w-2xl relative">
           {/* One emphasis device. The words carried italic AND an underline AND
               a colour before - and the underline read as a link. */}
           <h1 className="font-lato text-[clamp(2.25rem,1.2rem+3.6vw,3.25rem)] xl:text-[clamp(2.5rem,1.2rem+3vw,4.25rem)] leading-[1.05] tracking-[-0.025em] font-bold text-text mb-6">
@@ -30,12 +38,12 @@ export const HeroSection = () => {
             <span className="text-primary">purposeful work</span>
           </h1>
 
-          <p className="font-open-sans text-gray-600 mb-7 max-w-[46ch] mx-auto lg:mx-0 text-base md:text-lg leading-relaxed">
+          <p className="font-open-sans text-gray-600 mb-7 max-w-[46ch] mx-auto xl:mx-0 text-base md:text-lg leading-relaxed">
             From careers to causes, we connect you to purposeful opportunities
             quickly, easily, and on your terms.
           </p>
 
-          <div className="flex flex-col sm:flex-row gap-3 md:gap-4 w-full lg:w-auto justify-center lg:justify-start">
+          <div className="flex flex-col sm:flex-row gap-3 md:gap-4 w-full xl:w-auto justify-center xl:justify-start">
             <Link
               href="/signup"
               className="inline-flex items-center justify-center gap-2 bg-primary text-white font-semibold rounded-full py-3.5 px-8 min-h-[52px] transition-colors shadow-sm hover:bg-primary-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:ring-offset-2 w-full sm:w-auto text-center group no-underline whitespace-nowrap"
@@ -57,8 +65,8 @@ export const HeroSection = () => {
               turn four plain words into four boxed UI objects competing with
               the CTAs; a tracked line reads as a caption and lets the buttons
               stay the loudest thing in the column. */}
-          <div className="mt-8 max-w-lg mx-auto lg:mx-0">
-            <p className="meta-list flex flex-wrap items-center justify-center lg:justify-start gap-y-1 text-[0.8125rem] font-semibold uppercase tracking-[0.08em] text-gray-500">
+          <div className="mt-8 max-w-lg mx-auto xl:mx-0">
+            <p className="meta-list flex flex-wrap items-center justify-center xl:justify-start gap-y-1 text-[0.8125rem] font-semibold uppercase tracking-[0.08em] text-gray-500">
               {["Part-time", "Full-time", "Volunteer", "Remote & on-site"].map(
                 (item) => (
                   <span key={item}>{item}</span>

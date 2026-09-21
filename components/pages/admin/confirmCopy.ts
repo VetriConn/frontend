@@ -57,7 +57,15 @@ export const userStandingConfirm = (suspending: boolean): ConfirmCopy =>
       }
     : {
         title: "Reinstate this user?",
-        description: "The user will regain access immediately.",
+        description:
+          "The user will regain access immediately. The reason is recorded " +
+          "and the user can see it in their own data export.",
+        // Reversing another admin's call is the case a second admin is most
+        // likely to have to account for, and for a long time it was the one
+        // action here that recorded nothing. Suspending asked why and
+        // reinstating did not.
+        reasonLabel: "Reason",
+        reasonPlaceholder: "Why is this being reversed?",
         confirmLabel: "Reinstate User",
         tone: "neutral",
       };

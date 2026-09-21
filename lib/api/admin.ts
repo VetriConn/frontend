@@ -187,10 +187,13 @@ export async function adminSuspendMember(
   );
 }
 
-export async function adminReinstateMember(userId: string): Promise<void> {
+export async function adminReinstateMember(
+  userId: string,
+  reason?: string,
+): Promise<void> {
   await apiFetch<ApiEnvelope<unknown>>(
     `${API_BASE_URL}/api/v1/admin/members/${userId}/reinstate`,
-    { method: "POST" },
+    jsonRequest("POST", reason ? { reason } : {}),
   );
 }
 

@@ -102,8 +102,11 @@ export async function suspendAdminUser(
   await revalidateMemberViews();
 }
 
-export async function reinstateAdminUser(id: string): Promise<void> {
-  await adminReinstateMember(id);
+export async function reinstateAdminUser(
+  id: string,
+  reason?: string,
+): Promise<void> {
+  await adminReinstateMember(id, reason);
   await revalidateMemberViews();
 }
 

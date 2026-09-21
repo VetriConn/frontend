@@ -137,7 +137,7 @@ export default function ApplicationDraftsPage() {
                     </button>
                     <Link
                       href={`/jobs/${draft.jobId}?resumeDraft=true`}
-                      className="inline-flex items-center gap-2 bg-primary text-white px-5 py-2.5 rounded-lg font-semibold hover:bg-red-700 transition-all shadow-sm shadow-primary/20"
+                      className="inline-flex items-center gap-2 bg-primary text-white px-5 py-2.5 rounded-lg font-semibold hover:bg-primary-hover transition-all shadow-sm shadow-primary/20"
                     >
                       <HiOutlinePencilSquare className="w-4 h-4" />
                       Resume Application

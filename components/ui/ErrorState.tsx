@@ -30,7 +30,7 @@ export const ErrorState: React.FC<ErrorStateProps> = ({
         <h2 className="text-xl md:text-3xl font-semibold text-gray-700 mb-3 tablet:text-xl">{title}</h2>
           <p className="text-sm md:text-base text-gray-500 leading-relaxed mb-8 tablet:text-sm">{message}</p>
         {onRetry && (
-          <button className="inline-flex items-center gap-2 bg-primary text-white border-none py-3 px-6 rounded-lg text-sm font-medium cursor-pointer transition-all duration-200 hover:bg-red-700 hover:-translate-y-0.5 active:translate-y-0" onClick={onRetry}>
+          <button className="inline-flex items-center gap-2 bg-primary text-white border-none py-3 px-6 rounded-lg text-sm font-medium cursor-pointer transition-all duration-200 hover:bg-primary-hover hover:-translate-y-0.5 active:translate-y-0" onClick={onRetry}>
             <HiOutlineArrowPath className="w-4 h-4 md:w-5 md:h-5" /> Try Again
           </button>
         )}

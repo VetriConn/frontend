@@ -274,7 +274,7 @@ const AdminUserDetail = ({ userId }: Props) => {
         await suspendAdminUser(member._id, reason ?? "");
         showToast({ type: "success", title: "User suspended" });
       } else {
-        await reinstateAdminUser(member._id);
+        await reinstateAdminUser(member._id, reason);
         showToast({ type: "success", title: "User reinstated" });
       }
       // Refetch rather than patch: suspending writes a moderation row this

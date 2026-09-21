@@ -96,8 +96,23 @@ describe("ExternalJobsTable", () => {
     expect(await screen.findByText(/next scrape brings it back/i)).toBeInTheDocument();
     expect(deleteExternalJob).not.toHaveBeenCalled();
 
+    // Deleting a scraped listing is the one irreversible job action, so the
+    // dialog will not let it through until the admin says why. Clicking
+    // straight past the reason must do nothing.
     await user.click(screen.getByRole("button", { name: /^delete$/i }));
-    await waitFor(() => expect(deleteExternalJob).toHaveBeenCalledWith("job-1"));
+    expect(deleteExternalJob).not.toHaveBeenCalled();
+
+    await user.type(
+      screen.getByLabelText(/reason/i),
+      "source took the posting down",
+    );
+    await user.click(screen.getByRole("button", { name: /^delete$/i }));
+    await waitFor(() =>
+      expect(deleteExternalJob).toHaveBeenCalledWith(
+        "job-1",
+        "source took the posting down",
+      ),
+    );
   });
 
   it("searches by role, company or location", async () => {

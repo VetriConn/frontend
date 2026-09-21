@@ -513,8 +513,16 @@ export async function adminListExternalJobs(
 }
 
 /** Removes the listing and anything pointing at it. Not reversible. */
-export async function adminDeleteExternalJob(id: string): Promise<void> {
+export async function adminDeleteExternalJob(
+  id: string,
+  reason?: string,
+): Promise<void> {
+  // A body on a DELETE is unusual, and it is what the route's schema expects:
+  // the reason is optional there and defaults to an empty object, so sending
+  // nothing still works for any caller that has none.
   await apiFetch(`${API_BASE_URL}/api/v1/jobs/admin/external/${id}`, {
     method: "DELETE",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(reason ? { reason } : {}),
   });
 }

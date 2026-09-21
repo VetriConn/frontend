@@ -462,7 +462,11 @@ const AdminTeam = () => {
           confirmLabel={
             stepUp.kind === "suspend" ? "Suspend Admin" : "Reinstate"
           }
-          requireReason={stepUp.kind === "suspend"}
+          // Every action behind a step-up prompt is high risk by
+          // definition, including the reversals. Reinstating used to record
+          // nothing, so the trail could say why an account was suspended and
+          // never why it was let back in.
+          requireReason
           danger={stepUp.kind === "suspend"}
           busy={stepUpBusy}
           onClose={() => (stepUpBusy ? null : setStepUp(null))}

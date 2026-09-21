@@ -63,11 +63,11 @@ const ExternalJobsTable = () => {
   const jobs = data?.jobs ?? [];
   const isError = !!error;
 
-  const handleDelete = async () => {
+  const handleDelete = async (reason?: string) => {
     if (!deleting) return;
     setDialogBusy(true);
     try {
-      await adminDeleteExternalJob(deleting._id);
+      await adminDeleteExternalJob(deleting._id, reason);
       showToast({
         type: "success",
         title: "Listing removed",
@@ -212,6 +212,11 @@ const ExternalJobsTable = () => {
         // re-add it. Deleting is only durable for something the source has
         // itself taken down.
         description="It will be removed from the board along with any saved copies. If the source still lists it, the next scrape brings it back."
+        // The only irreversible job action, and the only one that never
+        // asked why. Rejecting a job, which can be appealed, has always
+        // taken a reason.
+        reasonLabel="Reason"
+        reasonPlaceholder="Why is this listing coming down?"
         confirmLabel="Delete"
         tone="danger"
         busy={dialogBusy}

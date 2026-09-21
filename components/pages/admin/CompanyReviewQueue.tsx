@@ -360,7 +360,11 @@ const CompanyReviewQueue = () => {
               : `${stepUp.company.name} can post jobs again.`
           }
           confirmLabel={stepUp.action === "suspend" ? "Suspend" : "Reinstate"}
-          requireReason={stepUp.action === "suspend"}
+          // Every action behind a step-up prompt is high risk by
+          // definition, including the reversals. Reinstating used to record
+          // nothing, so the trail could say why an account was suspended and
+          // never why it was let back in.
+          requireReason
           danger={stepUp.action === "suspend"}
           busy={stepUpBusy}
           onClose={() => (stepUpBusy ? null : setStepUp(null))}

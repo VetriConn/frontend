@@ -81,3 +81,30 @@ describe("confirm dialog copy", () => {
     expect(userStandingConfirm(false).tone).not.toBe("danger");
   });
 });
+
+/**
+ * Reversing another admin's call has to be accountable too.
+ *
+ * Suspending asked why from the start; reinstating asked nothing, so the
+ * trail could say why somebody lost access and never why they got it back.
+ * That asymmetry ran the whole length of the admin surface and it is the
+ * thing most likely to creep back, because a reinstate reads as the harmless
+ * half of the pair.
+ */
+describe("reversals record a reason", () => {
+  it("reinstating a user asks why, exactly as suspending does", () => {
+    const reinstate = userStandingConfirm(false);
+    expect(reinstate.reasonLabel).toBeTruthy();
+    expect(reinstate.reasonPlaceholder).toBeTruthy();
+  });
+
+  it("and both halves of the pair ask", () => {
+    for (const suspending of [true, false]) {
+      expect(userStandingConfirm(suspending).reasonLabel).toBeTruthy();
+    }
+  });
+
+  it("the reinstate copy tells the user the reason reaches them", () => {
+    expect(userStandingConfirm(false).description).toMatch(/data export/i);
+  });
+});

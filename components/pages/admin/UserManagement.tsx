@@ -71,7 +71,7 @@ const UserManagement = () => {
           description: `${target.full_name} cannot sign in.`,
         });
       } else {
-        await reinstateAdminUser(target.id);
+        await reinstateAdminUser(target.id, reason);
         showToast({
           type: "success",
           title: "User reinstated",

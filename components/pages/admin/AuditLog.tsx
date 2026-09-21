@@ -26,18 +26,7 @@ import {
   AdminLoadError,
   AdminPagination,
 } from "./AdminTablePanel";
-
-const formatTimestamp = (iso: string) => {
-  const d = new Date(iso);
-  if (Number.isNaN(d.getTime())) return iso;
-  return d.toLocaleString("en-US", {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-  });
-};
+import { formatDateTime } from "@/lib/date-utils";
 
 const renderMetadata = (meta?: AuditLogEntry["metadata"]) => {
   if (!meta) return null;
@@ -133,7 +122,7 @@ const AuditLog = () => {
                       {e.target?.label ?? "-"}
                     </AdminTableTd>
                     <AdminTableTd className="text-gray-600 tabular-nums">
-                      {formatTimestamp(e.createdAt)}
+                      {formatDateTime(e.createdAt)}
                     </AdminTableTd>
                   </AdminTableRow>
                 ))}

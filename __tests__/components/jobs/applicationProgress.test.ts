@@ -62,10 +62,13 @@ describe("apply form section list", () => {
     expect(code).not.toMatch(/\/\s*6\)\s*\*\s*100/);
   });
 
-  it("does not drag libphonenumber into the bundle for the phone check", () => {
-    // PhoneField.lazy exists to keep it out; importing the eager module's
-    // validator here would undo that for one boolean.
+  it("keeps the phone check synchronous", () => {
+    // Not a bundle concern: PhoneField.lazy exports a safe validatePhone.
+    // It is that the lazy validator reports any non-empty value as fine
+    // until its chunk lands, so the bar would read 1 of 4 and then drop to
+    // 0 of 4 on its own. The eager module must also stay unimported.
     expect(code).not.toMatch(/from "@\/components\/ui\/PhoneField"/);
+    expect(code).not.toContain('validatePhone');
     expect(code).toContain('from "@/components/ui/PhoneField.lazy"');
   });
 });

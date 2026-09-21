@@ -230,3 +230,66 @@ describe("ContactInfoEditForm", () => {
     });
   });
 });
+
+/**
+ * When the phone error is allowed to appear.
+ *
+ * A phone number is invalid for almost the whole time it takes to type one,
+ * so checking on every keystroke painted the field red from the first digit.
+ * Prefill made it worse: a stored bare calling code like "+234" meant the
+ * form opened already accusing the reader of a mistake in a field they had
+ * not touched. The red was right and the timing was wrong.
+ */
+describe("phone errors wait for the reader to finish", () => {
+  const partial: ContactInfoFormData = { ...baseData, phone_number: "+234" };
+
+  it("says nothing about a prefilled incomplete number on open", async () => {
+    render(<ContactInfoEditForm initialData={partial} />);
+    await screen.findByRole("textbox", { name: /Phone Number/ });
+    expect(screen.queryByText(/valid phone number/i)).not.toBeInTheDocument();
+  });
+
+  it("stays quiet while the number is being typed", async () => {
+    const user = userEvent.setup();
+    render(<ContactInfoEditForm initialData={{ ...baseData, phone_number: "" }} />);
+    const input = await screen.findByRole("textbox", { name: /Phone Number/ });
+
+    await user.type(input, "+1613555");
+    expect(screen.queryByText(/valid phone number/i)).not.toBeInTheDocument();
+  });
+
+  it("speaks up once focus leaves", async () => {
+    const user = userEvent.setup();
+    render(<ContactInfoEditForm initialData={partial} />);
+    const input = await screen.findByRole("textbox", { name: /Phone Number/ });
+
+    await user.click(input);
+    await user.tab();
+    expect(await screen.findByText(/valid phone number/i)).toBeInTheDocument();
+  });
+
+  it("clears as soon as the number is fixed, without another blur", async () => {
+    const user = userEvent.setup();
+    render(<ContactInfoEditForm initialData={partial} />);
+    const input = await screen.findByRole("textbox", { name: /Phone Number/ });
+
+    await user.click(input);
+    await user.tab();
+    expect(await screen.findByText(/valid phone number/i)).toBeInTheDocument();
+
+    // Back in the field, finish the number. The error must go immediately:
+    // making somebody leave the field again to learn they fixed it is the
+    // same fault in the other direction.
+    await user.clear(input);
+    await user.type(input, "+16135550178");
+    expect(screen.queryByText(/valid phone number/i)).not.toBeInTheDocument();
+  });
+
+  it("still blocks a save and explains why, even if never focused", async () => {
+    render(<ContactInfoEditForm initialData={partial} />);
+    await screen.findByRole("textbox", { name: /Phone Number/ });
+
+    expect(runValidate()).toBe(false);
+    expect(await screen.findByText(/valid phone number/i)).toBeInTheDocument();
+  });
+});

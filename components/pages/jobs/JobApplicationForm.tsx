@@ -280,14 +280,21 @@ export default function JobApplicationForm({
       // "+234" here, which passes a blank check and is not a phone number:
       // the form then ticked Personal Information over an unusable field.
       //
-      // Counted by digits rather than with validatePhone, deliberately. That
-      // helper lives in the eager PhoneField module, and this file imports
-      // the component from PhoneField.lazy precisely to keep libphonenumber
-      // out of the initial bundle. Importing the validator here would drag
-      // the whole library back in to answer a much smaller question than it
-      // is built for. Real validation still happens in the field itself.
-      // The longest calling code is three digits, so anything at eight or
-      // more has a national number attached.
+      // Counted by digits rather than with validatePhone, and the reason is
+      // not the one you would guess. PhoneField.lazy does export a safe
+      // validatePhone, so importing it would NOT drag libphonenumber into
+      // the initial bundle.
+      //
+      // It is that the lazy validator is async-backed: until its chunk
+      // lands it runs only a required-empty check and reports any non-empty
+      // value as fine. Driving the progress bar off it would show "1 of 4"
+      // on load and then drop to "0 of 4" when the chunk arrived, which is
+      // precisely the kind of number-that-changes-by-itself this bar was
+      // just fixed for. A digit count is synchronous and stable.
+      //
+      // It is a completeness test, not a validity test: the longest country
+      // calling code is three digits, so anything at eight or more has a
+      // national number attached. Real validation stays in the field.
       formData.phone.replace(/\D/g, "").length >= 8;
     const entries = [
       { id: "contact", counts: true, complete: contactReady },

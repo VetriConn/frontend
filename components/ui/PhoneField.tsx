@@ -423,6 +423,8 @@ const ChevronIcon = ({ className }: { className?: string }) => (
 );
 
 export interface PhoneInputControlProps {
+  /** Fires when focus leaves the number input, for validate-on-blur forms. */
+  onBlur?: () => void;
   id?: string;
   name?: string;
   value: string;
@@ -443,6 +445,7 @@ export const PhoneInputControl = ({
   name,
   value,
   onChange,
+  onBlur,
   disabled = false,
   placeholder,
   invalid = false,
@@ -472,6 +475,7 @@ export const PhoneInputControl = ({
       defaultCountry={countryFromValue(value)}
       value={toE164(value)}
       onChange={(next) => onChange(next ?? "")}
+      onBlur={onBlur}
       disabled={disabled}
       placeholder={placeholder}
       className={wrapperClasses}
@@ -492,6 +496,8 @@ export interface PhoneFieldProps {
   name: string;
   value: string;
   onChange: (value: string) => void;
+  /** Fires when focus leaves the number input, for validate-on-blur forms. */
+  onBlur?: () => void;
   helperText?: string;
   error?: string;
   required?: boolean;
@@ -505,6 +511,7 @@ export const PhoneField = ({
   name,
   value,
   onChange,
+  onBlur,
   helperText,
   error,
   required = false,
@@ -534,6 +541,7 @@ export const PhoneField = ({
         name={name}
         value={value}
         onChange={onChange}
+        onBlur={onBlur}
         disabled={disabled}
         placeholder={placeholder}
         invalid={!!error}

@@ -154,8 +154,13 @@ const CompanyProfile = ({
         </div>
 
         <div className="px-5 md:px-8 pb-6">
-          {/* Logo overlapping the banner, the way a profile photo does */}
-          <div className="-mt-12 md:-mt-16 mb-4">
+          {/* Logo overlapping the banner, the way a profile photo does.
+              relative z-10 is what makes it overlap rather than hide under:
+              the banner above is positioned, and a positioned element paints
+              in a later layer than its static siblings whatever the DOM order
+              says, so the negative margin pulled the tile up into the banner
+              and the banner drew straight over it - half the logo, measured. */}
+          <div className="relative z-10 -mt-12 md:-mt-16 mb-4">
             <div className="w-24 h-24 md:w-32 md:h-32 rounded-2xl bg-white border-4 border-white shadow-md flex items-center justify-center overflow-hidden">
               <div className="w-full h-full bg-gray-100 flex items-center justify-center">
                 {company.logo_url ? (

@@ -411,10 +411,16 @@ const JobDescriptor: React.FC<JobDescriptorProps> = ({
               <div>
                 {/* Only postings made under a vetted Company Page have a
                     profile to link to. Individual postings render as plain
-                    text, as before. */}
+                    text, as before.
+
+                    The profile lives in the dashboard and there is no public
+                    copy. A signed-out reader following this from a job
+                    listing hits AuthGuard and is sent to /signin carrying a
+                    redirect back here, so they land on the profile once they
+                    are in rather than on a dead end. */}
                 {posted_as === "company" && company_id ? (
                   <Link
-                    href={`/companies/${company_id}`}
+                    href={`/dashboard/companies/${company_id}/profile`}
                     className="text-base font-semibold text-gray-900 hover:text-primary no-underline"
                   >
                     {company_name}

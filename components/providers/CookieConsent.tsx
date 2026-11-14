@@ -48,8 +48,15 @@ export default function CookieConsent() {
     setVisible(false);
   };
 
+  /*
+   * Identical on both, and quiet. Equal prominence is the requirement, so
+   * the usual one-filled-one-outlined hierarchy is not available here; the
+   * way to make two equal buttons feel considered rather than unfinished is
+   * a subtle fill, a hairline ring and a real press state, which is what
+   * Clerk and Apple both do for paired neutral actions.
+   */
   const choiceButton =
-    "min-h-[44px] rounded-full border border-gray-300 bg-white px-8 font-open-sans text-sm font-semibold text-text transition-colors hover:border-primary hover:bg-primary/5 hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:ring-offset-2";
+    "min-h-[44px] rounded-full bg-gray-50 px-7 font-open-sans text-sm font-semibold text-text ring-1 ring-gray-900/10 transition-all duration-150 hover:bg-gray-100 hover:ring-gray-900/15 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:ring-offset-2";
 
   return (
     <div
@@ -58,17 +65,19 @@ export default function CookieConsent() {
       aria-labelledby="cookie-consent-title"
       className="fixed inset-x-0 bottom-0 z-[60] p-3 md:p-5"
     >
-      <div className="mx-auto max-w-4xl overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-[0_8px_30px_rgba(15,23,42,0.12)]">
-        <div className="h-1 bg-primary" aria-hidden="true" />
-
-        <div className="p-5 md:p-6">
+      {/* Depth, not a coloured bar. A diffuse shadow with a tight ring
+          reads as a layer above the page; a red strip reads as an alert
+          about something, which this is not. Brand colour is kept for the
+          things that actually do something: the link and the switch. */}
+      <div className="mx-auto max-w-2xl rounded-2xl bg-white/95 p-6 shadow-[0_24px_56px_-16px_rgba(15,23,42,0.22)] ring-1 ring-gray-900/[0.07] backdrop-blur-xl md:p-7">
+        <div>
           <h2
             id="cookie-consent-title"
-            className="font-lato text-lg font-bold text-text"
+            className="font-lato text-[1.0625rem] font-bold tracking-[-0.01em] text-text"
           >
             We use cookies
           </h2>
-          <p className="mt-1.5 font-open-sans text-sm leading-relaxed text-gray-600">
+          <p className="mt-2 font-open-sans text-[0.9375rem] leading-[1.6] text-gray-500">
             Some keep you signed in and remember your reading settings. Others
             let us see which site you came from, so we know where to reach more
             veterans and retirees. Read our{" "}
@@ -79,18 +88,18 @@ export default function CookieConsent() {
           </p>
 
           {managing && (
-            <div className="mt-5 space-y-4 border-t border-gray-100 pt-4">
+            <div className="mt-5 space-y-5 border-t border-gray-900/[0.06] pt-5">
               <div className="flex items-start justify-between gap-4">
                 <div className="min-w-0">
                   <p className="font-open-sans text-sm font-semibold text-text">
                     Strictly necessary
                   </p>
-                  <p className="mt-0.5 font-open-sans text-sm leading-relaxed text-gray-600">
+                  <p className="mt-1 font-open-sans text-[0.875rem] leading-[1.55] text-gray-500">
                     Your sign-in session, your text size and contrast settings,
                     and this choice. The site cannot work without them.
                   </p>
                 </div>
-                <span className="shrink-0 font-open-sans text-xs font-bold uppercase tracking-wide text-primary">
+                <span className="shrink-0 rounded-full bg-gray-100 px-2.5 py-1 font-open-sans text-[0.6875rem] font-semibold text-gray-500">
                   Always active
                 </span>
               </div>
@@ -100,7 +109,7 @@ export default function CookieConsent() {
                   <p className="font-open-sans text-sm font-semibold text-text">
                     Analytics
                   </p>
-                  <p className="mt-0.5 font-open-sans text-sm leading-relaxed text-gray-600">
+                  <p className="mt-1 font-open-sans text-[0.875rem] leading-[1.55] text-gray-500">
                     Which site you arrived from and which pages you open. Kept
                     90 days, never sold, no third party.
                   </p>
@@ -128,7 +137,7 @@ export default function CookieConsent() {
               <button
                 type="button"
                 onClick={() => setManaging(true)}
-                className="min-h-[44px] rounded-full px-4 font-open-sans text-sm font-semibold text-gray-600 underline-offset-2 transition-colors hover:text-primary hover:underline sm:mr-auto"
+                className="min-h-[44px] font-open-sans text-sm font-medium text-gray-500 underline-offset-4 transition-colors hover:text-text hover:underline sm:mr-auto sm:text-left"
               >
                 Manage preferences
               </button>

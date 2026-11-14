@@ -1,4 +1,5 @@
 import { API_BASE_URL } from "./api/client";
+import { analyticsAllowed } from "./consent";
 
 const SESSION_KEY = "vc_visit_sent";
 
@@ -26,6 +27,12 @@ const SESSION_KEY = "vc_visit_sent";
  */
 export function sendVisitBeacon(): void {
   if (typeof window === "undefined") return;
+
+  // Nothing is recorded until the visitor says yes. This is the gate, not
+  // the banner: the banner only writes the decision, and anything that
+  // wants to send has to ask here. An unanswered banner, a dismissed one
+  // and unreadable storage all come back false.
+  if (!analyticsAllowed()) return;
 
   // sessionStorage throws in some privacy modes. A visitor who blocks it
   // simply gets no beacon rather than an error.

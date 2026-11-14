@@ -8,6 +8,7 @@
  */
 
 import { sendVisitBeacon } from "@/lib/telemetry";
+import { writeConsent } from "@/lib/consent";
 
 const SESSION_KEY = "vc_visit_sent";
 
@@ -28,9 +29,51 @@ describe("sendVisitBeacon", () => {
 
   beforeEach(() => {
     sessionStorage.clear();
+    localStorage.clear();
     fetchMock = jest.fn().mockResolvedValue({ status: 204 });
     global.fetch = fetchMock as unknown as typeof fetch;
     land("/");
+    // Consent is a precondition for everything below. The gate itself is
+    // covered in its own block at the end of this file.
+    writeConsent("granted");
+  });
+
+  describe("consent gate", () => {
+    it("sends nothing before the visitor has answered", () => {
+      localStorage.clear();
+      sendVisitBeacon();
+      expect(fetchMock).not.toHaveBeenCalled();
+    });
+
+    it("sends nothing when the visitor declined", () => {
+      writeConsent("denied");
+      sendVisitBeacon();
+      expect(fetchMock).not.toHaveBeenCalled();
+    });
+
+    it("sends once the visitor accepts", () => {
+      writeConsent("granted");
+      sendVisitBeacon();
+      expect(fetchMock).toHaveBeenCalledTimes(1);
+    });
+
+    // Declining must not burn the once-per-session marker, or a later
+    // acceptance in the same session would be silently ignored.
+    it("does not consume the session guard while declined", () => {
+      writeConsent("denied");
+      sendVisitBeacon();
+      expect(sessionStorage.getItem(SESSION_KEY)).toBeNull();
+      writeConsent("granted");
+      sendVisitBeacon();
+      expect(fetchMock).toHaveBeenCalledTimes(1);
+    });
+
+    // A corrupted or foreign value is not a yes.
+    it("treats an unrecognised stored value as no answer", () => {
+      localStorage.setItem("vc:analytics-consent", "yes-please");
+      sendVisitBeacon();
+      expect(fetchMock).not.toHaveBeenCalled();
+    });
   });
 
   describe("sending at most once per session", () => {

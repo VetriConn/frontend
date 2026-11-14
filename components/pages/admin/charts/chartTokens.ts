@@ -13,22 +13,29 @@
  *  - IDENTITY (the daily series, split authenticated vs anonymous). Two real
  *    series that must stay apart, including for a colourblind reader.
  *
- * The identity pair was validated, not eyeballed: worst adjacent separation
- * ΔE 34.0 under protanopia, 31.1 under tritanopia, 39.8 at normal vision,
- * both inside the lightness band and over 3:1 against a white surface.
+ * These are the Vetriconn red, by product decision. I had argued for keeping
+ * red out of the charts, because it means "error" everywhere else here — see
+ * the focus-ring reasoning in globals.css — and a red series can read as a
+ * problem rather than a category. That was overruled in favour of the brand
+ * reading as the brand, which is a reasonable call on a page where nothing
+ * is a status: every number here is a quantity, and the only two colours
+ * present are a legend-named pair.
  *
- * Brand red is deliberately absent. It means "error" everywhere else in this
- * product — see the focus-ring reasoning in globals.css — and a red series
- * in an analytics chart reads as a problem rather than as a category.
+ * The pair is validated, not eyeballed. With #c53030 fixed as one series the
+ * partner had to be re-checked against it rather than kept: worst adjacent
+ * separation ΔE 29.1 under protanopia, 32.4 under tritanopia, 35.3 at normal
+ * vision, both inside the lightness band and over 3:1 on white. The obvious
+ * grey partners fail — #4b5563 and #1f2937 both drop under the chroma floor
+ * and read as grey rather than as a series.
  */
 
 /** Every bar in a magnitude chart. One hue, on purpose. */
-export const CHART_MAGNITUDE = "#4f46e5";
+export const CHART_MAGNITUDE = "#c53030";
 
 /** The two auth states, the only place this surface has real series identity. */
 export const CHART_SERIES: Record<string, string> = {
-  authenticated: "#4f46e5",
-  anonymous: "#d97706",
+  authenticated: "#c53030",
+  anonymous: "#2563eb",
 };
 
 /** Anything the backend reports that is not one of the two known states. */

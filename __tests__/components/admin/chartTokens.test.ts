@@ -49,13 +49,27 @@ describe("the magnitude hue", () => {
     expect(CHART_MAGNITUDE).toMatch(/^#[0-9a-f]{6}$/i);
   });
 
-  // Brand red means "error" everywhere else in this product. A red bar in an
-  // analytics chart reads as a problem rather than as a quantity.
-  it("is not the brand error red", () => {
-    const red = "#c53030";
-    expect(CHART_MAGNITUDE.toLowerCase()).not.toBe(red);
-    expect(Object.values(CHART_SERIES).map((c) => c.toLowerCase())).not.toContain(
-      red,
-    );
+  // Product decision: the charts wear the Vetriconn red. This asserts it so
+  // a future palette change has to be deliberate rather than incidental.
+  it("is the Vetriconn brand red", () => {
+    expect(CHART_MAGNITUDE.toLowerCase()).toBe("#c53030");
+  });
+});
+
+describe("the validated series pair", () => {
+  // Changing either colour invalidates the colourblind separation that was
+  // measured for this specific pair, so pin both. ΔE 29.1 protan, 32.4
+  // tritan, 35.3 normal vision.
+  it("is the pair that was checked, not merely two different colours", () => {
+    expect(CHART_SERIES.authenticated.toLowerCase()).toBe("#c53030");
+    expect(CHART_SERIES.anonymous.toLowerCase()).toBe("#2563eb");
+  });
+
+  // The obvious grey partners drop below the chroma floor and read as grey
+  // rather than as a series, so the second colour must stay saturated.
+  it("does not pair the brand with a grey", () => {
+    for (const greyish of ["#4b5563", "#1f2937", "#6b7280"]) {
+      expect(CHART_SERIES.anonymous.toLowerCase()).not.toBe(greyish);
+    }
   });
 });

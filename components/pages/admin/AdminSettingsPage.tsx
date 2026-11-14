@@ -243,6 +243,19 @@ const AdminSettingsPage = () => {
 
   const [editingProfile, setEditingProfile] = useState(false);
   const [editingPassword, setEditingPassword] = useState(false);
+
+  /*
+   * Open the password form for an account that cannot do anything else.
+   *
+   * The same reasoning as the member side (AccountSettings): an account
+   * still holding its bootstrap password is refused by the API everywhere,
+   * so put the form in front of them rather than making them find the Edit
+   * button behind a collapsed section. The banner in the admin layout sends
+   * them here; arriving at a closed form would be half an answer.
+   */
+  useEffect(() => {
+    if (userProfile?.must_change_password) setEditingPassword(true);
+  }, [userProfile?.must_change_password]);
   const [twoFactorSetupOpen, setTwoFactorSetupOpen] = useState(false);
   const [twoFactorDisableOpen, setTwoFactorDisableOpen] = useState(false);
 

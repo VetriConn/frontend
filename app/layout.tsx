@@ -3,6 +3,7 @@ import localFont from "next/font/local";
 import "./globals.css";
 import { ToasterProvider } from "@/components/ui/Toaster";
 import SWRProvider from "@/components/providers/SWRProvider";
+import VisitBeacon from "@/components/providers/VisitBeacon";
 import { JsonLd } from "@/components/seo/JsonLd";
 import { AccessibilityProvider } from "@/hooks/useAccessibility";
 import {
@@ -134,6 +135,10 @@ export default function RootLayout({
         <a href="#main-content" className="skip-link">
           Skip to main content
         </a>
+        {/* Records where the visit came from, once per session. Renders
+            nothing, and outside the providers because it needs none of
+            them. */}
+        <VisitBeacon />
         <SWRProvider>
           <ToasterProvider>
             <AccessibilityProvider>{children}</AccessibilityProvider>

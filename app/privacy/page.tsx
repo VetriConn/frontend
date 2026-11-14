@@ -19,10 +19,11 @@ export const metadata: Metadata = {
  * settled, such as the legal review and the status of the visitor hash, this says so
  * rather than asserting a position the organisation has not taken.
  *
- * It is not legal advice and has not been reviewed by a lawyer. That is
- * stated in the document itself rather than hidden here, because a reader
- * deciding whether to trust us with their employment history is entitled to
- * know the difference between a reviewed policy and an honest draft.
+ * Not reviewed by a lawyer as of this writing. The page used to say so to
+ * the reader; that notice was removed as a business decision, so this
+ * comment is now the only record of it. Anyone changing this file should
+ * know which parts are described from code and which are claims nobody has
+ * checked, and the Canadian-law section is the second kind.
  */
 
 const LAST_UPDATED = "14 November 2026";
@@ -66,16 +67,6 @@ export default function PrivacyPolicyPage() {
         <p className="mt-2 font-open-sans text-sm text-gray-500">
           Last updated {LAST_UPDATED}
         </p>
-
-        <div className="mt-6 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3">
-          <p className="font-open-sans text-sm leading-relaxed text-amber-900">
-            <strong className="font-semibold">A note on status.</strong> This
-            policy describes what the product actually does today, written
-            against the code rather than from a template. It has not yet been
-            reviewed by a privacy lawyer. We would rather publish an accurate
-            draft and say so than leave you with nothing to read.
-          </p>
-        </div>
 
         <P>
           Vetriconn connects retirees and veterans in Canada with paid work and

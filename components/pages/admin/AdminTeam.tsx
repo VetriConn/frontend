@@ -249,15 +249,26 @@ const AdminTeam = () => {
         />
       </AdminStatRow>
 
-      {/* Quick link to audit log */}
+      {/* Quick links to the two super-admin-only reports. Both endpoints are
+          requireAdmin("super_admin") on the backend, so offering either to a
+          reviewer or a moderator would be offering a 403. */}
       {isSuper && (
-        <Link
-          href="/admin/team/audit-log"
-          className="group inline-flex items-center gap-2 text-sm font-semibold text-primary hover:text-primary-hover"
-        >
-          View audit log
-          <HiOutlineArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-0.5" />
-        </Link>
+        <div className="flex flex-wrap items-center gap-x-6 gap-y-2">
+          <Link
+            href="/admin/team/audit-log"
+            className="group inline-flex items-center gap-2 text-sm font-semibold text-primary hover:text-primary-hover"
+          >
+            View audit log
+            <HiOutlineArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-0.5" />
+          </Link>
+          <Link
+            href="/admin/telemetry"
+            className="group inline-flex items-center gap-2 text-sm font-semibold text-primary hover:text-primary-hover"
+          >
+            View traffic
+            <HiOutlineArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-0.5" />
+          </Link>
+        </div>
       )}
 
       {/* Members */}

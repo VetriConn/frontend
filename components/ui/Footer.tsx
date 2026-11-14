@@ -61,13 +61,17 @@ const Footer = () => {
               >
                 Terms &amp; Conditions
               </a>
-              <a
-                target="_blank"
-                href="https://vetriconntandc.notion.site/VETRICONN-INC-TERMS-AND-CONDITIONS-22ac6380202c807fa63ef48c7ca69815"
-                className={LINK}
-              >
-                Privacy Guide
-              </a>
+              {/* "Privacy Guide" pointed at the terms document, the same
+                  URL as the link above it, so there was no route to a
+                  privacy policy from anywhere on the site. The terms have
+                  referred to a Privacy Policy and a Cookie Policy since
+                  July 2025; both now exist and are linked here. */}
+              <Link href="/privacy" className={LINK}>
+                Privacy Policy
+              </Link>
+              <Link href="/cookies" className={LINK}>
+                Cookie Policy
+              </Link>
             </div>
             <div className="flex flex-col">
               <div className={HEADING}>Company</div>

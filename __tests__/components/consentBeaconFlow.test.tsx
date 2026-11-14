@@ -47,7 +47,7 @@ describe("consent to beacon", () => {
   it("sends nothing at all if the visitor declines", async () => {
     const user = userEvent.setup();
     render(<Root />);
-    await user.click(await screen.findByRole("button", { name: "Only what is necessary" }));
+    await user.click(await screen.findByRole("button", { name: "Decline" }));
     expect(fetchMock).not.toHaveBeenCalled();
   });
 
@@ -55,14 +55,14 @@ describe("consent to beacon", () => {
   it("captures the current visit the moment the visitor accepts", async () => {
     const user = userEvent.setup();
     render(<Root />);
-    await user.click(await screen.findByRole("button", { name: "Accept all" }));
+    await user.click(await screen.findByRole("button", { name: "Accept" }));
     expect(fetchMock).toHaveBeenCalledTimes(1);
   });
 
   it("still has the original referrer and campaign when it fires", async () => {
     const user = userEvent.setup();
     render(<Root />);
-    await user.click(await screen.findByRole("button", { name: "Accept all" }));
+    await user.click(await screen.findByRole("button", { name: "Accept" }));
     expect(bodyOf(fetchMock.mock.calls[0])).toMatchObject({
       referrer: "https://www.linkedin.com/feed/",
       utm_source: "linkedin",
@@ -74,7 +74,7 @@ describe("consent to beacon", () => {
   it("does not send twice when a consenting visitor loads another page", async () => {
     const user = userEvent.setup();
     const { unmount } = render(<Root />);
-    await user.click(await screen.findByRole("button", { name: "Accept all" }));
+    await user.click(await screen.findByRole("button", { name: "Accept" }));
     expect(fetchMock).toHaveBeenCalledTimes(1);
 
     unmount();
@@ -101,13 +101,13 @@ describe("consent to beacon", () => {
   it("works for a visitor who declines and then accepts", async () => {
     const user = userEvent.setup();
     render(<Root />);
-    await user.click(await screen.findByRole("button", { name: "Only what is necessary" }));
+    await user.click(await screen.findByRole("button", { name: "Decline" }));
     expect(fetchMock).not.toHaveBeenCalled();
 
     // Re-ask by clearing the record, as a preferences screen would.
     localStorage.clear();
     const { unmount } = render(<Root />);
-    await user.click(await screen.findAllByRole("button", { name: "Accept all" }).then((b) => b[0]));
+    await user.click(await screen.findAllByRole("button", { name: "Accept" }).then((b) => b[0]));
     expect(fetchMock).toHaveBeenCalledTimes(1);
     unmount();
   });

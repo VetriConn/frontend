@@ -45,8 +45,8 @@ describe("CookieConsent", () => {
     it("offers both", async () => {
       render(<CookieConsent />);
       const bar = await screen.findByRole("dialog");
-      expect(within(bar).getByRole("button", { name: "Accept all" })).toBeInTheDocument();
-      expect(within(bar).getByRole("button", { name: "Only what is necessary" })).toBeInTheDocument();
+      expect(within(bar).getByRole("button", { name: "Accept" })).toBeInTheDocument();
+      expect(within(bar).getByRole("button", { name: "Decline" })).toBeInTheDocument();
     });
 
     // Same classes means same size, weight and colour. If someone restyles
@@ -54,8 +54,8 @@ describe("CookieConsent", () => {
     it("gives them equal prominence", async () => {
       render(<CookieConsent />);
       const bar = await screen.findByRole("dialog");
-      const accept = within(bar).getByRole("button", { name: "Accept all" });
-      const decline = within(bar).getByRole("button", { name: "Only what is necessary" });
+      const accept = within(bar).getByRole("button", { name: "Accept" });
+      const decline = within(bar).getByRole("button", { name: "Decline" });
       expect(accept.className).toBe(decline.className);
     });
 
@@ -66,8 +66,8 @@ describe("CookieConsent", () => {
       const names = within(bar)
         .getAllByRole("button")
         .map((b) => b.textContent)
-        .filter((n) => n !== "What is stored");
-      expect(names).toEqual(["Only what is necessary", "Accept all"]);
+        .filter((n) => n !== "Manage preferences");
+      expect(names).toEqual(["Decline", "Accept"]);
     });
   });
 
@@ -75,7 +75,7 @@ describe("CookieConsent", () => {
     it("records the grant", async () => {
       const user = userEvent.setup();
       render(<CookieConsent />);
-      await user.click(await screen.findByRole("button", { name: "Accept all" }));
+      await user.click(await screen.findByRole("button", { name: "Accept" }));
       expect(readConsent()).toBe("granted");
       expect(analyticsAllowed()).toBe(true);
     });
@@ -83,7 +83,7 @@ describe("CookieConsent", () => {
     it("dismisses the bar", async () => {
       const user = userEvent.setup();
       render(<CookieConsent />);
-      await user.click(await screen.findByRole("button", { name: "Accept all" }));
+      await user.click(await screen.findByRole("button", { name: "Accept" }));
       expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
     });
   });
@@ -92,7 +92,7 @@ describe("CookieConsent", () => {
     it("records the refusal, so it is not asked again", async () => {
       const user = userEvent.setup();
       render(<CookieConsent />);
-      await user.click(await screen.findByRole("button", { name: "Only what is necessary" }));
+      await user.click(await screen.findByRole("button", { name: "Decline" }));
       expect(readConsent()).toBe("denied");
     });
 
@@ -100,14 +100,14 @@ describe("CookieConsent", () => {
     it("leaves analytics off", async () => {
       const user = userEvent.setup();
       render(<CookieConsent />);
-      await user.click(await screen.findByRole("button", { name: "Only what is necessary" }));
+      await user.click(await screen.findByRole("button", { name: "Decline" }));
       expect(analyticsAllowed()).toBe(false);
     });
 
     it("dismisses the bar", async () => {
       const user = userEvent.setup();
       render(<CookieConsent />);
-      await user.click(await screen.findByRole("button", { name: "Only what is necessary" }));
+      await user.click(await screen.findByRole("button", { name: "Decline" }));
       expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
     });
   });
@@ -116,7 +116,7 @@ describe("CookieConsent", () => {
     it("explains what is collected in plain words", async () => {
       render(<CookieConsent />);
       const bar = await screen.findByRole("dialog");
-      expect(bar).toHaveTextContent(/which site you arrived from/i);
+      expect(bar).toHaveTextContent(/which site you came from/i);
     });
 
     /*
@@ -129,7 +129,7 @@ describe("CookieConsent", () => {
     it("admits that some things are stored either way", async () => {
       render(<CookieConsent />);
       const bar = await screen.findByRole("dialog");
-      expect(bar).toHaveTextContent(/stored either way/i);
+      expect(bar).toHaveTextContent(/keep you signed in and remember your reading settings/i);
     });
 
     it("does not claim that refusing stores nothing", async () => {
@@ -152,6 +152,76 @@ describe("CookieConsent", () => {
       render(<CookieConsent />);
       const bar = await screen.findByRole("dialog");
       expect(bar).toHaveAttribute("aria-modal", "false");
+    });
+  });
+
+  describe("manage preferences", () => {
+    const open = async () => {
+      const user = userEvent.setup();
+      render(<CookieConsent />);
+      await user.click(
+        await screen.findByRole("button", { name: /manage preferences/i }),
+      );
+      return user;
+    };
+
+    it("is not shown until asked for", async () => {
+      render(<CookieConsent />);
+      await screen.findByRole("dialog");
+      expect(screen.queryByText(/strictly necessary/i)).not.toBeInTheDocument();
+    });
+
+    it("lists both categories", async () => {
+      await open();
+      expect(screen.getByText(/strictly necessary/i)).toBeInTheDocument();
+      expect(screen.getByText("Analytics")).toBeInTheDocument();
+    });
+
+    // Necessary storage is a statement, not an offer. A disabled toggle
+    // invites a click that does nothing; the words do not.
+    it("shows necessary storage as always active rather than a control", async () => {
+      await open();
+      expect(screen.getByText(/always active/i)).toBeInTheDocument();
+      expect(screen.getAllByRole("checkbox")).toHaveLength(1);
+    });
+
+    it("starts with analytics off", async () => {
+      await open();
+      expect(screen.getByRole("checkbox")).not.toBeChecked();
+    });
+
+    it("saves a refusal when the toggle is left alone", async () => {
+      const user = await open();
+      await user.click(screen.getByRole("button", { name: /save preferences/i }));
+      expect(readConsent()).toBe("denied");
+      expect(analyticsAllowed()).toBe(false);
+    });
+
+    it("saves a grant when the toggle is turned on", async () => {
+      const user = await open();
+      await user.click(screen.getByRole("checkbox"));
+      await user.click(screen.getByRole("button", { name: /save preferences/i }));
+      expect(readConsent()).toBe("granted");
+      expect(analyticsAllowed()).toBe(true);
+    });
+
+    it("replaces Accept and Decline with Save while managing", async () => {
+      await open();
+      expect(screen.queryByRole("button", { name: "Accept" })).not.toBeInTheDocument();
+      expect(screen.queryByRole("button", { name: "Decline" })).not.toBeInTheDocument();
+    });
+
+    it("dismisses the notice once saved", async () => {
+      const user = await open();
+      await user.click(screen.getByRole("button", { name: /save preferences/i }));
+      expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+    });
+
+    it("keeps the toggle reachable by keyboard", async () => {
+      await open();
+      const box = screen.getByRole("checkbox");
+      box.focus();
+      expect(box).toHaveFocus();
     });
   });
 });

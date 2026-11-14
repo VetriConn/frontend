@@ -124,3 +124,61 @@ describe("consent", () => {
     });
   });
 });
+
+/**
+ * The header apiFetch attaches so the backend can honour a refusal.
+ *
+ * Declining used to stop only the landing beacon. The server kept
+ * recording every API call the visitor made, with a daily visitor hash,
+ * while the preferences panel showed analytics off. This is the join that
+ * makes the panel tell the truth, so it is worth pinning.
+ */
+describe("the consent header on API calls", () => {
+  const { apiFetch } = jest.requireActual("@/lib/api/client");
+  let fetchMock: jest.Mock;
+
+  const headerOf = (name: string): string | null =>
+    (fetchMock.mock.calls[0][1].headers as Headers).get(name);
+
+  beforeEach(() => {
+    localStorage.clear();
+    fetchMock = jest.fn().mockResolvedValue({
+      status: 200,
+      ok: true,
+      headers: new Headers({ "content-type": "application/json" }),
+      json: async () => ({ success: true }),
+    });
+    global.fetch = fetchMock as unknown as typeof fetch;
+  });
+
+  it("says denied before the visitor has answered", async () => {
+    await apiFetch("https://api.test/x", { method: "GET" });
+    expect(headerOf("X-Analytics-Consent")).toBe("denied");
+  });
+
+  it("says denied when the visitor refused", async () => {
+    writeConsent("denied");
+    await apiFetch("https://api.test/x", { method: "GET" });
+    expect(headerOf("X-Analytics-Consent")).toBe("denied");
+  });
+
+  it("says granted once the visitor accepts", async () => {
+    writeConsent("granted");
+    await apiFetch("https://api.test/x", { method: "GET" });
+    expect(headerOf("X-Analytics-Consent")).toBe("granted");
+  });
+
+  it("still sends the CSRF header alongside it", async () => {
+    await apiFetch("https://api.test/x", { method: "GET" });
+    expect(headerOf("X-Requested-With")).toBe("XMLHttpRequest");
+  });
+
+  it("lets a caller override it rather than forcing the value", async () => {
+    writeConsent("granted");
+    await apiFetch("https://api.test/x", {
+      method: "GET",
+      headers: { "X-Analytics-Consent": "denied" },
+    });
+    expect(headerOf("X-Analytics-Consent")).toBe("denied");
+  });
+});

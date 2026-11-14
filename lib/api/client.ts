@@ -5,6 +5,7 @@
 
 import { API_CONFIG } from "../api-config";
 import type { Attachment, BackendAttachment } from "@/types/api";
+import { analyticsAllowed } from "@/lib/consent";
 
 export const API_BASE_URL = API_CONFIG.BASE_URL;
 
@@ -92,6 +93,27 @@ export async function apiFetch<T>(
     const headers = new Headers(init.headers);
     if (!headers.has("X-Requested-With")) {
       headers.set("X-Requested-With", "XMLHttpRequest");
+    }
+    /*
+     * Carry the visitor's cookie-notice answer on every call, so the
+     * backend's traffic middleware can honour it.
+     *
+     * Without this the notice was only half true: declining stopped the
+     * landing beacon, but the server still recorded every API call the
+     * visitor made, with a daily visitor hash, while the preferences panel
+     * showed analytics switched off.
+     *
+     * Sent on every request rather than only on a refusal, so that a
+     * MISSING header keeps meaning "no visitor behind this call" for server
+     * renders and monitoring probes. Server side there is no window,
+     * analyticsAllowed() is false, and "denied" is the honest answer there
+     * too: an ISR fetch is our own machine, not somebody browsing.
+     */
+    if (!headers.has("X-Analytics-Consent")) {
+      headers.set(
+        "X-Analytics-Consent",
+        analyticsAllowed() ? "granted" : "denied",
+      );
     }
     const response = await fetch(url, {
       credentials: "include",

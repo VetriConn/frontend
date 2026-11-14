@@ -45,8 +45,8 @@ describe("CookieConsent", () => {
     it("offers both", async () => {
       render(<CookieConsent />);
       const bar = await screen.findByRole("dialog");
-      expect(within(bar).getByRole("button", { name: "Accept" })).toBeInTheDocument();
-      expect(within(bar).getByRole("button", { name: "Decline" })).toBeInTheDocument();
+      expect(within(bar).getByRole("button", { name: "Accept all" })).toBeInTheDocument();
+      expect(within(bar).getByRole("button", { name: "Only what is necessary" })).toBeInTheDocument();
     });
 
     // Same classes means same size, weight and colour. If someone restyles
@@ -54,8 +54,8 @@ describe("CookieConsent", () => {
     it("gives them equal prominence", async () => {
       render(<CookieConsent />);
       const bar = await screen.findByRole("dialog");
-      const accept = within(bar).getByRole("button", { name: "Accept" });
-      const decline = within(bar).getByRole("button", { name: "Decline" });
+      const accept = within(bar).getByRole("button", { name: "Accept all" });
+      const decline = within(bar).getByRole("button", { name: "Only what is necessary" });
       expect(accept.className).toBe(decline.className);
     });
 
@@ -65,8 +65,9 @@ describe("CookieConsent", () => {
       const bar = await screen.findByRole("dialog");
       const names = within(bar)
         .getAllByRole("button")
-        .map((b) => b.textContent);
-      expect(names).toEqual(["Decline", "Accept"]);
+        .map((b) => b.textContent)
+        .filter((n) => n !== "What is stored");
+      expect(names).toEqual(["Only what is necessary", "Accept all"]);
     });
   });
 
@@ -74,7 +75,7 @@ describe("CookieConsent", () => {
     it("records the grant", async () => {
       const user = userEvent.setup();
       render(<CookieConsent />);
-      await user.click(await screen.findByRole("button", { name: "Accept" }));
+      await user.click(await screen.findByRole("button", { name: "Accept all" }));
       expect(readConsent()).toBe("granted");
       expect(analyticsAllowed()).toBe(true);
     });
@@ -82,7 +83,7 @@ describe("CookieConsent", () => {
     it("dismisses the bar", async () => {
       const user = userEvent.setup();
       render(<CookieConsent />);
-      await user.click(await screen.findByRole("button", { name: "Accept" }));
+      await user.click(await screen.findByRole("button", { name: "Accept all" }));
       expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
     });
   });
@@ -91,7 +92,7 @@ describe("CookieConsent", () => {
     it("records the refusal, so it is not asked again", async () => {
       const user = userEvent.setup();
       render(<CookieConsent />);
-      await user.click(await screen.findByRole("button", { name: "Decline" }));
+      await user.click(await screen.findByRole("button", { name: "Only what is necessary" }));
       expect(readConsent()).toBe("denied");
     });
 
@@ -99,14 +100,14 @@ describe("CookieConsent", () => {
     it("leaves analytics off", async () => {
       const user = userEvent.setup();
       render(<CookieConsent />);
-      await user.click(await screen.findByRole("button", { name: "Decline" }));
+      await user.click(await screen.findByRole("button", { name: "Only what is necessary" }));
       expect(analyticsAllowed()).toBe(false);
     });
 
     it("dismisses the bar", async () => {
       const user = userEvent.setup();
       render(<CookieConsent />);
-      await user.click(await screen.findByRole("button", { name: "Decline" }));
+      await user.click(await screen.findByRole("button", { name: "Only what is necessary" }));
       expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
     });
   });
@@ -118,11 +119,23 @@ describe("CookieConsent", () => {
       expect(bar).toHaveTextContent(/which site you arrived from/i);
     });
 
-    // People decline because they fear losing something. Say they will not.
-    it("says declining costs them nothing", async () => {
+    /*
+     * The earlier copy said "Decline and the site works exactly the same",
+     * and this test asserted it. Both were wrong in the same way: four
+     * things persist whichever button is pressed, so a refusal path that
+     * implies an empty set is a claim the product contradicts. The banner
+     * now says so up front.
+     */
+    it("admits that some things are stored either way", async () => {
       render(<CookieConsent />);
       const bar = await screen.findByRole("dialog");
-      expect(bar).toHaveTextContent(/works exactly the same/i);
+      expect(bar).toHaveTextContent(/stored either way/i);
+    });
+
+    it("does not claim that refusing stores nothing", async () => {
+      render(<CookieConsent />);
+      const bar = await screen.findByRole("dialog");
+      expect(bar).not.toHaveTextContent(/works exactly the same/i);
     });
 
     it("is labelled for assistive technology", async () => {

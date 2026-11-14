@@ -4,7 +4,7 @@ import { Header } from "@/components/ui/Header";
 import Footer from "@/components/ui/Footer";
 
 export const metadata: Metadata = {
-  title: "Cookie Policy | Vetriconn",
+  title: "Cookie Policy",
   description:
     "How Vetriconn uses cookies, why, how long they last, and how to turn them off.",
 };

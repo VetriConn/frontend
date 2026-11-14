@@ -54,18 +54,18 @@ const Footer = () => {
           <div className="grid grid-cols-2 gap-x-6 gap-y-6 md:gap-x-12">
             <div className="flex flex-col">
               <div className={HEADING}>Privacy &amp; Policies</div>
-              <a
-                target="_blank"
-                href="https://vetriconntandc.notion.site/VETRICONN-INC-TERMS-AND-CONDITIONS-22ac6380202c807fa63ef48c7ca69815"
-                className={LINK}
-              >
+              {/* All three were once one Notion page, or a link to it. The
+                  terms now live on our own route: the text is in version
+                  control, so what a reader agreed to on a given date is
+                  recoverable, and nobody can edit or unpublish it from
+                  outside the repo. "Privacy Guide" pointed at that same
+                  Notion URL, so there was no route to a privacy policy from
+                  anywhere on the site. The terms have referred to a Privacy
+                  Policy and a Cookie Policy since July 2025; both now exist
+                  and are linked here. */}
+              <Link href="/terms" className={LINK}>
                 Terms &amp; Conditions
-              </a>
-              {/* "Privacy Guide" pointed at the terms document, the same
-                  URL as the link above it, so there was no route to a
-                  privacy policy from anywhere on the site. The terms have
-                  referred to a Privacy Policy and a Cookie Policy since
-                  July 2025; both now exist and are linked here. */}
+              </Link>
               <Link href="/privacy" className={LINK}>
                 Privacy Policy
               </Link>

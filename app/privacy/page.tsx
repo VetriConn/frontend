@@ -4,7 +4,7 @@ import { Header } from "@/components/ui/Header";
 import Footer from "@/components/ui/Footer";
 
 export const metadata: Metadata = {
-  title: "Privacy Policy | Vetriconn",
+  title: "Privacy Policy",
   description:
     "What Vetriconn collects, why, who sees it, how long it is kept, and the rights you have over it under Canadian privacy law.",
 };

@@ -556,23 +556,31 @@ export function SignupWizard() {
               </a>
             </p>
             <p className="text-xs text-gray-500">
+              {/* This is the sentence the account is created under, so both
+                  links have to reach the document they name. They used to
+                  share one external URL, which meant "Privacy Guide" opened
+                  the terms and there was no privacy policy to read before
+                  agreeing. Both now point at our own routes, and both keep
+                  target="_blank": this sits under a part-filled wizard, so a
+                  same-tab navigation would throw the form away to go and read
+                  what you are agreeing to. */}
               By signing up, you agree to our{" "}
-              <a 
-                href="https://vetriconntandc.notion.site/VETRICONN-INC-TERMS-AND-CONDITIONS-22ac6380202c807fa63ef48c7ca69815" 
+              <a
+                href="/terms"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-primary hover:underline"
               >
-                Terms & Conditions
+                Terms &amp; Conditions
               </a>{" "}
               and{" "}
-              <a 
-                href="https://vetriconntandc.notion.site/VETRICONN-INC-TERMS-AND-CONDITIONS-22ac6380202c807fa63ef48c7ca69815" 
+              <a
+                href="/privacy"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-primary hover:underline"
               >
-                Privacy Guide
+                Privacy Policy
               </a>
             </p>
             </div>

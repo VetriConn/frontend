@@ -1,6 +1,8 @@
 "use client";
 
-import Link from "next/link";
+const LINK =
+  "font-open-sans text-xs md:text-sm text-gray-500 hover:text-primary " +
+  "transition-colors min-h-[44px] flex items-center";
 
 export const AuthFooter = () => {
   const currentYear = new Date().getFullYear();
@@ -11,23 +13,18 @@ export const AuthFooter = () => {
         © {currentYear} Vetriconn. All rights reserved.
       </p>
       <div className="flex items-center gap-4">
-        <Link
-          href="https://vetriconntandc.notion.site/VETRICONN-INC-TERMS-AND-CONDITIONS-22ac6380202c807fa63ef48c7ca69815"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="font-open-sans text-xs md:text-sm text-gray-500 hover:text-primary transition-colors min-h-[44px] flex items-center"
-        >
+        {/* Both of these pointed at the same external terms document, so
+            "Privacy Policy" led to the terms. They are our own routes now,
+            but still open in a new tab: this footer sits under the forgot and
+            reset password forms, and a same-tab navigation would discard what
+            somebody had already typed. */}
+        <a href="/privacy" target="_blank" rel="noopener noreferrer" className={LINK}>
           Privacy Policy
-        </Link>
+        </a>
         <span className="text-gray-300">|</span>
-        <Link
-          href="https://vetriconntandc.notion.site/VETRICONN-INC-TERMS-AND-CONDITIONS-22ac6380202c807fa63ef48c7ca69815"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="font-open-sans text-xs md:text-sm text-gray-500 hover:text-primary transition-colors min-h-[44px] flex items-center"
-        >
+        <a href="/terms" target="_blank" rel="noopener noreferrer" className={LINK}>
           Terms of Service
-        </Link>
+        </a>
       </div>
     </footer>
   );

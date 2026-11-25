@@ -166,11 +166,9 @@ This guide helps you diagnose and fix common responsive design issues in the Vet
   <Icon className="w-5 h-5" />
 </button>
 
-// ✅ Use utility class
-<button className="touch-target p-2">
-  <Icon className="w-5 h-5" />
-</button>
 ```
+
+There is no `touch-target` utility class; write `min-h-[44px] min-w-[44px]` inline.
 
 **Prevention:**
 - All interactive elements: `min-h-[44px]`
@@ -255,7 +253,7 @@ This guide helps you diagnose and fix common responsive design issues in the Vet
 **Prevention:**
 - Use Tailwind spacing scale: 1, 2, 3, 4, 6, 8, 10, 12, 16, 20, 24
 - Avoid arbitrary values unless absolutely necessary
-- Define custom spacing in `tailwind.config.ts` if needed
+- Define custom spacing in the `@theme` block of `app/globals.css` if needed (there is no `tailwind.config.ts`)
 
 ---
 
@@ -304,7 +302,7 @@ This guide helps you diagnose and fix common responsive design issues in the Vet
 ### Issue 8: Layout Breaks at Breakpoint Boundaries
 
 **Symptoms:**
-- Content overlaps at exactly 768px or 850px
+- Content overlaps at exactly 768px or 900px
 - Horizontal scrollbar appears at breakpoint
 - Layout looks broken at specific widths
 
@@ -408,10 +406,12 @@ This guide helps you diagnose and fix common responsive design issues in the Vet
     text-sm md:text-base
     border border-gray-300
     rounded-lg
-    focus:ring-2 focus:ring-primary focus:border-transparent
+    focus:border-gray-500 focus:ring-2 focus:ring-gray-300/60
   " />
 </div>
 ```
+
+Prefer `FIELD_BASE` from `components/ui/fieldStyles.ts`. Focus is grey, not red, because red marks an error.
 
 **Prevention:**
 - Input padding: `px-3 py-2 md:px-4 md:py-3`
@@ -525,7 +525,7 @@ Use this checklist when reviewing responsive design changes:
 ### Icons
 - [ ] Icons scale with context (`w-4 h-4 md:w-5 md:h-5`)
 - [ ] Icon-text combinations use `inline-flex items-center`
-- [ ] Icons are from react-icons (hi2 or lu)
+- [ ] Icons are from react-icons (`hi2`, or `fa6` for brand marks)
 
 ### Components
 - [ ] Cards use responsive padding (`p-4 md:p-6`)
@@ -664,16 +664,7 @@ describe('Grid layout responsiveness', () => {
 - Unused CSS classes
 
 **Solution:**
-```javascript
-// tailwind.config.ts
-export default {
-  content: [
-    './app/**/*.{js,ts,jsx,tsx,mdx}',
-    './components/**/*.{js,ts,jsx,tsx,mdx}',
-  ],
-  // Tailwind will purge unused classes
-}
-```
+Tailwind v4 scans the project for class names itself and emits only those it finds; there is no `tailwind.config.ts` or `content` list to maintain. Check instead that class names are written whole in source (a name assembled from fragments at runtime is never found), and measure with `pnpm analyze`.
 
 ### Issue: Layout Shift (CLS)
 
@@ -713,7 +704,7 @@ export default {
 // ✅ Add immediate visual feedback
 <button className="
   transition-colors
-  active:bg-primary-dark
+  active:scale-95
   hover:bg-primary-hover
 ">
   Click me
@@ -752,10 +743,9 @@ export default {
 If you encounter an issue not covered in this guide:
 
 1. Check [RESPONSIVE_PATTERNS.md](./RESPONSIVE_PATTERNS.md) for pattern reference
-2. Review [Design Document](.kiro/specs/responsive-design-implementation/design.md)
-3. Consult [Tailwind CSS Documentation](https://tailwindcss.com/docs)
-4. Test on actual devices to confirm the issue
-5. Use browser DevTools to inspect computed styles
+2. Consult [Tailwind CSS Documentation](https://tailwindcss.com/docs)
+3. Test on actual devices to confirm the issue
+4. Use browser DevTools to inspect computed styles
 
 ---
 

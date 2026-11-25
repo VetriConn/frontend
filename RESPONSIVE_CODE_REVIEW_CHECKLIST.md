@@ -131,7 +131,7 @@ Use this checklist when reviewing pull requests that involve responsive design c
 - [ ] No misaligned icons
 
 ### Icon Library
-- [ ] Uses react-icons (Heroicons v2 `hi2` or Lucide `lu`)
+- [ ] Uses react-icons: Heroicons v2 outline (`react-icons/hi2`), or Font Awesome 6 (`react-icons/fa6`) for brand marks
 - [ ] Consistent icon style throughout component
 
 **Example:**
@@ -231,10 +231,9 @@ Use this checklist when reviewing pull requests that involve responsive design c
 - [ ] Proper alignment: `items-stretch md:items-center`
 
 ### Containers
-- [ ] Max width constraints: `max-w-7xl`, `max-w-[1340px]`, etc.
+- [ ] Max width constraints: `max-w-7xl`, `max-w-3xl`, etc. (there are no container utility classes)
 - [ ] Centered: `mx-auto`
 - [ ] Responsive padding: `px-4 md:px-6 lg:px-8`
-- [ ] Uses container utilities where appropriate
 
 ### Width Patterns
 - [ ] Full width on mobile: `w-full`
@@ -374,8 +373,7 @@ Use this checklist when reviewing pull requests that involve responsive design c
 
 ### CSS Optimization
 - [ ] Mobile-first approach minimizes CSS payload
-- [ ] No unused Tailwind classes
-- [ ] Purge configuration correct in `tailwind.config.ts`
+- [ ] No unused Tailwind classes (Tailwind v4 detects sources itself; there is no `tailwind.config.ts`)
 
 ### Layout Shift
 - [ ] Images have explicit dimensions or aspect-ratio
@@ -407,14 +405,14 @@ Use this checklist when reviewing pull requests that involve responsive design c
 - [ ] Tested at 375px (iPhone SE)
 - [ ] Tested at 390px (iPhone 12/13)
 - [ ] Tested at 768px (tablet breakpoint)
-- [ ] Tested at 850px (mobile max breakpoint)
+- [ ] Tested at 900px and 901px (either side of the `mobile:` breakpoint)
 - [ ] Tested at 1024px (desktop breakpoint)
 - [ ] Tested at 1440px (common desktop)
 - [ ] No horizontal scrollbars at any breakpoint
 - [ ] Touch targets verified on actual device
 
 ### Breakpoint Boundaries
-- [ ] Tested at exact breakpoint widths (768px, 850px, 1024px)
+- [ ] Tested at exact breakpoint widths (768px, 900px, 1024px)
 - [ ] No layout breaks at boundaries
 - [ ] Content remains accessible at all widths
 
@@ -526,7 +524,5 @@ Copy this for quick PR reviews:
 
 - [RESPONSIVE_PATTERNS.md](./RESPONSIVE_PATTERNS.md) - Pattern reference
 - [RESPONSIVE_TROUBLESHOOTING.md](./RESPONSIVE_TROUBLESHOOTING.md) - Common issues
-- [Design Document](.kiro/specs/responsive-design-implementation/design.md)
-- [Requirements Document](.kiro/specs/responsive-design-implementation/requirements.md)
 - [Tailwind CSS Documentation](https://tailwindcss.com/docs)
 - [WCAG 2.1 Guidelines](https://www.w3.org/WAI/WCAG21/quickref/)

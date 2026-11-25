@@ -1,247 +1,160 @@
 # Vetriconn Frontend
 
-A job board platform connecting Canadian retirees and veterans with meaningful work opportunities.
+A job board connecting Canadian veterans and retirees with employers. One account both applies for jobs and hires through companies it belongs to, so there is a single dashboard rather than a job-seeker and an employer one.
 
-## Tech Stack
+## Tech stack
 
-- **Framework:** Next.js 16 (App Router)
+- **Framework:** Next.js 16 (App Router), React 19
 - **Language:** TypeScript 5
-- **Styling:** Tailwind CSS v4 (mobile-first)
-- **Data Fetching:** SWR v2
-- **Validation:** Zod v4
-- **Icons:** react-icons (Heroicons v2, Lucide)
-- **Animations:** framer-motion v12
-- **Testing:** Jest 30 + Testing Library
-- **Package Manager:** pnpm v10
+- **Styling:** Tailwind CSS v4, configured CSS-first in `app/globals.css` (no `tailwind.config.ts`)
+- **Data fetching:** SWR 2
+- **Validation:** Zod 4
+- **Realtime:** socket.io-client, for message threads
+- **Icons:** react-icons, Heroicons v2 outline (`react-icons/hi2`); Font Awesome 6 (`react-icons/fa6`) for brand marks
+- **Testing:** Jest 30, Testing Library, fast-check
+- **Component workshop:** Storybook 10
+- **Package manager:** pnpm
 
-## Getting Started
+## Getting started
 
 ```bash
-# Install dependencies
 pnpm install
-
-# Run development server
 pnpm dev
-
-# Build for production
-pnpm build
-
-# Run tests
-pnpm test
-
-# Lint code
-pnpm lint
 ```
 
-The app will be available at [http://localhost:3000](http://localhost:3000).
+The app runs at http://localhost:3000 and talks to the backend at `NEXT_PUBLIC_BACKEND_URL_DEV` (see below). `predev` and `prebuild` copy the country flag SVGs into `public/flags`, which is gitignored.
 
-## Project Structure
+| Script | What it does |
+|---|---|
+| `pnpm dev` | Development server |
+| `pnpm build`, `pnpm start` | Production build and server |
+| `pnpm build:check` | Production build into `.next-check`, so it does not clash with a running dev server |
+| `pnpm lint` | ESLint |
+| `pnpm test` | Jest in watch mode |
+| `pnpm test:ci` | Jest once, for CI |
+| `pnpm test:coverage` | Jest with coverage |
+| `pnpm storybook` | Storybook at http://localhost:6006 |
+| `pnpm analyze` | Bundle analysis |
 
-```
-frontend/
-├── app/                    # Next.js App Router pages
-│   ├── dashboard/          # Authenticated user area
-│   ├── jobs/               # Public job browsing
-│   ├── signin/             # Authentication
-│   └── signup/             # Registration wizard
-├── components/
-│   ├── pages/              # Page-specific components
-│   ├── ui/                 # Reusable UI components
-│   └── seo/                # SEO components
-├── hooks/                  # SWR data fetching hooks
-├── lib/
-│   ├── api/                # API service layer
-│   └── validation.ts       # Zod schemas
-└── types/                  # TypeScript types
-```
+## Environment variables
 
-## Responsive Design Guidelines
-
-Vetriconn follows a **mobile-first responsive design** approach using Tailwind CSS v4. All components and pages are optimized for mobile, tablet, and desktop viewports.
-
-### Breakpoints
-
-| Breakpoint | Width | Prefix | Usage |
-|------------|-------|--------|-------|
-| Mobile | ≤ 850px | `mobile:` | Mobile-specific overrides |
-| Tablet | ≤ 768px | `tablet:` | Tablet-specific overrides |
-| Medium | ≥ 768px | `md:` | Tablet and up |
-| Large | ≥ 1024px | `lg:` | Desktop |
-
-### Key Principles
-
-1. **Mobile-First:** Base styles target mobile, use `md:` and `lg:` prefixes for larger screens
-2. **Touch Targets:** All interactive elements meet 44px × 44px minimum (WCAG 2.1 Level AAA)
-3. **Fluid Typography:** Text scales appropriately across breakpoints
-4. **Consistent Spacing:** Use Tailwind's spacing scale (4, 6, 8, etc.)
-5. **Accessibility:** Keyboard navigation, focus indicators, screen reader support
-
-### Quick Reference
-
-```tsx
-// Responsive padding
-className="px-4 md:px-6 lg:px-8"
-
-// Responsive typography
-className="text-sm md:text-base"
-className="text-2xl md:text-4xl"
-
-// Responsive grid
-className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6"
-
-// Show/hide
-className="hidden md:block"  // Hide on mobile
-className="md:hidden"        // Hide on desktop
-
-// Touch targets
-className="min-h-[44px] min-w-[44px]"
-```
-
-For comprehensive responsive patterns, see [RESPONSIVE_PATTERNS.md](./RESPONSIVE_PATTERNS.md).
-
-## Component Guidelines
-
-### Button Component
-
-```tsx
-<button className="
-  px-4 py-2 md:px-6 md:py-3
-  text-sm md:text-base
-  min-h-[44px]
-  bg-primary text-white
-  rounded-lg
-">
-  Click me
-</button>
-```
-
-### Card Component
-
-The surface lives in `components/ui/panelStyles.ts`, not in the markup. Import
-`PANEL_SURFACE` and add the padding the card needs. The radius does not change
-across breakpoints: an earlier `rounded-lg md:rounded-xl` was retired in favour
-of the plain `rounded-xl` the other ninety-seven panels already used.
-
-```tsx
-import { PANEL_SURFACE } from "@/components/ui/panelStyles";
-
-<div className={`${PANEL_SURFACE} p-4 md:p-6`}>
-  {/* Card content */}
-</div>
-```
-
-The admin area has its own surface, `ADMIN_PANEL_SURFACE`, from the same file.
-It is intentionally different and is not a variant to normalise away.
-
-### Form Input
-
-```tsx
-<input className="
-  w-full
-  px-3 py-2 md:px-4 md:py-3
-  text-sm md:text-base
-  border border-gray-300
-  rounded-lg
-  focus:ring-2 focus:ring-primary
-" />
-```
-
-## API Integration
-
-The frontend communicates with the backend API at:
-- **Development:** `http://localhost:5000`
-- **Production:** `https://vetriconn-backend.onrender.com`
-
-API configuration is managed in `lib/api-config.ts` based on `NEXT_PUBLIC_NODE_ENV`.
-
-### Authentication
-
-- JWT tokens stored in localStorage/sessionStorage
-- Authorization header: `Bearer <token>`
-- Protected routes redirect to `/signin` if unauthenticated
-
-### Data Fetching
-
-Use SWR hooks from the `hooks/` directory:
-
-```tsx
-import { useUserProfile } from '@/hooks/useUserProfile';
-
-function ProfilePage() {
-  const { profile, isLoading, error } = useUserProfile();
-  
-  if (isLoading) return <div>Loading...</div>;
-  if (error) return <div>Error loading profile</div>;
-  
-  return <div>{profile.full_name}</div>;
-}
-```
-
-## Testing
-
-```bash
-# Run tests in watch mode
-pnpm test
-
-# Run tests once
-pnpm test --run
-
-# Run tests with coverage
-pnpm test --coverage
-```
-
-Test files are located in `__tests__/` and follow the naming convention `*.test.tsx`.
-
-## Environment Variables
-
-Create a `.env.local` file:
+Create `.env.local`:
 
 ```env
 NEXT_PUBLIC_BACKEND_URL_DEV=http://localhost:5000
-NEXT_PUBLIC_BACKEND_URL_PROD=https://vetriconn-backend.onrender.com
+NEXT_PUBLIC_BACKEND_URL_PROD=https://api.vetriconn.ca
 NEXT_PUBLIC_NODE_ENV=development
 ```
 
-**Important:** `NEXT_PUBLIC_*` variables are baked in at build time and must be set in your hosting platform for production.
+`lib/api-config.ts` uses the DEV URL when `NODE_ENV` or `NEXT_PUBLIC_NODE_ENV` is `development`, and the PROD URL otherwise. `NEXT_PUBLIC_*` values are baked in at build time, so they must be set on the hosting platform.
 
-## Code Style
+## Routes
 
-- **Components:** PascalCase (`JobCard.tsx`)
-- **Hooks:** camelCase with `use` prefix (`useUserProfile.ts`)
-- **Utilities:** camelCase (`api-config.ts`)
-- **Types:** PascalCase interfaces (`IUser`, `IJob`)
+| Area | Routes |
+|---|---|
+| Public | `/`, `/about`, `/faq`, `/jobs`, `/jobs/[id]`, `/jobs/[id]/apply`, `/privacy`, `/terms`, `/cookies` |
+| Auth | `/signin`, `/signup`, `/forgot-password`, `/reset-password`, `/auth/email_verification`, `/auth/welcome`, `/companies/invites/accept`, `/accept-admin-invite/[token]` |
+| Dashboard, finding work | `/dashboard`, `/dashboard/find-jobs`, `/dashboard/saved-jobs`, `/dashboard/saved-searches`, `/dashboard/applied-jobs`, `/dashboard/application-drafts` |
+| Dashboard, hiring | `/dashboard/post-job`, `/dashboard/postings`, `/dashboard/drafts`, `/dashboard/applications`, `/dashboard/applications/[id]`, `/dashboard/companies`, `/dashboard/companies/apply`, `/dashboard/companies/[id]`, `/dashboard/companies/[id]/profile` |
+| Dashboard, shared | `/dashboard/profile`, `/dashboard/inbox`, `/dashboard/notifications`, `/dashboard/community`, `/dashboard/billing`, `/dashboard/settings` |
+| Admin console | `/admin`, `/admin/jobs`, `/admin/companies`, `/admin/users`, `/admin/users/[id]`, `/admin/reports`, `/admin/community`, `/admin/community/[id]`, `/admin/support`, `/admin/notifications`, `/admin/team`, `/admin/team/audit-log`, `/admin/telemetry`, `/admin/settings` |
+
+The old role-prefixed dashboard URLs (`/dashboard/employer/*`, `/dashboard/job-seeker/*`) redirect permanently to these in `next.config.ts`. They appear in emails already sent, so the redirects stay.
+
+## Project structure
+
+```
+frontend/
+├── app/                    # App Router routes; (admin)/ is the admin console
+├── components/
+│   ├── auth/               # AuthGuard
+│   ├── dashboard/          # Dashboard-only widgets (inbox and so on)
+│   ├── pages/              # Page-level components, grouped by area
+│   ├── providers/          # SWR, cookie consent, visit beacon
+│   ├── security/           # Two-factor dialogs
+│   ├── seo/                # JSON-LD
+│   ├── tour/               # Dashboard tour
+│   └── ui/                 # Shared UI: Button, CustomDropdown, FormField, panel and field styles
+├── hooks/                  # SWR data hooks and UI hooks
+├── lib/
+│   ├── api/                # One module per backend area, re-exported from lib/api/index.ts
+│   └── ...                 # Pure helpers: validation, consent, telemetry, job display, dates
+├── types/                  # Shared TypeScript types
+└── __tests__/              # Jest tests
+```
+
+## Data and auth
+
+- Every API call goes through `apiFetch` in `lib/api/client.ts`. It sends cookies (`credentials: "include"`), the `X-Requested-With` header the backend's CSRF guard requires, and `X-Analytics-Consent` carrying the visitor's cookie choice. It returns the backend's `{ success, message, data }` envelope as is, and throws the server's message on an error status.
+- The session is the backend's httpOnly `authToken` cookie. The frontend never stores a token.
+- There is no `middleware.ts`. `components/auth/AuthGuard.tsx` wraps the dashboard and sends a signed-out visitor to `/signin` with a return URL; the admin layout additionally sends non-admins to `/dashboard`. When a call made from a `/dashboard` or `/admin` page returns 401, or 403 for an expired token, the client redirects once to `/signin?reason=session-expired` and comes back afterwards. The backend's guards are the real boundary; these are UX.
+- Hooks wrap SWR around a `lib/api` function. App-wide defaults (`components/providers/SWRProvider.tsx`) turn off revalidate-on-focus and dedupe for 15 seconds; hooks tune from there.
+
+```tsx
+import { useUserProfile } from "@/hooks/useUserProfile";
+
+function ProfileName() {
+  const { userProfile, isLoading, isError } = useUserProfile();
+  if (isLoading) return <p>Loading...</p>;
+  if (isError || !userProfile) return <p>Could not load your profile.</p>;
+  return <p>{userProfile.full_name}</p>;
+}
+```
+
+`useUserProfile` also returns `profileCompletion` and `mutateProfile`.
+
+## Responsive design
+
+Mobile-first with Tailwind v4.
+
+| Breakpoint | Width | Prefix | Defined |
+|---|---|---|---|
+| Mobile | ≤ 900px | `mobile:` | `@custom-variant` in `app/globals.css`; the navbar collapses here |
+| Tablet | ≤ 768px | `tablet:` | `@custom-variant` in `app/globals.css` |
+| Medium | ≥ 768px | `md:` | Tailwind default |
+| Large | ≥ 1024px | `lg:` | Tailwind default |
+
+- Touch targets: at least 44px tall (`min-h-[44px]`), and `min-w-[44px]` for icon-only buttons.
+- Card surfaces: import `PANEL_SURFACE` from `components/ui/panelStyles.ts` and add padding. The admin area uses `ADMIN_PANEL_SURFACE` from the same file, which is intentionally different.
+- Form fields: `FIELD_BASE` and `fieldBorder(hasError)` from `components/ui/fieldStyles.ts`. The focus ring is grey, because red means an error.
+- Buttons: `components/ui/Button.tsx`, documented in `components/ui/Button.README.md`.
+- Dropdowns, countries, skills and locations have shared components (`CustomDropdown`, `CountrySelect`, `SkillsInput`, `LocationFields`). Use them instead of a native `<select>`; two native selects remain to convert, in `components/ui/FormField.tsx` and the admin `SupportTickets` filter.
+
+See [RESPONSIVE_PATTERNS.md](./RESPONSIVE_PATTERNS.md), [RESPONSIVE_CODE_REVIEW_CHECKLIST.md](./RESPONSIVE_CODE_REVIEW_CHECKLIST.md) and [RESPONSIVE_TROUBLESHOOTING.md](./RESPONSIVE_TROUBLESHOOTING.md).
+
+## Testing
+
+Tests live in `__tests__/`, as `*.test.ts` or `*.test.tsx`, grouped into `accessibility/`, `components/`, `copy/`, `hooks/`, `lib/` and `properties/` (property-based, with fast-check). `__tests__/copy/noDashes.test.ts` fails on a dash in user-facing copy (string literals and JSX text, not comments).
+
+## Code style
+
+- Components: PascalCase files and names (`JobResultCard.tsx`).
+- Hooks: `useX` (`useUserProfile.ts`).
+- `lib/` files: mostly kebab-case (`api-config.ts`, `job-display.ts`).
+- Types: plain PascalCase names with no `I` prefix (`Job`, `UserProfile`).
+- No `any`.
 
 ## Accessibility
 
-- All interactive elements meet WCAG 2.1 Level AAA touch target requirements (44px × 44px)
-- Keyboard navigation supported throughout
-- Focus indicators visible on all interactive elements
-- ARIA labels provided for icon-only buttons
-- Semantic HTML elements used where possible
+- 44px minimum touch height on interactive elements
+- Keyboard navigation and visible focus indicators
+- ARIA labels on icon-only buttons
+- `AccessibilityProvider` (`hooks/useAccessibility.tsx`): text size and high-contrast settings
+- Tests under `__tests__/accessibility/`
 
-## Performance
+## Module docs
 
-- Next.js Image component for optimized images
-- Lazy loading for below-the-fold content
-- SWR for efficient data fetching and caching
-- Mobile-first CSS to minimize payload for mobile users
+Every module, frontend included, is documented in the backend repository under `docs/<module>/` (`../backend/docs/` when the repositories sit side by side). Each folder has the same nine files; `04-frontend.txt` covers this repository's side of the module. Start at `../backend/docs/README.txt`. Coding agents start at [CLAUDE.md](./CLAUDE.md).
 
-## Contributing
-
-1. Follow the responsive design patterns in `RESPONSIVE_PATTERNS.md`
-2. Ensure all interactive elements meet touch target requirements
-3. Test at multiple breakpoints (375px, 768px, 1024px, 1440px)
-4. Write tests for new components
-5. Run linting before committing
+- The account settings page: `profile/04-frontend.txt`
+- Which admin hooks call which endpoints: `admin/04-frontend.txt`
+- Dead-code findings that are not dead: [docs/cleanup-rejected-findings.md](./docs/cleanup-rejected-findings.md) for now; it moves to `platform/06-rules-and-traps.txt` when the platform folder lands
 
 ## Resources
 
 - [Responsive Design Patterns](./RESPONSIVE_PATTERNS.md)
-- [Tailwind CSS Documentation](https://tailwindcss.com/docs)
-- [Next.js Documentation](https://nextjs.org/docs)
-- [SWR Documentation](https://swr.vercel.app/)
+- [Tailwind CSS](https://tailwindcss.com/docs), [Next.js](https://nextjs.org/docs), [SWR](https://swr.vercel.app/)
 
 ## License
 
-Proprietary - Vetriconn
-
+Proprietary, Vetriconn.

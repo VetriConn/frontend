@@ -68,10 +68,6 @@ export {
   updateApplicationStatus,
 } from "./postings";
 
-// Job Seeker Messaging
-export {
-} from "./job-search";
-
 // Job Seeker Drafts
 export {
   getDrafts,

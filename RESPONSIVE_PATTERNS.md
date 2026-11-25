@@ -1,4 +1,4 @@
-# Responsive Design Patterns — Vetriconn
+# Responsive Design Patterns, Vetriconn
 
 This document provides a comprehensive reference for implementing responsive design patterns across the Vetriconn application using Tailwind CSS v4's mobile-first approach.
 
@@ -17,11 +17,11 @@ This document provides a comprehensive reference for implementing responsive des
 
 ## Breakpoints
 
-Vetriconn uses the following breakpoint system defined in `tailwind.config.ts`:
+Tailwind v4 is configured CSS-first: there is no `tailwind.config.ts`. `md:` and `lg:` are Tailwind's defaults, and the two custom max-width variants are declared with `@custom-variant` in `app/globals.css`:
 
 | Breakpoint | Width | Usage | Prefix |
 |------------|-------|-------|--------|
-| Mobile | ≤ 850px | Mobile-specific overrides | `mobile:` |
+| Mobile | ≤ 900px (`56.25em`) | Mobile-specific overrides, and where the navbar collapses | `mobile:` |
 | Tablet | ≤ 768px | Tablet-specific overrides | `tablet:` |
 | Medium | ≥ 768px | Tablet and up | `md:` |
 | Large | ≥ 1024px | Desktop | `lg:` |
@@ -29,7 +29,7 @@ Vetriconn uses the following breakpoint system defined in `tailwind.config.ts`:
 ### Mobile-First Approach
 
 All styles follow a mobile-first methodology:
-1. Base styles target mobile viewports (≤850px)
+1. Base styles target the smallest viewport
 2. `md:` prefix applies styles for tablet and up (≥768px)
 3. `lg:` prefix applies styles for desktop (≥1024px)
 
@@ -146,20 +146,9 @@ className="w-full lg:w-1/3"
 className="w-full lg:w-2/3"
 ```
 
-### Container Utilities
+### Containers
 
-Use these predefined container classes (defined in `globals.css`):
-
-```tsx
-// Marketing pages (max-width: 1340px)
-className="container-main"
-
-// Dashboard pages (max-width: 1280px / 7xl)
-className="container-dashboard"
-
-// Narrow content (max-width: 896px / 4xl)
-className="container-narrow"
-```
+There are no container utility classes. Pages set their own width with `max-w-*` and `mx-auto`, for example `max-w-7xl mx-auto` on the FAQ page and `max-w-3xl mx-auto` on settings.
 
 ### Modal Widths
 
@@ -227,25 +216,7 @@ className="container-narrow"
 </span>
 ```
 
-### Responsive Text Utilities
-
-Create reusable text utilities in `globals.css`:
-
-```css
-@layer utilities {
-  .text-responsive-h1 {
-    @apply text-3xl md:text-5xl lg:text-6xl;
-  }
-  
-  .text-responsive-h2 {
-    @apply text-2xl md:text-4xl;
-  }
-  
-  .text-responsive-body {
-    @apply text-sm md:text-base;
-  }
-}
-```
+There are no shared text utility classes: write the responsive sizes inline, as above.
 
 ---
 
@@ -263,7 +234,7 @@ Create reusable text utilities in `globals.css`:
 
 ### Icon Implementation
 
-Use `react-icons` with Heroicons v2 (`hi2`) or Lucide (`lu`):
+Use `react-icons` with Heroicons v2 outline icons (`HiOutline*` from `react-icons/hi2`). Brand marks use Font Awesome 6 (`react-icons/fa6`):
 
 ```tsx
 import { HiOutlineBriefcase, HiOutlineXMark } from 'react-icons/hi2';
@@ -367,11 +338,8 @@ All interactive elements must meet WCAG 2.1 Level AAA touch target requirements 
 ### Minimum Dimensions
 
 ```tsx
-// Touch target utility
+// There is no touch-target utility class; write the minimums inline
 className="min-h-[44px] min-w-[44px]"
-
-// Or use the utility class (defined in globals.css)
-className="touch-target"
 ```
 
 ### Button Touch Targets
@@ -471,11 +439,13 @@ and documented in the token itself.
       text-sm md:text-base
       border border-gray-300
       rounded-lg
-      focus:ring-2 focus:ring-primary focus:border-transparent
+      focus:border-gray-500 focus:ring-2 focus:ring-gray-300/60
     "
   />
 </div>
 ```
+
+In practice, use `FIELD_BASE` and `fieldBorder(hasError)` from `components/ui/fieldStyles.ts` rather than writing these classes. The focus ring is grey on purpose: red marks an error, so a red focus ring made every field look rejected.
 
 ### Modal Pattern
 
@@ -610,7 +580,6 @@ and documented in the token itself.
 
 ### Touch Targets
 - Minimum: `min-h-[44px] min-w-[44px]`
-- Utility: `touch-target`
 
 ---
 
@@ -621,7 +590,7 @@ When implementing responsive patterns, test at these breakpoints:
 - [ ] 375px (iPhone SE - smallest modern mobile)
 - [ ] 390px (iPhone 12/13 - common mobile)
 - [ ] 768px (iPad - tablet breakpoint)
-- [ ] 850px (Custom mobile breakpoint)
+- [ ] 900px and 901px (either side of the `mobile:` breakpoint, where the navbar collapses)
 - [ ] 1024px (Desktop breakpoint)
 - [ ] 1440px (Common desktop)
 
@@ -639,5 +608,5 @@ Verify:
 
 - [Tailwind CSS Documentation](https://tailwindcss.com/docs)
 - [WCAG 2.1 Touch Target Guidelines](https://www.w3.org/WAI/WCAG21/Understanding/target-size.html)
-- [Design Document](.kiro/specs/responsive-design-implementation/design.md)
-- [Requirements Document](.kiro/specs/responsive-design-implementation/requirements.md)
+- [Responsive code review checklist](./RESPONSIVE_CODE_REVIEW_CHECKLIST.md)
+- [Responsive troubleshooting](./RESPONSIVE_TROUBLESHOOTING.md)

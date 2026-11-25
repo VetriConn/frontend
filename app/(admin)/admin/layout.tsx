@@ -17,8 +17,9 @@ export default function AdminLayout({
   const { userProfile, isLoading, isError } = useUserProfile();
   const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
 
-  // Client-side defense in depth — backend `authorizeRoles("admin")` is the
-  // real boundary; this is just UX so non-admins don't see admin chrome.
+  // Client-side defense in depth. The backend's `requireAdmin` and
+  // `requirePermission` guards are the real boundary; this is just UX so
+  // non-admins don't see admin chrome.
   useEffect(() => {
     if (isLoading) return;
     if (isError || !userProfile) {
